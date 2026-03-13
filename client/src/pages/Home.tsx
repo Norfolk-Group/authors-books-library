@@ -112,7 +112,7 @@ function EmptyState({ query }: { query: string }) {
 function AuthorCard({ author, query }: { author: Author; query: string }) {
   const cat = getCategoryMeta(author.category);
   const Icon = ICON_MAP[cat.icon] ?? Briefcase;
-  const driveUrl = `https://drive.google.com/drive/folders/${author.driveId}`;
+  const driveUrl = `https://drive.google.com/drive/folders/${author.driveId}?view=grid`;
 
   const highlight = (text: string) => {
     if (!query) return text;
@@ -176,7 +176,7 @@ function AuthorCard({ author, query }: { author: Author; query: string }) {
 function BookCard({ book, query }: { book: Book; query: string }) {
   const cat = getCategoryMeta(book.category);
   const Icon = ICON_MAP[cat.icon] ?? BookMarked;
-  const driveUrl = `https://drive.google.com/drive/folders/${book.driveId}`;
+  const driveUrl = `https://drive.google.com/drive/folders/${book.driveId}?view=grid`;
 
   const highlight = (text: string) => {
     if (!query) return text;
@@ -238,7 +238,7 @@ function BookCard({ book, query }: { book: Book; query: string }) {
 
 // ── Audio Book Card ──────────────────────────────────────────
 function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
-  const driveUrl = `https://drive.google.com/drive/folders/${audio.id}`;
+  const driveUrl = `https://drive.google.com/drive/folders/${audio.id}?view=grid`;
 
   const highlight = (text: string) => {
     if (!query) return text;
