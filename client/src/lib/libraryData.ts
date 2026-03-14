@@ -33,6 +33,19 @@ export const CATEGORY_COLORS: Record<string, string> = {
   "History & Biography": "#92400e",
 };
 
+// Soft pastel background tints per category (low-opacity, warm-paper-aware)
+export const CATEGORY_BG: Record<string, string> = {
+  "Business & Entrepreneurship": "#fef9ec",      // warm amber tint
+  "Behavioral Science & Psychology": "#f5f3ff",  // soft violet
+  "Sales & Negotiation": "#eff8ff",              // sky blue
+  "Leadership & Management": "#f0fdf4",          // mint green
+  "Self-Help & Productivity": "#fff1f2",         // blush rose
+  "Communication & Storytelling": "#fff7ed",     // peach
+  "Technology & Futurism": "#eff6ff",            // cool blue
+  "Strategy & Economics": "#f8fafc",             // cool slate
+  "History & Biography": "#fdf8f0",              // parchment
+};
+
 export const CATEGORY_ICONS: Record<string, string> = {
   "Business & Entrepreneurship": "briefcase",
   "Behavioral Science & Psychology": "brain",

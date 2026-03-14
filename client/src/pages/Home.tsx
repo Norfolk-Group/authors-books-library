@@ -32,6 +32,7 @@ import {
   CATEGORIES,
   CATEGORY_COLORS,
   CATEGORY_ICONS,
+  CATEGORY_BG,
   CONTENT_TYPE_ICONS,
   CONTENT_TYPE_COLORS,
   type AuthorEntry,
@@ -210,23 +211,36 @@ function AuthorCard({ author, query }: { author: AuthorEntry; query: string }) {
 
   const hasBooks = author.books && author.books.length > 0;
 
+  const bg = CATEGORY_BG[author.category] ?? "#fafaf9";
+
   return (
     <div
-      className="card-animate group bg-white rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
-      style={{ borderLeftWidth: 3, borderLeftColor: color }}
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative"
+      style={{ borderLeftWidth: 3, borderLeftColor: color, backgroundColor: bg }}
     >
+      {/* Watermark illustration */}
+      <div
+        className="pointer-events-none absolute bottom-2 right-2 select-none"
+        aria-hidden
+      >
+        <Icon
+          style={{ width: 72, height: 72, color, opacity: 0.07 }}
+          strokeWidth={1}
+        />
+      </div>
+
       {/* Card header — clickable to open author Drive folder */}
       <a
         href={driveUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="block p-4 pb-2 cursor-pointer"
+        className="block p-4 pb-2 cursor-pointer relative z-10"
       >
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: color + "18" }}
+              style={{ backgroundColor: color + "22" }}
             >
               <Icon className="w-3.5 h-3.5" style={{ color }} />
             </div>
@@ -251,7 +265,7 @@ function AuthorCard({ author, query }: { author: AuthorEntry; query: string }) {
 
       {/* Book subfolders */}
       {hasBooks && (
-        <div className="px-3 pb-3 pt-1 border-t border-border/40 mt-1">
+        <div className="px-3 pb-3 pt-1 border-t border-border/40 mt-1 relative z-10">
           <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mb-1 px-2">
             Books ({author.books.length})
           </p>
@@ -293,20 +307,33 @@ function BookCard({ book, query }: { book: BookRecord; query: string }) {
 
   const hasContent = Object.keys(book.contentTypes).length > 0;
 
+  const bg = CATEGORY_BG[book.category] ?? "#fafaf9";
+
   return (
     <a
       href={driveUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="card-animate group bg-white rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer"
-      style={{ borderLeftWidth: 3, borderLeftColor: color }}
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer relative"
+      style={{ borderLeftWidth: 3, borderLeftColor: color, backgroundColor: bg }}
     >
-      <div className="p-4">
+      {/* Watermark illustration */}
+      <div
+        className="pointer-events-none absolute bottom-2 right-2 select-none"
+        aria-hidden
+      >
+        <Icon
+          style={{ width: 72, height: 72, color, opacity: 0.07 }}
+          strokeWidth={1}
+        />
+      </div>
+
+      <div className="p-4 relative z-10">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: color + "18" }}
+              style={{ backgroundColor: color + "22" }}
             >
               <Icon className="w-3.5 h-3.5" style={{ color }} />
             </div>
@@ -363,16 +390,21 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
       href={driveUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="card-animate group bg-white rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer"
-      style={{ borderLeftWidth: 3, borderLeftColor: "#7c3aed" }}
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer relative"
+      style={{ borderLeftWidth: 3, borderLeftColor: "#d97706", backgroundColor: "#fffbeb" }}
     >
-      <div className="p-4">
+      {/* Watermark */}
+      <div className="pointer-events-none absolute bottom-2 right-2 select-none" aria-hidden>
+        <Headphones style={{ width: 72, height: 72, color: "#d97706", opacity: 0.07 }} strokeWidth={1} />
+      </div>
+
+      <div className="p-4 relative z-10">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#7c3aed18" }}>
-              <Headphones className="w-3.5 h-3.5" style={{ color: "#7c3aed" }} />
+            <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#d9770622" }}>
+              <Headphones className="w-3.5 h-3.5" style={{ color: "#d97706" }} />
             </div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#7c3aed" }}>
+            <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#d97706" }}>
               Audiobook
             </span>
           </div>
