@@ -63,6 +63,7 @@ import {
 } from "@/lib/libraryData";
 import { AUDIO_BOOKS, type AudioBook } from "@/lib/audioData";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { CategoryChart } from "@/components/CategoryChart";
 import {
   Search,
   BookOpen,
@@ -1665,9 +1666,23 @@ export default function Home() {
                 </div>
               )
             ) : activeTab === "books" ? (
-              filteredBooks.length === 0 ? (
-                <EmptyState query={query} />
-              ) : (
+              <>
+                {/* Category distribution chart — only shown when no search query */}
+                {!query && (
+                  <CategoryChart
+                    activeCategory={selectedCategories.size === 1 ? Array.from(selectedCategories)[0] : ""}
+                    onCategoryClick={(cat) => {
+                      if (!cat) {
+                        setSelectedCategories(new Set());
+                      } else {
+                        setSelectedCategories(new Set([cat]));
+                      }
+                    }}
+                  />
+                )}
+                {filteredBooks.length === 0 ? (
+                  <EmptyState query={query} />
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {filteredBooks.map((b, i) => {
                     const titleKey = b.name.split(" - ")[0].trim();
@@ -1684,7 +1699,8 @@ export default function Home() {
                     );
                   })}
                 </div>
-              )
+                )}
+              </>
             ) : filteredAudio.length === 0 ? (
               <EmptyState query={query} />
             ) : (
