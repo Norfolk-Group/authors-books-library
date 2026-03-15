@@ -95,6 +95,9 @@ import {
   Linkedin,
   ChevronDown,
   ChevronUp,
+  Sparkles,
+  UserCheck,
+  AlertCircle,
 } from "lucide-react";
 
 // ── Icon map for categories ──────────────────────────────────
@@ -774,6 +777,51 @@ export default function Home() {
   const [selectedBook, setSelectedBook] = useState<typeof BOOKS[number] | null>(null);
   const [bookSheetOpen, setBookSheetOpen] = useState(false);
 
+  // ── Batch enrich bios state ──────────────────────────────────
+  type EnrichStatus = "idle" | "running" | "done" | "error";
+  const [enrichStatus, setEnrichStatus] = useState<EnrichStatus>("idle");
+  const [enrichProgress, setEnrichProgress] = useState(0); // 0–100
+  const [enrichDone, setEnrichDone] = useState(0);
+  const [enrichTotal, setEnrichTotal] = useState(0);
+  const [enrichFailed, setEnrichFailed] = useState(0);
+  const enrichBatchMutation = trpc.authorProfiles.enrichBatch.useMutation();
+  const enrichAllBios = useCallback(async () => {
+    if (enrichStatus === "running") return;
+    // Build unique author names from the library data
+    const names = Array.from(
+      new Set(
+        AUTHORS.map((a) => {
+          const d = a.name.indexOf(" - ");
+          return d !== -1 ? a.name.slice(0, d) : a.name;
+        })
+      )
+    );
+    const BATCH_SIZE = 10;
+    setEnrichStatus("running");
+    setEnrichProgress(0);
+    setEnrichDone(0);
+    setEnrichFailed(0);
+    setEnrichTotal(names.length);
+    let done = 0;
+    let failed = 0;
+    try {
+      for (let i = 0; i < names.length; i += BATCH_SIZE) {
+        const batch = names.slice(i, i + BATCH_SIZE);
+        const result = await enrichBatchMutation.mutateAsync({ authorNames: batch });
+        done += result.succeeded;
+        failed += result.total - result.succeeded;
+        setEnrichDone(done);
+        setEnrichFailed(failed);
+        setEnrichProgress(Math.round(((i + batch.length) / names.length) * 100));
+      }
+      setEnrichStatus("done");
+      toast.success(`Enriched ${done} author bios${failed > 0 ? ` (${failed} failed)` : ""}.`);
+    } catch (err) {
+      setEnrichStatus("error");
+      toast.error("Bio enrichment failed: " + (err instanceof Error ? err.message : String(err)));
+    }
+  }, [enrichStatus, enrichBatchMutation]);
+
   const regenerate = trpc.library.regenerate.useMutation({
     onSuccess: (data) => {
       if (data.success && data.stats) {
@@ -1089,7 +1137,7 @@ export default function Home() {
             </p>
             <button
               onClick={() => regenerate.mutate()}
-              disabled={regenerate.isPending}
+              disabled={regenerate.isPending || enrichStatus === "running"}
               className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Re-scan Google Drive and rebuild the library data"
             >
@@ -1102,6 +1150,55 @@ export default function Home() {
               )}
               {regenerate.isPending ? "Scanning Drive…" : "Regenerate Database"}
             </button>
+
+            {/* Enrich All Bios button */}
+            <button
+              onClick={enrichAllBios}
+              disabled={enrichStatus === "running" || regenerate.isPending}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1.5"
+              title="Generate AI bios and links for all authors"
+            >
+              {enrichStatus === "running" ? (
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+              ) : enrichStatus === "done" ? (
+                <UserCheck className="w-3.5 h-3.5 text-green-600" />
+              ) : enrichStatus === "error" ? (
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              {enrichStatus === "running"
+                ? `Enriching… ${enrichDone}/${enrichTotal}`
+                : enrichStatus === "done"
+                ? `Bios enriched (${enrichDone})`
+                : enrichStatus === "error"
+                ? "Enrichment failed — retry"
+                : "Enrich All Bios"}
+            </button>
+
+            {/* Progress bar — only visible while running */}
+            {enrichStatus === "running" && (
+              <div className="mt-2">
+                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                  <span>{enrichDone} of {enrichTotal} authors</span>
+                  <span>{enrichProgress}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${enrichProgress}%`, backgroundColor: "#FDB817" }}
+                  />
+                </div>
+                {enrichFailed > 0 && (
+                  <p className="text-[10px] text-red-500 mt-1">{enrichFailed} failed</p>
+                )}
+              </div>
+            )}
+
+            {/* Done summary */}
+            {enrichStatus === "done" && enrichFailed > 0 && (
+              <p className="text-[10px] text-muted-foreground mt-1">{enrichFailed} authors could not be enriched.</p>
+            )}
           </SidebarFooter>
         </Sidebar>
 

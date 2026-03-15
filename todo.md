@@ -62,3 +62,12 @@
 - [x] "View bio & links" button on every author card
 - [x] 38 vitest tests passing (3 test files)
 - [x] Save checkpoint
+
+## Session March 15, 2026 — Part 5 (Batch Enrich Bios)
+- [x] Add enrichAllBios state machine (idle/running/done/error) to Home component
+- [x] Add "Enrich All Bios" button to sidebar footer with progress bar
+- [x] Process authors in batches of 10 sequentially, updating progress after each batch
+- [x] Show count of enriched/total with NCG yellow progress bar
+- [x] Reuses existing enrichBatch tRPC procedure (batches of 10, skips fresh profiles)
+- [x] 60 vitest tests passing (4 test files)
+- [x] Save checkpoint
