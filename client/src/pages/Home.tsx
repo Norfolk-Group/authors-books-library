@@ -471,10 +471,12 @@ export default function Home() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("authors");
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
 
   const regenerate = trpc.library.regenerate.useMutation({
     onSuccess: (data) => {
       if (data.success && data.stats) {
+        setLastSynced(new Date());
         toast.success(
           `Library rebuilt — ${data.stats.authors} authors, ${data.stats.books} books, ${data.stats.audioBooks} audiobooks (${data.stats.elapsedSeconds}s). Reload to see changes.`,
           { duration: 8000 }
@@ -695,7 +697,10 @@ export default function Home() {
 
           <SidebarFooter className="px-4 py-3 border-t border-sidebar-border group-data-[collapsible=icon]:hidden">
             <p className="text-[10px] text-muted-foreground mb-2">
-              Last updated {STATS.lastUpdated}
+              {lastSynced
+                ? `Last synced ${lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${lastSynced.toLocaleDateString([], { month: "short", day: "numeric" })}`
+                : `Data as of ${STATS.lastUpdated}`
+              }
             </p>
             <button
               onClick={() => regenerate.mutate()}

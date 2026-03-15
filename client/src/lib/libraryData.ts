@@ -1,5 +1,5 @@
 // NCG Knowledge Library — auto-generated from Google Drive scan
-// Generated: 2026-03-14 20:03 UTC
+// Generated: 2026-03-14 20:23 UTC
 // Design: Editorial Intelligence — Playfair Display + DM Sans, warm paper palette, 9-category system
 export interface BookEntry {
   name: string;
@@ -78,7 +78,7 @@ export const CONTENT_TYPE_COLORS: Record<string, string> = {
 };
 export const LIBRARY_STATS = {
   totalAuthors: 112,
-  totalBooks: 228,
+  totalBooks: 224,
   categories: 9,
 };
 export const AUTHORS: AuthorEntry[] = [
@@ -114,9 +114,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1Pw11T23l3FN1aVuXiha2U00BNbcsxeRh",
     category: "Strategy & Economics",
     books: [
-    { name: "Lean Marketing - Allan Dib", id: "1aRk1ptZ9wr8YPaxjKG7yRLDEGtED-ggh", contentTypes: {"Transcript": 3} },
-    { name: "Transcript DOC", id: "1kV61Rteyo2j4cQtM423ieWLlupS6utLU", contentTypes: {"Other": 2} },
-    { name: "Transcript PDF", id: "1evcd5hOqUQvqkRqDuPvIL577WG8MXEng", contentTypes: {"Other": 1} }
+    { name: "Lean Marketing - Allan Dib", id: "1aRk1ptZ9wr8YPaxjKG7yRLDEGtED-ggh", contentTypes: {"Transcript": 6} }
   ]
   },
   {
@@ -133,9 +131,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1MfBfT8aTOkMpwRjMfoB_CAtjz4nDEYWo",
     category: "Business & Entrepreneurship",
     books: [
-    { name: "100M Leads - Alex Hormozi", id: "17Msqkw27nKwVs1IgVvVN3-RmMT9SrESH", contentTypes: {"100M Leads": 2} },
-    { name: "Transcript DOC", id: "1r-3oBgHch8Xpbxc4HDGGvOBOLHB_dgf9", contentTypes: {"Other": 1} },
-    { name: "Transcript PDF", id: "1_AkiLpomch4HqsbEi7Ji6ihriYdveZBQ", contentTypes: {"Other": 1} }
+    { name: "100M Leads - Alex Hormozi", id: "17Msqkw27nKwVs1IgVvVN3-RmMT9SrESH", contentTypes: {"Transcript": 2, "PDF": 2} }
   ]
   },
   {
@@ -1092,7 +1088,7 @@ export const AUTHORS: AuthorEntry[] = [
 export const BOOKS: BookRecord[] = [
   { name: "10% Happier 10th Anniversary", id: "1iYQelUi4ztDlOMWSmdfnVFwzwchcpi4Q", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "10% Happier 10th Anniversary", id: "1idbnWKqeWH-hKJ0hIXx9mvE2Kmq9Guga", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
-  { name: "100M Leads - Alex Hormozi", id: "17Msqkw27nKwVs1IgVvVN3-RmMT9SrESH", category: "Business & Entrepreneurship", contentTypes: {"100M Leads": 2} },
+  { name: "100M Leads - Alex Hormozi", id: "17Msqkw27nKwVs1IgVvVN3-RmMT9SrESH", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "PDF": 2} },
   { name: "1929", id: "1ECWAyQymVgpcZcpGtVR-qjt8s6Ry-2mz", category: "Business & Entrepreneurship", contentTypes: {} },
   { name: "7 Powers_ The Foundations of Business Strategy", id: "1NebsOGJnY2C8zoKHuk9Z2OO50ENYBCAq", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "7 Powers_ The Foundations of Business Strategy", id: "1dZrAy0OCOUIfD-YV111zeZgLra3uBjRb", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
@@ -1164,7 +1160,7 @@ export const BOOKS: BookRecord[] = [
   { name: "Leaders Eat Last", id: "1Bu26ALCCEhu2ZHxWuZIac9bUlA0NmLq9", category: "Leadership & Management", contentTypes: {"Transcript": 2, "PDF": 1} },
   { name: "Leaders Eat Last - Simon Sinek", id: "1KHUFlhvHcLey6QpwVKUEUs4XnX5GmVRz", category: "Leadership & Management", contentTypes: {"Transcript": 2} },
   { name: "Leading Engaging Meetings", id: "1kwYxOkaQVNdVcTLNMUM1fr6nJ9Mu3SGP", category: "Leadership & Management", contentTypes: {"Transcript": 3} },
-  { name: "Lean Marketing - Allan Dib", id: "1aRk1ptZ9wr8YPaxjKG7yRLDEGtED-ggh", category: "Strategy & Economics", contentTypes: {"Transcript": 3} },
+  { name: "Lean Marketing - Allan Dib", id: "1aRk1ptZ9wr8YPaxjKG7yRLDEGtED-ggh", category: "Strategy & Economics", contentTypes: {"Transcript": 6} },
   { name: "Making Conversation", id: "1oMhOVvnN8Oop81V4V_KEB5OJZdJ1q4vb", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
   { name: "Making Conversation - Fred Dust", id: "1lozeRuRw1Sdi8sz3HmYVHXxbL9R3C-wp", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
   { name: "Mating in Captivity", id: "1PiXC_CwvcPpx7kZQCoaF9yUJbzz4HorE", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
@@ -1301,10 +1297,6 @@ export const BOOKS: BookRecord[] = [
   { name: "Thrive", id: "1JSle2ZXRUboq9erc4SCMxFXzlT5GnnqP", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Thrive", id: "1fluwT2MyKYTCyyNKw6C5-oAJQEnLIwAo", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Traction", id: "1L3iF7E0qpnJbGnomn9XtnWMV-JSJ0RMy", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
-  { name: "Transcript DOC", id: "1kV61Rteyo2j4cQtM423ieWLlupS6utLU", category: "Strategy & Economics", contentTypes: {"Other": 2} },
-  { name: "Transcript DOC", id: "1r-3oBgHch8Xpbxc4HDGGvOBOLHB_dgf9", category: "Business & Entrepreneurship", contentTypes: {"Other": 1} },
-  { name: "Transcript PDF", id: "1evcd5hOqUQvqkRqDuPvIL577WG8MXEng", category: "Strategy & Economics", contentTypes: {"Other": 1} },
-  { name: "Transcript PDF", id: "1_AkiLpomch4HqsbEi7Ji6ihriYdveZBQ", category: "Business & Entrepreneurship", contentTypes: {"Other": 1} },
   { name: "Unreasonable Hospitality", id: "1IQEMjbONWQOEwKaAmjj9-ujCJ2H7BpPL", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
   { name: "Unreasonable Hospitality - Will Guidara", id: "10zzAVGiEIdgc-_e_u15N_qAjJJCfCTgR", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
   { name: "We Are All Made of Molecules", id: "1LWBgczNU-1TYpOe5fcxtF_T-7Rgod-fT", category: "Communication & Storytelling", contentTypes: {"PDF": 1} },

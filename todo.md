@@ -23,3 +23,8 @@
   - [x] Wire libraryRouter into appRouter (routers.ts)
   - [x] Add tRPC mutation call in Home.tsx sidebar footer
   - [x] Show progress spinner and result toast
+
+## Next Steps (March 2026)
+- [x] Fix depth-collapse entries: Alan Dib and Alex Hormozi Transcript DOC/PDF folders in Drive
+- [x] Add Last Synced timestamp to sidebar footer
+- [x] Clean up Books Audio/ root legacy Audio MP3 and Audible MP3 folders
