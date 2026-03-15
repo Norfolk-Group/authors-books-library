@@ -36,6 +36,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -299,12 +306,10 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
         />
       </div>
 
-      {/* Card header — clickable to open author Drive folder */}
-      <a
-        href={driveUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block p-4 pb-2 cursor-pointer relative z-10"
+      {/* Card header — clickable to open bio modal */}
+      <button
+        onClick={() => onBioClick(author)}
+        className="block w-full text-left p-4 pb-2 cursor-pointer relative z-10 hover:bg-black/[0.02] transition-colors"
       >
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
@@ -318,7 +323,16 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
               {author.category}
             </span>
           </div>
-          <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-muted-foreground" />
+          <a
+            href={driveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="p-0.5 rounded hover:bg-black/10 transition-colors"
+            title="Open in Google Drive"
+          >
+            <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-muted-foreground" />
+          </a>
         </div>
         {/* Author photo + name row */}
         <div className="flex items-center gap-2.5 mb-1">
@@ -347,27 +361,24 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
                 {highlight(specialty)}
               </p>
             )}
-          </div>
+           </div>
         </div>
-      </a>
-
-      {/* Bio button */}
-      <div className="px-3 pb-2 relative z-10">
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBioClick(author); }}
-          className="text-[10px] font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
-        >
+      </button>
+      {/* Enrichment status indicator */}
+      <div className="px-3 pb-2 relative z-10 pointer-events-none">
+        <span className="text-[10px] font-medium flex items-center gap-1.5">
           {isEnriched ? (
-            <UserCheck className="w-3 h-3 text-green-500" />
+            <>
+              <UserCheck className="w-3 h-3 text-green-500" />
+              <span className="text-green-600 dark:text-green-400">Bio ready · click to view</span>
+            </>
           ) : (
-            <Users className="w-3 h-3" />
+            <>
+              <Users className="w-3 h-3 text-muted-foreground" />
+              <span className="text-muted-foreground">Click to view bio &amp; links</span>
+            </>
           )}
-          {isEnriched ? (
-            <span className="text-green-600 dark:text-green-400">Bio ready</span>
-          ) : (
-            <span>View bio &amp; links</span>
-          )}
-        </button>
+        </span>
       </div>
       {/* Book subfolders */}
       {hasBooks && (
@@ -554,7 +565,7 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   );
 }
 
-// ── Author Bio Panel (Sheet) ──────────────────────────────
+// ── Author Bio Modal ──────────────────────────────────────
 function AuthorBioPanel({ author, onClose }: { author: typeof AUTHORS[number]; onClose: () => void }) {
   const dashIdx = author.name.indexOf(" - ");
   const displayName = dashIdx !== -1 ? author.name.slice(0, dashIdx) : author.name;
@@ -582,22 +593,24 @@ function AuthorBioPanel({ author, onClose }: { author: typeof AUTHORS[number]; o
   return (
     <div className="flex flex-col gap-5 pt-2">
       {/* Header */}
-      <SheetHeader>
-        <div className="flex items-center gap-3 mb-1">
+      <DialogHeader>
+        <div className="flex items-center gap-4 mb-1">
           {photoUrl ? (
-            <img src={photoUrl} alt={displayName} className="w-14 h-14 rounded-full object-cover ring-2 ring-offset-1" style={{ '--tw-ring-color': color + '55' } as React.CSSProperties} />
+            <img src={photoUrl} alt={displayName} className="w-20 h-20 rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0" style={{ '--tw-ring-color': color + '66' } as React.CSSProperties} />
           ) : (
-            <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold" style={{ backgroundColor: color + '22', color }}>
+            <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0" style={{ backgroundColor: color + '22', color }}>
               {displayName.charAt(0)}
             </div>
           )}
-          <div>
-            <SheetTitle className="text-base font-bold leading-snug">{displayName}</SheetTitle>
-            {specialty && <SheetDescription className="text-xs">{specialty}</SheetDescription>}
-            <span className="text-[10px] font-semibold uppercase tracking-wider mt-0.5 block" style={{ color }}>{author.category}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: color + '22', color }}>{author.category}</span>
+            </div>
+            <DialogTitle className="text-xl font-bold leading-snug">{displayName}</DialogTitle>
+            {specialty && <DialogDescription className="text-sm mt-0.5">{specialty}</DialogDescription>}
           </div>
         </div>
-      </SheetHeader>
+      </DialogHeader>
 
       {/* Bio */}
       <div>
@@ -1401,17 +1414,17 @@ export default function Home() {
       </div>
     </SidebarProvider>
 
-    {/* ── Author Bio Sheet ──────────────────────────────── */}
-    <Sheet open={bioSheetOpen} onOpenChange={setBioSheetOpen}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+    {/* ── Author Bio Modal ───────────────────── */}
+    <Dialog open={bioSheetOpen} onOpenChange={setBioSheetOpen}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         {selectedAuthor && (
           <AuthorBioPanel
             author={selectedAuthor}
             onClose={() => setBioSheetOpen(false)}
           />
         )}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
 
     {/* ── Book Detail Sheet ──────────────────────────────── */}
     <Sheet open={bookSheetOpen} onOpenChange={setBookSheetOpen}>

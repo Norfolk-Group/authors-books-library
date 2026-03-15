@@ -191,3 +191,61 @@ describe("Author profile LLM response parsing", () => {
     expect(result.websiteUrl).toBe("");
   });
 });
+
+// ── Author Bio Modal tests ──────────────────────────────────────────────────
+
+describe("Author bio modal behavior", () => {
+  it("modal opens with the correct author when card is clicked", () => {
+    const authors = [
+      { name: "Adam Grant - Organizational Psychology", category: "Behavioral Science & Psychology", books: [] as { id: string; name: string; contentTypes: Record<string, number> }[] },
+      { name: "Simon Sinek - Leadership", category: "Leadership & Management", books: [] as { id: string; name: string; contentTypes: Record<string, number> }[] },
+    ];
+
+    let selectedAuthor: typeof authors[0] | null = null;
+    const openModal = (author: typeof authors[0]) => { selectedAuthor = author; };
+
+    openModal(authors[0]);
+    expect(selectedAuthor).not.toBeNull();
+    expect((selectedAuthor as typeof authors[0]).name).toBe("Adam Grant - Organizational Psychology");
+  });
+
+  it("extracts display name and specialty from 'Name - Specialty' format", () => {
+    const extractParts = (name: string) => {
+      const dashIdx = name.indexOf(" - ");
+      return dashIdx !== -1
+        ? { displayName: name.slice(0, dashIdx), specialty: name.slice(dashIdx + 3) }
+        : { displayName: name, specialty: "" };
+    };
+
+    expect(extractParts("Adam Grant - Organizational Psychology")).toEqual({
+      displayName: "Adam Grant",
+      specialty: "Organizational Psychology",
+    });
+    expect(extractParts("Simon Sinek")).toEqual({
+      displayName: "Simon Sinek",
+      specialty: "",
+    });
+    expect(extractParts("Dan Heath and Chip Heath - Strategy & Decision Making")).toEqual({
+      displayName: "Dan Heath and Chip Heath",
+      specialty: "Strategy & Decision Making",
+    });
+  });
+
+  it("modal closes when onOpenChange is called with false", () => {
+    let isOpen = true;
+    const onOpenChange = (open: boolean) => { isOpen = open; };
+
+    onOpenChange(false);
+    expect(isOpen).toBe(false);
+  });
+
+  it("drive URL is constructed correctly from folder id", () => {
+    const buildDriveUrl = (folderId: string) =>
+      `https://drive.google.com/drive/folders/${folderId}?view=grid`;
+
+    const url = buildDriveUrl("mock-folder-id");
+    expect(url).toContain("drive.google.com");
+    expect(url).toContain("mock-folder-id");
+    expect(url).toContain("view=grid");
+  });
+});

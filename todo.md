@@ -80,3 +80,12 @@
 - [x] Invalidate enrichedNames query after Enrich All Bios completes (reactive update)
 - [x] 65 vitest tests passing (4 test files)
 - [x] Save checkpoint
+
+## Session March 15, 2026 — Part 7 (Author Bio Modal)
+- [x] Replace AuthorBioPanel Sheet with a centered Dialog modal (max-w-lg, 85vh scrollable)
+- [x] Make the full author card header clickable (not just the bio button)
+- [x] Modal shows: large photo (80px), category pill, name, specialty, bio, links, book list
+- [x] LLM enrichment still triggers on first open if bio not yet cached
+- [x] Drive link stays accessible as icon in top-right of card header
+- [x] 69 vitest tests passing (4 test files)
+- [x] Save checkpoint
