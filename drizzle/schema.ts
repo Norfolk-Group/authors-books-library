@@ -25,4 +25,19 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Author profiles — enriched via LLM, keyed by author base name
+export const authorProfiles = mysqlTable("author_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Base name (before " - "), e.g. "Adam Grant" */
+  authorName: varchar("authorName", { length: 256 }).notNull().unique(),
+  bio: text("bio"),
+  websiteUrl: varchar("websiteUrl", { length: 512 }),
+  twitterUrl: varchar("twitterUrl", { length: 512 }),
+  linkedinUrl: varchar("linkedinUrl", { length: 512 }),
+  enrichedAt: timestamp("enrichedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AuthorProfile = typeof authorProfiles.$inferSelect;
+export type InsertAuthorProfile = typeof authorProfiles.$inferInsert;

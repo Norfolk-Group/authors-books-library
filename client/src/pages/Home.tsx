@@ -7,7 +7,7 @@
  * Cards: Show book subfolders with content-type icons
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -28,6 +28,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import {
   AUTHORS,
   BOOKS,
@@ -75,6 +89,12 @@ import {
   List,
   RefreshCw,
   CheckCircle2,
+  ArrowUpDown,
+  Globe,
+  Twitter,
+  Linkedin,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 // ── Icon map for categories ──────────────────────────────────
@@ -229,7 +249,7 @@ function EmptyState({ query }: { query: string }) {
 }
 
 // ── Author Card ──────────────────────────────────────────────
-function AuthorCard({ author, query }: { author: AuthorEntry; query: string }) {
+function AuthorCard({ author, query, onBioClick }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void }) {
   const color = CATEGORY_COLORS[author.category] ?? "#374151";
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
@@ -328,6 +348,16 @@ function AuthorCard({ author, query }: { author: AuthorEntry; query: string }) {
         </div>
       </a>
 
+      {/* Bio button */}
+      <div className="px-3 pb-2 relative z-10">
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBioClick(author); }}
+          className="text-[10px] font-medium text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+        >
+          <Users className="w-3 h-3" />
+          View bio &amp; links
+        </button>
+      </div>
       {/* Book subfolders */}
       {hasBooks && (
         <div className="px-3 pb-3 pt-1 border-t border-border/40 mt-1 relative z-10">
@@ -346,7 +376,7 @@ function AuthorCard({ author, query }: { author: AuthorEntry; query: string }) {
 }
 
 // ── Book Card ────────────────────────────────────────────────
-function BookCard({ book, query }: { book: BookRecord; query: string }) {
+function BookCard({ book, query, onDetailClick }: { book: BookRecord; query: string; onDetailClick?: (b: BookRecord) => void }) {
   const color = CATEGORY_COLORS[book.category] ?? "#374151";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarked;
@@ -375,24 +405,18 @@ function BookCard({ book, query }: { book: BookRecord; query: string }) {
   const bg = CATEGORY_BG[book.category] ?? "#fafaf9";
 
   return (
-    <a
-      href={driveUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer relative"
+    <div
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer relative"
       style={{ borderLeftWidth: 3, borderLeftColor: color, backgroundColor: bg }}
+      onClick={() => onDetailClick?.(book)}
     >
-      {/* Watermark illustration */}
-      <div
-        className="pointer-events-none absolute bottom-2 right-2 select-none"
-        aria-hidden
-      >
+      {/* Watermark */}
+      <div className="pointer-events-none absolute bottom-2 right-2 select-none" aria-hidden>
         <Icon
           style={{ width: 72, height: 72, color, opacity: 0.07 }}
           strokeWidth={1}
         />
       </div>
-
       <div className="p-4 relative z-10">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
@@ -406,7 +430,16 @@ function BookCard({ book, query }: { book: BookRecord; query: string }) {
               {book.category}
             </span>
           </div>
-          <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-muted-foreground" />
+          <a
+            href={driveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title="Open in Drive"
+          >
+            <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity" />
+          </a>
         </div>
         <h3 className="text-sm font-semibold leading-snug mb-1 tracking-tight">
           {highlight(displayTitle)}
@@ -424,11 +457,10 @@ function BookCard({ book, query }: { book: BookRecord; query: string }) {
           </div>
         )}
       </div>
-    </a>
+    </div>
   );
 }
-
-// ── Audio Book Card ──────────────────────────────────────────
+// ── Audio Book Cardd ──────────────────────────────────────────
 function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const driveUrl = `https://drive.google.com/drive/folders/${audio.id}?view=grid`;
 
@@ -511,6 +543,220 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   );
 }
 
+// ── Author Bio Panel (Sheet) ──────────────────────────────
+function AuthorBioPanel({ author, onClose }: { author: typeof AUTHORS[number]; onClose: () => void }) {
+  const dashIdx = author.name.indexOf(" - ");
+  const displayName = dashIdx !== -1 ? author.name.slice(0, dashIdx) : author.name;
+  const specialty = dashIdx !== -1 ? author.name.slice(dashIdx + 3) : "";
+  const photoUrl = getAuthorPhoto(displayName);
+  const color = CATEGORY_COLORS[author.category] ?? "#374151";
+  const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
+
+  // Fetch bio from DB
+  const { data: profile, isLoading } = trpc.authorProfiles.get.useQuery({ authorName: displayName });
+  const enrichMutation = trpc.authorProfiles.enrich.useMutation({
+    onSuccess: () => { /* profile will auto-refresh */ },
+    onError: (e) => toast.error("Failed to load bio: " + e.message),
+  });
+
+  // Auto-trigger enrichment if no profile exists
+  const hasTriggered = useRef(false);
+  useEffect(() => {
+    if (!isLoading && !profile && !hasTriggered.current) {
+      hasTriggered.current = true;
+      enrichMutation.mutate({ authorName: displayName });
+    }
+  }, [isLoading, profile]);
+
+  return (
+    <div className="flex flex-col gap-5 pt-2">
+      {/* Header */}
+      <SheetHeader>
+        <div className="flex items-center gap-3 mb-1">
+          {photoUrl ? (
+            <img src={photoUrl} alt={displayName} className="w-14 h-14 rounded-full object-cover ring-2 ring-offset-1" style={{ '--tw-ring-color': color + '55' } as React.CSSProperties} />
+          ) : (
+            <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold" style={{ backgroundColor: color + '22', color }}>
+              {displayName.charAt(0)}
+            </div>
+          )}
+          <div>
+            <SheetTitle className="text-base font-bold leading-snug">{displayName}</SheetTitle>
+            {specialty && <SheetDescription className="text-xs">{specialty}</SheetDescription>}
+            <span className="text-[10px] font-semibold uppercase tracking-wider mt-0.5 block" style={{ color }}>{author.category}</span>
+          </div>
+        </div>
+      </SheetHeader>
+
+      {/* Bio */}
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">About</h4>
+        {isLoading || enrichMutation.isPending ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            Loading bio…
+          </div>
+        ) : profile?.bio ? (
+          <p className="text-sm leading-relaxed text-foreground/80">{profile.bio}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground italic">No bio available.</p>
+        )}
+      </div>
+
+      {/* Links */}
+      {profile && (profile.websiteUrl || profile.twitterUrl || profile.linkedinUrl) && (
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Links</h4>
+          <div className="flex flex-col gap-1.5">
+            {profile.websiteUrl && (
+              <a href={profile.websiteUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <Globe className="w-3.5 h-3.5" />
+                {profile.websiteUrl.replace(/^https?:\/\/(www\.)?/, "")}
+              </a>
+            )}
+            {profile.twitterUrl && (
+              <a href={profile.twitterUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <Twitter className="w-3.5 h-3.5" />
+                {profile.twitterUrl.replace(/^https?:\/\/(www\.)?twitter\.com\//, "@")}
+              </a>
+            )}
+            {profile.linkedinUrl && (
+              <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline">
+                <Linkedin className="w-3.5 h-3.5" />
+                LinkedIn
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Books */}
+      {author.books.length > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Books in Library ({author.books.length})</h4>
+          <div className="flex flex-col gap-1.5">
+            {author.books.map((book) => (
+              <a
+                key={book.id}
+                href={`https://drive.google.com/drive/folders/${book.id}?view=grid`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm hover:text-primary transition-colors group"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary" />
+                <span className="flex-1 leading-snug">{book.name.split(" - ")[0]}</span>
+                <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-60" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Drive link */}
+      <a
+        href={driveUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors"
+      >
+        <ExternalLink className="w-3.5 h-3.5" />
+        Open in Google Drive
+      </a>
+    </div>
+  );
+}
+
+// ── Book Detail Panel (Sheet) ──────────────────────────────
+function BookDetailPanel({ book, onClose }: { book: typeof BOOKS[number]; onClose: () => void }) {
+  const color = CATEGORY_COLORS[book.category] ?? "#374151";
+  const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
+  const Icon = ICON_MAP[iconName] ?? BookMarked;
+  const driveUrl = `https://drive.google.com/drive/folders/${book.id}?view=grid`;
+  const dashIdx = book.name.indexOf(" - ");
+  const displayTitle = dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
+  const bookAuthor = dashIdx !== -1 ? book.name.slice(dashIdx + 3) : "";
+  const totalItems = Object.values(book.contentTypes).reduce((s, n) => s + n, 0);
+
+  return (
+    <div className="flex flex-col gap-5 pt-2">
+      {/* Header */}
+      <SheetHeader>
+        <div className="flex items-start gap-3 mb-1">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + "22" }}>
+            <Icon className="w-5 h-5" style={{ color }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <SheetTitle className="text-base font-bold leading-snug">{displayTitle}</SheetTitle>
+            {bookAuthor && <SheetDescription className="text-xs">by {bookAuthor}</SheetDescription>}
+            <span className="text-[10px] font-semibold uppercase tracking-wider mt-0.5 block" style={{ color }}>{book.category}</span>
+          </div>
+        </div>
+      </SheetHeader>
+
+      {/* Stats */}
+      <div className="flex gap-3">
+        <div className="flex-1 rounded-lg bg-muted/50 px-3 py-2 text-center">
+          <p className="text-lg font-bold">{Object.keys(book.contentTypes).length}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Content Types</p>
+        </div>
+        <div className="flex-1 rounded-lg bg-muted/50 px-3 py-2 text-center">
+          <p className="text-lg font-bold">{totalItems}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Total Files</p>
+        </div>
+      </div>
+
+      {/* Content types with Drive links */}
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Available Content</h4>
+        <div className="flex flex-col gap-1.5">
+          {Object.entries(book.contentTypes).map(([type, count]) => {
+            const iconKey = CONTENT_TYPE_ICONS[type] ?? "file";
+            const CtIcon = CT_ICON_MAP[iconKey] ?? File;
+            const ctColorRaw = CONTENT_TYPE_COLORS[type];
+            const ctColor = typeof ctColorRaw === "object" && ctColorRaw !== null
+              ? ctColorRaw as { bg: string; text: string }
+              : { bg: "#f3f4f6", text: "#374151" };
+            const subfolderUrl = `https://drive.google.com/drive/folders/${book.id}?view=grid`;
+            return (
+              <a
+                key={type}
+                href={subfolderUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/60 transition-colors group"
+              >
+                <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ backgroundColor: ctColor.bg }}>
+                  <CtIcon className="w-3.5 h-3.5" style={{ color: ctColor.text }} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium capitalize">{type}</p>
+                </div>
+                <span className="text-xs text-muted-foreground font-medium">{count} file{count !== 1 ? "s" : ""}</span>
+                <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-60" />
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Open in Drive */}
+      <a
+        href={driveUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium border border-border hover:bg-muted transition-colors"
+      >
+        <ExternalLink className="w-3.5 h-3.5" />
+        Open in Google Drive
+      </a>
+    </div>
+  );
+}
+
+// ── Sort options ─────────────────────────────────────────────
+type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category";
+type BookSort = "name-asc" | "name-desc" | "author" | "content-desc";
+
 // ── Main Page ────────────────────────────────────────────────
 type TabType = "authors" | "books" | "audio";
 
@@ -519,6 +765,14 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>("authors");
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
+  const [authorSort, setAuthorSort] = useState<AuthorSort>("name-asc");
+  const [bookSort, setBookSort] = useState<BookSort>("name-asc");
+  // Author bio panel state
+  const [selectedAuthor, setSelectedAuthor] = useState<typeof AUTHORS[number] | null>(null);
+  const [bioSheetOpen, setBioSheetOpen] = useState(false);
+  // Book detail panel state
+  const [selectedBook, setSelectedBook] = useState<typeof BOOKS[number] | null>(null);
+  const [bookSheetOpen, setBookSheetOpen] = useState(false);
 
   const regenerate = trpc.library.regenerate.useMutation({
     onSuccess: (data) => {
@@ -608,9 +862,16 @@ export default function Home() {
         a.category.toLowerCase().includes(q) ||
         a.books.some((b) => b.name.toLowerCase().includes(q));
       return matchesCat && matchesQ;
-    }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, selectedCategories]);
-
+    }).sort((a, b) => {
+      switch (authorSort) {
+        case "name-asc": return a.name.localeCompare(b.name);
+        case "name-desc": return b.name.localeCompare(a.name);
+        case "books-desc": return b.books.length - a.books.length;
+        case "category": return a.category.localeCompare(b.category) || a.name.localeCompare(b.name);
+        default: return a.name.localeCompare(b.name);
+      }
+    });
+  }, [query, selectedCategories, authorSort]);
   const filteredBooks = useMemo(() => {
     const q = query.toLowerCase();
     // Deduplicate books: prefer "Title - Author" format over plain "Title"
@@ -638,9 +899,20 @@ export default function Home() {
         b.name.toLowerCase().includes(q) ||
         b.category.toLowerCase().includes(q);
       return matchesCat && matchesQ;
-    }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, selectedCategories]);
-
+     }).sort((a, b) => {
+      switch (bookSort) {
+        case "name-asc": return a.name.localeCompare(b.name);
+        case "name-desc": return b.name.localeCompare(a.name);
+        case "author": {
+          const aAuthor = a.name.includes(" - ") ? a.name.split(" - ").slice(1).join(" - ") : "";
+          const bAuthor = b.name.includes(" - ") ? b.name.split(" - ").slice(1).join(" - ") : "";
+          return aAuthor.localeCompare(bAuthor) || a.name.localeCompare(b.name);
+        }
+        case "content-desc": return Object.keys(b.contentTypes).length - Object.keys(a.contentTypes).length;
+        default: return a.name.localeCompare(b.name);
+      }
+    });
+  }, [query, selectedCategories, bookSort]);
   const filteredAudio = useMemo(() => {
     const q = query.toLowerCase();
     return AUDIO_BOOKS.filter((a) => {
@@ -670,6 +942,7 @@ export default function Home() {
   const showCategoryFilter = activeTab !== "audio";
 
   return (
+    <>
     <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full overflow-hidden">
         {/* ── Sidebar ── */}
@@ -918,17 +1191,49 @@ export default function Home() {
             )}
 
             {/* Section header */}
-            <div className="flex items-baseline justify-between mb-4">
-              <h1 className="text-xl font-extrabold tracking-tight">
-                {activeTab === "authors" ? "Authors" : activeTab === "books" ? "Books" : "Books Audio"}
-              </h1>
-              <span className="text-sm text-muted-foreground">
-                {activeTab === "authors"
-                  ? `${filteredAuthors.length} of ${STATS.totalAuthors}`
-                  : activeTab === "books"
-                  ? `${filteredBooks.length} of ${STATS.totalBooks}`
-                  : `${filteredAudio.length} of ${AUDIO_BOOKS.length}`}
-              </span>
+            <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+              <div className="flex items-baseline gap-3">
+                <h1 className="text-xl font-extrabold tracking-tight">
+                  {activeTab === "authors" ? "Authors" : activeTab === "books" ? "Books" : "Books Audio"}
+                </h1>
+                <span className="text-sm text-muted-foreground">
+                  {activeTab === "authors"
+                    ? `${filteredAuthors.length} of ${STATS.totalAuthors}`
+                    : activeTab === "books"
+                    ? `${filteredBooks.length} of ${STATS.totalBooks}`
+                    : `${filteredAudio.length} of ${AUDIO_BOOKS.length}`}
+                </span>
+              </div>
+              {activeTab !== "audio" && (
+                <div className="flex items-center gap-1.5">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  {activeTab === "authors" ? (
+                    <Select value={authorSort} onValueChange={(v) => setAuthorSort(v as AuthorSort)}>
+                      <SelectTrigger className="h-7 text-xs w-[160px] bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name-asc">Name A → Z</SelectItem>
+                        <SelectItem value="name-desc">Name Z → A</SelectItem>
+                        <SelectItem value="books-desc">Most Books</SelectItem>
+                        <SelectItem value="category">Category</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Select value={bookSort} onValueChange={(v) => setBookSort(v as BookSort)}>
+                      <SelectTrigger className="h-7 text-xs w-[160px] bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name-asc">Title A → Z</SelectItem>
+                        <SelectItem value="name-desc">Title Z → A</SelectItem>
+                        <SelectItem value="author">Author</SelectItem>
+                        <SelectItem value="content-desc">Most Content</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Card grid */}
@@ -939,7 +1244,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {filteredAuthors.map((a, i) => (
                     <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                      <AuthorCard author={a} query={query} />
+                      <AuthorCard author={a} query={query} onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }} />
                     </div>
                   ))}
                 </div>
@@ -951,7 +1256,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {filteredBooks.map((b, i) => (
                     <div key={b.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                      <BookCard book={b} query={query} />
+                      <BookCard book={b} query={query} onDetailClick={(book) => { setSelectedBook(book); setBookSheetOpen(true); }} />
                     </div>
                   ))}
                 </div>
@@ -971,5 +1276,30 @@ export default function Home() {
         </SidebarInset>
       </div>
     </SidebarProvider>
+
+    {/* ── Author Bio Sheet ──────────────────────────────── */}
+    <Sheet open={bioSheetOpen} onOpenChange={setBioSheetOpen}>
+      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+        {selectedAuthor && (
+          <AuthorBioPanel
+            author={selectedAuthor}
+            onClose={() => setBioSheetOpen(false)}
+          />
+        )}
+      </SheetContent>
+    </Sheet>
+
+    {/* ── Book Detail Sheet ──────────────────────────────── */}
+    <Sheet open={bookSheetOpen} onOpenChange={setBookSheetOpen}>
+      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+        {selectedBook && (
+          <BookDetailPanel
+            book={selectedBook}
+            onClose={() => setBookSheetOpen(false)}
+          />
+        )}
+      </SheetContent>
+    </Sheet>
+    </>
   );
 }

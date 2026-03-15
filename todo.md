@@ -51,3 +51,14 @@
 - [x] Fix duplicate books within author cards (e.g., "Hidden Potential" x2 under Adam Grant)
 - [x] Validate and deliver person-headshot-generator skill
 - [x] Save checkpoint
+
+## Session March 15, 2026 — Part 4
+- [x] Add author_profiles DB table (bio, websiteUrl, twitterUrl, linkedinUrl) with tRPC procedures
+- [x] LLM-powered author bio + website enrichment (auto-triggered on first bio panel open)
+- [x] Sort By control: Authors tab (Name A→Z, Name Z→A, Most Books, Category)
+- [x] Sort By control: Books tab (Title A→Z, Title Z→A, Author, Most Content)
+- [x] Book detail slide-out drawer (content type list with Drive links, file counts, stats)
+- [x] Author bio panel: photo, bio, website/Twitter/LinkedIn links, book list
+- [x] "View bio & links" button on every author card
+- [x] 38 vitest tests passing (3 test files)
+- [x] Save checkpoint
