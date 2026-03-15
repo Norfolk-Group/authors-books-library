@@ -198,7 +198,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Ashwin Vaidyanathan and Ruben Rubago - Customer success and growth enablement",
+    name: "Ashvin Vaidyanathan & Ruben Rabago - Customer success and growth enablement",
     id: "1vAt_DoD6vK3a11MiagI-sYNK-SqHeKHG",
     category: "Business & Entrepreneurship",
     books: [
@@ -410,14 +410,6 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Founders Pocket Guide - Startups",
-    id: "1G8QhrseXzFyyf5qV7Ixf1vAc_2PD0gW5",
-    category: "Business & Entrepreneurship",
-    books: [
-    { name: "Founder\u2019s Pocket Guide", id: "1wpi1t-RT41RbT7A8HCLLy4MLV2OJwyaA", contentTypes: {"PDF": 2} }
-  ]
-  },
-  {
     name: "Frances Frei & Anne Morriss - Leadership transformation and organizational trust",
     id: "1d4q1cnj_sSsLAFL41FRSynLnnSgnW-3Y",
     category: "Leadership & Management",
@@ -435,7 +427,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Geoffrey A. Moore - High-tech market adoption strategist",
+    name: "Geoffrey Moore - High-tech market adoption strategist",
     id: "1OwS1shraqtNm1A9PR29AypvHEsNO1ouK",
     category: "Technology & Futurism",
     books: [
@@ -613,7 +605,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Kerry Leonard - Educational architecture and learning innovation",
+    name: "Kelly Leonard - Educational architecture and learning innovation",
     id: "1jJKds7l-QMpJzuLCvgEmBmgC8CDQASuC",
     category: "Leadership & Management",
     books: [
@@ -681,7 +673,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Matt Dixon - Sales strategy and customer psychology experts",
+    name: "Matthew Dixon - Sales strategy and customer psychology experts",
     id: "1kymAGzJa-VtqqmQbX-meBeg2fF7lDTZb",
     category: "Sales & Negotiation",
     books: [
@@ -745,11 +737,11 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Peter Hans Beck - B2B channel strategy and global expansion",
+    name: "Hans Peter Bech - B2B channel strategy and global expansion",
     id: "1ULKHXxQyoMUKRykEQBGJYEWSPcsH8pPl",
     category: "Sales & Negotiation",
     books: [
-    { name: "Building Successful Partner Channels - Peter Hans Beck", id: "1mqClJDNBCZ6eQqEHk333mcaVlCUuBARI", contentTypes: {"PDF": 1, "DOC": 3, "Transcript": 2, "Binder": 1, "ChatGPT": 4, "Sana AI": 2} },
+    { name: "Building Successful Partner Channels - Hans Peter Bech", id: "1mqClJDNBCZ6eQqEHk333mcaVlCUuBARI", contentTypes: {"PDF": 1, "DOC": 3, "Transcript": 2, "Binder": 1, "ChatGPT": 4, "Sana AI": 2} },
     { name: "Building Successful Partner Channels", id: "1vfomGdTBRVTcI8A0dr8R9RinM0C4Mvbo", contentTypes: {"ChatGPT": 4, "Transcript": 2, "Sana AI": 2, "Binder": 1} }
   ]
   },
@@ -800,7 +792,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Richard H Thaler - Behavioral economics and decision-making psychology",
+    name: "Richard H. Thaler - Behavioral economics and decision-making psychology",
     id: "13HoS9esDkk1aVOOm_ujwj5swcLur5ybg",
     category: "Behavioral Science & Psychology",
     books: [
@@ -828,7 +820,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Robert B Cialdini - Behavioral psychology and ethical persuasion",
+    name: "Robert B. Cialdini - Behavioral psychology and ethical persuasion",
     id: "1BHTSIsTpYDUDKvWXtymiFWp5VU_5zwOt",
     category: "Sales & Negotiation",
     books: [
@@ -955,7 +947,7 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Steven Hawking - Cosmology, black holes, theoretical physics",
+    name: "Stephen Hawking - Cosmology, black holes, theoretical physics",
     id: "108kovqiBGoPrTVknVGHyYmHnjUZ7ZEWx",
     category: "Technology & Futurism",
     books: [
@@ -985,12 +977,6 @@ export const AUTHORS: AuthorEntry[] = [
     books: [
     { name: "We Are All Made of Molecules", id: "1LWBgczNU-1TYpOe5fcxtF_T-7Rgod-fT", contentTypes: {"PDF": 1} }
   ]
-  },
-  {
-    name: "TEST Matthew Dixon - Customer experience and loyalty",
-    id: "14FGd4zkQTtQvMPH7GIQar6fE90WmddXU",
-    category: "Sales & Negotiation",
-    books: []
   },
   {
     name: "Tom Yorton - Improv-based leadership and communication expert",
@@ -1026,12 +1012,6 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Your Next Five Moves - Patrick Bet-David",
-    id: "19YufAbDs6LbCIrd3RVVLNjUs8joy5Bv5",
-    category: "Strategy & Economics",
-    books: []
-  },
-  {
     name: "Yuval Noah Harari - Mcaro-History and Futurism",
     id: "1qLm3du7Ql0kHK5FDJLOwub3nfLB8L7vM",
     category: "History & Biography",
@@ -1058,7 +1038,7 @@ export const BOOKS: BookRecord[] = [
   { name: "Book PDF", id: "12_SS0oighj-Lf4tiX4hHdw-3IE-GXfMY", category: "Behavioral Science & Psychology", contentTypes: {"Other": 1} },
   { name: "Building Successful Partner Channels", id: "1IKdOaQirZRfnZwy7I1Uks6-XirkNpn-r", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
   { name: "Building Successful Partner Channels", id: "1vfomGdTBRVTcI8A0dr8R9RinM0C4Mvbo", category: "Sales & Negotiation", contentTypes: {"ChatGPT": 4, "Transcript": 2, "Sana AI": 2, "Binder": 1} },
-  { name: "Building Successful Partner Channels - Peter Hans Beck", id: "1mqClJDNBCZ6eQqEHk333mcaVlCUuBARI", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "DOC": 3, "Transcript": 2, "Binder": 1, "ChatGPT": 4, "Sana AI": 2} },
+  { name: "Building Successful Partner Channels - Hans Peter Bech", id: "1mqClJDNBCZ6eQqEHk333mcaVlCUuBARI", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "DOC": 3, "Transcript": 2, "Binder": 1, "ChatGPT": 4, "Sana AI": 2} },
   { name: "Charles Duhigg", id: "1Ck-hu-uKHF9uuMUeIZeI4QW9KkDoljIu", category: "Self-Help & Productivity", contentTypes: {"Images": 1} },
   { name: "Chasing Perfection", id: "1B_4y_IOOY8RdnOGoKlXqib33LSvAuy0b", category: "Self-Help & Productivity", contentTypes: {"Transcript": 2} },
   { name: "Chasing Perfection - Sue Hawkes", id: "1sKFlAAus1NkH967vPlMlEWJTZlGYyKYg", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
