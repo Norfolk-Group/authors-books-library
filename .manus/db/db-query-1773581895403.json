@@ -1,0 +1,17 @@
+{
+  "query": "SELECT \n  COUNT(*) AS total_enriched,\n  SUM(CASE WHEN coverImageUrl IS NOT NULL AND coverImageUrl != '' THEN 1 ELSE 0 END) AS has_cover,\n  SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) AS has_summary,\n  SUM(CASE WHEN rating IS NOT NULL AND rating != '' THEN 1 ELSE 0 END) AS has_rating,\n  SUM(CASE WHEN amazonUrl IS NOT NULL AND amazonUrl != '' THEN 1 ELSE 0 END) AS has_amazon_url\nFROM book_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT \n  COUNT(*) AS total_enriched,\n  SUM(CASE WHEN coverImageUrl IS NOT NULL AND coverImageUrl != '' THEN 1 ELSE 0 END) AS has_cover,\n  SUM(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) AS has_summary,\n  SUM(CASE WHEN rating IS NOT NULL AND rating != '' THEN 1 ELSE 0 END) AS has_rating,\n  SUM(CASE WHEN amazonUrl IS NOT NULL AND amazonUrl != '' THEN 1 ELSE 0 END) AS has_amazon_url\nFROM book_profiles;",
+  "rows": [
+    {
+      "total_enriched": "140",
+      "has_cover": "128",
+      "has_summary": "127",
+      "has_rating": "24",
+      "has_amazon_url": "137"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_enriched\thas_cover\thas_summary\thas_rating\thas_amazon_url\n140\t128\t127\t24\t137\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}
