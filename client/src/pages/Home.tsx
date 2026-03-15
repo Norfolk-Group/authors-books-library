@@ -8,6 +8,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import authorBios from "@/lib/authorBios.json";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -605,21 +606,27 @@ function AuthorBioPanel({ author, onClose }: { author: typeof AUTHORS[number]; o
   const color = CATEGORY_COLORS[author.category] ?? "#374151";
   const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
 
-  // Fetch bio from DB
-  const { data: profile, isLoading } = trpc.authorProfiles.get.useQuery({ authorName: displayName });
+  // Check JSON bios first (rich bios from Claude Code research)
+  const jsonBio = (authorBios as Record<string, string>)[displayName] ?? null;
+
+  // Fetch bio from DB only if not in JSON
+  const { data: profile, isLoading } = trpc.authorProfiles.get.useQuery(
+    { authorName: displayName },
+    { enabled: !jsonBio }
+  );
   const enrichMutation = trpc.authorProfiles.enrich.useMutation({
     onSuccess: () => { /* profile will auto-refresh */ },
     onError: (e) => toast.error("Failed to load bio: " + e.message),
   });
 
-  // Auto-trigger enrichment if no profile exists
+  // Auto-trigger DB enrichment only if no JSON bio and no DB profile
   const hasTriggered = useRef(false);
   useEffect(() => {
-    if (!isLoading && !profile && !hasTriggered.current) {
+    if (!jsonBio && !isLoading && !profile && !hasTriggered.current) {
       hasTriggered.current = true;
       enrichMutation.mutate({ authorName: displayName });
     }
-  }, [isLoading, profile]);
+  }, [jsonBio, isLoading, profile]);
 
   return (
     <div className="flex flex-col gap-5 pt-2">
@@ -646,7 +653,9 @@ function AuthorBioPanel({ author, onClose }: { author: typeof AUTHORS[number]; o
       {/* Bio */}
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">About</h4>
-        {isLoading || enrichMutation.isPending ? (
+        {jsonBio ? (
+          <p className="text-sm leading-relaxed text-foreground/80">{jsonBio}</p>
+        ) : isLoading || enrichMutation.isPending ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             Loading bio…
