@@ -197,7 +197,7 @@ export const bookProfilesRouter = router({
 
   /** Get multiple book profiles by title */
   getMany: publicProcedure
-    .input(z.object({ bookTitles: z.array(z.string()).max(50) }))
+    .input(z.object({ bookTitles: z.array(z.string()).max(200) }))
     .query(async ({ input }) => {
       if (input.bookTitles.length === 0) return [];
       const db = await getDb();
