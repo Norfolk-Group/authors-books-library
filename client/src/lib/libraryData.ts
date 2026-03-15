@@ -1,5 +1,5 @@
 // NCG Knowledge Library — auto-generated from Google Drive scan
-// Generated: 2026-03-14 17:01 UTC
+// Generated: 2026-03-14 20:03 UTC
 // Design: Editorial Intelligence — Playfair Display + DM Sans, warm paper palette, 9-category system
 export interface BookEntry {
   name: string;
@@ -62,9 +62,6 @@ export const CONTENT_TYPE_ICONS: Record<string, string> = {
   "Audio": "headphones",
   "Video": "video",
   "Images": "image",
-  "Papers": "scroll",
-  "Articles": "newspaper",
-  "Links": "link",
   "Other": "folder",
 };
 export const CONTENT_TYPE_COLORS: Record<string, string> = {
@@ -77,14 +74,11 @@ export const CONTENT_TYPE_COLORS: Record<string, string> = {
   "Audio": "#d97706",
   "Video": "#db2777",
   "Images": "#0891b2",
-  "Papers": "#0f766e",
-  "Articles": "#7c2d12",
-  "Links": "#4338ca",
   "Other": "#9ca3af",
 };
 export const LIBRARY_STATS = {
-  totalAuthors: 99,
-  totalBooks: 163,
+  totalAuthors: 112,
+  totalBooks: 228,
   categories: 9,
 };
 export const AUTHORS: AuthorEntry[] = [
@@ -93,7 +87,9 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1Hzusx2DCXs2EaxMTk2K8t_gJMLM0kuA_",
     category: "Sales & Negotiation",
     books: [
-    { name: "From Impossible to Inevitable", id: "1YudZt7Ri5CBRHSlW3a4J5xzqvyWWW9q3", contentTypes: {"PDF": 1} }
+    { name: "From Impossible to Inevitable", id: "1YudZt7Ri5CBRHSlW3a4J5xzqvyWWW9q3", contentTypes: {"PDF": 1} },
+    { name: "From Impossible to Inevitable - Aaron Ross & Jason Lemkin", id: "1WDz-1Qrhhtpsc8x2u3JUhbE3demLbjI8", contentTypes: {"Transcript": 7, "Notes": 8, "Binder": 2} },
+    { name: "Predictable Revenue - Aaron Ross & Marylou Tyler", id: "1qyLwgET3NNyyg5_KCYodRyQfPCXjpRSH", contentTypes: {"Transcript": 7, "Binder": 1, "Knowledge Base": 4} }
   ]
   },
   {
@@ -101,6 +97,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1GRgulHWf8aZ0fXmA-FaKrQgVOUPKo9BJ",
     category: "Behavioral Science & Psychology",
     books: [
+    { name: "Hidden Potential - Adam Grant", id: "1bfktwQlybWaX9XoOFOaNDBavvY9Se112", contentTypes: {"Transcript": 5, "Binder": 1, "PDF": 1, "temp": 1} },
     { name: "Hidden Potential", id: "1-hqofS1N2zt9EInulrUrW6Yi5k_jhYtx", contentTypes: {"Transcript": 5, "PDF": 1, "Complete Book in PDF": 1, "Binder": 1} }
   ]
   },
@@ -117,7 +114,9 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1Pw11T23l3FN1aVuXiha2U00BNbcsxeRh",
     category: "Strategy & Economics",
     books: [
-    { name: "Lean Marketing", id: "1kV61Rteyo2j4cQtM423ieWLlupS6utLU", contentTypes: {"DOC": 2, "Transcript": 1} }
+    { name: "Lean Marketing - Allan Dib", id: "1aRk1ptZ9wr8YPaxjKG7yRLDEGtED-ggh", contentTypes: {"Transcript": 3} },
+    { name: "Transcript DOC", id: "1kV61Rteyo2j4cQtM423ieWLlupS6utLU", contentTypes: {"Other": 2} },
+    { name: "Transcript PDF", id: "1evcd5hOqUQvqkRqDuPvIL577WG8MXEng", contentTypes: {"Other": 1} }
   ]
   },
   {
@@ -134,7 +133,9 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1MfBfT8aTOkMpwRjMfoB_CAtjz4nDEYWo",
     category: "Business & Entrepreneurship",
     books: [
-    { name: "100M Leads", id: "1r-3oBgHch8Xpbxc4HDGGvOBOLHB_dgf9", contentTypes: {"DOC": 1, "Transcript": 1} }
+    { name: "100M Leads - Alex Hormozi", id: "17Msqkw27nKwVs1IgVvVN3-RmMT9SrESH", contentTypes: {"100M Leads": 2} },
+    { name: "Transcript DOC", id: "1r-3oBgHch8Xpbxc4HDGGvOBOLHB_dgf9", contentTypes: {"Other": 1} },
+    { name: "Transcript PDF", id: "1_AkiLpomch4HqsbEi7Ji6ihriYdveZBQ", contentTypes: {"Other": 1} }
   ]
   },
   {
@@ -160,6 +161,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1F3gr8NfQ1Y7RmwyEbPZoAcP06MVgM5mk",
     category: "Behavioral Science & Psychology",
     books: [
+    { name: "Quit - Annie Duke", id: "1AKc4rICLCTwuBRbOfgoOuf6TQWSFiMwY", contentTypes: {"temp": 1, "Transcript": 2} },
     { name: "How to Decide", id: "1Vo36hxR7BOHFXeGPuUvF1_jkh9awqfTF", contentTypes: {"Other": 1} },
     { name: "Quit", id: "1r4J2cWIjxgnhYlAvM4x4Fn1Vo-FSyzlP", contentTypes: {"Transcript": 2, "PDF": 1} }
   ]
@@ -170,6 +172,7 @@ export const AUTHORS: AuthorEntry[] = [
     category: "Sales & Negotiation",
     books: [
     { name: "Obviously Awesome", id: "183iMIzLbozSglxK6A8efdB4DDu4rJt_O", contentTypes: {"PDF": 1} },
+    { name: "Sales Pitch - April Dunford", id: "1g7hCAUgwSSrwlIHOhItrRXet-hSURfLB", contentTypes: {"Transcript": 3} },
     { name: "Sales Pitch", id: "1_6-dpu6qlx_yDJuwp4tlQFhBfCadw375", contentTypes: {"Transcript": 3, "PDF": 1} }
   ]
   },
@@ -187,8 +190,17 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1EtdBu8f1PJqW4jeSp62XiSpXKpGEGGAq",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "Scaling Lean - Ash Maurya", id: "1jKF4E5T_OD4aAWarWwef46QakZaljzed", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
     { name: "Scaling Lean", id: "1UfyFAoy44N5GOhrWove_MlEXyGpG17mi", contentTypes: {"Transcript": 2, "PDF": 2, "Binder": 1} },
     { name: "Running Lean", id: "1fdZgJfUUwz8_7cPtAggr7KHo1TM0YUnD", contentTypes: {"PDF": 3, "Transcript": 5, "Running Lean (3rd Edition)_ Iterate from Plan A to a Plan That Works": 1, "Binder": 1} }
+  ]
+  },
+  {
+    name: "Ashvin Vaidyanathan and Ruben Rabago - Customer success",
+    id: "1uItjZsccrYZeNTP3-THhJhVx6GsrHQXg",
+    category: "Business & Entrepreneurship",
+    books: [
+    { name: "The Customer Success Professional's Handbook - Ashvin Vaidyanathan & Ruben Rabago", id: "1v6qQfLinISHr7tDPsFOuVHJ1aRZL69Vq", contentTypes: {"Transcript": 2, "Additional DOC": 1} }
   ]
   },
   {
@@ -196,6 +208,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1vAt_DoD6vK3a11MiagI-sYNK-SqHeKHG",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "Running Lean - Ash Maurya", id: "1ez4A8ic2gbOYyG7wg6oK--jHSSRmjJ3V", contentTypes: {"PDF": 1, "Binder": 1, "Transcript": 5, "Running Lean (3rd Edition)_ Iterate from Plan A to a Plan That Works": 1, "temp": 1} },
     { name: "The Customer Success Professional Handbook", id: "1SymnayKM0HtfSwcEKpNGdetFXz_02XqM", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 1} }
   ]
   },
@@ -222,6 +235,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1qFB0DQo1h1Kq_ULEcmHnkseWutNt_KNS",
     category: "Self-Help & Productivity",
     books: [
+    { name: "Slow Productivity - Cal Newport", id: "1VEW6EHlLzAmh0D4ndQtMt5iJSTvm030a", contentTypes: {"Additional DOC": 1, "Transcript": 2} },
     { name: "Slow Productivity The Lost Art of Accomplishment Without Burnout", id: "1IjHgqB_IP3-NKCp0l5MoazQOuqaaORxT", contentTypes: {"Transcript": 2, "Additional DOC": 1} }
   ]
   },
@@ -233,6 +247,15 @@ export const AUTHORS: AuthorEntry[] = [
     { name: "Charles Duhigg", id: "1Ck-hu-uKHF9uuMUeIZeI4QW9KkDoljIu", contentTypes: {"Images": 1} },
     { name: "The Power of Habit", id: "1NnP0Cl67rohkjnj2UfecCoNMnLWT3iNf", contentTypes: {"Other": 1} },
     { name: "Supercommunicators", id: "1aCGhXBQpeUFVaI6nWKPuNbKFhCDKoT1n", contentTypes: {"Transcript": 2, "PDF": 5, "Binder": 1, "PDF Extra 2": 3} }
+  ]
+  },
+  {
+    name: "Charles Duhigg - Habits, productivity, and willpower",
+    id: "1AbdMEQx-2a9IMYuMKN-uQE_x40qqXe5P",
+    category: "Behavioral Science & Psychology",
+    books: [
+    { name: "The Power of Habit - Charles Duhigg", id: "1Kkzy_9Zw8MffVAZieI-e9F_hBOsj-aUl", contentTypes: {"Transcript": 4, "PDF Extras": 3, "Binder": 1} },
+    { name: "Supercommunicators - Charles Duhigg", id: "1zmejGNVROHI2JL-u6Lu3M4DZljiUW2Ye", contentTypes: {"DOC": 2, "Transcript": 2, "PDF": 4, "Binder": 1, "PDF Extra 2": 3} }
   ]
   },
   {
@@ -249,6 +272,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "13qEfZ9-56R2-iG3RxjFKshbK5aJRd8NH",
     category: "Sales & Negotiation",
     books: [
+    { name: "Never Split the Difference - Chris Voss & Tahl Raz", id: "1G3CwjcOXweEw5nseCgurMAcpjU8KYips", contentTypes: {"Transcript": 2, "Binder": 1, "Additional DOC": 2, "temp": 1, "Knowledge Base Files": 1} },
     { name: "Never Split the Difference by Chris Voss", id: "18WmHI23KP-LkA5-ZFIklxDUUdFT_K_cb", contentTypes: {"PDF": 1, "Transcript": 2, "Binder": 1, "Additional DOC": 2, "Knowledge Base Files": 1} }
   ]
   },
@@ -265,7 +289,8 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1W70QRN1QpsLgdIq1vTTLLz9m_6XOjPhy",
     category: "Behavioral Science & Psychology",
     books: [
-    { name: "[Dale Carnegie \u2014 General]", id: "1W70QRN1QpsLgdIq1vTTLLz9m_6XOjPhy", contentTypes: {"Other": 1} }
+    { name: "How to Win Friends and Influence People - Dale Carnegie", id: "1VQZibcd-IVbEJB3nfPrxHsjsr0WTjzPh", contentTypes: {"PDF": 1} },
+    { name: "Book PDF", id: "12_SS0oighj-Lf4tiX4hHdw-3IE-GXfMY", contentTypes: {"Other": 1} }
   ]
   },
   {
@@ -282,6 +307,8 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1uOqCpLF2yZPGdIQ5iewGz90jpdoGzfb_",
     category: "Behavioral Science & Psychology",
     books: [
+    { name: "The Whole-Brain Child - Daniel J. Siegel & Tina Payne Bryson", id: "1JNzGaF1oM1t-Gi2srg8RAoYhGlkhqfLG", contentTypes: {"Transcript": 2} },
+    { name: "Thinking, Fast and Slow - Daniel Kahneman", id: "1SdHKKUrZDyEbJh6zQfsKpUHjQZvTzNZp", contentTypes: {"PDF": 1} },
     { name: "The Neurology of We", id: "18koEbulUch7Z3maNGidOZEcm6FHpXP0z", contentTypes: {"Transcript": 2} }
   ]
   },
@@ -319,6 +346,9 @@ export const AUTHORS: AuthorEntry[] = [
     { name: "David Brooks", id: "122S8Tl4Xu4f6Vfx3il2PeGXTOl26JhqL", contentTypes: {"Images": 1} },
     { name: "The Second Mountain", id: "1thiS-x4UOV4EFLj9O2Y8DFR8NuTMbAyL", contentTypes: {"PDF": 1} },
     { name: "The Second Mountain", id: "13p5Pm391T6xmnOD1kY0Ac2kbdd9gsnms", contentTypes: {"PDF": 1} },
+    { name: "The Second Mountain - David Brooks", id: "1iKh5TRB2tnp_DWzSjVK7t0QsITlK9aSb", contentTypes: {"Transcript": 4, "Binder": 1} },
+    { name: "The Road to Character - David Brooks", id: "168xjl9eJ6rF6cD4pubQIQB3Jr9mF4a3W", contentTypes: {"Transcript": 3, "temp": 1} },
+    { name: "How to Know a Person - David Brooks", id: "1LmkKiT9Q9hrDFuJPIB2EE-Aduek6THZt", contentTypes: {"Video": 1, "Interview": 4, "Transcript": 22, "Binder": 1} },
     { name: "The Social Animal", id: "1FPgE0bA5yiBIIyURg6gYt7sneCtbHY6y", contentTypes: {"PDF": 1} },
     { name: "The Road to Character", id: "1wyhPih8syeaL2rqPMjF8KbWtPw492L6K", contentTypes: {"Transcript": 3, "PDF": 1} },
     { name: "How to Know a Person", id: "1VxZ8MwpD4CyulHVLhlP74j2SzNhmrC5p", contentTypes: {"PDF": 1, "Transcript": 22, "Interview Transcript": 4, "Binder": 1} }
@@ -329,6 +359,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1BYdBzEJtfZ0uGx2DYvy4raPucXtJV9o9",
     category: "History & Biography",
     books: [
+    { name: "The Last Man Who Knew Everything - David N. Schwartz", id: "1q2loPoDX7-m-iYdLdpMCPF2tqd97XjZw", contentTypes: {"DOC": 4, "Binder": 1, "PDF": 1, "Transcript": 2} },
     { name: "The Last Man Who Knew Everything", id: "196eQguirea8hamxgeaiOJP4MXT-rFZdG", contentTypes: {"DOC": 4, "PDF": 2, "Transcript": 2, "Binder": 1} }
   ]
   },
@@ -337,6 +368,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1OE6s4wMVabANToPtX0XOrb4lawk5N29j",
     category: "Communication & Storytelling",
     books: [
+    { name: "Do You Talk Funny? - David Nihill", id: "1O-5P5n6I75o8RaGeOTPewtk6chw46sS2", contentTypes: {"Transcript": 2} },
     { name: "Do You Talk Funny", id: "1MENPJpka2e94jrVnNtgCtGIueZoVKCCn", contentTypes: {"Transcript": 2} }
   ]
   },
@@ -353,9 +385,19 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1pcFfqrCfUiJNS-RVnrVN0OU4IkqAal3q",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "The Lean Startup - Eric Ries", id: "1eQpIYY_SFNBTLou48nSSxcvQsgrW3III", contentTypes: {"PDF Version": 2} },
+    { name: "The Leader's Guide - Eric Ries", id: "1cWvaeSPyc1Wrmce3nJW0UJy4rTdSkYUJ", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
     { name: "The Leaders Guide", id: "1ljS-gwcrkU4Mxj4OsM65_S-MYS2AlrDM", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 1} },
     { name: "The Lean Startup", id: "1WF85y-8R0XzmBVlr3kvkKQrq34WRwiM5", contentTypes: {"PDF Version": 2, "PDF": 1} },
     { name: "The Startup Way", id: "1qANI-oOCLDvGYCduNU9r89rK8sp3_HsR", contentTypes: {"Other": 1} }
+  ]
+  },
+  {
+    name: "Eric Topol - Longevity and precision medicine",
+    id: "1hlw_MjOPB4iks7unhlbFpb4PPK3_NjcS",
+    category: "Technology & Futurism",
+    books: [
+    { name: "Super Agers - Eric Topol", id: "1SM-XBvJjk_vkvXoDpySnsesyQpUwDPtY", contentTypes: {"PDF": 2, "DOC": 1, "Supplemental": 3, "Binder": 1} }
   ]
   },
   {
@@ -405,6 +447,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1sO8iZa4szVNr-c7DiPtIFExuFG1TeAx8",
     category: "Communication & Storytelling",
     books: [
+    { name: "Making Conversation - Fred Dust", id: "1lozeRuRw1Sdi8sz3HmYVHXxbL9R3C-wp", contentTypes: {"Transcript": 2} },
     { name: "Making Conversation", id: "1oMhOVvnN8Oop81V4V_KEB5OJZdJ1q4vb", contentTypes: {"Transcript": 2} }
   ]
   },
@@ -422,7 +465,8 @@ export const AUTHORS: AuthorEntry[] = [
     category: "Strategy & Economics",
     books: [
     { name: "The Next 100 Years", id: "1IEEIqvt7YpC2eNk6_EYP9N2L1AcPC8ic", contentTypes: {"PDF": 1} },
-    { name: "The Next 100 Years", id: "1l1WfVISdB9Lk0OAX5RqFz5k53xRZBaPA", contentTypes: {"PDF": 1} }
+    { name: "The Next 100 Years", id: "1l1WfVISdB9Lk0OAX5RqFz5k53xRZBaPA", contentTypes: {"PDF": 1} },
+    { name: "The Next 100 Years - George Friedman", id: "1xOi_k5ZsTKeA80YVyAS7Q2pkz8ptRUil", contentTypes: {"PDF": 1} }
   ]
   },
   {
@@ -471,6 +515,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1z-7rqUvZru3MI1-ygrqrRGMS4h1qYugT",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "The Great Game of Business - Jack Stack & Bo Burlingham", id: "19WqPA4b6zA_s4Zbq6YH4Pw5LasiHhWTJ", contentTypes: {"Transcript": 4} },
     { name: "Great Game Business", id: "1BLQrYn9EGcbk7GdGkbEr7NEtrk3wvGDX", contentTypes: {"Transcript": 4} }
   ]
   },
@@ -507,6 +552,7 @@ export const AUTHORS: AuthorEntry[] = [
     { name: "Fanatical Prospecting", id: "1tL-cL9Wf4ojnzIMmm4bDOUVzfd3C0eZU", contentTypes: {"PDF": 1} },
     { name: "Objections", id: "1B1TLe8j1TaJNau5L2vBa6X6MdwjtVbHZ", contentTypes: {"PDF": 1} },
     { name: "The AI Edge", id: "1fZ2bmxyrj1PmJuQgj8cpZ9V1pkijejtw", contentTypes: {"PDF": 1} },
+    { name: "Fanatical Prospecting - Jeb Blount", id: "1VxwSHR2z2dV9eQ8zxkCTwW4nbK1TkUtP", contentTypes: {"PDF": 1, "Transcript": 6, "Cold Calling and ebooks": 20, "Additional DOC": 1, "Binder": 1} },
     { name: "The Sales EQ", id: "1LIVcpC_TZr5rq7YC8E2kAFs1okZXANar", contentTypes: {"Other": 1} }
   ]
   },
@@ -515,6 +561,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1xE1A1yKG2CyWo2TIpkNmh1VWGQ2QuXsP",
     category: "Leadership & Management",
     books: [
+    { name: "Lead Engaging Meetings - Jeff Shannon", id: "13q6csVhoaK3_t3xw8vDicrEGFeOyJqYQ", contentTypes: {"Transcript": 3} },
     { name: "Leading Engaging Meetings", id: "1kwYxOkaQVNdVcTLNMUM1fr6nJ9Mu3SGP", contentTypes: {"Transcript": 3} }
   ]
   },
@@ -534,6 +581,8 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1wSB35OEZh9PGeYhNy4OzeGYpUjQUru4a",
     category: "Sales & Negotiation",
     books: [
+    { name: "Start with No - Jim Camp", id: "1_94vdT-9WrMMwoH4NCms7MjJJUrd8jNG", contentTypes: {"Transcript": 2} },
+    { name: "No: The Only Negotiating System You Need - Jim Camp", id: "1PNp26PHGsdlVzUc4B9ssfA57_GcDX1ZP", contentTypes: {"Transcript": 3} },
     { name: "No - The Only Negotiating System You Need by Jim Camp", id: "1YOrCxHEXDWwzk3K6WqA7dQ5OhK6FsvjS", contentTypes: {"Transcript": 3} },
     { name: "Start with a No", id: "1gm3vZrfG13OVoBXAgjd1B2fjLem9jC9J", contentTypes: {"PDF": 1} }
   ]
@@ -543,6 +592,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1-lUkRsoR7Eoksy9_ZcvAL6zxYe3eaxm7",
     category: "Strategy & Economics",
     books: [
+    { name: "Good to Great (Summary) - Jim Collins", id: "1ft599AlLo1DQaoS4JIr-srbVgQSdvam9", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
     { name: "Summary of Jim Collins Good to Great Key Takeaways and Analysis", id: "1v7Fvuz6mcF0pETCUpr3Yylh020rvOJLv", contentTypes: {"Transcript": 2, "Additional DOC": 1} }
   ]
   },
@@ -578,7 +628,16 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1-rD6drFo7E83-YNjElweNkG6ZyxaVcWc",
     category: "Communication & Storytelling",
     books: [
-    { name: "[Karen Eber \u2014 General]", id: "1-rD6drFo7E83-YNjElweNkG6ZyxaVcWc", contentTypes: {"Other": 1} }
+    { name: "The Perfect Story - Karen Eber", id: "1aijNrOPzCPlDgrFAJC5u07Q8fwQeBFKT", contentTypes: {"PDF": 1} },
+    { name: "Book PDF", id: "1fModm50AVh2R-cKYEB1A2DKAU8cy_pLg", contentTypes: {"Other": 1} }
+  ]
+  },
+  {
+    name: "Kelly Leonard and Tom Yorton - Improv and business communication",
+    id: "1qgMsRsTN2UfdAMXFJ5Qx-LJTrEuy9ayN",
+    category: "Communication & Storytelling",
+    books: [
+    { name: "Yes, And - Kelly Leonard & Tom Yorton", id: "1fB1i5bKbwTWJAT1HiR5h8TKTK0zAuFrv", contentTypes: {"Transcript": 4} }
   ]
   },
   {
@@ -595,6 +654,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1ZcyL8daMuxPQU9PePKZd3LmQG6JQQ2RT",
     category: "Leadership & Management",
     books: [
+    { name: "Radical Candor - Kim Scott", id: "1B9WVoaUqMN4U_NGqAeGohfxUj46nQslR", contentTypes: {"Transcript": 2, "temp": 1} },
     { name: "Radical Candor", id: "1vIGB3aD_4L8h8LLYpm4ZTU3wpLnUFxFy", contentTypes: {"Transcript": 2, "PDF": 1, "temp": 1} }
   ]
   },
@@ -620,6 +680,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1TK5VwtrQS-nCVV4O9IFi6NOdkE0ytsb6",
     category: "Communication & Storytelling",
     books: [
+    { name: "How to Talk to Anyone - Leil Lowndes", id: "1xoaF79V51AflPz_vug2J91QHypVLwFLu", contentTypes: {"Transcript": 2} },
     { name: "How to Talk to Anyone", id: "1A4quNDJLjLc1Is8TZMyBjoDDRoOBt4cP", contentTypes: {"Transcript": 2} }
   ]
   },
@@ -663,11 +724,23 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
+    name: "Matthew Dixon - Customer experience and loyalty",
+    id: "1_OIP-AxMZcPopQaoYN3rF5mTyKOSGtMq",
+    category: "Sales & Negotiation",
+    books: [
+    { name: "The Challenger Customer - Brent Adamson & Matthew Dixon", id: "1EkT7zRqbCEP0CKLL52-uCX13NXEAd6rV", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
+    { name: "The Effortless Experience - Matthew Dixon, Nick Toman & Rick DeLisi", id: "1H_U8c21YGkmOhTw80D4754i1e4vPr8Az", contentTypes: {} },
+    { name: "The Challenger Sale - Matthew Dixon & Brent Adamson", id: "1XaVejPCfUDzAdRdW8uXsSxYu3iMXiFLs", contentTypes: {"Transcript": 2} },
+    { name: "The JOLT Effect - Matthew Dixon & Ted McKenna", id: "1W6e5U6oL9nxj7QEDi2kS8r13rDv6EfvN", contentTypes: {"Transcript": 2, "Summaries PDF": 7, "PDF": 5, "DOC": 1, "Binder PDF": 1, "temp": 1, "Summaries DOC": 8} }
+  ]
+  },
+  {
     name: "Mel Robbins - self-help and motivational author",
     id: "1i5pHYEtiKKAlIw62g_uSzW3BdHA6ybCN",
     category: "Self-Help & Productivity",
     books: [
-    { name: "The Let Them Theory", id: "1I4H28e0Wc_3yNdGIklWAGeE6s8wT8Bye", contentTypes: {"PDF": 1} }
+    { name: "The Let Them Theory", id: "1I4H28e0Wc_3yNdGIklWAGeE6s8wT8Bye", contentTypes: {"PDF": 1} },
+    { name: "The Let Them Theory - Mel Robbins", id: "1xYxXc_MXdNfoAFQPUrWVs7dqnD_TuA-Q", contentTypes: {"PDF": 1} }
   ]
   },
   {
@@ -689,6 +762,14 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
+    name: "Nixaly Leonardo - Active listening and communication",
+    id: "1SqZKjuu71vMjzIqz9zJhzR6q8D5lHUzH",
+    category: "Self-Help & Productivity",
+    books: [
+    { name: "Active Listening Techniques - Nixaly Leonardo", id: "1nlr__TWeNrMVbuA0mbfsesg5HI0SlcVH", contentTypes: {"Binder": 1, "Transcript": 2, "PDF": 2} }
+  ]
+  },
+  {
     name: "Nixaly Leonardo - Therapeutic communication and emotional intelligence",
     id: "11EqNTfRQMk6Js7uDOFIhrj0jcmPt-hp3",
     category: "Behavioral Science & Psychology",
@@ -701,6 +782,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1ULKHXxQyoMUKRykEQBGJYEWSPcsH8pPl",
     category: "Sales & Negotiation",
     books: [
+    { name: "Building Successful Partner Channels - Peter Hans Beck", id: "1mqClJDNBCZ6eQqEHk333mcaVlCUuBARI", contentTypes: {"PDF": 1, "DOC": 3, "Transcript": 2, "Binder": 1, "ChatGPT": 4, "Sana AI": 2} },
     { name: "Building Successful Partner Channels", id: "1vfomGdTBRVTcI8A0dr8R9RinM0C4Mvbo", contentTypes: {"ChatGPT": 4, "Transcript": 2, "Sana AI": 2, "Binder": 1} }
   ]
   },
@@ -709,6 +791,14 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1SIcpFKCpPthqLfq5ttCvguNC67Pkxe9y",
     category: "Leadership & Management",
     books: []
+  },
+  {
+    name: "Philipp Dettmer - Science communication and visual learning",
+    id: "1e56Yu2wB3IdUfYktd78T_si9RzdPsO9_",
+    category: "Technology & Futurism",
+    books: [
+    { name: "Immune - Philipp Dettmer", id: "1qXrcdxlt1Onsp8DMQ5dynMbumanZZdYz", contentTypes: {"PDF": 1} }
+  ]
   },
   {
     name: "Philipp Dettmer - Health",
@@ -748,6 +838,8 @@ export const AUTHORS: AuthorEntry[] = [
     id: "13HoS9esDkk1aVOOm_ujwj5swcLur5ybg",
     category: "Behavioral Science & Psychology",
     books: [
+    { name: "Misbehaving - Richard H. Thaler", id: "15VaizTBUqr4yFCPmazwhGwurV2OHxAJA", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
+    { name: "Nudge - Richard H. Thaler & Cass R. Sunstein", id: "1xo5tfbrLJO5Y0z_1wWxKvWu6zmsUgwBf", contentTypes: {"Transcript": 8, "PDF": 1, "Binder": 1} },
     { name: "Nudge", id: "1gbU3YJYSHxNTkOMGPbBRb3EHhLdJ4pu1", contentTypes: {"PDF": 2, "Binder": 1, "Transcript": 8} },
     { name: "Misbehaving The Making of Behavior Economics by Richard H. Thaler", id: "1yxkUfXlDg0kWwm35mkccIwuLYO_oAi4V", contentTypes: {"PDF": 2, "Transcript": 2, "Binder": 1} }
   ]
@@ -757,6 +849,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1VCOMr-yLpTRS6YtW_QnSTf3zhRsB-SOX",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "The Mom Test - Rob Fitzpatrick", id: "1mYvPot5u5I433fv3geDpcDfXu7yuafft", contentTypes: {"Transcript": 2} },
     { name: "The Mom Test", id: "17gDaZQbS6adpkOk4at5261K0G8EfWsI-", contentTypes: {"Transcript": 2} }
   ]
   },
@@ -766,7 +859,8 @@ export const AUTHORS: AuthorEntry[] = [
     category: "Business & Entrepreneurship",
     books: [
     { name: "The SaaS Playbook", id: "1rt-3JFmsk4tgZlFvZudrE4YzfnIoFj8S", contentTypes: {"PDF": 1} },
-    { name: "The SaaS Playbook", id: "1rj-DPOSEYtjUPdzJBPHWzlBEVNlQdxI4", contentTypes: {"PDF": 1} }
+    { name: "The SaaS Playbook", id: "1rj-DPOSEYtjUPdzJBPHWzlBEVNlQdxI4", contentTypes: {"PDF": 1} },
+    { name: "The SaaS Playbook - Rob Walling", id: "1Sa-I_AtiHsCc126V5kusfqPjWvU_fkz9", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} }
   ]
   },
   {
@@ -774,6 +868,8 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1BHTSIsTpYDUDKvWXtymiFWp5VU_5zwOt",
     category: "Sales & Negotiation",
     books: [
+    { name: "Pre-Suasion - Robert B. Cialdini", id: "1JRCdMHrbDKNR5ohcGPxLahuyMAAqcNe-", contentTypes: {"PDF": 1} },
+    { name: "Influence - Robert B. Cialdini", id: "1lI0vGQmWLsYoWYKIHXOvIpu41Apc6XlH", contentTypes: {"PDF": 1, "Transcript": 2, "Binder": 1} },
     { name: "Influence - New and Expanded The Psychology of Persuasion", id: "1G6UHDZPteXXAGffO2MQJ2LPLEjw0R9R_", contentTypes: {"Transcript": 2, "PDF": 2, "Binder": 1} },
     { name: "Pre-Suasion", id: "1sQPH8s1gQIeEWfU5wFbaMwJ_jWnNFoTU", contentTypes: {"Other": 1} }
   ]
@@ -805,6 +901,14 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
+    name: "Scott Brinker - Marketing technology and agile marketing",
+    id: "1kYO570UJOMcbZwJdNSM4QEtvMU7y-8EG",
+    category: "Business & Entrepreneurship",
+    books: [
+    { name: "Hacking Marketing - Scott Brinker", id: "1wXvxuCnuJ6nNghQ48_Zlj6N0CtfIUTr5", contentTypes: {"Transcript": 3} }
+  ]
+  },
+  {
     name: "Scott Galloway - business and tech author",
     id: "1H-JFJyKu82O2FKCHZekn4G0oYrZlLuB8",
     category: "Business & Entrepreneurship",
@@ -816,6 +920,14 @@ export const AUTHORS: AuthorEntry[] = [
     category: "Sales & Negotiation",
     books: [
     { name: "Hacking Growth", id: "1eBKqXmxguB-uHPdyH0Rs8_ICmCAV3xv0", contentTypes: {"PDF": 1} }
+  ]
+  },
+  {
+    name: "Sean Ellis - Growth hacking and product-led growth",
+    id: "18wr4Q_SCS9wxF0k0e3FZVjXbxUf7IzOq",
+    category: "Business & Entrepreneurship",
+    books: [
+    { name: "Hacking Growth - Sean Ellis & Morgan Brown", id: "1aSu24hVCwiqdRqXkpidF6j1S6YXwzcmk", contentTypes: {"Transcript": 3} }
   ]
   },
   {
@@ -834,6 +946,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1yXfJFftdTKOG3ZTFJ26Jk_aD_hf8VZOJ",
     category: "Behavioral Science & Psychology",
     books: [
+    { name: "The Hidden Brain - Shankar Vedantam", id: "1TbC3dYixr0HwjVK7rS-ncqZapEqR-0dd", contentTypes: {"Binder": 1, "Transcript": 4, "Podcasts": 1} },
     { name: "Hidden Brain", id: "1qBr4hxZMP659J3AYeeS9ASE9e1theMbW", contentTypes: {"Transcript": 4, "Binder": 1} },
     { name: "Podcasts", id: "1vf62UhDouy6FENKkb4Julw1YPHaLfyf0", contentTypes: {} }
   ]
@@ -842,7 +955,20 @@ export const AUTHORS: AuthorEntry[] = [
     name: "Simon Sinek - Business Leadership",
     id: "1SjJTr1AmYEtt41PSrbnWMXO6KO_df459",
     category: "Leadership & Management",
-    books: []
+    books: [
+    { name: "Start with Why - Simon Sinek", id: "1q443zqkQVHx1eFn3LUn4X9GLbEuQzZD1", contentTypes: {"Transcript": 2} },
+    { name: "Leaders Eat Last - Simon Sinek", id: "1KHUFlhvHcLey6QpwVKUEUs4XnX5GmVRz", contentTypes: {"Transcript": 2} },
+    { name: "Start with Why", id: "1YsdXvJJmGkD3KaUFvMZ70OZRZaCKIzUV", contentTypes: {"Transcript": 2} },
+    { name: "Leaders Eat Last", id: "1Bu26ALCCEhu2ZHxWuZIac9bUlA0NmLq9", contentTypes: {"Transcript": 2, "PDF": 1} }
+  ]
+  },
+  {
+    name: "Stephen Hawking - Theoretical physics and cosmology",
+    id: "1o71l-4pcEMAsGOJsJa3_NdYdPgm4oqlO",
+    category: "Technology & Futurism",
+    books: [
+    { name: "The Grand Design - Stephen Hawking & Leonard Mlodinow", id: "1JWX2BCfsfa3uXtxXx3Sbfqo5IcSgLWbx", contentTypes: {"Transcript": 4} }
+  ]
   },
   {
     name: "Stephen R Poland - Startups",
@@ -867,6 +993,7 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1PfDnY4jdfHnVeaTpfx3bNKxpzLp4p1TM",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "The Diary of a CEO - Steven Bartlett", id: "1EFlHIcttcyn649bmnAuKlvX7wqj29yrB", contentTypes: {"Transcript": 2} },
     { name: "The Diary of a CEO", id: "1Ecr8Fz1PfW0KWrNsvpeWCYlA3VfdDQDm", contentTypes: {"Transcript": 2} }
   ]
   },
@@ -887,12 +1014,26 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
+    name: "Sue Hawkes - Leadership and organizational performance",
+    id: "1oEbMcAB_P54dk4nYooJfDtfNJc4sfswT",
+    category: "Business & Entrepreneurship",
+    books: [
+    { name: "Chasing Perfection - Sue Hawkes", id: "1sKFlAAus1NkH967vPlMlEWJTZlGYyKYg", contentTypes: {"Transcript": 2} }
+  ]
+  },
+  {
     name: "Susin Nielsen - young adult (YA) fiction, middle-grade fiction, and coming-of-age storytelling",
     id: "1gbZeQtemUhVc9xHB9PQbpC3aTfjVg5b4",
     category: "Communication & Storytelling",
     books: [
     { name: "We Are All Made of Molecules", id: "1LWBgczNU-1TYpOe5fcxtF_T-7Rgod-fT", contentTypes: {"PDF": 1} }
   ]
+  },
+  {
+    name: "TEST Matthew Dixon - Customer experience and loyalty",
+    id: "14FGd4zkQTtQvMPH7GIQar6fE90WmddXU",
+    category: "Sales & Negotiation",
+    books: []
   },
   {
     name: "Tom Yorton - Improv-based leadership and communication expert",
@@ -908,7 +1049,8 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1712BfrR_uJUk69PEed0Zz1m7W1CQ2vMg",
     category: "Business & Entrepreneurship",
     books: [
-    { name: "Fall in Love with the Problem, Not the Solution", id: "1cL1Rp6VlLjl-Abq9iZ1lplwGXIpCopYb", contentTypes: {"PDF": 2} }
+    { name: "Fall in Love with the Problem, Not the Solution", id: "1cL1Rp6VlLjl-Abq9iZ1lplwGXIpCopYb", contentTypes: {"PDF": 2} },
+    { name: "Fall in Love with the Problem, Not the Solution - Uri Levine", id: "184lFqr1ypP1kfST-E0iK0O8EMos-f2hN", contentTypes: {"PDF": 1, "Transcripts PDF": 6, "Binder": 1, "PDF Format": 1, "Transcripts doc": 4, "Notes": 1} }
   ]
   },
   {
@@ -925,8 +1067,15 @@ export const AUTHORS: AuthorEntry[] = [
     id: "1iDf6uZM_1vxacmO6ugj_uATcrt8NwhMI",
     category: "Business & Entrepreneurship",
     books: [
+    { name: "Unreasonable Hospitality - Will Guidara", id: "10zzAVGiEIdgc-_e_u15N_qAjJJCfCTgR", contentTypes: {"Transcript": 2} },
     { name: "Unreasonable Hospitality", id: "1IQEMjbONWQOEwKaAmjj9-ujCJ2H7BpPL", contentTypes: {"Transcript": 2} }
   ]
+  },
+  {
+    name: "Your Next Five Moves - Patrick Bet-David",
+    id: "19YufAbDs6LbCIrd3RVVLNjUs8joy5Bv5",
+    category: "Strategy & Economics",
+    books: []
   },
   {
     name: "Yuval Noah Harari - Mcaro-History and Futurism",
@@ -943,25 +1092,28 @@ export const AUTHORS: AuthorEntry[] = [
 export const BOOKS: BookRecord[] = [
   { name: "10% Happier 10th Anniversary", id: "1iYQelUi4ztDlOMWSmdfnVFwzwchcpi4Q", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "10% Happier 10th Anniversary", id: "1idbnWKqeWH-hKJ0hIXx9mvE2Kmq9Guga", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
-  { name: "100M Leads", id: "1r-3oBgHch8Xpbxc4HDGGvOBOLHB_dgf9", category: "Business & Entrepreneurship", contentTypes: {"DOC": 1, "Transcript": 1} },
+  { name: "100M Leads - Alex Hormozi", id: "17Msqkw27nKwVs1IgVvVN3-RmMT9SrESH", category: "Business & Entrepreneurship", contentTypes: {"100M Leads": 2} },
   { name: "1929", id: "1ECWAyQymVgpcZcpGtVR-qjt8s6Ry-2mz", category: "Business & Entrepreneurship", contentTypes: {} },
   { name: "7 Powers_ The Foundations of Business Strategy", id: "1NebsOGJnY2C8zoKHuk9Z2OO50ENYBCAq", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "7 Powers_ The Foundations of Business Strategy", id: "1dZrAy0OCOUIfD-YV111zeZgLra3uBjRb", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
-  { name: "[Dale Carnegie \u2014 General]", id: "1W70QRN1QpsLgdIq1vTTLLz9m_6XOjPhy", category: "Behavioral Science & Psychology", contentTypes: {"Other": 1} },
-  { name: "[Karen Eber \u2014 General]", id: "1-rD6drFo7E83-YNjElweNkG6ZyxaVcWc", category: "Communication & Storytelling", contentTypes: {"Other": 1} },
   { name: "A Therapist\u2019s Guide to Consensual Nonmonogamy", id: "1WSlgHbrY3lGehPcKV-2Ph6CzoDRqk0Ag", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 2} },
   { name: "Abundance", id: "1bAoVR0uH2rA7KoZ8otOEsJnMZPbGETSf", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Active Listening", id: "1SBf3Z2_btMMIh-z8so09ztd_N67X7g2W", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 2} },
   { name: "Active Listening [3-in-1]", id: "1W6_9lq8lZjxgO5cuXen6XOHLJpC7cbLU", category: "Communication & Storytelling", contentTypes: {"PDF": 1} },
+  { name: "Active Listening Techniques - Nixaly Leonardo", id: "1nlr__TWeNrMVbuA0mbfsesg5HI0SlcVH", category: "Self-Help & Productivity", contentTypes: {"Binder": 1, "Transcript": 2, "PDF": 2} },
   { name: "All Marketers are Liars", id: "18dj2ZJQ6AXlM3SQ-NrlqOoPOXTWHR6CF", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "All Marketers are Liars", id: "1O1391D0ABjXBNAwkMeYzz9VvrC_2KgIe", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "Atomic Habits", id: "1uPppuJ1DIhx6xFDEVjQYy0eD63msGvYp", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "Atomic Habits", id: "1pqh8ie_ZOzynxqptglIOZvc4lEhBjJAr", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "bk_rand_011854", id: "1_WT-lQd9dhG0VZ7BRscvxweODGDQrGRd", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
+  { name: "Book PDF", id: "1fModm50AVh2R-cKYEB1A2DKAU8cy_pLg", category: "Communication & Storytelling", contentTypes: {"Other": 1} },
+  { name: "Book PDF", id: "12_SS0oighj-Lf4tiX4hHdw-3IE-GXfMY", category: "Behavioral Science & Psychology", contentTypes: {"Other": 1} },
   { name: "Building Successful Partner Channels", id: "1IKdOaQirZRfnZwy7I1Uks6-XirkNpn-r", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
   { name: "Building Successful Partner Channels", id: "1vfomGdTBRVTcI8A0dr8R9RinM0C4Mvbo", category: "Sales & Negotiation", contentTypes: {"ChatGPT": 4, "Transcript": 2, "Sana AI": 2, "Binder": 1} },
+  { name: "Building Successful Partner Channels - Peter Hans Beck", id: "1mqClJDNBCZ6eQqEHk333mcaVlCUuBARI", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "DOC": 3, "Transcript": 2, "Binder": 1, "ChatGPT": 4, "Sana AI": 2} },
   { name: "Charles Duhigg", id: "1Ck-hu-uKHF9uuMUeIZeI4QW9KkDoljIu", category: "Self-Help & Productivity", contentTypes: {"Images": 1} },
   { name: "Chasing Perfection", id: "1B_4y_IOOY8RdnOGoKlXqib33LSvAuy0b", category: "Self-Help & Productivity", contentTypes: {"Transcript": 2} },
+  { name: "Chasing Perfection - Sue Hawkes", id: "1sKFlAAus1NkH967vPlMlEWJTZlGYyKYg", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
   { name: "Contemporary Strategy Analysis", id: "1hjCEMN5XjwEDc-EhYqZ-nuwsmk2N9nba", category: "Strategy & Economics", contentTypes: {} },
   { name: "Contemporary Strategy Analysis", id: "1QYKni0Iy0D2SroPsC1G3DyAUqgJCic1w", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "Crossing the Chasm, 3rd Edition", id: "1Dk6FbYX9UfMfiZCCDSQ27NzhnXfOVC9M", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
@@ -969,72 +1121,104 @@ export const BOOKS: BookRecord[] = [
   { name: "David Brooks", id: "122S8Tl4Xu4f6Vfx3il2PeGXTOl26JhqL", category: "Behavioral Science & Psychology", contentTypes: {"Images": 1} },
   { name: "Discovering Statistics", id: "1cQ-N4tV1tN3A2dmBUjqURI5iTkThhqYS", category: "Technology & Futurism", contentTypes: {"PDF": 2} },
   { name: "Do You Talk Funny", id: "1MENPJpka2e94jrVnNtgCtGIueZoVKCCn", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
+  { name: "Do You Talk Funny? - David Nihill", id: "1O-5P5n6I75o8RaGeOTPewtk6chw46sS2", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
   { name: "Effortless Experience", id: "17YJ1Z17RLvbjG5Uj77SEWSoNcM7dflva", category: "Sales & Negotiation", contentTypes: {"Transcript": 2} },
   { name: "Fall in Love with the Problem, Not the Solution", id: "1cL1Rp6VlLjl-Abq9iZ1lplwGXIpCopYb", category: "Business & Entrepreneurship", contentTypes: {"PDF": 2} },
+  { name: "Fall in Love with the Problem, Not the Solution - Uri Levine", id: "184lFqr1ypP1kfST-E0iK0O8EMos-f2hN", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1, "Transcripts PDF": 6, "Binder": 1, "PDF Format": 1, "Transcripts doc": 4, "Notes": 1} },
   { name: "Fanatical Prospecting", id: "1tL-cL9Wf4ojnzIMmm4bDOUVzfd3C0eZU", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
+  { name: "Fanatical Prospecting - Jeb Blount", id: "1VxwSHR2z2dV9eQ8zxkCTwW4nbK1TkUtP", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "Transcript": 6, "Cold Calling and ebooks": 20, "Additional DOC": 1, "Binder": 1} },
   { name: "Founder\u2019s Pocket Guide", id: "1M6_UaJuWurDLsqcn_cWU8VsSzuathqdQ", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Founder\u2019s Pocket Guide", id: "14wlpcRKfU8dUJjHeAhaOUa7HAAvwMnTf", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Founder\u2019s Pocket Guide", id: "1wpi1t-RT41RbT7A8HCLLy4MLV2OJwyaA", category: "Business & Entrepreneurship", contentTypes: {"PDF": 2} },
   { name: "From Impossible to Inevitable", id: "1YudZt7Ri5CBRHSlW3a4J5xzqvyWWW9q3", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
+  { name: "From Impossible to Inevitable - Aaron Ross & Jason Lemkin", id: "1WDz-1Qrhhtpsc8x2u3JUhbE3demLbjI8", category: "Sales & Negotiation", contentTypes: {"Transcript": 7, "Notes": 8, "Binder": 2} },
   { name: "Going Global on a Shoestring", id: "1eXmqZiENXh-JYS8YnIkttS8aVOhticZ4", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
+  { name: "Good to Great (Summary) - Jim Collins", id: "1ft599AlLo1DQaoS4JIr-srbVgQSdvam9", category: "Strategy & Economics", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
   { name: "Great Game Business", id: "1BLQrYn9EGcbk7GdGkbEr7NEtrk3wvGDX", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 4} },
   { name: "Guesstimation 2.0", id: "15m_lC8PN78TCdkTlbDiU86D8X1h-nPk4", category: "Communication & Storytelling", contentTypes: {"PDF": 1} },
   { name: "Hacking Growth", id: "1eBKqXmxguB-uHPdyH0Rs8_ICmCAV3xv0", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
+  { name: "Hacking Growth - Sean Ellis & Morgan Brown", id: "1aSu24hVCwiqdRqXkpidF6j1S6YXwzcmk", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 3} },
   { name: "Hacking Marketing", id: "1pWPNuVaULkQJCFjnw04Ltqdw5gxfswxC", category: "Technology & Futurism", contentTypes: {"PDF": 2} },
+  { name: "Hacking Marketing - Scott Brinker", id: "1wXvxuCnuJ6nNghQ48_Zlj6N0CtfIUTr5", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 3} },
   { name: "Hidden Brain", id: "1qBr4hxZMP659J3AYeeS9ASE9e1theMbW", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 4, "Binder": 1} },
   { name: "Hidden Potential", id: "1-hqofS1N2zt9EInulrUrW6Yi5k_jhYtx", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 5, "PDF": 1, "Complete Book in PDF": 1, "Binder": 1} },
+  { name: "Hidden Potential - Adam Grant", id: "1bfktwQlybWaX9XoOFOaNDBavvY9Se112", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 5, "Binder": 1, "PDF": 1, "temp": 1} },
   { name: "How to Decide", id: "1Vo36hxR7BOHFXeGPuUvF1_jkh9awqfTF", category: "Behavioral Science & Psychology", contentTypes: {"Other": 1} },
   { name: "How to Know a Person", id: "1VxZ8MwpD4CyulHVLhlP74j2SzNhmrC5p", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1, "Transcript": 22, "Interview Transcript": 4, "Binder": 1} },
+  { name: "How to Know a Person - David Brooks", id: "1LmkKiT9Q9hrDFuJPIB2EE-Aduek6THZt", category: "Behavioral Science & Psychology", contentTypes: {"Video": 1, "Interview": 4, "Transcript": 22, "Binder": 1} },
   { name: "How to Lie with Statistics", id: "1U0JnMopPSQls50kV4zDMU7Sdl0odvFEb", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "How to Lie with Statistics", id: "1bloS-pzLoGfI5b6g7LUMJH3X-4M6Isfl", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "How to Talk to Anyone", id: "1A4quNDJLjLc1Is8TZMyBjoDDRoOBt4cP", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
+  { name: "How to Talk to Anyone - Leil Lowndes", id: "1xoaF79V51AflPz_vug2J91QHypVLwFLu", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
+  { name: "How to Win Friends and Influence People - Dale Carnegie", id: "1VQZibcd-IVbEJB3nfPrxHsjsr0WTjzPh", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
+  { name: "Immune - Philipp Dettmer", id: "1qXrcdxlt1Onsp8DMQ5dynMbumanZZdYz", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Immune by Philip Dettmer", id: "1C4WrvYHKteYqThW1J0Yw6aliBo-RyU5e", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Immune by Philip Dettmer", id: "1qdxgljH6umlLWz4OZy3_ECOnm9fsVhpu", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Influence - New and Expanded The Psychology of Persuasion", id: "1G6UHDZPteXXAGffO2MQJ2LPLEjw0R9R_", category: "Sales & Negotiation", contentTypes: {"Transcript": 2, "PDF": 2, "Binder": 1} },
+  { name: "Influence - Robert B. Cialdini", id: "1lI0vGQmWLsYoWYKIHXOvIpu41Apc6XlH", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "Transcript": 2, "Binder": 1} },
   { name: "Inside Steve", id: "1-gh3zeLJROfu2kv3_-qA8NahyDfzaGd7", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "Inside Steve", id: "17AK4qYmfpdGBvbwIWtFQxNTHkf9j800t", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "Jefferson-Fisher-Open-Graph", id: "1jc3ZtWpkyBf8oNIqHNthEW0QkLGslDiE", category: "Leadership & Management", contentTypes: {"Images": 1} },
   { name: "Jefferson-Fisher-Open-Graph", id: "1jqq5leYMkm-7YBsgUCws9MwtfVmkBy1R", category: "Leadership & Management", contentTypes: {"Images": 1} },
+  { name: "Lead Engaging Meetings - Jeff Shannon", id: "13q6csVhoaK3_t3xw8vDicrEGFeOyJqYQ", category: "Leadership & Management", contentTypes: {"Transcript": 3} },
+  { name: "Leaders Eat Last", id: "1Bu26ALCCEhu2ZHxWuZIac9bUlA0NmLq9", category: "Leadership & Management", contentTypes: {"Transcript": 2, "PDF": 1} },
+  { name: "Leaders Eat Last - Simon Sinek", id: "1KHUFlhvHcLey6QpwVKUEUs4XnX5GmVRz", category: "Leadership & Management", contentTypes: {"Transcript": 2} },
   { name: "Leading Engaging Meetings", id: "1kwYxOkaQVNdVcTLNMUM1fr6nJ9Mu3SGP", category: "Leadership & Management", contentTypes: {"Transcript": 3} },
-  { name: "Lean Marketing", id: "1kV61Rteyo2j4cQtM423ieWLlupS6utLU", category: "Strategy & Economics", contentTypes: {"DOC": 2, "Transcript": 1} },
+  { name: "Lean Marketing - Allan Dib", id: "1aRk1ptZ9wr8YPaxjKG7yRLDEGtED-ggh", category: "Strategy & Economics", contentTypes: {"Transcript": 3} },
   { name: "Making Conversation", id: "1oMhOVvnN8Oop81V4V_KEB5OJZdJ1q4vb", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
+  { name: "Making Conversation - Fred Dust", id: "1lozeRuRw1Sdi8sz3HmYVHXxbL9R3C-wp", category: "Communication & Storytelling", contentTypes: {"Transcript": 2} },
   { name: "Mating in Captivity", id: "1PiXC_CwvcPpx7kZQCoaF9yUJbzz4HorE", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Mating in Captivity", id: "1CyOd2waOgUiIlqvDksUBcHDcmtxwMlfa", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Meditations", id: "1aQiJCiqSIZ56ZlUgprzCFNZ4RBXdID1Q", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
+  { name: "Misbehaving - Richard H. Thaler", id: "15VaizTBUqr4yFCPmazwhGwurV2OHxAJA", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
   { name: "Misbehaving The Making of Behavior Economics by Richard H. Thaler", id: "1yxkUfXlDg0kWwm35mkccIwuLYO_oAi4V", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 2, "Transcript": 2, "Binder": 1} },
   { name: "Move Fast and Fix Things", id: "1ZT2fqzTBryynWnIAMR0YlYkbDg8BUWTb", category: "Leadership & Management", contentTypes: {"PDF": 1} },
   { name: "Move Fast and Fix Things", id: "1vh2kC9-FvtiD-z9ELteFx_ZeVkpgABta", category: "Leadership & Management", contentTypes: {"PDF": 1} },
   { name: "Mr. Monkey and Me", id: "1BvSybrviXygDvkGbwC3VIoFZSWBMR0f2", category: "Business & Entrepreneurship", contentTypes: {"PDF": 2} },
+  { name: "Never Split the Difference - Chris Voss & Tahl Raz", id: "1G3CwjcOXweEw5nseCgurMAcpjU8KYips", category: "Sales & Negotiation", contentTypes: {"Transcript": 2, "Binder": 1, "Additional DOC": 2, "temp": 1, "Knowledge Base Files": 1} },
   { name: "Never Split the Difference by Chris Voss", id: "18WmHI23KP-LkA5-ZFIklxDUUdFT_K_cb", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "Transcript": 2, "Binder": 1, "Additional DOC": 2, "Knowledge Base Files": 1} },
   { name: "New Business Road Test, The", id: "1ACy7potp148BHGMITFyJ_5ZrNPdMOc-0", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "New Business Road Test, The", id: "1IPwrcJb0FYQk4rO32aidP3BLoStB7yVI", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Nexus", id: "1Q-l6hgtoOEjX36j7wxYLwJ7RRO9AotJF", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "Nexus", id: "1NjgwaLehU5YBbzXarWefHiOw7tjgKgtx", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "No - The Only Negotiating System You Need by Jim Camp", id: "1YOrCxHEXDWwzk3K6WqA7dQ5OhK6FsvjS", category: "Sales & Negotiation", contentTypes: {"Transcript": 3} },
+  { name: "No: The Only Negotiating System You Need - Jim Camp", id: "1PNp26PHGsdlVzUc4B9ssfA57_GcDX1ZP", category: "Sales & Negotiation", contentTypes: {"Transcript": 3} },
   { name: "Nudge", id: "1gbU3YJYSHxNTkOMGPbBRb3EHhLdJ4pu1", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 2, "Binder": 1, "Transcript": 8} },
+  { name: "Nudge - Richard H. Thaler & Cass R. Sunstein", id: "1xo5tfbrLJO5Y0z_1wWxKvWu6zmsUgwBf", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 8, "PDF": 1, "Binder": 1} },
   { name: "Objections", id: "1B1TLe8j1TaJNau5L2vBa6X6MdwjtVbHZ", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
   { name: "Obviously Awesome", id: "183iMIzLbozSglxK6A8efdB4DDu4rJt_O", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
   { name: "Podcasts", id: "1vf62UhDouy6FENKkb4Julw1YPHaLfyf0", category: "Behavioral Science & Psychology", contentTypes: {} },
   { name: "Positioning", id: "1k6Z6cE_0HgCOAbQ2HRZ91ep3bdpuyU64", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "Pre-Suasion", id: "1sQPH8s1gQIeEWfU5wFbaMwJ_jWnNFoTU", category: "Sales & Negotiation", contentTypes: {"Other": 1} },
+  { name: "Pre-Suasion - Robert B. Cialdini", id: "1JRCdMHrbDKNR5ohcGPxLahuyMAAqcNe-", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
+  { name: "Predictable Revenue - Aaron Ross & Marylou Tyler", id: "1qyLwgET3NNyyg5_KCYodRyQfPCXjpRSH", category: "Sales & Negotiation", contentTypes: {"Transcript": 7, "Binder": 1, "Knowledge Base": 4} },
   { name: "Quit", id: "1r4J2cWIjxgnhYlAvM4x4Fn1Vo-FSyzlP", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 2, "PDF": 1} },
+  { name: "Quit - Annie Duke", id: "1AKc4rICLCTwuBRbOfgoOuf6TQWSFiMwY", category: "Behavioral Science & Psychology", contentTypes: {"temp": 1, "Transcript": 2} },
   { name: "Radical Candor", id: "1vIGB3aD_4L8h8LLYpm4ZTU3wpLnUFxFy", category: "Leadership & Management", contentTypes: {"Transcript": 2, "PDF": 1, "temp": 1} },
+  { name: "Radical Candor - Kim Scott", id: "1B9WVoaUqMN4U_NGqAeGohfxUj46nQslR", category: "Leadership & Management", contentTypes: {"Transcript": 2, "temp": 1} },
   { name: "Read Write Own", id: "1uix8b1Ua373i47VTdzsYaTrOo-gG5Dcj", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Read Write Own", id: "1d_-YYNX3gBBsJA7jXRC1wtQ5Y7W3GFFV", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Revenge of the Tipping Point", id: "1eyaVtXvuKu8yR_qGg0DJsaj2gfIM7eRT", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Revenge of the Tipping Point", id: "1MNZYqEggxzw2gIVn2cdYBVpIxuZcyqmG", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Running Lean", id: "1fdZgJfUUwz8_7cPtAggr7KHo1TM0YUnD", category: "Business & Entrepreneurship", contentTypes: {"PDF": 3, "Transcript": 5, "Running Lean (3rd Edition)_ Iterate from Plan A to a Plan That Works": 1, "Binder": 1} },
+  { name: "Running Lean - Ash Maurya", id: "1ez4A8ic2gbOYyG7wg6oK--jHSSRmjJ3V", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1, "Binder": 1, "Transcript": 5, "Running Lean (3rd Edition)_ Iterate from Plan A to a Plan That Works": 1, "temp": 1} },
   { name: "Sales Pitch", id: "1_6-dpu6qlx_yDJuwp4tlQFhBfCadw375", category: "Sales & Negotiation", contentTypes: {"Transcript": 3, "PDF": 1} },
+  { name: "Sales Pitch - April Dunford", id: "1g7hCAUgwSSrwlIHOhItrRXet-hSURfLB", category: "Sales & Negotiation", contentTypes: {"Transcript": 3} },
   { name: "Same as Ever", id: "1ziU8Ws5jvnm1VL3kayUc20KdQUyEtHaL", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Sapiens", id: "1JVjBID6U03KblN9x50bcFa4ha-kIQFiu", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "Sapiens", id: "1GV_wlUO9nXombN9zTgyogR45Jwibs9mI", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "Scaling Lean", id: "1UfyFAoy44N5GOhrWove_MlEXyGpG17mi", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "PDF": 2, "Binder": 1} },
+  { name: "Scaling Lean - Ash Maurya", id: "1jKF4E5T_OD4aAWarWwef46QakZaljzed", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
+  { name: "Slow Productivity - Cal Newport", id: "1VEW6EHlLzAmh0D4ndQtMt5iJSTvm030a", category: "Self-Help & Productivity", contentTypes: {"Additional DOC": 1, "Transcript": 2} },
   { name: "Slow Productivity The Lost Art of Accomplishment Without Burnout", id: "1IjHgqB_IP3-NKCp0l5MoazQOuqaaORxT", category: "Self-Help & Productivity", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
   { name: "Small Data", id: "1XshuP57SscP1r7D4MV6g56vU8PwIE9cB", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Small Data_ The Tiny Clues That Uncover Huge Trends", id: "1qLx0VK2E09CwWZZ8Yt4ZsBaTOAB0CEdp", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Speed & Scale", id: "1k6PWUT7T2q_7k-43xb6eP9sI6hnYAKXI", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "Speed & Scale", id: "1mccV5TcMBNd4vQBrY56aBb19rLU-SiSF", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "Start with a No", id: "1gm3vZrfG13OVoBXAgjd1B2fjLem9jC9J", category: "Sales & Negotiation", contentTypes: {"PDF": 1} },
+  { name: "Start with No - Jim Camp", id: "1_94vdT-9WrMMwoH4NCms7MjJJUrd8jNG", category: "Sales & Negotiation", contentTypes: {"Transcript": 2} },
+  { name: "Start with Why", id: "1YsdXvJJmGkD3KaUFvMZ70OZRZaCKIzUV", category: "Leadership & Management", contentTypes: {"Transcript": 2} },
+  { name: "Start with Why - Simon Sinek", id: "1q443zqkQVHx1eFn3LUn4X9GLbEuQzZD1", category: "Leadership & Management", contentTypes: {"Transcript": 2} },
   { name: "Statistics for the Rest of Us", id: "1BSBRpB8pLBDBRLdbN4WNHljZPCYGXttc", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "Statistics for the Rest of Us", id: "1B05zQaNyxjH_YvUhntx2phpnXjetJ9jh", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "Steve Jobs", id: "15XH4ZofbH5ObVmG6EyxbITAnXaiqNYQW", category: "History & Biography", contentTypes: {"PDF": 1} },
@@ -1044,8 +1228,10 @@ export const BOOKS: BookRecord[] = [
   { name: "Street-Fighting Mathematics", id: "1wdK0yKo4b4T3-CQJub07r5eB3RsizqBM", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "Street-Fighting Mathematics", id: "1LJNcgKLfmML2lS74E19VRfsk1T_FycER", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "Summary of Jim Collins Good to Great Key Takeaways and Analysis", id: "1v7Fvuz6mcF0pETCUpr3Yylh020rvOJLv", category: "Strategy & Economics", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
+  { name: "Super Agers - Eric Topol", id: "1SM-XBvJjk_vkvXoDpySnsesyQpUwDPtY", category: "Technology & Futurism", contentTypes: {"PDF": 2, "DOC": 1, "Supplemental": 3, "Binder": 1} },
   { name: "Superagency", id: "1RWH-0ZyI8cRQ1Zp2N3JOwMqWLsuqZk8F", category: "Technology & Futurism", contentTypes: {"PDF": 1} },
   { name: "Supercommunicators", id: "1aCGhXBQpeUFVaI6nWKPuNbKFhCDKoT1n", category: "Self-Help & Productivity", contentTypes: {"Transcript": 2, "PDF": 5, "Binder": 1, "PDF Extra 2": 3} },
+  { name: "Supercommunicators - Charles Duhigg", id: "1zmejGNVROHI2JL-u6Lu3M4DZljiUW2Ye", category: "Behavioral Science & Psychology", contentTypes: {"DOC": 2, "Transcript": 2, "PDF": 4, "Binder": 1, "PDF Extra 2": 3} },
   { name: "Talk", id: "1rw3wjRaCCmGsJHoYbAcnqyGRBU2F6eoZ", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Talk", id: "1-n4ArRDBN-b-IGyElRNhFC_ysox4cFX6", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The 7 Habits of Highly Effective People", id: "1uCeJ-SZLV_MeRAG9byGP8fY6hSXkJBwb", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
@@ -1054,32 +1240,52 @@ export const BOOKS: BookRecord[] = [
   { name: "The Autobiography of Benjamin Franklin", id: "1xIdHuuDIfuVPb2bL2l58GPVTH4vOP0k6", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "The Autobiography of Benjamin Franklin", id: "1hVZUPmVcKov4v32ga-Nfz2S-1Ve2k7p_", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "The Challenger Customer", id: "1YUnq2Y149o6YsFmSUCbKjIWsPs6Z1POe", category: "Sales & Negotiation", contentTypes: {"Transcript": 2, "Additional DOC": 1, "PDF": 1} },
+  { name: "The Challenger Customer - Brent Adamson & Matthew Dixon", id: "1EkT7zRqbCEP0CKLL52-uCX13NXEAd6rV", category: "Sales & Negotiation", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
   { name: "The Challenger Sale", id: "1izD-UipjU_cTuH0GVyf2-4lPfnBfvegf", category: "Sales & Negotiation", contentTypes: {"PDF": 1, "Transcript": 2} },
+  { name: "The Challenger Sale - Matthew Dixon & Brent Adamson", id: "1XaVejPCfUDzAdRdW8uXsSxYu3iMXiFLs", category: "Sales & Negotiation", contentTypes: {"Transcript": 2} },
   { name: "The Customer Success Professional Handbook", id: "1SymnayKM0HtfSwcEKpNGdetFXz_02XqM", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 1} },
+  { name: "The Customer Success Professional's Handbook - Ashvin Vaidyanathan & Ruben Rabago", id: "1v6qQfLinISHr7tDPsFOuVHJ1aRZL69Vq", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
   { name: "The Diary of a CEO", id: "1Ecr8Fz1PfW0KWrNsvpeWCYlA3VfdDQDm", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
+  { name: "The Diary of a CEO - Steven Bartlett", id: "1EFlHIcttcyn649bmnAuKlvX7wqj29yrB", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
   { name: "The Dip_ A Little Book That Teaches You When to Quit", id: "1ppqX6SNhnMoR9akTkcCGGsyRhxhGgL6D", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "The Dip_ A Little Book That Teaches You When to Quit", id: "1-z1rjy58UeUGr0sGEDJmowPdKlE_BtAI", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
+  { name: "The Effortless Experience - Matthew Dixon, Nick Toman & Rick DeLisi", id: "1H_U8c21YGkmOhTw80D4754i1e4vPr8Az", category: "Sales & Negotiation", contentTypes: {} },
   { name: "The Grand Design", id: "1LEApounEGSsQ3RY1IjpVUm40RkQukbNR", category: "Technology & Futurism", contentTypes: {"Transcript": 4} },
+  { name: "The Grand Design - Stephen Hawking & Leonard Mlodinow", id: "1JWX2BCfsfa3uXtxXx3Sbfqo5IcSgLWbx", category: "Technology & Futurism", contentTypes: {"Transcript": 4} },
+  { name: "The Great Game of Business - Jack Stack & Bo Burlingham", id: "19WqPA4b6zA_s4Zbq6YH4Pw5LasiHhWTJ", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 4} },
+  { name: "The Hidden Brain - Shankar Vedantam", id: "1TbC3dYixr0HwjVK7rS-ncqZapEqR-0dd", category: "Behavioral Science & Psychology", contentTypes: {"Binder": 1, "Transcript": 4, "Podcasts": 1} },
   { name: "The Jolt Effect", id: "1pYTYd8QeBxKyUugXCE8JbGzYTC28-95U", category: "Sales & Negotiation", contentTypes: {"Summaries PDF": 7, "Transcript": 2, "PDF": 6, "DOC": 1, "Binder PDF": 1, "temp": 1, "Summaries DOC": 8} },
+  { name: "The JOLT Effect - Matthew Dixon & Ted McKenna", id: "1W6e5U6oL9nxj7QEDi2kS8r13rDv6EfvN", category: "Sales & Negotiation", contentTypes: {"Transcript": 2, "Summaries PDF": 7, "PDF": 5, "DOC": 1, "Binder PDF": 1, "temp": 1, "Summaries DOC": 8} },
   { name: "The Last Man Who Knew Everything", id: "196eQguirea8hamxgeaiOJP4MXT-rFZdG", category: "History & Biography", contentTypes: {"DOC": 4, "PDF": 2, "Transcript": 2, "Binder": 1} },
+  { name: "The Last Man Who Knew Everything - David N. Schwartz", id: "1q2loPoDX7-m-iYdLdpMCPF2tqd97XjZw", category: "History & Biography", contentTypes: {"DOC": 4, "Binder": 1, "PDF": 1, "Transcript": 2} },
+  { name: "The Leader's Guide - Eric Ries", id: "1cWvaeSPyc1Wrmce3nJW0UJy4rTdSkYUJ", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
   { name: "The Leaders Guide", id: "1ljS-gwcrkU4Mxj4OsM65_S-MYS2AlrDM", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 1} },
   { name: "The Lean Startup", id: "1WF85y-8R0XzmBVlr3kvkKQrq34WRwiM5", category: "Business & Entrepreneurship", contentTypes: {"PDF Version": 2, "PDF": 1} },
+  { name: "The Lean Startup - Eric Ries", id: "1eQpIYY_SFNBTLou48nSSxcvQsgrW3III", category: "Business & Entrepreneurship", contentTypes: {"PDF Version": 2} },
   { name: "The Let Them Theory", id: "1I4H28e0Wc_3yNdGIklWAGeE6s8wT8Bye", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
+  { name: "The Let Them Theory - Mel Robbins", id: "1xYxXc_MXdNfoAFQPUrWVs7dqnD_TuA-Q", category: "Self-Help & Productivity", contentTypes: {"PDF": 1} },
   { name: "The Mom Test", id: "17gDaZQbS6adpkOk4at5261K0G8EfWsI-", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
+  { name: "The Mom Test - Rob Fitzpatrick", id: "1mYvPot5u5I433fv3geDpcDfXu7yuafft", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
   { name: "The Neurology of We", id: "18koEbulUch7Z3maNGidOZEcm6FHpXP0z", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 2} },
   { name: "The Next 100 Years", id: "1IEEIqvt7YpC2eNk6_EYP9N2L1AcPC8ic", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "The Next 100 Years", id: "1l1WfVISdB9Lk0OAX5RqFz5k53xRZBaPA", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
+  { name: "The Next 100 Years - George Friedman", id: "1xOi_k5ZsTKeA80YVyAS7Q2pkz8ptRUil", category: "Strategy & Economics", contentTypes: {"PDF": 1} },
   { name: "The Next Conversation", id: "1BNefSLwULyiqLADnIaTZP4FOL4MUMT7J", category: "Leadership & Management", contentTypes: {"PDF": 1} },
   { name: "The Next Conversation", id: "1d6G92kvciP76VfvzPPSG2E9dCvhCVRWD", category: "Leadership & Management", contentTypes: {"PDF": 1} },
+  { name: "The Perfect Story - Karen Eber", id: "1aijNrOPzCPlDgrFAJC5u07Q8fwQeBFKT", category: "Communication & Storytelling", contentTypes: {"PDF": 1} },
   { name: "The Power of Habit", id: "1NnP0Cl67rohkjnj2UfecCoNMnLWT3iNf", category: "Self-Help & Productivity", contentTypes: {"Other": 1} },
+  { name: "The Power of Habit - Charles Duhigg", id: "1Kkzy_9Zw8MffVAZieI-e9F_hBOsj-aUl", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 4, "PDF Extras": 3, "Binder": 1} },
   { name: "The Psychology of Money", id: "14_d-zGN8dKJWFgJWAlG0jaU7JJrBpcYp", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The Psychology of Money", id: "1IUzHjnTbiVrxGgLo8FmKqIn_8JGMWxG5", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The Road to Character", id: "1wyhPih8syeaL2rqPMjF8KbWtPw492L6K", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 3, "PDF": 1} },
+  { name: "The Road to Character - David Brooks", id: "168xjl9eJ6rF6cD4pubQIQB3Jr9mF4a3W", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 3, "temp": 1} },
   { name: "The SaaS Playbook", id: "1rt-3JFmsk4tgZlFvZudrE4YzfnIoFj8S", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "The SaaS Playbook", id: "1rj-DPOSEYtjUPdzJBPHWzlBEVNlQdxI4", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
+  { name: "The SaaS Playbook - Rob Walling", id: "1Sa-I_AtiHsCc126V5kusfqPjWvU_fkz9", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2, "PDF": 1, "Binder": 1} },
   { name: "The Sales EQ", id: "1LIVcpC_TZr5rq7YC8E2kAFs1okZXANar", category: "Sales & Negotiation", contentTypes: {"Other": 1} },
   { name: "The Second Mountain", id: "1thiS-x4UOV4EFLj9O2Y8DFR8NuTMbAyL", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The Second Mountain", id: "13p5Pm391T6xmnOD1kY0Ac2kbdd9gsnms", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
+  { name: "The Second Mountain - David Brooks", id: "1iKh5TRB2tnp_DWzSjVK7t0QsITlK9aSb", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 4, "Binder": 1} },
   { name: "The Singularity Is Nearer", id: "18HIndvGU-uJf5nb2LoUYnG3CWP6hdluH", category: "Technology & Futurism", contentTypes: {"PDF": 2} },
   { name: "The Social Animal", id: "1FPgE0bA5yiBIIyURg6gYt7sneCtbHY6y", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The Soulful Art of Persuasion", id: "19nd9ARGes5Z_H-dIFRtavgtefMg5pZbu", category: "Communication & Storytelling", contentTypes: {"PDF": 1} },
@@ -1088,12 +1294,19 @@ export const BOOKS: BookRecord[] = [
   { name: "The State of Affairs", id: "1_GmORUf6yqyjo4BKApYjVTbD8yIwp1l4", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The Tipping Point", id: "1TWPNOt1NR8m165e2ueHlgK_kq7dg_tLY", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "The Tipping Point", id: "1eabGH8RMO4gEBqUJHwWueU7SuizxftlW", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
+  { name: "The Whole-Brain Child - Daniel J. Siegel & Tina Payne Bryson", id: "1JNzGaF1oM1t-Gi2srg8RAoYhGlkhqfLG", category: "Behavioral Science & Psychology", contentTypes: {"Transcript": 2} },
   { name: "The Wisdom of Crowds", id: "12PncZ5EdK7gcumzFQGZD-GBy8apt_GIV", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 2} },
   { name: "Thinking, Fast and Slow", id: "1TQt97XiJpyx-oFE_q6VihF8WXa4rrBN1", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
+  { name: "Thinking, Fast and Slow - Daniel Kahneman", id: "1SdHKKUrZDyEbJh6zQfsKpUHjQZvTzNZp", category: "Behavioral Science & Psychology", contentTypes: {"PDF": 1} },
   { name: "Thrive", id: "1JSle2ZXRUboq9erc4SCMxFXzlT5GnnqP", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Thrive", id: "1fluwT2MyKYTCyyNKw6C5-oAJQEnLIwAo", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
   { name: "Traction", id: "1L3iF7E0qpnJbGnomn9XtnWMV-JSJ0RMy", category: "Business & Entrepreneurship", contentTypes: {"PDF": 1} },
+  { name: "Transcript DOC", id: "1kV61Rteyo2j4cQtM423ieWLlupS6utLU", category: "Strategy & Economics", contentTypes: {"Other": 2} },
+  { name: "Transcript DOC", id: "1r-3oBgHch8Xpbxc4HDGGvOBOLHB_dgf9", category: "Business & Entrepreneurship", contentTypes: {"Other": 1} },
+  { name: "Transcript PDF", id: "1evcd5hOqUQvqkRqDuPvIL577WG8MXEng", category: "Strategy & Economics", contentTypes: {"Other": 1} },
+  { name: "Transcript PDF", id: "1_AkiLpomch4HqsbEi7Ji6ihriYdveZBQ", category: "Business & Entrepreneurship", contentTypes: {"Other": 1} },
   { name: "Unreasonable Hospitality", id: "1IQEMjbONWQOEwKaAmjj9-ujCJ2H7BpPL", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
+  { name: "Unreasonable Hospitality - Will Guidara", id: "10zzAVGiEIdgc-_e_u15N_qAjJJCfCTgR", category: "Business & Entrepreneurship", contentTypes: {"Transcript": 2} },
   { name: "We Are All Made of Molecules", id: "1LWBgczNU-1TYpOe5fcxtF_T-7Rgod-fT", category: "Communication & Storytelling", contentTypes: {"PDF": 1} },
   { name: "What You Do Is Who You Are", id: "1EGJ9kfNAoyolmFsnJ9NppjwJQLD3FVSq", category: "History & Biography", contentTypes: {"PDF": 1} },
   { name: "What You Do Is Who You Are", id: "1BQQ2VtK8HTHqnbR3EPOuRHIxuifp1fmB", category: "History & Biography", contentTypes: {"PDF": 1} },
@@ -1103,17 +1316,18 @@ export const BOOKS: BookRecord[] = [
   { name: "Yes, And", id: "1ayqCHobg8bqS8gnrP7xuAzuU-02sLjIl", category: "Leadership & Management", contentTypes: {"PDF": 1} },
   { name: "Yes, And", id: "1Rhsk8Kw-tj-DbTiVNHgh3lC9EAtSewAO", category: "Leadership & Management", contentTypes: {"PDF": 1} },
   { name: "Yes, And", id: "1m_ta1I14k_fUTwdsMkcVq7oRZxufa2w8", category: "Leadership & Management", contentTypes: {"PDF": 1} },
-  { name: "Yes, And", id: "1EM5j9FcD85BEZQ8r8gxXWndtpipsTptU", category: "Leadership & Management", contentTypes: {"PDF": 1} }
+  { name: "Yes, And", id: "1EM5j9FcD85BEZQ8r8gxXWndtpipsTptU", category: "Leadership & Management", contentTypes: {"PDF": 1} },
+  { name: "Yes, And - Kelly Leonard & Tom Yorton", id: "1fB1i5bKbwTWJAT1HiR5h8TKTK0zAuFrv", category: "Communication & Storytelling", contentTypes: {"Transcript": 4} }
 ];
 
 export const CATEGORIES: string[] = [
-  "Behavioral Science & Psychology",
   "Business & Entrepreneurship",
-  "Communication & Storytelling",
-  "History & Biography",
-  "Leadership & Management",
+  "Behavioral Science & Psychology",
   "Sales & Negotiation",
+  "Leadership & Management",
   "Self-Help & Productivity",
-  "Strategy & Economics",
+  "Communication & Storytelling",
   "Technology & Futurism",
+  "Strategy & Economics",
+  "History & Biography",
 ];
