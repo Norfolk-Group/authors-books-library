@@ -71,3 +71,12 @@
 - [x] Reuses existing enrichBatch tRPC procedure (batches of 10, skips fresh profiles)
 - [x] 60 vitest tests passing (4 test files)
 - [x] Save checkpoint
+
+## Session March 15, 2026 — Part 6 (Enrichment Indicators)
+- [x] Add getAllEnrichedNames tRPC procedure (lightweight single query, returns only names with non-empty bio)
+- [x] Fetch enriched names on page load, build enrichedSet (Set<string>) in useMemo
+- [x] Show green UserCheck icon + "Bio ready" text on enriched author cards
+- [x] Show Users icon + "View bio & links" on un-enriched cards
+- [x] Invalidate enrichedNames query after Enrich All Bios completes (reactive update)
+- [x] 65 vitest tests passing (4 test files)
+- [x] Save checkpoint

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, ne } from "drizzle-orm";
 import { getDb } from "./db";
 import { authorProfiles } from "../drizzle/schema";
 import { publicProcedure, router } from "./_core/trpc";
@@ -140,6 +140,17 @@ export const authorProfilesRouter = router({
 
       return { success: true, cached: false, profile: updated[0] ?? null };
     }),
+
+  /** Get all author names that have a non-empty bio (lightweight, for enrichment indicators) */
+  getAllEnrichedNames: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({ authorName: authorProfiles.authorName })
+      .from(authorProfiles)
+      .where(ne(authorProfiles.bio, ""));
+    return rows.map((r) => r.authorName);
+  }),
 
   /** Batch enrich a list of authors (up to 20 at a time to avoid timeout) */
   enrichBatch: publicProcedure

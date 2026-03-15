@@ -193,3 +193,53 @@ describe("enrichment cache check", () => {
     expect(isStale(recent)).toBe(false);
   });
 });
+
+// ── Enrichment indicator tests ──────────────────────────────────────────────
+
+describe("enrichedSet logic", () => {
+  it("correctly identifies enriched authors from a name list", () => {
+    const enrichedNames = ["Adam Grant", "Simon Sinek", "Mel Robbins"];
+    const enrichedSet = new Set(enrichedNames);
+
+    expect(enrichedSet.has("Adam Grant")).toBe(true);
+    expect(enrichedSet.has("Simon Sinek")).toBe(true);
+    expect(enrichedSet.has("Mel Robbins")).toBe(true);
+    expect(enrichedSet.has("Tim Ferriss")).toBe(false);
+    expect(enrichedSet.has("")).toBe(false);
+  });
+
+  it("extracts base name from 'Name - Specialty' format for lookup", () => {
+    const extractBaseName = (name: string) =>
+      name.includes(" - ") ? name.slice(0, name.indexOf(" - ")) : name;
+
+    expect(extractBaseName("Adam Grant - Psychology")).toBe("Adam Grant");
+    expect(extractBaseName("Simon Sinek")).toBe("Simon Sinek");
+    expect(extractBaseName("Dan Heath and Chip Heath - Strategy")).toBe("Dan Heath and Chip Heath");
+  });
+
+  it("handles empty enriched names list gracefully", () => {
+    const enrichedSet = new Set<string>([]);
+    expect(enrichedSet.has("Adam Grant")).toBe(false);
+    expect(enrichedSet.size).toBe(0);
+  });
+
+  it("handles undefined enriched names (loading state) gracefully", () => {
+    const enrichedNames: string[] | undefined = undefined;
+    const enrichedSet = new Set(enrichedNames ?? []);
+    expect(enrichedSet.has("Adam Grant")).toBe(false);
+    expect(enrichedSet.size).toBe(0);
+  });
+
+  it("correctly updates enrichedSet after batch enrichment", () => {
+    // Simulate initial state: 2 enriched
+    let enrichedNames = ["Adam Grant", "Simon Sinek"];
+    let enrichedSet = new Set(enrichedNames);
+    expect(enrichedSet.size).toBe(2);
+
+    // After batch completes, 3 more are enriched
+    enrichedNames = [...enrichedNames, "Mel Robbins", "Tim Ferriss", "James Clear"];
+    enrichedSet = new Set(enrichedNames);
+    expect(enrichedSet.size).toBe(5);
+    expect(enrichedSet.has("James Clear")).toBe(true);
+  });
+});

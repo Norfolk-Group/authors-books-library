@@ -252,7 +252,7 @@ function EmptyState({ query }: { query: string }) {
 }
 
 // ── Author Card ──────────────────────────────────────────────
-function AuthorCard({ author, query, onBioClick }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void }) {
+function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean }) {
   const color = CATEGORY_COLORS[author.category] ?? "#374151";
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
@@ -355,10 +355,18 @@ function AuthorCard({ author, query, onBioClick }: { author: AuthorEntry; query:
       <div className="px-3 pb-2 relative z-10">
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBioClick(author); }}
-          className="text-[10px] font-medium text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+          className="text-[10px] font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
         >
-          <Users className="w-3 h-3" />
-          View bio &amp; links
+          {isEnriched ? (
+            <UserCheck className="w-3 h-3 text-green-500" />
+          ) : (
+            <Users className="w-3 h-3" />
+          )}
+          {isEnriched ? (
+            <span className="text-green-600 dark:text-green-400">Bio ready</span>
+          ) : (
+            <span>View bio &amp; links</span>
+          )}
         </button>
       </div>
       {/* Book subfolders */}
@@ -785,6 +793,16 @@ export default function Home() {
   const [enrichTotal, setEnrichTotal] = useState(0);
   const [enrichFailed, setEnrichFailed] = useState(0);
   const enrichBatchMutation = trpc.authorProfiles.enrichBatch.useMutation();
+  // Fetch all enriched author names for indicators — refetch after batch completes
+  const enrichedNamesQuery = trpc.authorProfiles.getAllEnrichedNames.useQuery(undefined, {
+    staleTime: 60_000, // cache for 1 minute
+  });
+  const enrichedSet = useMemo(
+    () => new Set(enrichedNamesQuery.data ?? []),
+    [enrichedNamesQuery.data]
+  );
+
+  const utils = trpc.useUtils();
   const enrichAllBios = useCallback(async () => {
     if (enrichStatus === "running") return;
     // Build unique author names from the library data
@@ -816,11 +834,13 @@ export default function Home() {
       }
       setEnrichStatus("done");
       toast.success(`Enriched ${done} author bios${failed > 0 ? ` (${failed} failed)` : ""}.`);
+      // Refresh the enrichment indicators
+      void utils.authorProfiles.getAllEnrichedNames.invalidate();
     } catch (err) {
       setEnrichStatus("error");
       toast.error("Bio enrichment failed: " + (err instanceof Error ? err.message : String(err)));
     }
-  }, [enrichStatus, enrichBatchMutation]);
+  }, [enrichStatus, enrichBatchMutation, utils]);
 
   const regenerate = trpc.library.regenerate.useMutation({
     onSuccess: (data) => {
@@ -1341,7 +1361,14 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {filteredAuthors.map((a, i) => (
                     <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                      <AuthorCard author={a} query={query} onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }} />
+                      <AuthorCard
+                        author={a}
+                        query={query}
+                        onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }}
+                        isEnriched={enrichedSet.has(
+                          a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name
+                        )}
+                      />
                     </div>
                   ))}
                 </div>
