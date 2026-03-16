@@ -331,3 +331,14 @@
 - [x] Add sparkle-spin animation to the "Generate AI Portrait" Sparkles icon
 - [x] 118 tests passing
 - [x] Save checkpoint
+
+## Session March 16, 2026 — Card Mouse-Tracking Tilt + Scale + Avatar Expand
+- [x] Fix overflow-hidden clipping: two-layer structure on all 3 card types (outer wrapper handles transform, inner div/anchor keeps overflow-hidden)
+- [x] AuthorCard: perspective(800px) rotateY(12deg) rotateX(10deg) scale(1.06) translateZ(10px) on hover
+- [x] BookCard: same two-layer fix and scale-up/spring-back hover
+- [x] AudioCard: same two-layer fix (outer div + inner anchor)
+- [x] Dynamic box-shadow on hover: 0 20px 60px -10px rgba(0,0,0,0.22) + z-index:20
+- [x] Spring-back easing on mouse leave: cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s
+- [x] Author card avatars: graceful 2x scale expand on hover (scale(2), spring easing, category-colored drop-shadow, z-index:50)
+- [x] 118 tests passing
+- [x] Save checkpoint

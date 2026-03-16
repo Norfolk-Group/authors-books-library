@@ -284,20 +284,24 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
   // Look up author photo: DB-first (generated portraits) then static map fallback
   const photoUrl = dbPhotoMap?.get(displayName.toLowerCase()) ?? getAuthorPhoto(displayName);
 
-  // 3D mouse-tracking tilt
+  // Scale-up on hover + spring-back
   const cardRef = useRef<HTMLDivElement>(null);
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = cardRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;  // -0.5 to 0.5
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    el.style.transform = `perspective(700px) rotateY(${x * 10}deg) rotateX(${-y * 8}deg) scale(1.025)`;
+    el.style.transform = `perspective(800px) rotateY(${x * 12}deg) rotateX(${-y * 10}deg) scale(1.06) translateZ(10px)`;
+    el.style.boxShadow = "0 20px 60px -10px rgba(0,0,0,0.22), 0 8px 20px -4px rgba(0,0,0,0.12)";
+    el.style.zIndex = "20";
   }, []);
   const handleMouseLeave = useCallback(() => {
     const el = cardRef.current;
     if (!el) return;
-    el.style.transform = "perspective(700px) rotateY(0deg) rotateX(0deg) scale(1)";
+    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1) translateZ(0px)";
+    el.style.boxShadow = "";
+    el.style.zIndex = "";
   }, []);
 
   const highlight = (text: string) => {
@@ -320,8 +324,12 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="card-animate group rounded-lg border border-border shadow-sm overflow-hidden relative bg-card"
-      style={{ borderLeftWidth: 3, borderLeftColor: color, transition: "transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease", willChange: "transform" }}
+      className="card-animate group relative"
+      style={{ transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease", willChange: "transform", transformStyle: "preserve-3d" }}
+    >
+    <div
+      className="rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full"
+      style={{ borderLeftWidth: 3, borderLeftColor: color }}
     >
       {/* Watermark illustration */}
       <div
@@ -370,14 +378,49 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
                 <img
                   src={url}
                   alt={displayName}
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-offset-1"
-                  style={{ '--tw-ring-color': color + '55' } as React.CSSProperties}
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-offset-1 flex-shrink-0"
+                  style={{
+                    '--tw-ring-color': color + '55',
+                    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease',
+                    cursor: 'pointer',
+                  } as React.CSSProperties}
                   loading="lazy"
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget;
+                    el.style.transform = 'scale(2) translateZ(0)';
+                    el.style.boxShadow = `0 8px 24px -4px ${color}66`;
+                    el.style.zIndex = '50';
+                    el.style.position = 'relative';
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget;
+                    el.style.transform = 'scale(1) translateZ(0)';
+                    el.style.boxShadow = '';
+                    el.style.zIndex = '';
+                  }}
                 />
               ) : (
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ backgroundColor: color + '22', color }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{
+                    backgroundColor: color + '22',
+                    color,
+                    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => {
+                    const el = e.currentTarget;
+                    el.style.transform = 'scale(2) translateZ(0)';
+                    el.style.boxShadow = `0 8px 24px -4px ${color}66`;
+                    el.style.zIndex = '50';
+                    el.style.position = 'relative';
+                  }}
+                  onMouseLeave={(e) => {
+                    const el = e.currentTarget;
+                    el.style.transform = 'scale(1) translateZ(0)';
+                    el.style.boxShadow = '';
+                    el.style.zIndex = '';
+                  }}
                 >
                   {displayName.charAt(0)}
                 </div>
@@ -489,6 +532,7 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
         </div>
       )}
     </div>
+    </div>
   );
 }// ── Book Card ──────────────────────────────────────────────
 function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazonUrl }: { book: BookRecord; query: string; onDetailClick?: (b: BookRecord) => void; coverImageUrl?: string; isEnriched?: boolean; amazonUrl?: string }) {
@@ -501,7 +545,7 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
   const displayTitle = dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
   const bookAuthor = dashIdx !== -1 ? book.name.slice(dashIdx + 3) : "";
 
-  // 3D mouse-tracking tilt
+  // Scale-up on hover + spring-back
   const bookCardRef = useRef<HTMLDivElement>(null);
   const handleBookMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = bookCardRef.current;
@@ -509,14 +553,16 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
     const rect = el.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    el.style.transform = `perspective(700px) rotateY(${x * 10}deg) rotateX(${-y * 8}deg) scale(1.025)`;
-    el.classList.add("tilt-shadow-active");
+    el.style.transform = `perspective(800px) rotateY(${x * 12}deg) rotateX(${-y * 10}deg) scale(1.06) translateZ(10px)`;
+    el.style.boxShadow = "0 20px 60px -10px rgba(0,0,0,0.22), 0 8px 20px -4px rgba(0,0,0,0.12)";
+    el.style.zIndex = "20";
   }, []);
   const handleBookMouseLeave = useCallback(() => {
     const el = bookCardRef.current;
     if (!el) return;
-    el.style.transform = "perspective(700px) rotateY(0deg) rotateX(0deg) scale(1)";
-    el.classList.remove("tilt-shadow-active");
+    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1) translateZ(0px)";
+    el.style.boxShadow = "";
+    el.style.zIndex = "";
   }, []);
 
   const highlight = (text: string) => {
@@ -538,9 +584,13 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
       ref={bookCardRef}
       onMouseMove={handleBookMouseMove}
       onMouseLeave={handleBookMouseLeave}
-      className="card-animate book-card-tilt group rounded-lg border border-border shadow-sm overflow-hidden cursor-pointer relative bg-card"
-      style={{ borderLeftWidth: 3, borderLeftColor: color, transition: "transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease", willChange: "transform" }}
+      className="card-animate group relative cursor-pointer"
+      style={{ transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease", willChange: "transform", transformStyle: "preserve-3d" }}
       onClick={() => onDetailClick?.(book)}
+    >
+    <div
+      className="rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full"
+      style={{ borderLeftWidth: 3, borderLeftColor: color }}
     >
       {/* Watermark (only when no cover) */}
       {!coverImageUrl && (
@@ -638,28 +688,31 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
         )}
       </div>
     </div>
+    </div>
   );
 }
-// ── Audio Book Card ──────────────────────────────────────────
+// ── Audio Book Card ──────────────────────────────────────────────
 function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const driveUrl = `https://drive.google.com/drive/folders/${audio.id}?view=grid`;
 
-  // 3D mouse-tracking tilt
-  const audioCardRef = useRef<HTMLAnchorElement>(null);
-  const handleAudioMouseMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+  // Scale-up on hover + spring-back
+  const audioCardRef = useRef<HTMLDivElement>(null);
+  const handleAudioMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = audioCardRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
-    el.style.transform = `perspective(700px) rotateY(${x * 10}deg) rotateX(${-y * 8}deg) scale(1.025)`;
-    el.classList.add("tilt-shadow-active");
+    el.style.transform = `perspective(800px) rotateY(${x * 12}deg) rotateX(${-y * 10}deg) scale(1.06) translateZ(10px)`;
+    el.style.boxShadow = "0 20px 60px -10px rgba(0,0,0,0.22), 0 8px 20px -4px rgba(0,0,0,0.12)";
+    el.style.zIndex = "20";
   }, []);
   const handleAudioMouseLeave = useCallback(() => {
     const el = audioCardRef.current;
     if (!el) return;
-    el.style.transform = "perspective(700px) rotateY(0deg) rotateX(0deg) scale(1)";
-    el.classList.remove("tilt-shadow-active");
+    el.style.transform = "perspective(800px) rotateY(0deg) rotateX(0deg) scale(1) translateZ(0px)";
+    el.style.boxShadow = "";
+    el.style.zIndex = "";
   }, []);
 
   const highlight = (text: string) => {
@@ -678,15 +731,18 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const totalFiles = Object.values(audio.formats).reduce((sum, f) => sum + f.fileCount, 0);
 
   return (
-    <a
+    <div
       ref={audioCardRef}
       onMouseMove={handleAudioMouseMove}
       onMouseLeave={handleAudioMouseLeave}
+      className="card-animate group relative"
+      style={{ transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease", willChange: "transform", transformStyle: "preserve-3d" }}
+    >
+    <a
       href={driveUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="card-animate audio-card-tilt group rounded-lg border border-border shadow-sm overflow-hidden block cursor-pointer relative bg-card border-l-[3px] border-l-primary"
-      style={{ transition: "transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease", willChange: "transform" }}
+      className="rounded-lg border border-border shadow-sm overflow-hidden block cursor-pointer relative bg-card border-l-[3px] border-l-primary h-full"
     >
       {/* Watermark */}
       <div className="pointer-events-none absolute bottom-2 right-2 select-none watermark-icon" aria-hidden>
@@ -741,6 +797,7 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
         </div>
       </div>
     </a>
+    </div>
   );
 }
 
