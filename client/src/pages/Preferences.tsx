@@ -5,6 +5,7 @@
  */
 
 import { useAppSettings, type ThemeName, type IconSetId } from "@/contexts/AppSettingsContext";
+import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -230,7 +231,9 @@ export default function Preferences() {
   const { settings, updateSettings } = useAppSettings();
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-background">
+      <PageHeader crumbs={[{ label: "Preferences" }]} />
+      <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Page header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold font-display text-foreground mb-1">Preferences</h1>
@@ -315,6 +318,7 @@ export default function Preferences() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

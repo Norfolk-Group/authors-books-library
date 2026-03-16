@@ -66,6 +66,7 @@ import { AUDIO_BOOKS, type AudioBook } from "@/lib/audioData";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
 import { canonicalName } from "@/lib/authorAliases";
 import { useTheme, type AppTheme } from "@/contexts/ThemeContext";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { CategoryChart } from "@/components/CategoryChart";
 import {
   Search,
@@ -275,8 +276,8 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
   const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
-  const { appTheme } = useTheme();
-  const isNoir = appTheme === "dark";
+  const { settings: appSettings } = useAppSettings();
+  const isNoir = appSettings.theme === "noir-dark";
 
   // Resolve canonical display name (handles aliases, suffix variants, misspellings)
   const displayName = canonicalName(author.name);
@@ -413,9 +414,8 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched }: { b
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarked;
   const driveUrl = `https://drive.google.com/drive/folders/${book.id}?view=grid`;
-  const { appTheme } = useTheme();
-  const isNoir = appTheme === "dark";
-
+   const { settings: appSettings } = useAppSettings();
+  const isNoir = appSettings.theme === "noir-dark";
   // Extract title and author from book name (format: "Title - Author Name")
   const dashIdx = book.name.indexOf(" - ");
   const displayTitle = dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
@@ -524,6 +524,9 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched }: { b
 // ── Audio Book Cardd ──────────────────────────────────────────
 function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const driveUrl = `https://drive.google.com/drive/folders/${audio.id}?view=grid`;
+  const { settings: appSettings } = useAppSettings();
+  const isNoir = appSettings.theme === "noir-dark";
+  const audioBg = isNoir ? undefined : "#fffbeb";
 
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
@@ -545,8 +548,8 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
       href={driveUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer relative"
-      style={{ borderLeftWidth: 3, borderLeftColor: "#d97706", backgroundColor: "#fffbeb" }}
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden block cursor-pointer relative bg-card"
+      style={{ borderLeftWidth: 3, borderLeftColor: "#d97706", ...(audioBg ? { backgroundColor: audioBg } : {}) }}
     >
       {/* Watermark */}
       <div className="pointer-events-none absolute bottom-2 right-2 select-none" aria-hidden>

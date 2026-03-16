@@ -175,3 +175,13 @@
 - [x] Add Preferences entry to sidebar navigation
 - [x] Set Manus as the default theme on first load
 - [x] Create webdev-theme-system skill documenting the full pattern
+
+## Session March 16, 2026 — Breadcrumbs & Theme-Aware Cards
+- [x] Build reusable PageHeader component with breadcrumb trail and Home button
+- [x] Add PageHeader to Preferences page (/preferences)
+- [x] Add PageHeader to NotFound page (/404)
+- [x] Audit all card background classes in Home.tsx — replace hardcoded colors with bg-card / bg-background
+- [x] AuthorCard, BookCard, AudioCard now use useAppSettings().settings.theme for isNoir check
+- [x] Noir Dark theme strips all category tints (clean white bg-card)
+- [x] Manus and Norfolk AI themes keep soft category-tinted pastels
+- [x] 105 tests passing
