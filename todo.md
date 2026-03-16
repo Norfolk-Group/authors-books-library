@@ -218,3 +218,18 @@
 - [x] Build AvatarCropModal component with circular crop preview and zoom slider
 - [x] Integrate crop modal into AvatarUpload: show before S3 upload
 - [x] Export cropped canvas as JPEG blob, convert to base64 for uploadPhoto mutation
+
+## Session March 16, 2026 — Apify Amazon Scraper in Book Detail Drawer
+- [ ] Review book detail drawer and Apify router integration points
+- [ ] Add "Scrape from Amazon" button to book detail drawer with loading state
+- [ ] Show scraped cover image immediately in drawer after successful scrape
+- [ ] Show scraped rating, ASIN, description, and Amazon URL in drawer
+- [ ] Persist scraped cover URL, Amazon URL, ASIN, and rating to book_profiles DB
+- [ ] Update bookCoverMap to reflect newly scraped cover (optimistic update)
+- [ ] Run tests and save checkpoint
+
+## Session March 16, 2026 — Mini Book Covers on Author Cards
+- [x] Add mini book cover strip to AuthorCard (horizontal row of small thumbnails)
+- [x] Use bookCoverMap to resolve cover URLs per book title
+- [x] Show fallback placeholder (category-colored icon) when no cover available
+- [x] Clicking a cover opens the book's Google Drive folder directly

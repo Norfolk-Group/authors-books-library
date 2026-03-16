@@ -270,7 +270,7 @@ function EmptyState({ query }: { query: string }) {
 }
 
 // ── Author Card ──────────────────────────────────────────────
-function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean }) {
+function AuthorCard({ author, query, onBioClick, isEnriched, coverMap }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean; coverMap?: Map<string, string> }) {
   const color = CATEGORY_COLORS[author.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
@@ -394,6 +394,45 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
       {/* Book subfolders */}
       {hasBooks && (
         <div className="px-3 pb-3 pt-1 border-t border-border/40 mt-1 relative z-10">
+          {/* Mini cover strip */}
+          {coverMap && (
+            <div className="flex gap-1.5 mb-2 overflow-x-auto pb-0.5 scrollbar-none">
+              {author.books.map((book) => {
+                const titleKey = book.name.includes(" - ")
+                  ? book.name.slice(0, book.name.lastIndexOf(" - ")).trim()
+                  : book.name.trim();
+                const coverUrl = coverMap.get(titleKey);
+                return (
+                  <a
+                    key={book.id}
+                    href={`https://drive.google.com/drive/folders/${book.id}?view=grid`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    title={titleKey}
+                    className="flex-shrink-0 group/cover"
+                  >
+                    {coverUrl ? (
+                      <img
+                        src={coverUrl}
+                        alt={titleKey}
+                        className="w-8 h-11 object-cover rounded shadow-sm ring-1 ring-border group-hover/cover:ring-2 transition-all duration-150"
+                        style={{ '--tw-ring-color': color + '55' } as React.CSSProperties}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div
+                        className="w-8 h-11 rounded shadow-sm ring-1 ring-border flex items-center justify-center group-hover/cover:ring-2 transition-all duration-150"
+                        style={{ backgroundColor: color + '18', '--tw-ring-color': color + '55' } as React.CSSProperties}
+                      >
+                        <BookOpen className="w-3.5 h-3.5" style={{ color, opacity: 0.7 }} />
+                      </div>
+                    )}
+                  </a>
+                );
+              })}
+            </div>
+          )}
           <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mb-1 px-2">
             Books ({author.books.length})
           </p>
@@ -1731,6 +1770,7 @@ export default function Home() {
                         isEnriched={enrichedSet.has(
                           a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name
                         )}
+                        coverMap={bookCoverMap}
                       />
                     </div>
                   ))}
