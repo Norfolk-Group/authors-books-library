@@ -208,7 +208,13 @@
 - [x] 105 tests still passing
 
 ## Session March 16, 2026 — Custom Author Avatar Upload
-- [ ] Add uploadAuthorPhoto tRPC mutation (multipart base64 → S3 → DB)
-- [ ] Build AvatarUpload component with click-to-upload overlay on author photo
-- [ ] Wire AvatarUpload into AuthorCard and author bio modal
-- [ ] Write vitest tests for uploadAuthorPhoto
+- [x] Add uploadAuthorPhoto tRPC mutation (multipart base64 → S3 → DB)
+- [x] Build AvatarUpload component with click-to-upload overlay on author photo
+- [x] Wire AvatarUpload into AuthorCard and author bio modal
+- [x] Write vitest tests for uploadAuthorPhoto
+
+## Session March 16, 2026 — Avatar Crop & Resize Editor
+- [x] Install react-image-crop package
+- [x] Build AvatarCropModal component with circular crop preview and zoom slider
+- [x] Integrate crop modal into AvatarUpload: show before S3 upload
+- [x] Export cropped canvas as JPEG blob, convert to base64 for uploadPhoto mutation
