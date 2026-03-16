@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+export type AppTheme = "norfolk-ai" | "noir-dark";
 
 interface ThemeContextType {
-  theme: Theme;
+  appTheme: AppTheme;
+  setAppTheme: (theme: AppTheme) => void;
+  // Legacy light/dark compatibility
+  theme: "light" | "dark";
   toggleTheme?: () => void;
   switchable: boolean;
 }
@@ -12,44 +15,49 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: React.ReactNode;
-  defaultTheme?: Theme;
+  defaultTheme?: "light" | "dark";
   switchable?: boolean;
 }
+
+const THEME_STORAGE_KEY = "ncg-app-theme";
 
 export function ThemeProvider({
   children,
   defaultTheme = "light",
-  switchable = false,
+  switchable = true,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (switchable) {
-      const stored = localStorage.getItem("theme");
-      return (stored as Theme) || defaultTheme;
-    }
-    return defaultTheme;
+  const [appTheme, setAppThemeState] = useState<AppTheme>(() => {
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === "norfolk-ai" || stored === "noir-dark") return stored;
+    } catch {}
+    return "norfolk-ai";
   });
+
+  const theme: "light" | "dark" = appTheme === "noir-dark" ? "dark" : "light";
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
+    // Remove all theme classes first
+    root.classList.remove("dark", "norfolk-ai", "noir-dark");
+    // Apply the correct theme classes
+    root.classList.add(appTheme);
+    if (appTheme === "noir-dark") {
       root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
     }
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, appTheme);
+    } catch {}
+  }, [appTheme]);
 
-    if (switchable) {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme, switchable]);
+  const setAppTheme = (t: AppTheme) => setAppThemeState(t);
 
   const toggleTheme = switchable
-    ? () => {
-        setTheme(prev => (prev === "light" ? "dark" : "light"));
-      }
+    ? () => setAppThemeState(prev => prev === "norfolk-ai" ? "noir-dark" : "norfolk-ai")
     : undefined;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ appTheme, setAppTheme, theme, toggleTheme, switchable }}>
       {children}
     </ThemeContext.Provider>
   );

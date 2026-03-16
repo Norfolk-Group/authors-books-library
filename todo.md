@@ -102,3 +102,11 @@
 - [ ] Add enrichment status indicator on book cards
 - [ ] Add "Enrich All Books" button to sidebar with progress bar
 - [ ] Run tests and save checkpoint
+
+## Session March 15, 2026 — Theme Switcher
+- [x] Add Noir Dark Executive CSS theme variables to index.css
+- [x] Extend theme context to support named themes (norfolk-ai, noir-dark)
+- [x] Build Preferences panel in sidebar with theme toggle
+- [x] Persist theme selection to localStorage
+- [x] Audit all UI components to use CSS token classes (no hardcoded colors)
+- [x] Test both themes in browser — cards, chart, modals, sidebar, badges, buttons

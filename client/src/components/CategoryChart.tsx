@@ -2,6 +2,7 @@
  * CategoryChart — horizontal bar chart showing books per category.
  * Uses Recharts (already in project deps).
  * Clicking a bar filters the books grid to that category.
+ * Theme-aware: uses CSS custom properties for all colors.
  */
 import { useMemo } from "react";
 import {
@@ -44,7 +45,7 @@ const SHORT_LABELS: Record<string, string> = {
   "Technology & Futurism": "Technology",
 };
 
-// Custom tooltip
+// Custom tooltip — uses CSS vars for full theme compatibility
 const CustomTooltip = ({
   active,
   payload,
@@ -55,10 +56,10 @@ const CustomTooltip = ({
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div className="bg-white border border-border rounded-lg shadow-md px-3 py-2 text-sm">
-      <p className="font-semibold text-foreground">{d.category}</p>
+    <div className="bg-card border border-border rounded-lg shadow-md px-3 py-2 text-sm">
+      <p className="font-semibold text-card-foreground">{d.category}</p>
       <p className="text-muted-foreground">
-        <span className="font-bold text-foreground">{d.count}</span> books
+        <span className="font-bold text-card-foreground">{d.count}</span> books
       </p>
     </div>
   );
@@ -74,7 +75,7 @@ export function CategoryChart({ activeCategory, onCategoryClick }: CategoryChart
     return CATEGORIES.map((cat) => ({
       category: cat,
       count: counts[cat] ?? 0,
-      color: CATEGORY_COLORS[cat] ?? "#6b7280",
+      color: CATEGORY_COLORS[cat] ?? "var(--muted-foreground)",
       shortLabel: SHORT_LABELS[cat] ?? cat,
     })).sort((a, b) => b.count - a.count);
   }, []);
@@ -82,7 +83,7 @@ export function CategoryChart({ activeCategory, onCategoryClick }: CategoryChart
   const total = data.reduce((s, d) => s + d.count, 0);
 
   return (
-    <div className="bg-white rounded-xl border border-border/60 shadow-sm p-5 mb-6">
+    <div className="bg-card rounded-xl border border-border/60 shadow-sm p-5 mb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <div>
@@ -112,10 +113,14 @@ export function CategoryChart({ activeCategory, onCategoryClick }: CategoryChart
             margin={{ top: 4, right: 48, left: 4, bottom: 4 }}
             barCategoryGap="22%"
           >
-            <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="#f0f0f0" />
+            <CartesianGrid
+              horizontal={false}
+              strokeDasharray="3 3"
+              stroke="var(--border)"
+            />
             <XAxis
               type="number"
-              tick={{ fontSize: 11, fill: "#9ca3af" }}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               axisLine={false}
               tickLine={false}
               domain={[0, "dataMax + 4"]}
@@ -124,11 +129,14 @@ export function CategoryChart({ activeCategory, onCategoryClick }: CategoryChart
               type="category"
               dataKey="shortLabel"
               width={130}
-              tick={{ fontSize: 11, fill: "#6b7280" }}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+            />
             <Bar
               dataKey="count"
               radius={[0, 4, 4, 0]}
@@ -151,7 +159,7 @@ export function CategoryChart({ activeCategory, onCategoryClick }: CategoryChart
               <LabelList
                 dataKey="count"
                 position="right"
-                style={{ fontSize: 11, fontWeight: 600, fill: "#374151" }}
+                style={{ fontSize: 11, fontWeight: 600, fill: "var(--foreground)" }}
               />
             </Bar>
           </BarChart>

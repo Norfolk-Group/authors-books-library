@@ -55,9 +55,21 @@
   --color-ncg-gray:    oklch(0.85 0.02 240);   /* #CCD6E2 */
   --color-ncg-dark:    oklch(0.33 0.04 240);   /* #34475B */
   --color-ncg-light:   oklch(0.97 0.008 240);  /* #F5F8FA */
+
+  /* Noir Dark Executive tokens */
+  --color-noir-bg:        oklch(0.10 0.005 240);  /* #0a0a0f near-black */
+  --color-noir-surface:   oklch(0.14 0.008 240);  /* #111118 card bg */
+  --color-noir-elevated:  oklch(0.18 0.008 240);  /* #18181f elevated */
+  --color-noir-gold:      oklch(0.78 0.14 85);    /* #c9a84c gold */
+  --color-noir-gold-dim:  oklch(0.65 0.10 85);    /* #a07c32 dim gold */
+  --color-noir-text:      oklch(0.92 0.005 240);  /* #e8e8f0 near-white */
+  --color-noir-muted:     oklch(0.55 0.01 240);   /* #7a7a8a muted */
+  --color-noir-border:    oklch(0.22 0.01 240);   /* #2a2a35 subtle border */
 }
 
-:root {
+/* ── Norfolk AI Theme (default light) ── */
+:root,
+:root.norfolk-ai {
   --radius: 0.5rem;
 
   /* NCG Light palette */
@@ -94,6 +106,45 @@
   --sidebar-accent-foreground: oklch(0.97 0.005 80);
   --sidebar-border: oklch(0.30 0.06 255);
   --sidebar-ring: oklch(0.87 0.17 85);
+}
+
+/* ── Noir Dark Executive Theme ── */
+:root.noir-dark {
+  --radius: 0.4rem;
+
+  --background: oklch(0.10 0.005 240);         /* near-black #0a0a0f */
+  --foreground: oklch(0.92 0.005 240);         /* near-white #e8e8f0 */
+  --card: oklch(0.14 0.008 240);               /* dark card #111118 */
+  --card-foreground: oklch(0.92 0.005 240);    /* near-white */
+  --popover: oklch(0.16 0.008 240);
+  --popover-foreground: oklch(0.92 0.005 240);
+
+  /* Primary = Gold */
+  --primary: oklch(0.78 0.14 85);             /* #c9a84c gold */
+  --primary-foreground: oklch(0.10 0.005 240); /* near-black on gold */
+
+  /* Secondary = elevated surface */
+  --secondary: oklch(0.18 0.008 240);
+  --secondary-foreground: oklch(0.92 0.005 240);
+  --muted: oklch(0.18 0.008 240);
+  --muted-foreground: oklch(0.55 0.01 240);    /* #7a7a8a muted */
+  --accent: oklch(0.78 0.14 85);              /* gold accent */
+  --accent-foreground: oklch(0.10 0.005 240);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.92 0.005 240);
+  --border: oklch(0.22 0.01 240);             /* #2a2a35 subtle */
+  --input: oklch(0.22 0.01 240);
+  --ring: oklch(0.78 0.14 85);               /* gold ring */
+
+  /* Sidebar — deepest black with gold accents */
+  --sidebar: oklch(0.08 0.005 240);           /* #080810 deepest */
+  --sidebar-foreground: oklch(0.88 0.005 240);
+  --sidebar-primary: oklch(0.78 0.14 85);     /* gold */
+  --sidebar-primary-foreground: oklch(0.10 0.005 240);
+  --sidebar-accent: oklch(0.14 0.008 240);    /* slightly lighter on hover */
+  --sidebar-accent-foreground: oklch(0.92 0.005 240);
+  --sidebar-border: oklch(0.18 0.008 240);
+  --sidebar-ring: oklch(0.78 0.14 85);
 }
 
 @layer base {
@@ -158,11 +209,37 @@
     animation: cardIn 0.3s ease both;
   }
 
-  /* Search highlight — NCG yellow tint */
+  /* Search highlight — NCG yellow tint / gold tint in noir */
   mark.search-highlight {
     background: oklch(0.95 0.12 85);
     color: inherit;
     border-radius: 2px;
     padding: 0 1px;
+  }
+  .noir-dark mark.search-highlight {
+    background: oklch(0.30 0.10 85);
+    color: oklch(0.92 0.005 240);
+  }
+
+  /* Noir Dark — subtle grain texture overlay on body */
+  .noir-dark body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Noir Dark — gold dividers */
+  .noir-dark .border-border {
+    border-color: oklch(0.22 0.01 240);
+  }
+
+  /* Noir Dark — category badge accent glow */
+  .noir-dark .category-pill-active {
+    box-shadow: 0 0 8px oklch(0.78 0.14 85 / 0.4);
   }
 }

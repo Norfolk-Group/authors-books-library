@@ -64,6 +64,7 @@ import {
 } from "@/lib/libraryData";
 import { AUDIO_BOOKS, type AudioBook } from "@/lib/audioData";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { useTheme, type AppTheme } from "@/contexts/ThemeContext";
 import { CategoryChart } from "@/components/CategoryChart";
 import {
   Search,
@@ -110,6 +111,9 @@ import {
   Star,
   BookMarked as BookMarkedIcon,
   ShoppingCart,
+  Palette,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 // ── Icon map for categories ──────────────────────────────────
@@ -239,7 +243,7 @@ function BookSubfolderRow({ book }: { book: { name: string; id: string; contentT
 // ── Stat Card ────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon }: { label: string; value: number | string; icon: React.ElementType }) {
   return (
-    <div className="flex flex-col gap-1 px-3 sm:px-5 py-3 sm:py-4 bg-white rounded-lg border border-border shadow-sm">
+    <div className="flex flex-col gap-1 px-3 sm:px-5 py-3 sm:py-4 bg-card rounded-lg border border-border shadow-sm">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="w-3.5 h-3.5" />
         <span className="text-xs font-medium uppercase tracking-widest">{label}</span>
@@ -269,6 +273,8 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
   const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
+  const { appTheme } = useTheme();
+  const isNoir = appTheme === "noir-dark";
 
   // Extract display name (before the dash) and specialty (after the dash)
   const dashIdx = author.name.indexOf(" - ");
@@ -293,12 +299,12 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
 
   const hasBooks = author.books && author.books.length > 0;
 
-  const bg = CATEGORY_BG[author.category] ?? "#fafaf9";
+  const bg = isNoir ? undefined : (CATEGORY_BG[author.category] ?? "#fafaf9");
 
   return (
     <div
-      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative"
-      style={{ borderLeftWidth: 3, borderLeftColor: color, backgroundColor: bg }}
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden relative bg-card"
+      style={{ borderLeftWidth: 3, borderLeftColor: color, ...(bg ? { backgroundColor: bg } : {}) }}
     >
       {/* Watermark illustration */}
       <div
@@ -400,14 +406,14 @@ function AuthorCard({ author, query, onBioClick, isEnriched }: { author: AuthorE
       )}
     </div>
   );
-}
-
-// ── Book Card ────────────────────────────────────────────
+}// ── Book Card ──────────────────────────────────────────────
 function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched }: { book: BookRecord; query: string; onDetailClick?: (b: BookRecord) => void; coverImageUrl?: string; isEnriched?: boolean }) {
   const color = CATEGORY_COLORS[book.category] ?? "#374151";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarked;
   const driveUrl = `https://drive.google.com/drive/folders/${book.id}?view=grid`;
+  const { appTheme } = useTheme();
+  const isNoir = appTheme === "noir-dark";
 
   // Extract title and author from book name (format: "Title - Author Name")
   const dashIdx = book.name.indexOf(" - ");
@@ -428,12 +434,12 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched }: { b
   };
 
   const hasContent = Object.keys(book.contentTypes).length > 0;
-  const bg = CATEGORY_BG[book.category] ?? "#fafaf9";
+  const bg = isNoir ? undefined : (CATEGORY_BG[book.category] ?? "#fafaf9");
 
   return (
     <div
-      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer relative"
-      style={{ borderLeftWidth: 3, borderLeftColor: color, backgroundColor: bg }}
+      className="card-animate group rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer relative bg-card"
+      style={{ borderLeftWidth: 3, borderLeftColor: color, ...(bg ? { backgroundColor: bg } : {}) }}
       onClick={() => onDetailClick?.(book)}
     >
       {/* Watermark (only when no cover) */}
@@ -923,6 +929,7 @@ type BookSort = "name-asc" | "name-desc" | "author" | "content-desc";
 type TabType = "authors" | "books" | "audio";
 
 export default function Home() {
+  const { appTheme, setAppTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("authors");
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
@@ -1432,7 +1439,7 @@ export default function Home() {
                 <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${enrichProgress}%`, backgroundColor: "#FDB817" }}
+                    style={{ width: `${enrichProgress}%`, backgroundColor: "var(--accent)" }}
                   />
                 </div>
                 {enrichFailed > 0 && (
@@ -1481,7 +1488,7 @@ export default function Home() {
                 <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${bookEnrichProgress}%`, backgroundColor: "#0d9488" }}
+                    style={{ width: `${bookEnrichProgress}%`, backgroundColor: "var(--primary)" }}
                   />
                 </div>
                 {bookEnrichFailed > 0 && (
@@ -1493,6 +1500,41 @@ export default function Home() {
             {bookEnrichStatus === "done" && bookEnrichFailed > 0 && (
               <p className="text-[10px] text-muted-foreground mt-1">{bookEnrichFailed} books could not be enriched.</p>
             )}
+
+            {/* ── Preferences: Theme Switcher ── */}
+            <div className="mt-3 pt-3 border-t border-border/50">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Preferences</p>
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={() => setAppTheme("norfolk-ai")}
+                  className={`w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded transition-colors ${
+                    appTheme === "norfolk-ai"
+                      ? "bg-accent/20 text-accent-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  }`}
+                >
+                  <Sun className="w-3.5 h-3.5 flex-shrink-0" />
+                  Norfolk AI
+                  {appTheme === "norfolk-ai" && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-ncg-yellow" />
+                  )}
+                </button>
+                <button
+                  onClick={() => setAppTheme("noir-dark")}
+                  className={`w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded transition-colors ${
+                    appTheme === "noir-dark"
+                      ? "bg-accent/20 text-accent-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                  }`}
+                >
+                  <Moon className="w-3.5 h-3.5 flex-shrink-0" />
+                  Noir Dark Executive
+                  {appTheme === "noir-dark" && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "oklch(0.78 0.14 85)" }} />
+                  )}
+                </button>
+              </div>
+            </div>
 
             {/* Drive Media Folders */}
             <div className="mt-3 pt-3 border-t border-border/50">
@@ -1552,7 +1594,7 @@ export default function Home() {
                 placeholder={activeTab === "audio" ? "Search audiobooks, authors…" : "Search authors, books, topics…"}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="pl-9 pr-8 h-8 text-sm bg-white"
+                className="pl-9 pr-8 h-8 text-sm bg-background"
               />
               {query && (
                 <button
@@ -1627,7 +1669,7 @@ export default function Home() {
                   <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
                   {activeTab === "authors" ? (
                     <Select value={authorSort} onValueChange={(v) => setAuthorSort(v as AuthorSort)}>
-                      <SelectTrigger className="h-7 text-xs w-[160px] bg-white">
+                      <SelectTrigger className="h-7 text-xs w-[160px] bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -1639,7 +1681,7 @@ export default function Home() {
                     </Select>
                   ) : (
                     <Select value={bookSort} onValueChange={(v) => setBookSort(v as BookSort)}>
-                      <SelectTrigger className="h-7 text-xs w-[160px] bg-white">
+                      <SelectTrigger className="h-7 text-xs w-[160px] bg-background">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
