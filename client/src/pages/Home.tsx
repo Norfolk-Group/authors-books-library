@@ -1096,6 +1096,15 @@ export default function Home() {
   const [bookEnrichFailed, setBookEnrichFailed] = useState(0);
   const bookEnrichBatchMutation = trpc.bookProfiles.enrichBatch.useMutation();
   const utils = trpc.useUtils();
+
+  // ── Batch portrait generation state ─────────────────────────────────────
+  const [portraitStatus, setPortraitStatus] = useState<"idle" | "running" | "done" | "error">("idle");
+  const [portraitProgress, setPortraitProgress] = useState(0);
+  const [portraitDone, setPortraitDone] = useState(0);
+  const [portraitTotal, setPortraitTotal] = useState(0);
+  const [portraitFailed, setPortraitFailed] = useState(0);
+  const [portraitCurrent, setPortraitCurrent] = useState<string | null>(null);
+  const generatePortraitMutationBatch = trpc.authorProfiles.generatePortrait.useMutation();
   const enrichAllBios= useCallback(async () => {
     if (enrichStatus === "running") return;
     // Build unique author names from the library data
@@ -1176,6 +1185,67 @@ export default function Home() {
       toast.error("Book enrichment failed: " + (err instanceof Error ? err.message : String(err)));
     }
   }, [bookEnrichStatus, bookEnrichBatchMutation, utils]);
+
+  // ── Generate AI portraits for all authors missing one ───────────────────────
+  const generateAllPortraits = useCallback(async () => {
+    if (portraitStatus === "running") return;
+
+    // Collect unique canonical author names that have no photo in the static map
+    const allNames = Array.from(
+      new Set(
+        AUTHORS.map((a) => {
+          const d = a.name.indexOf(" - ");
+          return d !== -1 ? a.name.slice(0, d) : a.name;
+        })
+      )
+    );
+    // Filter to only those without a photo in the static map
+    const missing = allNames.filter((name) => !getAuthorPhoto(name));
+
+    if (missing.length === 0) {
+      toast.success("All authors already have portraits!");
+      return;
+    }
+
+    setPortraitStatus("running");
+    setPortraitProgress(0);
+    setPortraitDone(0);
+    setPortraitFailed(0);
+    setPortraitTotal(missing.length);
+    setPortraitCurrent(null);
+
+    let done = 0;
+    let failed = 0;
+
+    try {
+      for (let i = 0; i < missing.length; i++) {
+        const authorName = missing[i];
+        setPortraitCurrent(authorName);
+        try {
+          await generatePortraitMutationBatch.mutateAsync({ authorName });
+          done++;
+        } catch {
+          failed++;
+        }
+        setPortraitDone(done);
+        setPortraitFailed(failed);
+        setPortraitProgress(Math.round(((i + 1) / missing.length) * 100));
+        // 2s delay between requests to respect Replicate rate limits
+        if (i < missing.length - 1) {
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+      }
+      setPortraitCurrent(null);
+      setPortraitStatus("done");
+      toast.success(
+        `Generated ${done} portrait${done !== 1 ? "s" : ""}${failed > 0 ? ` (${failed} failed)` : ""}.`
+      );
+    } catch (err) {
+      setPortraitStatus("error");
+      setPortraitCurrent(null);
+      toast.error("Portrait generation failed: " + (err instanceof Error ? err.message : String(err)));
+    }
+  }, [portraitStatus, generatePortraitMutationBatch]);
 
   const regenerate = trpc.library.regenerate.useMutation({
     onSuccess: (data) => {
@@ -1601,6 +1671,54 @@ export default function Home() {
 
             {bookEnrichStatus === "done" && bookEnrichFailed > 0 && (
               <p className="text-[10px] text-muted-foreground mt-1">{bookEnrichFailed} books could not be enriched.</p>
+            )}
+
+            {/* Generate Missing Portraits button */}
+            <button
+              onClick={generateAllPortraits}
+              disabled={portraitStatus === "running" || regenerate.isPending}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1.5"
+              title="Generate AI portraits for authors without a headshot"
+            >
+              {portraitStatus === "running" ? (
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+              ) : portraitStatus === "done" ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+              ) : portraitStatus === "error" ? (
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              {portraitStatus === "running"
+                ? `Generating… ${portraitDone}/${portraitTotal}`
+                : portraitStatus === "done"
+                ? `Portraits done (${portraitDone})`
+                : portraitStatus === "error"
+                ? "Generation failed — retry"
+                : "Generate Missing Portraits"}
+            </button>
+
+            {/* Portrait generation progress bar */}
+            {portraitStatus === "running" && (
+              <div className="mt-2">
+                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                  <span className="truncate max-w-[140px]">{portraitCurrent ?? "Starting…"}</span>
+                  <span className="flex-shrink-0 ml-1">{portraitProgress}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${portraitProgress}%`, backgroundColor: "var(--accent)" }}
+                  />
+                </div>
+                {portraitFailed > 0 && (
+                  <p className="text-[10px] text-red-500 mt-1">{portraitFailed} failed</p>
+                )}
+              </div>
+            )}
+
+            {portraitStatus === "done" && portraitFailed > 0 && (
+              <p className="text-[10px] text-muted-foreground mt-1">{portraitFailed} portraits could not be generated.</p>
             )}
 
             {/* ── Preferences link ── */}

@@ -248,3 +248,13 @@
 - [x] Display generated portrait immediately on success (optimistic state update)
 - [x] Write vitest tests for Replicate helper (6 tests, 111 total passing)
 - [x] Save checkpoint
+
+## Session March 16, 2026 — Batch AI Portrait Generation
+- [x] Detect missing authors client-side (names not in AUTHOR_PHOTOS static map)
+- [x] Reuse generatePortrait tRPC mutation (single author, called sequentially from client)
+- [x] Add "Generate Missing Portraits" button to sidebar footer
+- [x] Show progress bar: X / Y authors processed, current author name
+- [x] Sequential processing with 2s delay between requests (Replicate rate limit)
+- [x] Show success/error count in completion toast
+- [x] Write 7 vitest tests for batch portrait logic (118 total passing)
+- [x] Save checkpoint
