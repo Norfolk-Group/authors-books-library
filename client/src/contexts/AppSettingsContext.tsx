@@ -40,6 +40,8 @@ export interface AppSettings {
   colorMode: ColorMode;
   /** Icon set: which Phosphor variant to use globally */
   iconSet: IconSetId;
+  /** Preferred Gemini model for LLM calls */
+  geminiModel: string;
 }
 
 interface AppSettingsContextType {
@@ -55,6 +57,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: "manus",
   colorMode: "light",
   iconSet: "phosphor-regular",
+  geminiModel: "gemini-2.5-flash",
 };
 
 const STORAGE_KEY = "app-settings-v2";

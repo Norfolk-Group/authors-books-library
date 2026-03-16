@@ -12,6 +12,7 @@ import { libraryRouter } from "./library.router";
 import { authorProfilesRouter } from "./authorProfiles.router";
 import { bookProfilesRouter } from "./bookProfiles.router";
 import { apifyRouter } from "./apify.router";
+import { llmRouter } from "./llm.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -29,6 +30,7 @@ export const appRouter = router({
   authorProfiles: authorProfilesRouter,
   bookProfiles: bookProfilesRouter,
   apify: apifyRouter,
+  llm: llmRouter,
 });
 
 export type AppRouter = typeof appRouter;

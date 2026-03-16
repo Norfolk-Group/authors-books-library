@@ -342,3 +342,14 @@
 - [x] Author card avatars: graceful 2x scale expand on hover (scale(2), spring easing, category-colored drop-shadow, z-index:50)
 - [x] 118 tests passing
 - [x] Save checkpoint
+
+## Session March 16, 2026 — LLM Model Selector in Preferences
+- [x] Fetched 13 text-generation Gemini models from Google AI API (live)
+- [x] Add LLM tab to Preferences page with radio buttons grouped by tier (Preview / Stable / Latest)
+- [x] Persist selected model to localStorage via AppSettingsContext (geminiModel field)
+- [x] Add llm.router.ts with listModels query and testModel mutation (latency ping)
+- [x] Add optional model param to invokeLLM helper so callers can override default
+- [x] Show model descriptions (context window, output limit, speed, model ID) per option
+- [x] Add "Test selected model" button with latency display and success/error feedback
+- [x] 118 tests passing
+- [x] Save checkpoint

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   BooksIcon,
   UsersIcon,
@@ -27,6 +28,10 @@ import {
   WarningCircleIcon,
   ImageIcon,
   UserCircleIcon,
+  RocketLaunchIcon,
+  LightningIcon,
+  BrainIcon,
+  TimerIcon,
 } from "@phosphor-icons/react";
 
 // ── Theme definitions ─────────────────────────────────────────────────────────
@@ -634,6 +639,180 @@ function StorageTab() {
   );
 }
 
+// ── LLM Tab ───────────────────────────────────────────────────────────────────
+
+function LlmTab() {
+  const { settings, updateSettings } = useAppSettings();
+  const modelsQuery = trpc.llm.listModels.useQuery();
+  const testModel = trpc.llm.testModel.useMutation();
+  const [testResult, setTestResult] = useState<{ success: boolean; latencyMs: number; response?: string; error?: string } | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const models = modelsQuery.data ?? [];
+
+  // Group by tier
+  const stable = models.filter((m) => m.tier === "stable");
+  const preview = models.filter((m) => m.tier === "preview");
+  const latest = models.filter((m) => m.tier === "latest");
+
+  const speedIcon = (speed: string) => {
+    if (speed === "fast") return <LightningIcon size={12} className="text-amber-500" />;
+    if (speed === "powerful") return <BrainIcon size={12} className="text-violet-500" />;
+    return <RocketLaunchIcon size={12} className="text-blue-500" />;
+  };
+
+  const tierBadge = (tier: string) => {
+    if (tier === "stable") return <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4">Stable</Badge>;
+    if (tier === "preview") return <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-amber-400 text-amber-600">Preview</Badge>;
+    return <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-blue-400 text-blue-600">Latest</Badge>;
+  };
+
+  const handleTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const result = await testModel.mutateAsync({ modelId: settings.geminiModel });
+      setTestResult(result);
+      if (result.success) {
+        toast.success(`${settings.geminiModel} responded in ${result.latencyMs}ms`);
+      } else {
+        toast.error(`Test failed: ${result.error}`);
+      }
+    } catch (err) {
+      setTestResult({ success: false, latencyMs: 0, error: String(err) });
+      toast.error("Test failed");
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const ModelSection = ({ title, items }: { title: string; items: typeof models }) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="mb-5">
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">{title}</p>
+        <div className="space-y-1.5">
+          {items.map((model) => {
+            const isSelected = settings.geminiModel === model.id;
+            return (
+              <label
+                key={model.id}
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all pref-card-3d ${
+                  isSelected
+                    ? "border-foreground bg-muted/40 shadow-sm"
+                    : "border-border hover:border-muted-foreground hover:bg-muted/20"
+                }`}
+                style={{ transition: "all 0.15s ease" }}
+              >
+                {/* Radio input */}
+                <input
+                  type="radio"
+                  name="gemini-model"
+                  value={model.id}
+                  checked={isSelected}
+                  onChange={() => updateSettings({ geminiModel: model.id })}
+                  className="mt-0.5 accent-foreground"
+                />
+                {/* Model info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-foreground">{model.displayName}</span>
+                    {tierBadge(model.tier)}
+                    <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                      {speedIcon(model.speed)}
+                      {model.speed}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{model.description}</p>
+                  <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+                    <span>{(model.inputTokens / 1000).toFixed(0)}K context</span>
+                    <span>{(model.outputTokens / 1000).toFixed(0)}K output</span>
+                    <code className="font-mono opacity-60">{model.id}</code>
+                  </div>
+                </div>
+                {isSelected && (
+                  <CheckCircleIcon size={16} className="text-foreground mt-0.5 flex-shrink-0" />
+                )}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">AI Model</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Selected model is used for portrait validation and AI-powered enrichment.
+          </p>
+        </div>
+        <button
+          onClick={handleTest}
+          disabled={testing}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50"
+        >
+          {testing ? (
+            <ArrowsClockwiseIcon size={12} className="animate-spin" />
+          ) : (
+            <TimerIcon size={12} />
+          )}
+          Test selected model
+        </button>
+      </div>
+
+      {/* Test result */}
+      {testResult && (
+        <Card className={`p-3 mb-4 text-xs flex items-center gap-2 ${
+          testResult.success ? "border-green-400/50 bg-green-50/50 dark:bg-green-950/20" : "border-red-400/50 bg-red-50/50 dark:bg-red-950/20"
+        }`}>
+          {testResult.success ? (
+            <CheckCircleIcon size={14} className="text-green-600 flex-shrink-0" />
+          ) : (
+            <WarningCircleIcon size={14} className="text-red-500 flex-shrink-0" />
+          )}
+          <div>
+            {testResult.success ? (
+              <span className="text-green-700 dark:text-green-400">
+                Responded in <strong>{testResult.latencyMs}ms</strong> — "{testResult.response}"
+              </span>
+            ) : (
+              <span className="text-red-700 dark:text-red-400">{testResult.error}</span>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Loading state */}
+      {modelsQuery.isLoading && (
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 rounded-lg bg-muted animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {/* Model groups */}
+      {!modelsQuery.isLoading && (
+        <>
+          <ModelSection title="Gemini 3.x Preview" items={preview} />
+          <ModelSection title="Gemini 2.5 Stable" items={stable} />
+          <ModelSection title="Latest Aliases" items={latest} />
+        </>
+      )}
+
+      <p className="text-xs text-muted-foreground pt-3 border-t border-border">
+        Model selection is saved to your browser. Preview models may have different rate limits.
+        The default is <code className="font-mono">gemini-2.5-flash</code>.
+      </p>
+    </div>
+  );
+}
+
 // ── Main Preferences page ─────────────────────────────────────────────────────
 
 export default function Preferences() {
@@ -656,6 +835,7 @@ export default function Preferences() {
           <TabsTrigger value="themes">Themes</TabsTrigger>
           <TabsTrigger value="icons">Icons</TabsTrigger>
           <TabsTrigger value="storage">Storage</TabsTrigger>
+          <TabsTrigger value="llm">AI Model</TabsTrigger>
           <TabsTrigger value="about">About</TabsTrigger>
         </TabsList>
 
@@ -702,6 +882,11 @@ export default function Preferences() {
         {/* ── Storage tab ── */}
         <TabsContent value="storage">
           <StorageTab />
+        </TabsContent>
+
+        {/* ── LLM tab ── */}
+        <TabsContent value="llm">
+          <LlmTab />
         </TabsContent>
 
         {/* ── About tab ── */}
