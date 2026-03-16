@@ -34,6 +34,10 @@ export const authorProfiles = mysqlTable("author_profiles", {
   websiteUrl: varchar("websiteUrl", { length: 512 }),
   twitterUrl: varchar("twitterUrl", { length: 512 }),
   linkedinUrl: varchar("linkedinUrl", { length: 512 }),
+  /** Real author photo URL sourced from Wikipedia or publisher pages via Apify */
+  photoUrl: varchar("photoUrl", { length: 1024 }),
+  /** Source URL where the photo was found */
+  photoSourceUrl: varchar("photoSourceUrl", { length: 1024 }),
   enrichedAt: timestamp("enrichedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

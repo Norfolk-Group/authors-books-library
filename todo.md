@@ -145,3 +145,20 @@
 - [x] Update ThemeContext to use standard light/dark classes (remove norfolk-ai/noir-dark)
 - [x] Fix all Home.tsx theme references to use new light/dark values
 - [x] Verify 90 tests still pass after theme migration
+
+## Session March 15, 2026 — Swiss Modernist Typography Hierarchy
+- [ ] Apply font-display class to all stat numbers in StatCard
+- [ ] Apply font-display class to all card titles (author names, book titles)
+- [ ] Apply font-display class to section headings and modal titles
+- [ ] Apply font-display class to sidebar header and category labels
+
+## Session March 16, 2026 — Apify Web Scraping Integration
+- [x] Install apify-client npm package
+- [x] Store APIFY_API_TOKEN as environment secret
+- [x] Validate token and confirm cheerio-scraper works for Amazon book search
+- [x] Build server/apify.ts helper with scrapeAmazonBook() and scrapeAuthorPhoto() functions
+- [x] Add apify tRPC router with scrapeBook and scrapeAuthor procedures
+- [x] Wire apify router into appRouter
+- [ ] Add "Scrape from Amazon" button to book detail panel
+- [ ] Add "Find Real Photo" button to author bio modal
+- [x] Write vitest tests for Apify helper (15 tests, 105 total passing)

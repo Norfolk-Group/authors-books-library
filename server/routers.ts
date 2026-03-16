@@ -5,6 +5,7 @@ import { publicProcedure, router } from "./_core/trpc";
 import { libraryRouter } from "./libraryRouter";
 import { authorProfilesRouter } from "./authorProfilesRouter";
 import { bookProfilesRouter } from "./bookProfilesRouter";
+import { apifyRouter } from "./apifyRouter";
 
 export const appRouter = router({
   // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -22,6 +23,7 @@ export const appRouter = router({
   library: libraryRouter,
   authorProfiles: authorProfilesRouter,
   bookProfiles: bookProfilesRouter,
+  apify: apifyRouter,
 });
 
 export type AppRouter = typeof appRouter;
