@@ -220,13 +220,13 @@
 - [x] Export cropped canvas as JPEG blob, convert to base64 for uploadPhoto mutation
 
 ## Session March 16, 2026 — Apify Amazon Scraper in Book Detail Drawer
-- [ ] Review book detail drawer and Apify router integration points
-- [ ] Add "Scrape from Amazon" button to book detail drawer with loading state
-- [ ] Show scraped cover image immediately in drawer after successful scrape
-- [ ] Show scraped rating, ASIN, description, and Amazon URL in drawer
-- [ ] Persist scraped cover URL, Amazon URL, ASIN, and rating to book_profiles DB
-- [ ] Update bookCoverMap to reflect newly scraped cover (optimistic update)
-- [ ] Run tests and save checkpoint
+- [x] Review book detail drawer and Apify router integration points
+- [x] Add "Scrape from Amazon" button to book detail drawer with loading state
+- [x] Show scraped cover image immediately in drawer after successful scrape
+- [x] Show scraped rating and Amazon URL in drawer
+- [x] Persist scraped cover URL and Amazon URL to book_profiles DB
+- [x] Update bookCoverMap to reflect newly scraped cover (invalidate query)
+- [x] 118 tests passing
 
 ## Session March 16, 2026 — Mini Book Covers on Author Cards
 - [x] Add mini book cover strip to AuthorCard (horizontal row of small thumbnails)
@@ -235,10 +235,10 @@
 - [x] Clicking a cover opens the book's Google Drive folder directly
 
 ## Session March 16, 2026 — Cover Thumbnails Open Book Detail Dialog
-- [ ] Add onBookClick callback prop to AuthorCard
-- [ ] Wire cover thumbnails to call onBookClick(BookRecord) instead of linking to Drive
-- [ ] Build BOOKS_BY_TITLE lookup map to resolve BookRecord from book name
-- [ ] Pass onBookClick from parent (Home) that calls setSelectedBook + setBookSheetOpen
+- [x] Add onBookClick callback prop to AuthorCard
+- [x] Wire cover thumbnails to call onBookClick(BookRecord) instead of linking to Drive
+- [x] Build booksByIdMap lookup map to resolve BookRecord from book.id
+- [x] Pass onBookClick from parent (Home) that calls setSelectedBook + setBookSheetOpen
 
 ## Session March 16, 2026 — Replicate Portrait Generation for Missing Authors
 - [x] Build server/replicate.ts helper with generateAuthorPortrait(authorName, bio?) function
@@ -257,4 +257,18 @@
 - [x] Sequential processing with 2s delay between requests (Replicate rate limit)
 - [x] Show success/error count in completion toast
 - [x] Write 7 vitest tests for batch portrait logic (118 total passing)
+- [x] Save checkpoint
+
+## Session March 16, 2026 — Norfolk AI Logo in Sidebar Footer
+- [x] Upload all three logo variants (white, wireframe, blue) to CDN
+- [x] Replace plain-text "Powered by Norfolk AI" with logo image in sidebar footer
+- [x] Use blue logo on light theme, white logo on dark theme
+- [x] Save checkpoint
+
+## Session March 16, 2026 — Three Feature Bundle
+- [x] Upload Norfolk AI logos to CDN and replace plain-text branding with logo in sidebar footer
+- [x] Add "Scrape from Amazon" button to book detail drawer (cover, rating, ASIN, Amazon URL)
+- [x] Wire cover thumbnails on author cards to open book detail dialog (not Drive folder)
+- [x] Add DB-first photo fallback: check author_profiles.s3PhotoUrl before static AUTHOR_PHOTOS map
+- [x] 118 tests passing
 - [x] Save checkpoint

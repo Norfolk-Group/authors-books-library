@@ -581,4 +581,27 @@ export const authorProfilesRouter = router({
 
       return { url, key };
     }),
+
+  /**
+   * Returns a lightweight map of authorName → best photo URL for all profiles
+   * that have a photo stored in S3. Used by the frontend as a DB-first fallback
+   * over the static AUTHOR_PHOTOS map, so AI-generated portraits appear on cards.
+   */
+  getPhotoMap: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        authorName: authorProfiles.authorName,
+        s3PhotoUrl: authorProfiles.s3PhotoUrl,
+        photoUrl: authorProfiles.photoUrl,
+      })
+      .from(authorProfiles);
+    return rows
+      .filter((r) => r.s3PhotoUrl || r.photoUrl)
+      .map((r) => ({
+        authorName: r.authorName,
+        photoUrl: r.s3PhotoUrl ?? r.photoUrl ?? "",
+      }));
+  }),
 });

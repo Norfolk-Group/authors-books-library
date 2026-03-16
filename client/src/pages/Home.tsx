@@ -270,7 +270,7 @@ function EmptyState({ query }: { query: string }) {
 }
 
 // ── Author Card ──────────────────────────────────────────────
-function AuthorCard({ author, query, onBioClick, isEnriched, coverMap }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean; coverMap?: Map<string, string> }) {
+function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookClick, dbPhotoMap }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean; coverMap?: Map<string, string>; onBookClick?: (bookId: string, titleKey: string) => void; dbPhotoMap?: Map<string, string> }) {
   const color = CATEGORY_COLORS[author.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
@@ -279,8 +279,8 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap }: { autho
   const displayName = canonicalName(author.name);
   const specialty = author.name.includes(" - ") ? author.name.slice(author.name.indexOf(" - ") + 3) : "";
 
-  // Look up author photo
-  const photoUrl = getAuthorPhoto(displayName);
+  // Look up author photo: DB-first (generated portraits) then static map fallback
+  const photoUrl = dbPhotoMap?.get(displayName.toLowerCase()) ?? getAuthorPhoto(displayName);
 
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
@@ -403,14 +403,12 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap }: { autho
                   : book.name.trim();
                 const coverUrl = coverMap.get(titleKey);
                 return (
-                  <a
+                  <button
                     key={book.id}
-                    href={`https://drive.google.com/drive/folders/${book.id}?view=grid`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onBookClick ? onBookClick(book.id, titleKey) : window.open(`https://drive.google.com/drive/folders/${book.id}?view=grid`, "_blank"); }}
                     title={titleKey}
-                    className="flex-shrink-0 group/cover"
+                    className="flex-shrink-0 group/cover cursor-pointer"
                   >
                     {coverUrl ? (
                       <img
@@ -428,7 +426,7 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap }: { autho
                         <BookOpen className="w-3.5 h-3.5" style={{ color, opacity: 0.7 }} />
                       </div>
                     )}
-                  </a>
+                  </button>
                 );
               })}
             </div>
@@ -834,18 +832,30 @@ function BookDetailPanel({ book, onClose }: { book: typeof BOOKS[number]; onClos
 
   const isLoadingProfile = isLoading || enrichMutation.isPending;
 
-  // Apify Amazon scrape mutation
+  // Apify Amazon scrape mutation — optimistic cover preview
+  const [scrapedCoverUrl, setScrapedCoverUrl] = useState<string | null>(null);
+  const [scrapedAsin, setScrapedAsin] = useState<string | null>(null);
+  const utilsInner = trpc.useUtils();
   const scrapeMutation = trpc.apify.scrapeBook.useMutation({
     onSuccess: (data) => {
       if (data.success) {
+        // Show cover immediately without waiting for DB refetch
+        if (data.coverUrl) setScrapedCoverUrl(data.coverUrl);
+        if (data.asin) setScrapedAsin(data.asin);
         toast.success(`Found on Amazon: ${data.matchedTitle ?? displayTitle}`);
         refetchProfile();
+        // Invalidate bookCovers so author card strips update too
+        void utilsInner.bookProfiles.getMany.invalidate();
       } else {
         toast.error("Amazon scrape: " + ((data as { message?: string }).message ?? "No results found"));
       }
     },
     onError: (e) => toast.error("Amazon scrape failed: " + e.message),
   });
+  // Effective cover: scraped > DB profile > null
+  const effectiveCoverUrl = scrapedCoverUrl ?? profile?.coverImageUrl ?? null;
+  // ASIN from scrape result only (not in DB schema)
+  const displayAsin = scrapedAsin;
 
   return (
     <div className="flex flex-col gap-5 pt-2">
@@ -853,10 +863,10 @@ function BookDetailPanel({ book, onClose }: { book: typeof BOOKS[number]; onClos
       <DialogHeader>
         <div className="flex items-start gap-4 mb-1">
           {/* Book cover */}
-          <div className="flex-shrink-0">
-            {profile?.coverImageUrl ? (
+          <div className="flex-shrink-0 relative">
+            {effectiveCoverUrl ? (
               <img
-                src={profile.coverImageUrl}
+                src={effectiveCoverUrl}
                 alt={displayTitle}
                 className="w-20 h-28 object-cover rounded-md shadow-md ring-1 ring-border"
                 loading="lazy"
@@ -866,12 +876,18 @@ function BookDetailPanel({ book, onClose }: { book: typeof BOOKS[number]; onClos
                 className="w-20 h-28 rounded-md flex items-center justify-center shadow-md ring-1 ring-border"
                 style={{ backgroundColor: color + "18" }}
               >
-                {isLoadingProfile ? (
+                {isLoadingProfile || scrapeMutation.isPending ? (
                   <RefreshCw className="w-5 h-5 animate-spin" style={{ color }} />
                 ) : (
                   <Icon className="w-8 h-8" style={{ color, opacity: 0.5 }} />
                 )}
               </div>
+            )}
+            {/* ASIN badge shown after successful scrape */}
+            {displayAsin && (
+              <span className="absolute -bottom-1 -right-1 text-[9px] bg-background border border-border rounded px-1 py-0.5 font-mono opacity-70">
+                {displayAsin}
+              </span>
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -1088,6 +1104,26 @@ export default function Home() {
     }
     return map;
   }, [bookCoversQuery.data]);
+  // Lookup map: book.id → BookRecord (for cover thumbnail click → detail dialog)
+  const booksByIdMap = useMemo(() => {
+    const map = new Map<string, typeof BOOKS[number]>();
+    for (const b of BOOKS) map.set(b.id, b);
+    return map;
+  }, []);
+
+  // DB-first author photo fallback: generated portraits (Replicate) appear on cards
+  const authorPhotoMapQuery = trpc.authorProfiles.getPhotoMap.useQuery(
+    undefined,
+    { staleTime: 60_000 }
+  );
+  const dbPhotoMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of authorPhotoMapQuery.data ?? []) {
+      if (r.photoUrl) map.set(r.authorName.toLowerCase(), r.photoUrl);
+    }
+    return map;
+  }, [authorPhotoMapQuery.data]);
+
   // ── Book enrich state ────────────────────────────────────────────
   const [bookEnrichStatus, setBookEnrichStatus] = useState<"idle" | "running" | "done" | "error">("idle");
   const [bookEnrichProgress, setBookEnrichProgress] = useState(0);
@@ -1761,9 +1797,23 @@ export default function Home() {
             </div>
             {/* Powered by Norfolk AI */}
             <div className="mt-3 pt-3 border-t border-border/30">
-              <p className="text-[10px] text-muted-foreground/60 text-center tracking-wide">
-                Powered by Norfolk AI
-              </p>
+              <a
+                href="https://norfolkai.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 opacity-50 hover:opacity-80 transition-opacity"
+                title="Powered by Norfolk AI"
+              >
+                <img
+                  src={appTheme === "dark"
+                    ? "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/norfolk-ai-logo-white_d92c1722.png"
+                    : "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/norfolk-ai-logo-blue_9ed63fc7.png"
+                  }
+                  alt="Norfolk AI"
+                  className="w-4 h-4 object-contain"
+                />
+                <span className="text-[10px] text-muted-foreground tracking-wide">Powered by Norfolk AI</span>
+              </a>
             </div>
           </SidebarFooter>
         </Sidebar>
@@ -1915,6 +1965,13 @@ export default function Home() {
                           a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name
                         )}
                         coverMap={bookCoverMap}
+                        dbPhotoMap={dbPhotoMap}
+                        onBookClick={(bookId, titleKey) => {
+                          // Try to find the BookRecord by id first, then by title key
+                          const found = booksByIdMap.get(bookId)
+                            ?? BOOKS.find((b) => b.name.split(" - ")[0].trim().toLowerCase() === titleKey.toLowerCase());
+                          if (found) { setSelectedBook(found); setBookSheetOpen(true); }
+                        }}
                       />
                     </div>
                   ))}
