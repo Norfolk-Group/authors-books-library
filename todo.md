@@ -405,3 +405,15 @@
 - [x] Create client/src/components/FlowbiteAuthorCard.tsx with all data fields
 - [x] Replace AuthorCard function in Home.tsx with import of new component
 - [x] Verify no TS errors on new component, run tests, save checkpoint
+
+## Session March 17, 2026 — Theme-Aware FlowbiteAuthorCard (No Hardcoded Colours)
+- [x] Remove all hardcoded hex colours from FlowbiteAuthorCard (category border, shadow, pill bg/text, icon tints, avatar ring, watermark)
+- [x] Remove all hardcoded Tailwind colour classes (rose-*, emerald-*, indigo-*, amber-*, sky-*, etc.)
+- [x] Replace coloured left border stripe with neutral border-border or a subtle icon-only indicator
+- [x] Replace coloured resource pills with icon + label using text-muted-foreground on bg-muted
+- [x] Replace coloured avatar ring/shadow with neutral ring-border
+- [x] Replace coloured category icon tint with text-foreground / text-muted-foreground
+- [x] Replace dynamic box-shadow with theme-aware shadow-sm/md (no colour tinting)
+- [x] Replace category watermark colour with text-foreground opacity-[0.04]
+- [x] Verify all three themes (Manus, Norfolk AI, Noir Dark) render correctly
+- [x] Run tests and save checkpoint
