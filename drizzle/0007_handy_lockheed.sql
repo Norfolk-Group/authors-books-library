@@ -1,0 +1,1 @@
+ALTER TABLE `author_profiles` ADD `photoSource` enum('wikipedia','tavily','apify','ai');

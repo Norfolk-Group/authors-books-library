@@ -414,12 +414,20 @@ export const authorProfilesRouter = router({
 
           // Save to DB
           if (result.photoUrl || result.s3PhotoUrl) {
+            // Map waterfall source to photoSource enum
+            const photoSourceVal =
+              result.source === "wikipedia" ? "wikipedia" as const
+              : result.source === "tavily" ? "tavily" as const
+              : result.source === "apify" ? "apify" as const
+              : result.source === "ai-generated" ? "ai" as const
+              : undefined;
             await db
               .update(authorProfiles)
               .set({
                 photoUrl: result.s3PhotoUrl ?? result.photoUrl,
                 s3PhotoUrl: result.s3PhotoUrl,
                 enrichedAt: new Date(),
+                ...(photoSourceVal ? { photoSource: photoSourceVal } : {}),
               })
               .where(eq(authorProfiles.authorName, originalName));
           }
@@ -497,12 +505,19 @@ export const authorProfilesRouter = router({
               maxTier: input.maxTier,
             });
             if (result.photoUrl || result.s3PhotoUrl) {
+              const photoSourceVal2 =
+                result.source === "wikipedia" ? "wikipedia" as const
+                : result.source === "tavily" ? "tavily" as const
+                : result.source === "apify" ? "apify" as const
+                : result.source === "ai-generated" ? "ai" as const
+                : undefined;
               await db
                 .update(authorProfiles)
                 .set({
                   photoUrl: result.s3PhotoUrl ?? result.photoUrl,
                   s3PhotoUrl: result.s3PhotoUrl,
                   enrichedAt: new Date(),
+                  ...(photoSourceVal2 ? { photoSource: photoSourceVal2 } : {}),
                 })
                 .where(eq(authorProfiles.authorName, originalName));
             }
@@ -559,10 +574,10 @@ export const authorProfilesRouter = router({
       const key = `author-photos/ai-${slug}-${Date.now()}.webp`;
       const { url } = await storagePut(key, buffer, "image/webp");
 
-      // Persist to DB
+      // Persist to DB — AI-generated portrait
       await db
         .update(authorProfiles)
-        .set({ photoUrl: url, s3PhotoUrl: url, s3PhotoKey: key, enrichedAt: new Date() })
+        .set({ photoUrl: url, s3PhotoUrl: url, s3PhotoKey: key, enrichedAt: new Date(), photoSource: "ai" })
         .where(eq(authorProfiles.authorName, input.authorName));
 
       return { url, key, isAiGenerated: true };

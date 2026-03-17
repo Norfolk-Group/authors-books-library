@@ -1259,7 +1259,12 @@ export default function Home() {
     for (const p of bookCoversQuery.data ?? []) {
       // Prefer S3-mirrored URL (stable CDN) over external URL (may block hotlinking)
       const url = (p as { s3CoverUrl?: string | null }).s3CoverUrl || p.coverImageUrl;
-      if (url) map.set(p.bookTitle, url);
+      if (url) {
+        // Store both original-case and lowercase keys so lookups always match
+        // (FlowbiteAuthorCard uses lowercase; legacy AuthorCard uses original case)
+        map.set(p.bookTitle, url);
+        map.set(p.bookTitle.toLowerCase(), url);
+      }
     }
     return map;
   }, [bookCoversQuery.data]);
@@ -1473,6 +1478,56 @@ export default function Home() {
       toast.error("Portrait generation failed: " + (err instanceof Error ? err.message : String(err)));
     }
   }, [portraitStatus, generatePortraitMutationBatch]);
+
+  // ── Scrape Amazon covers for all books missing one ─────────────────────────────────────
+  const scrapeAllCovers = useCallback(async () => {
+    if (scrapeCoversStatus === "running") return;
+    setScrapeCoversStatus("running");
+    setScrapeCoversProgress(0);
+    setScrapeCoversScraped(0);
+    setScrapeCoversCurrentBook(null);
+
+    // Get initial stats to know total
+    let total = 0;
+    try {
+      const stats = await utils.apify.getBatchScrapeStats.fetch();
+      total = (stats?.needsScrape ?? 0) + (stats?.needsMirror ?? 0);
+      setScrapeCoversTotal(total);
+    } catch {
+      setScrapeCoversTotal(0);
+    }
+
+    if (total === 0) {
+      setScrapeCoversStatus("done");
+      toast.success("All book covers are already up to date!");
+      return;
+    }
+
+    let scraped = 0;
+    try {
+      // Run up to total+5 iterations (safety cap) until server says done
+      for (let i = 0; i < total + 5; i++) {
+        const result = await scrapeNextMutation.mutateAsync();
+        if (result.done) break;
+        if (result.currentBook) setScrapeCoversCurrentBook(result.currentBook);
+        scraped = result.scraped + result.mirrored;
+        setScrapeCoversScraped(scraped);
+        setScrapeCoversProgress(total > 0 ? Math.round((scraped / total) * 100) : 100);
+        // Small delay to avoid hammering the server
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      setScrapeCoversCurrentBook(null);
+      setScrapeCoversStatus("done");
+      toast.success(`Book covers updated: ${scraped} processed.`);
+      if (scraped > 0) fireConfetti("covers");
+      void utils.apify.getBatchScrapeStats.invalidate();
+      void utils.bookProfiles.getMany.invalidate();
+    } catch (err) {
+      setScrapeCoversStatus("error");
+      setScrapeCoversCurrentBook(null);
+      toast.error("Cover scrape failed: " + (err instanceof Error ? err.message : String(err)));
+    }
+  }, [scrapeCoversStatus, scrapeNextMutation, utils]);
 
   const regenerate = trpc.library.regenerate.useMutation({
     onSuccess: (data) => {
@@ -1978,6 +2033,53 @@ export default function Home() {
 
             {portraitStatus === "done" && portraitFailed > 0 && (
               <p className="text-[10px] text-muted-foreground mt-1">{portraitFailed} portraits could not be generated.</p>
+            )}
+
+            {/* Scrape All Covers button */}
+            <button
+              onClick={scrapeAllCovers}
+              disabled={scrapeCoversStatus === "running" || regenerate.isPending}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1.5"
+              title="Scrape Amazon for missing book covers, then mirror all covers to S3"
+            >
+              {scrapeCoversStatus === "running" ? (
+                <ImageIcon className="w-3.5 h-3.5 animate-pulse" />
+              ) : scrapeCoversStatus === "done" ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+              ) : scrapeCoversStatus === "error" ? (
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+              ) : (
+                <ImageIcon className="w-3.5 h-3.5" />
+              )}
+              {scrapeCoversStatus === "running"
+                ? `Scraping… ${scrapeCoversScraped}/${scrapeCoversTotal}`
+                : scrapeCoversStatus === "done"
+                ? `Covers done (${scrapeCoversScraped})`
+                : scrapeCoversStatus === "error"
+                ? "Scrape failed — retry"
+                : "Scrape All Covers"}
+            </button>
+
+            {/* Cover scrape progress bar */}
+            {scrapeCoversStatus === "running" && (
+              <div className="mt-2">
+                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                  <span className="truncate max-w-[140px]">{scrapeCoversCurrentBook ?? "Starting…"}</span>
+                  <span className="flex-shrink-0 ml-1">{scrapeCoversProgress}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full progress-shimmer"
+                    style={{ width: `${scrapeCoversProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {scrapeCoversStatus === "done" && batchScrapeStats.data && (
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {batchScrapeStats.data.withS3} covers in S3 · {batchScrapeStats.data.needsScrape} still missing
+              </p>
             )}
 
             {/* ── Preferences link ── */}

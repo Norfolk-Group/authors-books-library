@@ -165,8 +165,8 @@ export default function ResearchCascade() {
               description="Fetches the author's Wikipedia page summary photo via the REST v1 /page/summary endpoint. Validated with Gemini vision (confidence ≥ 0.6)."
               icon={Globe}
               stats={[
-                { label: "Enriched", value: authorStats?.withEnrichedAt ?? 0, total: aTotal, barColor: "bg-blue-500" },
-                { label: "With Photo", value: authorStats?.withPhoto ?? 0, total: aTotal, barColor: "bg-blue-400" },
+                { label: "From Wikipedia", value: authorStats?.fromWikipedia ?? 0, total: aTotal, barColor: "bg-blue-500" },
+                { label: "Source unknown", value: authorStats?.sourceUnknown ?? 0, total: aTotal, barColor: "bg-blue-200" },
               ]}
             />
             <div className="flex items-center gap-2 px-4">
@@ -179,8 +179,9 @@ export default function ResearchCascade() {
               title="Tavily Image Search"
               description="Searches the web for a professional headshot using Tavily's image search API. Validated with Gemini vision (confidence ≥ 0.5)."
               icon={Globe}
-              stats={[]}
-              fallbackNote="Tier 2 results are merged into the 'With Photo' count above — no separate source column in DB yet."
+              stats={[
+                { label: "From Tavily", value: authorStats?.fromTavily ?? 0, total: aTotal, barColor: "bg-violet-500" },
+              ]}
             />
             <div className="flex items-center gap-2 px-4">
               <div className="flex-1 h-px bg-border" />
@@ -192,8 +193,9 @@ export default function ResearchCascade() {
               title="Apify Web Scraper"
               description="Runs a Cheerio-based Apify actor to scrape the author's official website, publisher page, or LinkedIn profile for a headshot. Validated with Gemini (confidence ≥ 0.4)."
               icon={Database}
-              stats={[]}
-              fallbackNote="Tier 3 results are merged into the 'With Photo' count above."
+              stats={[
+                { label: "From Apify", value: authorStats?.fromApify ?? 0, total: aTotal, barColor: "bg-amber-500" },
+              ]}
             />
             <div className="flex items-center gap-2 px-4">
               <div className="flex-1 h-px bg-border" />
@@ -206,7 +208,8 @@ export default function ResearchCascade() {
               description="If all real-photo sources fail, generates a professional AI portrait using Replicate's Stable Diffusion model. Marked as AI-generated in S3 key (ai- prefix)."
               icon={Bot}
               stats={[
-                { label: "S3 Mirrored", value: authorStats?.withS3Photo ?? 0, total: aTotal, barColor: "bg-gray-500" },
+                { label: "AI Generated", value: authorStats?.fromAI ?? 0, total: aTotal, barColor: "bg-gray-500" },
+                { label: "S3 Mirrored", value: authorStats?.withS3Photo ?? 0, total: aTotal, barColor: "bg-gray-400" },
                 { label: "No Photo Yet", value: authorStats?.noPhoto ?? 0, total: aTotal, barColor: "bg-rose-400" },
               ]}
               fallbackNote="All photos (real or AI) are mirrored to Manus S3 for stable CDN serving."

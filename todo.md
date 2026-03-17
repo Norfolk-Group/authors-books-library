@@ -566,3 +566,13 @@
 - [x] Build ResearchCascade page (/research-cascade) with visual waterfall + live stats
 - [x] Wire ResearchCascade into sidebar (GitMerge icon) and App.tsx route
 - [x] Run tests (118 passing) and save checkpoint
+
+## Session March 17, 2026 — Three Enhancements
+- [x] Wire "Scrape All Covers" button in sidebar with progress bar (scrapeNextMissingCover + S3 mirror)
+- [x] Add photoSource enum column to author_profiles (wikipedia | tavily | apify | ai)
+- [x] Migrate DB schema for photoSource column (migration 0007 applied via pnpm db:push)
+- [x] Update authorProfiles.router.ts to write photoSource when saving waterfall results
+- [x] Update cascade.router.ts authorStats to return per-tier counts (fromWikipedia, fromTavily, fromApify, fromAI, sourceUnknown)
+- [x] Update ResearchCascade.tsx to show per-tier photo source counts (all 5 tiers now show live counts)
+- [x] Wire bookCoverMap into FlowbiteAuthorCard for inline book cover thumbnails (fixed key case mismatch)
+- [x] Run tests (118 passing) and save checkpoint

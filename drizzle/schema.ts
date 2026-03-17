@@ -42,6 +42,14 @@ export const authorProfiles = mysqlTable("author_profiles", {
   s3PhotoUrl: varchar("s3PhotoUrl", { length: 1024 }),
   /** S3 key for the mirrored photo (used for deduplication/cleanup) */
   s3PhotoKey: varchar("s3PhotoKey", { length: 512 }),
+  /**
+   * Which tier of the enrichment waterfall provided the photo:
+   * - wikipedia: Wikipedia REST API (Tier 1)
+   * - tavily: Tavily image search (Tier 2)
+   * - apify: Apify web scrape (Tier 3)
+   * - ai: Replicate AI-generated portrait (Tier 5 fallback)
+   */
+  photoSource: mysqlEnum("photoSource", ["wikipedia", "tavily", "apify", "ai"]),
   enrichedAt: timestamp("enrichedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

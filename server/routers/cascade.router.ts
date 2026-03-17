@@ -23,13 +23,14 @@ export const cascadeRouter = router({
    */
   authorStats: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { total: 0, withPhoto: 0, withS3Photo: 0, withBio: 0, withEnrichedAt: 0, withSocialLinks: 0, noPhoto: 0, noBio: 0 };
+    if (!db) return { total: 0, withPhoto: 0, withS3Photo: 0, withBio: 0, withEnrichedAt: 0, withSocialLinks: 0, noPhoto: 0, noBio: 0, fromWikipedia: 0, fromTavily: 0, fromApify: 0, fromAI: 0, sourceUnknown: 0 };
     const rows = await db
       .select({
         authorName: authorProfiles.authorName,
         bio: authorProfiles.bio,
         photoUrl: authorProfiles.photoUrl,
         s3PhotoUrl: authorProfiles.s3PhotoUrl,
+        photoSource: authorProfiles.photoSource,
         websiteUrl: authorProfiles.websiteUrl,
         twitterUrl: authorProfiles.twitterUrl,
         linkedinUrl: authorProfiles.linkedinUrl,
@@ -52,9 +53,13 @@ export const cascadeRouter = router({
     const noPhoto = rows.filter((r: AuthorRow) => !r.photoUrl || r.photoUrl.length === 0).length;
     const noBio = rows.filter((r: AuthorRow) => !r.bio || r.bio.length === 0).length;
 
-    // Heuristic: AI-generated photos are stored in S3 with "ai-" prefix in key
-    // We can't distinguish Wikipedia vs Tavily vs Apify from DB alone (no source column)
-    // so we report: enrichedAt set = Wikipedia/LLM enriched; photo = any source
+    // Per-tier photo source counts (now that photoSource column exists)
+    const fromWikipedia = rows.filter((r: AuthorRow) => r.photoSource === "wikipedia").length;
+    const fromTavily = rows.filter((r: AuthorRow) => r.photoSource === "tavily").length;
+    const fromApify = rows.filter((r: AuthorRow) => r.photoSource === "apify").length;
+    const fromAI = rows.filter((r: AuthorRow) => r.photoSource === "ai").length;
+    const sourceUnknown = rows.filter((r: AuthorRow) => r.photoUrl && r.photoUrl.length > 0 && !r.photoSource).length;
+
     return {
       total,
       withPhoto,
@@ -64,6 +69,12 @@ export const cascadeRouter = router({
       withSocialLinks,
       noPhoto,
       noBio,
+      // Per-tier breakdown
+      fromWikipedia,
+      fromTavily,
+      fromApify,
+      fromAI,
+      sourceUnknown,
     };
   }),
 
