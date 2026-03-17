@@ -10,10 +10,12 @@ import { Modal, ModalBody, ModalHeader } from "flowbite-react";
 import {
   BookOpen, FileText, AlignLeft, Book, File, Video, Image,
   Package, Scroll, Newspaper, Link, List, Folder, ExternalLink,
-  ShoppingCart, RefreshCw,
+  ShoppingCart, RefreshCw, Camera,
 } from "lucide-react";
 import { CONTENT_TYPE_ICONS } from "@/lib/libraryData";
 import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
+import { useState } from "react";
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 type LucideIcon = React.FC<{ className?: string }>;
@@ -80,6 +82,8 @@ export interface BookModalBook {
   coverUrl?: string;
   /** Raw content-type counts from Drive scan */
   contentTypes: Record<string, number>;
+  /** Author name (used for Amazon scraping context) */
+  authorName?: string;
 }
 
 export interface BookModalProps {
@@ -90,17 +94,35 @@ export interface BookModalProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export function BookModal({ book, onClose }: BookModalProps) {
+  const utils = trpc.useUtils();
+  const [scrapedCoverUrl, setScrapedCoverUrl] = useState<string | null>(null);
+
   const { data: profile, isLoading } = trpc.bookProfiles.get.useQuery(
     { bookTitle: book?.titleKey ?? "" },
     { enabled: !!book, staleTime: 5 * 60 * 1000 }
   );
+
+  const scrapeBookMutation = trpc.apify.scrapeBook.useMutation({
+    onSuccess: (data) => {
+      if (data.success) {
+        setScrapedCoverUrl(data.coverUrl ?? null);
+        utils.bookProfiles.get.invalidate({ bookTitle: book?.titleKey ?? "" });
+        toast.success(`Cover found: "${data.matchedTitle ?? book?.titleKey}"`);
+      } else {
+        toast.error(data.message ?? "No cover found on Amazon");
+      }
+    },
+    onError: (err) => {
+      toast.error(`Scrape failed: ${err.message}`);
+    },
+  });
 
   const amazonUrl =
     profile?.amazonUrl ??
     (book ? `https://www.amazon.com/s?k=${encodeURIComponent(book.titleKey)}` : undefined);
   const goodreadsUrl = profile?.goodreadsUrl ?? undefined;
   const summary = profile?.summary ?? null;
-  const coverUrl = profile?.s3CoverUrl ?? book?.coverUrl;
+  const coverUrl = scrapedCoverUrl ?? profile?.s3CoverUrl ?? book?.coverUrl;
   const driveUrl = book
     ? `https://drive.google.com/drive/folders/${book.id}?view=grid`
     : undefined;
@@ -177,6 +199,24 @@ export function BookModal({ book, onClose }: BookModalProps) {
                         View on Goodreads
                       </a>
                     )}
+                    {/* Scrape cover from Amazon button */}
+                    <button
+                      onClick={() =>
+                        scrapeBookMutation.mutate({
+                          title: book.titleKey,
+                          author: book.authorName ?? "",
+                        })
+                      }
+                      disabled={scrapeBookMutation.isPending}
+                      className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {scrapeBookMutation.isPending ? (
+                        <RefreshCw className="w-3 h-3 flex-shrink-0 animate-spin" />
+                      ) : (
+                        <Camera className="w-3 h-3 flex-shrink-0" />
+                      )}
+                      {scrapeBookMutation.isPending ? "Scraping…" : "Scrape Cover from Amazon"}
+                    </button>
                   </div>
                 </div>
               </div>
