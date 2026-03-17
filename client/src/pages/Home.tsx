@@ -1238,6 +1238,18 @@ export default function Home() {
     [enrichedNamesQuery.data]
   );
 
+  // Fetch all DB bios for tooltip fallback (authors not in authorBios.json)
+  const allBiosQuery = trpc.authorProfiles.getAllBios.useQuery(undefined, {
+    staleTime: 5 * 60_000, // cache for 5 minutes
+  });
+  const dbBioMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const { authorName, bio } of allBiosQuery.data ?? []) {
+      if (bio) map.set(authorName.toLowerCase(), bio);
+    }
+    return map;
+  }, [allBiosQuery.data]);
+
   // Fetch all enriched book titles for indicators
   const enrichedTitlesQuery = trpc.bookProfiles.getAllEnrichedTitles.useQuery(undefined, {
     staleTime: 60_000,
@@ -2316,7 +2328,11 @@ export default function Home() {
                         isEnriched={enrichedSet.has(
                           a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name
                         )}
-                        bio={(authorBios as Record<string, string>)[canonicalName(a.name)] ?? null}
+                        bio={
+                          (authorBios as Record<string, string>)[canonicalName(a.name)] ??
+                          dbBioMap.get(canonicalName(a.name).toLowerCase()) ??
+                          null
+                        }
                         coverMap={bookCoverMap}
                         dbPhotoMap={dbPhotoMap}
                         onBookClick={(bookId, titleKey) => {

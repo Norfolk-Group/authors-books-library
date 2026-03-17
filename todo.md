@@ -620,3 +620,11 @@
 - [x] Tooltip should display first 2–3 sentences of bio (truncated if long), author name as heading
 - [x] Use Radix Tooltip (already installed) with max-w-xs, theme-aware bg-popover/text-popover-foreground
 - [x] Tooltip should only appear when bio is available (skip for un-enriched authors)
+
+## Session March 17, 2026 — DB Bio Tooltip Fallback
+
+- [x] Add tRPC procedure getAllBios (or reuse existing) to return all author_profiles with non-empty bio
+- [x] Build dbBioMap in Home.tsx (Map<string, string> keyed by lowercase author name)
+- [x] Pass bio prop to FlowbiteAuthorCard using JSON bio first, DB bio as fallback
+- [x] Verify tooltip appears for authors enriched only via LLM/Wikipedia (not in authorBios.json)
+- [x] Run tests and save checkpoint

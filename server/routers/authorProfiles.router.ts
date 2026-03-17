@@ -234,6 +234,22 @@ export const authorProfilesRouter = router({
   }),
 
   /**
+   * Return all author profiles that have a non-empty bio.
+   * Used to populate the bio tooltip on author cards without per-card queries.
+   */
+  getAllBios: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({ authorName: authorProfiles.authorName, bio: authorProfiles.bio })
+      .from(authorProfiles)
+      .where(ne(authorProfiles.bio, ""));
+    return rows
+      .filter((r) => r.bio && r.bio.trim().length > 0)
+      .map((r) => ({ authorName: r.authorName, bio: r.bio as string }));
+  }),
+
+  /**
    * Mirror author photos to Manus S3 for stable CDN serving.
    * Processes authors that have a photoUrl but no s3PhotoUrl yet.
    */
