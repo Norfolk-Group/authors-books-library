@@ -157,11 +157,16 @@ const CT_ICON_MAP: Record<string, React.ElementType> = {
 };
 
 // ── Audio format color map ───────────────────────────────────
-const FORMAT_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  MP3:  { bg: "#fef3c7", text: "#92400e", label: "MP3" },
-  M4B:  { bg: "#dbeafe", text: "#1e40af", label: "M4B" },
-  AAX:  { bg: "#f3e8ff", text: "#6b21a8", label: "AAX" },
-  M4A:  { bg: "#dcfce7", text: "#166534", label: "M4A" },
+// FORMAT_COLORS: use CSS token classes instead of hardcoded hex
+const FORMAT_LABEL: Record<string, string> = {
+  MP3: "MP3", M4B: "M4B", AAX: "AAX", M4A: "M4A",
+};
+// Tailwind class sets per format (theme-aware)
+const FORMAT_CLASSES: Record<string, string> = {
+  MP3: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+  M4B: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  AAX: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+  M4A: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
 };
 
 const STATS = {
@@ -201,13 +206,11 @@ function normalizeContentTypes(raw: Record<string, number>): Record<string, numb
 // ── Content Type Badge ───────────────────────────────────────
 function ContentTypeBadge({ type, count }: { type: string; count: number }) {
   const iconName = CONTENT_TYPE_ICONS[type] ?? "folder";
-  const color = CONTENT_TYPE_COLORS[type] ?? "#9ca3af";
   const Icon = CT_ICON_MAP[iconName] ?? Folder;
 
   return (
     <span
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium"
-      style={{ backgroundColor: color + "18", color }}
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground"
       title={`${type}: ${count} file${count !== 1 ? "s" : ""}`}
     >
       <Icon className="w-2.5 h-2.5" />
@@ -753,19 +756,19 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
         {/* Format badges with file counts */}
         <div className="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-border/50">
           {Object.entries(audio.formats).map(([fmt, info]) => {
-            const colors = FORMAT_COLORS[fmt] ?? { bg: "hsl(var(--muted))", text: "hsl(var(--muted-foreground))", label: fmt };
+            const cls = FORMAT_CLASSES[fmt] ?? "bg-muted text-muted-foreground";
+            const label = FORMAT_LABEL[fmt] ?? fmt;
             return (
               <a
                 key={fmt}
                 href={`https://drive.google.com/drive/folders/${info.folderId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold hover:opacity-80 transition-opacity"
-                style={{ backgroundColor: colors.bg, color: colors.text }}
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold hover:opacity-80 transition-opacity ${cls}`}
                 title={`Open ${fmt} folder in Drive`}
                 onClick={(e) => e.stopPropagation()}
               >
-                {colors.label}
+                {label}
                 <span className="opacity-70">·{info.fileCount}</span>
               </a>
             );
@@ -1196,15 +1199,16 @@ type BookSort = "name-asc" | "name-desc" | "author" | "content-desc";
 type TabType = "authors" | "books" | "audio";
 
 export default function Home() {
-  const { settings: { colorMode: appTheme, geminiModel } } = useAppSettings();
+  const { settings: { colorMode: appTheme, geminiModel, viewMode: savedViewMode }, updateSettings } = useAppSettings();
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("authors");
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
   const [authorSort, setAuthorSort] = useState<AuthorSort>("name-asc");
   const [bookSort, setBookSort] = useState<BookSort>("name-asc");
-  // Author view mode: "card" = grid of FlowbiteAuthorCards, "accordion" = compact list
-  const [authorViewMode, setAuthorViewMode] = useState<"card" | "accordion">("card");
+  // Author view mode: persisted via AppSettingsContext (cards | accordion)
+  const authorViewMode = savedViewMode === "accordion" ? "accordion" : "card";
+  const setAuthorViewMode = (mode: "card" | "accordion") => updateSettings({ viewMode: mode === "card" ? "cards" : "accordion" });
   // Author bio panel state
   const [selectedAuthor, setSelectedAuthor] = useState<typeof AUTHORS[number] | null>(null);
   const [bioSheetOpen, setBioSheetOpen] = useState(false);
@@ -1768,13 +1772,10 @@ export default function Home() {
                   Audio Formats
                 </SidebarGroupLabel>
                 <SidebarGroupContent className="px-2">
-                  {Object.entries(FORMAT_COLORS).map(([fmt, colors]) => (
+                  {Object.entries(FORMAT_CLASSES).map(([fmt, cls]) => (
                     <div key={fmt} className="flex items-center gap-2 py-1">
-                      <span
-                        className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                        style={{ backgroundColor: colors.bg, color: colors.text }}
-                      >
-                        {colors.label}
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${cls}`}>
+                        {FORMAT_LABEL[fmt] ?? fmt}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {fmt === "MP3" ? "Standard audio" : fmt === "M4B" ? "Chapters + bookmarks" : fmt === "AAX" ? "Audible DRM" : "Apple audio"}
@@ -1787,12 +1788,26 @@ export default function Home() {
           </SidebarContent>
 
           <SidebarFooter className="px-4 py-3 border-t border-sidebar-border group-data-[collapsible=icon]:hidden">
-            <p className="text-[10px] text-muted-foreground mb-2">
+            <p className="text-[10px] text-muted-foreground mb-1">
               {lastSynced
                 ? `Last synced ${lastSynced.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · ${lastSynced.toLocaleDateString([], { month: "short", day: "numeric" })}`
                 : `Data as of ${STATS.lastUpdated}`
               }
             </p>
+            {/* Photo count indicator */}
+            {authorPhotoMapQuery.data && (() => {
+              const withPhoto = (authorPhotoMapQuery.data as { photoUrl?: string | null }[]).filter(r => r.photoUrl).length;
+              const total = STATS.totalAuthors;
+              const pct = Math.round((withPhoto / total) * 100);
+              return (
+                <div className="flex items-center gap-1.5 mb-2" title={`${withPhoto} of ${total} authors have headshots`}>
+                  <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full bg-chart-5" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground flex-shrink-0">{withPhoto}/{total} photos</span>
+                </div>
+              );
+            })()}
             <button
               onClick={() => regenerate.mutate()}
               disabled={regenerate.isPending || enrichStatus === "running"}

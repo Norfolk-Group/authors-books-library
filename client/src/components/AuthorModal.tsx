@@ -6,17 +6,18 @@
  *
  * THEME RULES: zero hardcoded colours — CSS tokens only.
  */
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Modal, ModalBody, ModalHeader } from "flowbite-react";
 import {
   Briefcase, Brain, Handshake, Users2, Zap, MessageCircle,
-  Cpu, TrendingUp, BookMarked, Globe, Twitter, Linkedin, RefreshCw,
+  Cpu, TrendingUp, BookMarked, Globe, Twitter, Linkedin, RefreshCw, Search,
 } from "lucide-react";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
 import { canonicalName } from "@/lib/authorAliases";
 import { CATEGORY_ICONS, type AuthorEntry } from "@/lib/libraryData";
 import { trpc } from "@/lib/trpc";
 import authorBios from "@/lib/authorBios.json";
+import { toast } from "sonner";
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 type LucideIcon = React.FC<{ className?: string; style?: React.CSSProperties }>;
@@ -52,11 +53,18 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
   const iconName = CATEGORY_ICONS[category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
 
-  // Photo: override → static map
+  // Photo: scraped live > override > static map
+  const [scrapedPhotoUrl, setScrapedPhotoUrl] = useState<string | null>(null);
   const resolvedPhoto =
+    scrapedPhotoUrl ??
     photoOverride ??
     (displayName ? getAuthorPhoto(displayName) : null) ??
     null;
+
+  // Reset scraped photo when author changes
+  useEffect(() => {
+    if (!open) setScrapedPhotoUrl(null);
+  }, [open, displayName]);
 
   // Bio: JSON first, then DB, then auto-enrich
   const jsonBio = displayName
@@ -79,6 +87,19 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
     }
   }, [open, jsonBio, isLoading, profile, displayName]);
 
+  // Find Real Photo — Apify Wikipedia scrape
+  const scrapePhotoMutation = trpc.apify.scrapeAuthorPhoto.useMutation({
+    onSuccess: (data) => {
+      if (data.success && data.photoUrl) {
+        setScrapedPhotoUrl(data.photoUrl);
+        toast.success(`Photo found from ${data.sourceName ?? "Wikipedia"}`);
+      } else {
+        toast.error("No photo found on Wikipedia for this author.");
+      }
+    },
+    onError: (e) => toast.error("Photo search failed: " + e.message),
+  });
+
   const bioText = jsonBio ?? profile?.bio ?? null;
   const isBioLoading = !jsonBio && (isLoading || enrichMutation.isPending);
 
@@ -93,18 +114,34 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
             <div className="flex flex-col gap-4 text-sm">
               {/* Author header: photo + category + specialty */}
               <div className="flex items-center gap-3">
-                {resolvedPhoto ? (
-                  <img
-                    src={resolvedPhoto}
-                    alt={displayName}
-                    className="h-14 w-14 rounded-full object-cover shadow-sm ring-2 ring-border ring-offset-1 flex-shrink-0"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground flex-shrink-0 ring-2 ring-border ring-offset-1">
-                    {displayName.charAt(0)}
-                  </div>
-                )}
+                <div className="relative flex-shrink-0">
+                  {resolvedPhoto ? (
+                    <img
+                      src={resolvedPhoto}
+                      alt={displayName}
+                      className="h-14 w-14 rounded-full object-cover shadow-sm ring-2 ring-border ring-offset-1"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground ring-2 ring-border ring-offset-1">
+                      {displayName.charAt(0)}
+                    </div>
+                  )}
+                  {/* Find Real Photo button — small overlay on avatar */}
+                  <button
+                    onClick={() => scrapePhotoMutation.mutate({ authorName: displayName })}
+                    disabled={scrapePhotoMutation.isPending}
+                    title="Find real photo from Wikipedia"
+                    className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center shadow-sm hover:bg-muted transition-colors disabled:opacity-50"
+                    aria-label="Find real photo"
+                  >
+                    {scrapePhotoMutation.isPending ? (
+                      <RefreshCw className="w-2.5 h-2.5 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Search className="w-2.5 h-2.5 text-muted-foreground" />
+                    )}
+                  </button>
+                </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Icon className="w-3.5 h-3.5 text-muted-foreground" />

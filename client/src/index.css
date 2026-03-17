@@ -792,3 +792,29 @@
 .sparkle-spin { animation: sparkleRotate 2.5s linear infinite; display: inline-block; }
 .book-card-tilt, .audio-card-tilt { transition: box-shadow 250ms ease; transform-style: preserve-3d; will-change: transform; }
 .tilt-shadow-active { box-shadow: 0 16px 48px -8px rgba(0,0,0,0.18), 0 6px 16px -4px rgba(0,0,0,0.1); }
+
+
+/* NOIR DARK THEME - Component-level overrides */
+/* Cards: white bg, 1px near-black border, no left-colour stripe */
+.theme-noir-dark .rounded-lg.border.border-border {
+  border-color: hsl(0 0% 12%) !important;
+  border-left-color: hsl(0 0% 12%) !important;
+  border-left-width: 1px !important;
+}
+/* Stat cards */
+.theme-noir-dark .stat-card-3d {
+  border: 1px solid hsl(0 0% 12%);
+}
+/* Search highlight in Noir */
+.theme-noir-dark mark.search-highlight {
+  background: hsl(0 0% 85%);
+  color: hsl(0 0% 4%);
+}
+/* Remove category colour from watermark icons in Noir */
+.theme-noir-dark .watermark-icon svg {
+  color: hsl(0 0% 50%) !important;
+}
+/* Modals/Dialogs in Noir */
+.theme-noir-dark [role="dialog"] {
+  border: 1px solid hsl(0 0% 12%);
+}

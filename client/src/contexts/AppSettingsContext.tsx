@@ -42,6 +42,8 @@ export interface AppSettings {
   iconSet: IconSetId;
   /** Preferred Gemini model for LLM calls */
   geminiModel: string;
+  /** Authors view mode: card grid or accordion list */
+  viewMode: "cards" | "accordion";
 }
 
 interface AppSettingsContextType {
@@ -58,6 +60,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   colorMode: "light",
   iconSet: "phosphor-regular",
   geminiModel: "gemini-2.5-flash",
+  viewMode: "cards",
 };
 
 const STORAGE_KEY = "app-settings-v2";

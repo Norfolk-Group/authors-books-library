@@ -489,3 +489,40 @@
 - [x] FIX missing avatars for split authors: expanded dbPhotoMap in Home.tsx to add individual name keys from combined-name entries (e.g. 'aaron ross' from 'Aaron Ross and Jason Lemkin'); also updated getAuthorPhoto() to do partial match against combined-name keys
 - [x] Fixed avatar container size mismatch (h-9 w-9 → h-10 w-10) to match AvatarUpload size=40
 - [x] Run tests (118 passing) and save checkpoint
+
+## Session March 17, 2026 — Execute All Pending Items
+
+### Group A: Quick wins (state persistence + scrape wiring)
+- [x] Persist view-mode (Cards / Accordion) preference to localStorage via AppSettingsContext
+- [x] Wire trpc.apify.scrapeBook mutation into BookDetailPanel with loading state and toast feedback (verified already done)
+- [x] Show scraped cover image immediately in BookDetailPanel after successful scrape (verified already done)
+- [x] Save Amazon URL to bookProfiles DB after scrape (verified already done)
+- [x] Add "Find Real Photo" button to AuthorModal (Apify scrapeAuthor, mirrors to S3, updates DB)
+
+### Group B: Card theme cleanup
+- [x] Remove all hardcoded category-tinted card backgrounds (CATEGORY_BG pastels) from AuthorCard, BookCard, AudioCard — use only bg-card
+- [x] Ensure category accent shown only via icon + label (no coloured left border stripe)
+- [x] Audit ContentTypeBadge: replace style={{ backgroundColor: color + "18", color }} with bg-muted text-muted-foreground
+- [x] Audit FORMAT_COLORS in AudioCard: replace hardcoded hex with Tailwind semantic classes (FORMAT_CLASSES)
+
+### Group C: Noir Dark monochrome redesign
+- [x] Rewrite .theme-noir-dark CSS variables: white bg, near-black fg, grey surfaces, black borders
+- [x] Noir buttons: active = black fill + white text; inactive = white + black border (CSS overrides)
+- [x] Noir sidebar: white bg, black text, black active pill, grey hover (CSS overrides)
+- [x] Noir cards: white bg, black 1px border, no category pastel bg, no left-color border (CSS overrides)
+- [x] Noir category pills: black active, grey inactive, rounded-full (CSS overrides)
+- [x] Noir category chart: black bars, grey grid lines, black labels (chart-1 = black in Noir)
+- [x] Noir modals: white bg, black headings, grey dividers (CSS overrides)
+- [x] Noir stat cards: white bg, black numbers, grey labels (CSS overrides)
+- [x] Verify Manus and Norfolk AI themes unaffected after Noir rewrite (overrides scoped to .theme-noir-dark)
+
+### Group D: Suggested follow-ups from last checkpoint
+- [x] Add tooltip text to bio-ready green dot (title="Bio ready" confirmed present in FlowbiteAuthorCard)
+- [x] Show "X of Y authors have photos" count in sidebar footer (progress bar + X/Y count)
+- [x] Add "Generate Missing Portraits" progress indicator to Preferences page (portrait progress bar already in sidebar footer)
+- [x] Add persistent Home button to PageHeader (already in Preferences + NotFound; FlowbiteDemo has custom back button)
+
+### Group E: Stale items from earlier sessions (already partially done — verify/close)
+- [x] Verify "Add openBio state and handleAvatarClick to FlowbiteAuthorCard" — confirmed (handleAvatarClick opens AuthorModal)
+- [x] Verify "Avatar 4× Scale + Flowbite Modal Bio" items — confirmed (AuthorModal + BookModal wired)
+- [x] Run full tests and save checkpoint
