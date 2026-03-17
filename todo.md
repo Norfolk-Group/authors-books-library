@@ -526,3 +526,9 @@
 - [x] Verify "Add openBio state and handleAvatarClick to FlowbiteAuthorCard" — confirmed (handleAvatarClick opens AuthorModal)
 - [x] Verify "Avatar 4× Scale + Flowbite Modal Bio" items — confirmed (AuthorModal + BookModal wired)
 - [x] Run full tests and save checkpoint
+
+## Session March 17, 2026 — Deployment Fix
+- [x] Downgrade Vite 7.x → 6.x (deployment env runs Node.js 20.15.1; Vite 7 requires 20.19+)
+- [x] Update @vitejs/plugin-react and vite-related devDeps to v6-compatible versions
+- [x] Verify local build succeeds (pnpm build) — ✓ built in 25s
+- [x] Run tests and save checkpoint — 118 passing
