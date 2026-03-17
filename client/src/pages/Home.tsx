@@ -126,10 +126,11 @@ import {
   Settings,
   GitMerge,
   ImageIcon,
+  type LucideIcon,
 } from "lucide-react";
 
 // ── Icon map for categories ──────────────────────────────────
-const ICON_MAP: Record<string, React.ElementType> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   briefcase: Briefcase,
   brain: Brain,
   handshake: Handshake,
@@ -142,7 +143,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 // ── Icon map for content types ───────────────────────────────
-const CT_ICON_MAP: Record<string, React.ElementType> = {
+const CT_ICON_MAP: Record<string, LucideIcon> = {
   "file-text": FileText,
   "book": Book,
   "file": File,
@@ -256,7 +257,7 @@ function BookSubfolderRow({ book }: { book: { name: string; id: string; contentT
 }
 
 // ── Stat Card ────────────────────────────────────────────────
-function StatCard({ label, value, icon: Icon }: { label: string; value: number | string; icon: React.ElementType }) {
+function StatCard({ label, value, icon: Icon }: { label: string; value: number | string; icon: LucideIcon }) {
   return (
     <div className="flex flex-col gap-1 px-3 sm:px-5 py-3 sm:py-4 bg-card rounded-lg border border-border shadow-sm stat-card-3d">
       <div className="flex items-center gap-2 text-muted-foreground">
@@ -1507,19 +1508,20 @@ export default function Home() {
     try {
       // Run up to total+5 iterations (safety cap) until server says done
       for (let i = 0; i < total + 5; i++) {
-        const result = await scrapeNextMutation.mutateAsync();
-        if (result.done) break;
-        if (result.currentBook) setScrapeCoversCurrentBook(result.currentBook);
+        const result = await scrapeNextMutation.mutateAsync({});
+        // Stop when there's nothing left to scrape or mirror
+        if (result.remainingScrape === 0 && result.remainingMirror === 0) break;
+        if (result.bookTitle) setScrapeCoversCurrentBook(result.bookTitle);
         scraped = result.scraped + result.mirrored;
         setScrapeCoversScraped(scraped);
         setScrapeCoversProgress(total > 0 ? Math.round((scraped / total) * 100) : 100);
         // Small delay to avoid hammering the server
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 800));
       }
       setScrapeCoversCurrentBook(null);
       setScrapeCoversStatus("done");
       toast.success(`Book covers updated: ${scraped} processed.`);
-      if (scraped > 0) fireConfetti("covers");
+      if (scraped > 0) fireConfetti("scrape");
       void utils.apify.getBatchScrapeStats.invalidate();
       void utils.bookProfiles.getMany.invalidate();
     } catch (err) {

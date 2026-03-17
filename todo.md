@@ -576,3 +576,19 @@
 - [x] Update ResearchCascade.tsx to show per-tier photo source counts (all 5 tiers now show live counts)
 - [x] Wire bookCoverMap into FlowbiteAuthorCard for inline book cover thumbnails (fixed key case mismatch)
 - [x] Run tests (118 passing) and save checkpoint
+
+## Session March 17, 2026 — Follow-ups from Last Checkpoint
+- [ ] Fix 4 pre-existing TS errors: Home.tsx line 1814 (style prop type mismatch) and Preferences.tsx line 311 (style prop type mismatch)
+- [ ] Backfill photoSource column for all existing author_profiles records (run DB update to set source based on existing photo URL patterns)
+- [ ] Trigger Scrape All Covers batch — run the scrapeNextMissingCover procedure for all 18 books missing covers + mirror 22 pending Google Books covers to S3
+- [ ] Run tests and save checkpoint
+
+## Session March 17, 2026 — Follow-up Completion
+
+- [x] Verify TypeScript errors in Home.tsx and Preferences.tsx — 0 errors (already resolved in prior session)
+- [x] Backfill photoSource column: set 'ai' for 5 AI-generated portraits (s3PhotoKey prefix 'author-photos/ai-'), NULL for 63 pre-column-era photos
+- [x] Batch Amazon cover scrape: 14 new covers scraped, 4 skipped (placeholder titles), 0 failures
+- [x] Mirror all pending covers to S3: 36 covers mirrored (22 pre-existing + 14 newly scraped)
+- [x] Final book cover stats: 142/146 books have covers (97%), all 142 mirrored to S3 CDN
+- [x] 118 tests passing
+- [x] Save checkpoint

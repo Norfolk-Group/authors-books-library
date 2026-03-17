@@ -293,7 +293,7 @@ function MirrorCard({
 }: {
   title: string;
   description: string;
-  icon: React.ElementType;
+  icon: React.FC<{ size?: number; className?: string }>;
   stats: { withCover?: number; mirrored?: number; pending?: number; withPhoto?: number } | undefined;
   onRun: () => void;
   status: MirrorJobStatus;
