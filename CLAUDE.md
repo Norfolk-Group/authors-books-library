@@ -1,4 +1,4 @@
-# CLAUDE.md — NCG Knowledge Library
+# CLAUDE.md — Ricardo Cidale's Library
 
 This file provides context for AI coding assistants (Claude Code, Manus, Gemini CLI, etc.)
 working on this codebase. Read this before making any changes.
@@ -7,12 +7,13 @@ working on this codebase. Read this before making any changes.
 
 ## Project Overview
 
-**NCG Knowledge Library** (`authors-books-library`) is a personal digital library
-for Ricardo Cidale / Norfolk Consulting Group. It displays 109 authors and 178
-books sourced from a Google Drive folder hierarchy, enriched with AI-generated
-bios, author portraits, book cover images, ratings, and summaries.
+**Ricardo Cidale's Library** (`authors-books-library`) is a personal digital library
+for Ricardo Cidale / Norfolk Consulting Group. It displays 109 authors and 178 books
+sourced from a Google Drive folder hierarchy, enriched with AI-generated bios, author
+portraits, book cover images, ratings, and summaries.
 
 **Live URL:** `https://authlib-ehsrgokn.manus.space`
+**GitHub:** `https://github.com/norfolk-ai/authors-books-library` (private)
 
 ---
 
@@ -20,15 +21,20 @@ bios, author portraits, book cover images, ratings, and summaries.
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, Tailwind CSS 4, Flowbite React, shadcn/ui, Radix UI |
+| Frontend | React 19, Tailwind CSS 4, Flowbite React 0.12.16, shadcn/ui, Radix UI |
 | Backend | Express 4, tRPC 11, Drizzle ORM |
 | Database | MySQL / TiDB (via `DATABASE_URL`) |
 | File storage | Manus S3 CDN (`storagePut` / `storageGet` in `server/storage.ts`) |
 | Auth | Manus OAuth (`/api/oauth/callback`, `protectedProcedure`) |
-| Build | Vite 6, esbuild, TypeScript 5.9 |
-| Testing | Vitest — 118 tests, all in `server/*.test.ts` |
+| Build | Vite 6.4.1, esbuild, TypeScript 5.9 |
+| Testing | Vitest — 118 tests across 8 test files in `server/*.test.ts` |
 | Icons | Phosphor Icons (`@phosphor-icons/react`) |
 | Enrichment APIs | Google Books, Apify cheerio-scraper, Replicate flux-schnell, Perplexity Sonar, Wikipedia |
+| Animation | Framer Motion, React Three Fiber + Drei (sparkles canvas) |
+
+> **Flowbite version pin:** flowbite-react is pinned to `0.12.16`. Do NOT upgrade to
+> `0.12.17+` — those versions introduce `oxc-parser` which has a native binding that
+> fails in the deployment environment.
 
 ---
 
@@ -37,32 +43,44 @@ bios, author portraits, book cover images, ratings, and summaries.
 ```
 client/src/
   pages/
-    Home.tsx              ← Main library view (Authors / Books / Audiobooks tabs)
-    Preferences.tsx       ← Admin panel: enrichment controls, S3 mirror, themes
-    ResearchCascade.tsx   ← Enrichment pipeline waterfall stats
-    FlowbiteDemo.tsx      ← Component showcase (dev only)
+    Home.tsx               ← Main library view (Authors / Books / Audiobooks tabs)
+    Preferences.tsx        ← Admin panel: enrichment controls, S3 mirror, themes, LLM selector
+    ResearchCascade.tsx    ← Enrichment pipeline waterfall stats (live DB counts)
+    FlowbiteDemo.tsx       ← Component showcase (dev only)
+    NotFound.tsx           ← 404 page with breadcrumb
   components/
-    FlowbiteAuthorCard.tsx ← Primary author card with cover strip + hover tooltips
-    AuthorModal.tsx        ← Full author detail modal (bio, photo, social links)
-    BookModal.tsx          ← Full book detail modal (cover, summary, rating, links)
-    DashboardLayout.tsx    ← Sidebar layout wrapper (used on Preferences, ResearchCascade)
-    CategoryChart.tsx      ← ECharts category breakdown chart
-    CoverLightbox.tsx      ← Full-screen cover image viewer
+    FlowbiteAuthorCard.tsx  ← Primary author card (cover strip + hover tooltips + 3 hotspots)
+    AuthorModal.tsx         ← Full author detail modal (bio, photo, social links, portrait gen)
+    BookModal.tsx           ← Full book detail modal (cover, summary, rating, Amazon link)
+    AuthorAccordionRow.tsx  ← Accordion view row (same 3-hotspot model as card)
+    DashboardLayout.tsx     ← Sidebar layout wrapper (Preferences, ResearchCascade)
+    CategoryChart.tsx       ← ECharts category breakdown chart
+    CoverLightbox.tsx       ← Full-screen cover image viewer (Framer Motion)
+    CardGridSparkles.tsx    ← R3F sparkles canvas overlay over card grid
+    AvatarUpload.tsx        ← Click-to-upload author portrait with crop modal
+    AvatarCropModal.tsx     ← react-image-crop circular crop + zoom
+    PageHeader.tsx          ← Breadcrumb nav bar for non-home pages
+    AnimatedIcons.tsx       ← Phosphor icon wrappers with motion
+    FileTypeIcons.tsx       ← Content-type icon map
   lib/
-    libraryData.ts         ← Static author/book data (generated from Drive scan)
-    audioData.ts           ← Static audiobook data (generated from Drive scan)
-    authorAliases.ts       ← canonicalName() normalization function
+    libraryData.ts          ← Static author/book data (generated from Drive scan)
+    audioData.ts            ← Static audiobook data (generated from Drive scan)
+    authorAliases.ts        ← canonicalName() normalization function
+    authorBios.json         ← Static bio cache (JSON, used as first-pass before DB)
 server/routers/
-  library.router.ts        ← Drive sync, author/book list queries
-  authorProfiles.router.ts ← Bio, photo, social link enrichment; getAllBios
-  bookProfiles.router.ts   ← Summary, cover, rating enrichment; enrichAllMissingSummaries
-  apify.router.ts          ← Apify Amazon scrape + S3 mirror for covers
-  cascade.router.ts        ← ResearchCascade waterfall stats
-  llm.router.ts            ← LLM invocation procedures
+  library.router.ts         ← Drive sync, author/book list queries
+  authorProfiles.router.ts  ← Bio, photo, social link enrichment; getAllBios; generatePortrait
+  bookProfiles.router.ts    ← Summary, cover, rating enrichment; enrichAllMissingSummaries
+  apify.router.ts           ← Apify Amazon scrape + S3 mirror for covers and photos
+  cascade.router.ts         ← ResearchCascade waterfall stats (authorStats + bookStats)
+  llm.router.ts             ← LLM model list + test ping
+  index.ts                  ← Merges all routers into appRouter
 drizzle/
-  schema.ts                ← Four tables: users, author_profiles, book_profiles, sync_status
+  schema.ts                 ← Four tables: users, author_profiles, book_profiles, sync_status
 scripts/
-  batch-scrape-covers.mjs  ← Standalone CLI: Amazon scrape + S3 mirror (nightly cron)
+  batch-scrape-covers.mjs   ← Standalone CLI: Amazon scrape + S3 mirror (nightly cron)
+  detect-duplicates.mjs     ← Detect duplicate book entries in DB (3 patterns)
+  remove-duplicates.mjs     ← Remove near-duplicate book entries (scored, with backup)
 ```
 
 ---
@@ -75,10 +93,13 @@ scripts/
 |---|---|---|
 | `authorName` | varchar(255) PK | Canonical name, e.g. "Adam Grant" |
 | `bio` | text | LLM/Wikipedia-generated bio |
-| `photoUrl` | text | External photo URL |
+| `photoUrl` | text | External photo URL (original source) |
+| `s3PhotoUrl` | text | CDN URL for mirrored portrait |
 | `s3PhotoKey` | varchar(500) | S3 key for mirrored portrait |
-| `photoSource` | enum | `wikipedia`, `tavily`, `apify`, `ai` |
-| `socialLinks` | json | `{ linkedin, twitter, website }` |
+| `photoSource` | enum | `wikipedia` \| `tavily` \| `apify` \| `ai` \| NULL (no photo) |
+| `websiteUrl` | text | Author's website |
+| `twitterUrl` | text | Twitter/X profile URL |
+| `linkedinUrl` | text | LinkedIn profile URL |
 | `enrichedAt` | bigint | UTC ms timestamp |
 
 ### `book_profiles` — keyed by `titleKey` (lowercase slug)
@@ -92,9 +113,18 @@ scripts/
 | `coverImageUrl` | text | External cover URL (`not-found` or `skipped` if failed) |
 | `s3CoverUrl` | text | Mirrored CDN URL |
 | `s3CoverKey` | varchar(500) | S3 key |
-| `rating` | decimal(3,1) | Google Books rating |
+| `rating` | decimal(3,1) | Google Books rating (0 = not available) |
 | `ratingCount` | int | Number of ratings |
 | `amazonUrl` | text | Amazon product page URL |
+| `enrichedAt` | bigint | UTC ms timestamp |
+
+### `sync_status` — single row tracking last Drive sync
+
+| Column | Notes |
+|---|---|
+| `lastSyncedAt` | UTC ms timestamp of last successful Drive scan |
+| `authorCount` | Number of author folders found |
+| `bookCount` | Number of book folders found |
 
 ---
 
@@ -105,47 +135,82 @@ Always use `canonicalName(rawName)` from `client/src/lib/authorAliases.ts` befor
 any DB lookup or map access. The same author may appear as "Adam Grant",
 "Adam M. Grant", or "Grant, Adam" in raw Drive data.
 
-### Book Deduplication
-Books are deduplicated by `titleKey` (lowercase slug) at **two layers**:
-1. `filteredAuthors` in `Home.tsx` — before passing to cards
-2. `dedupedBooks` in `FlowbiteAuthorCard.tsx` — safety net inside the card
+### Book Deduplication (Two Layers — Never Add a Third)
+Books are deduplicated by `titleKey` (lowercase slug) at exactly **two layers**:
+1. `filteredAuthors` in `Home.tsx` — before passing to cards (Map<titleKey, BookRecord>)
+2. `dedupedBooks` in `FlowbiteAuthorCard.tsx` — safety net inside the card (Set<string>)
+
+The `titleKey` derivation strips the ` - Author` suffix from Drive folder names:
+```ts
+const titleKey = name.includes(" - ")
+  ? name.slice(0, name.lastIndexOf(" - ")).trim().toLowerCase()
+  : name.trim().toLowerCase();
+```
 
 Do not add a third dedup layer — it will cause books to disappear from cards.
 
 ### Tooltip Pattern (Radix `Tooltip`)
-- **Author bio tooltip:** `bio` prop on `FlowbiteAuthorCard` — JSON bio first, DB bio (`getAllBios` query) as fallback. Only shown when bio is available.
-- **Book cover tooltip:** `bookInfoMap` prop — `Map<titleKey, { summary, rating, ratingCount }>` built from `bookCoversQuery` in `Home.tsx`. Shows title, summary snippet, and ★ rating badge.
+- **Author bio tooltip:** `bio` prop on `FlowbiteAuthorCard` — `authorBios.json` first,
+  then `dbBioMap` from `getAllBios` tRPC query as fallback. Only shown when bio is available.
+- **Book cover tooltip:** `bookInfoMap` prop — `Map<titleKey, { summary, rating, ratingCount }>`
+  built from `bookCoversQuery` in `Home.tsx`. Shows title, summary snippet, and ★ rating badge.
+  Rating badge only appears when `rating > 0`.
+
+### FlowbiteAuthorCard — 3 Hotspot Model
+The card has exactly three interactive zones:
+1. **Avatar + author name group** → opens `AuthorModal`
+2. **Book title / mini cover thumbnail** → opens `BookModal`
+3. **Card surface (anywhere else)** → opens bio panel in parent via `onBioClick`
+
+All other elements (category chip, Bio ready dot, resource pills) are non-interactive.
+Do not add new click handlers outside these three zones.
 
 ### S3 Storage
 Use `storagePut(key, buffer, contentType)` from `server/storage.ts`. Key conventions:
-- Author portraits: `author-photos/ai-<hash>.jpg` (AI-generated) or `author-photos/<hash>.jpg`
+- Author portraits (AI-generated): `author-photos/ai-<8-char-hex>.jpg`
+- Author portraits (real): `author-photos/<8-char-hex>.jpg`
 - Book covers: `book-covers/<8-char-hex>.<ext>`
 
 Never store file bytes in the database. Store only the S3 key and CDN URL.
 
 ### Enrichment Procedures
+
 | Procedure | What it does |
 |---|---|
 | `authorProfiles.enrich` | Single author: Wikipedia → Perplexity → LLM fallback |
-| `authorProfiles.batchEnrich` | Batch: same pipeline for multiple authors |
+| `authorProfiles.enrichBatch` | Batch: same pipeline for multiple authors |
+| `authorProfiles.generatePortrait` | Replicate flux-schnell → S3 → DB |
+| `authorProfiles.getAllBios` | Returns all rows with non-empty bio (for tooltip map) |
 | `bookProfiles.enrichOne` | Single book: Google Books API → LLM fallback |
 | `bookProfiles.enrichAllMissingSummaries` | Batch all books with no summary |
+| `bookProfiles.getSummaryStats` | Returns { total, withSummary, missing } counts |
 | `apify.scrapeNextMissingCover` | One book: Amazon scrape + mirror batch of 3 |
+
+### Multi-Author Splitting
+Authors with combined names (e.g. "Aaron Ross and Jason Lemkin") are split into
+individual cards in `filteredAuthors`. The `dbPhotoMap` in `Home.tsx` is extended to
+add individual name keys from combined entries so each split author gets their photo.
 
 ---
 
 ## Design System
 
-**Philosophy:** Editorial Intelligence — a private library aesthetic.
+**Philosophy:** Editorial Intelligence — a private library aesthetic with Swiss Modernist
+typography and warm paper tones.
 
 | Token | Value |
 |---|---|
-| Heading font | Playfair Display (serif) |
-| Body font | DM Sans (sans-serif) |
-| Background | Warm off-white `#faf9f6` (paper tone) |
+| Heading font | IBM Plex Sans Bold / SemiBold |
+| Body font | Inter / DM Sans |
+| Mono font | JetBrains Mono |
+| Background | Warm off-white `oklch(0.98 0.005 80)` |
 | Foreground | Deep charcoal `oklch(0.235 0.015 65)` |
 | Border radius | `0.65rem` |
 | Card left border | 3px solid, category accent color |
+
+**Multi-theme support:** Three themes — Manus (default), Norfolk AI, Noir Dark — are
+defined as CSS variable sets in `client/src/index.css`. The active theme is stored in
+`localStorage` via `AppSettingsContext` and applied via `ThemeProvider` in `App.tsx`.
 
 **Category color system** (defined in `libraryData.ts`):
 
@@ -160,10 +225,6 @@ Never store file bytes in the database. Store only the S3 key and CDN URL.
 | Technology & Futurism | `#1d4ed8` (blue) |
 | Strategy & Economics | `#374151` (slate) |
 | History & Biography | `#92400e` (brown) |
-
-**Multi-theme support:** Three themes — Manus (default), Norfolk AI, Noir Dark — are
-defined as CSS variable sets in `client/src/index.css`. The active theme is stored in
-`localStorage` and applied via `ThemeProvider` in `App.tsx`.
 
 ---
 
@@ -185,7 +246,7 @@ Norfolk Consulting Group/
         ├── MP3/  M4B/  AAX/
 ```
 
-**Google Drive Folder IDs:**
+**Key Google Drive Folder IDs:**
 
 | Folder | ID |
 |---|---|
@@ -219,31 +280,10 @@ All secrets are injected by the Manus platform — never hardcode or commit them
 pnpm install
 pnpm db:push        # generate + migrate schema (drizzle-kit generate && migrate)
 pnpm dev            # starts Express + Vite on :3000
-pnpm test           # vitest (118 tests)
+pnpm test           # vitest (118 tests, 8 files)
 pnpm build          # production build
-npx tsc --noEmit    # type check (trust this over the watcher)
+npx tsc --noEmit    # type check — ALWAYS trust this over the watcher
 ```
-
----
-
-## Common Pitfalls
-
-**Stale TS watcher errors** — The incremental TypeScript watcher (`tsx watch`) can
-show cached errors from before a fix. Always trust `npx tsc --noEmit` over the
-watcher output. Clear the cache with `rm -f node_modules/.cache/typescript*` and
-restart the server.
-
-**`bookInfoMap` vs `bookSummaryMap`** — The prop was renamed from `bookSummaryMap`
-to `bookInfoMap` when rating data was added. If you see a TS error about
-`bookSummaryMap`, it has been removed.
-
-**Protected vs public procedures** — Enrichment mutations use `publicProcedure`
-(no auth required for internal library tools). Only user-specific operations use
-`protectedProcedure`.
-
-**No local image assets** — All images must be uploaded to CDN via
-`manus-upload-file --webdev` and referenced by URL. Never put images in
-`client/public/` or `client/src/assets/`.
 
 ---
 
@@ -251,7 +291,7 @@ to `bookInfoMap` when rating data was added. If you see a TS error about
 
 A nightly cron runs `scripts/batch-scrape-covers.mjs` at **2am CDT (07:00 UTC)**
 via the Manus scheduler. It scrapes Amazon for any books missing `coverImageUrl`,
-then mirrors all pending covers to S3. Logs: `/tmp/nightly-cover-scrape.log`.
+then mirrors all pending covers to S3. The script is idempotent and safe to re-run.
 
 ---
 
@@ -270,6 +310,57 @@ then mirrors all pending covers to S3. Logs: `/tmp/nightly-cover-scrape.log`.
 
 ---
 
+## Reusable Skills (in `/home/ubuntu/skills/`)
+
+These skills were created from patterns discovered in this project:
+
+| Skill | Description |
+|---|---|
+| `book-cover-scrape-mirror` | Batch Amazon scrape + S3 mirror for book covers |
+| `book-cover-dedup` | Detect and remove duplicate book cover entries (DB + UI) |
+| `book-profile-enrichment` | Google Books + LLM enrichment pipeline for book summaries |
+| `author-bio-enrichment` | Wikipedia + Perplexity + LLM bio enrichment pipeline |
+| `library-content-enrichment` | Full enrichment workflow (photos, bios, covers) |
+| `webdev-card-system` | Flowbite card + modal system with 3-hotspot model |
+| `webdev-flowbite` | Flowbite React + Tailwind v4 integration |
+| `webdev-theme-aware-cards` | Theme-aware card backgrounds (bg-card pattern) |
+| `webdev-visualizations` | ECharts + React Flow + Nivo charts |
+| `skill-creation-workflow` | How to package a repeatable process into a skill |
+
+---
+
+## Common Pitfalls
+
+**Stale TS watcher errors** — The incremental TypeScript watcher (`tsx watch`) can
+show cached errors from before a fix. Always trust `npx tsc --noEmit` over the
+watcher output. Clear the cache with `rm -f node_modules/.cache/typescript*` and
+restart the server if needed.
+
+**`bookInfoMap` vs `bookSummaryMap`** — The prop was renamed from `bookSummaryMap`
+to `bookInfoMap` when rating data was added. If you see a TS error about
+`bookSummaryMap`, it has been removed — use `bookInfoMap`.
+
+**Protected vs public procedures** — Enrichment mutations use `publicProcedure`
+(no auth required for internal library tools). Only user-specific operations use
+`protectedProcedure`.
+
+**No local image assets** — All images must be uploaded to CDN via
+`manus-upload-file --webdev` and referenced by URL. Never put images in
+`client/public/` or `client/src/assets/`.
+
+**flowbite-react version** — Do NOT upgrade past `0.12.16`. The `0.12.17+` versions
+introduce `oxc-parser` which fails in the Manus deployment environment.
+
+**Vite version** — Pinned to `6.x`. Do NOT upgrade to Vite 7 — the deployment
+environment runs Node.js 20.15.1 which is below Vite 7's minimum of 20.19+.
+
+**Pending DB duplicates** — 10 books share the same S3 cover URL (different title
+variants for the same book) and 1 exact duplicate ("The Jolt Effect", ids 98 and
+30005) are flagged for manual review. Run `node scripts/detect-duplicates.mjs` to
+see the current state before any bulk operations.
+
+---
+
 ## Scan Scripts (in `/home/ubuntu/`)
 
 These Python scripts regenerate `libraryData.ts` and `audioData.ts` from Google Drive.
@@ -285,4 +376,4 @@ All scripts use the `gws` CLI. Run with `python3.11 -u <script>.py`.
 
 ---
 
-*Last updated: March 17, 2026 — NCG Knowledge Library v2.0 (full-stack)*
+*Last updated: March 17, 2026 — Ricardo Cidale's Library v2.1*
