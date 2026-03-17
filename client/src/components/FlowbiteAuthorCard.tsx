@@ -1,9 +1,9 @@
 /**
  * FlowbiteAuthorCard
  *
- * Theme-compliant author card using flowbite-react Card + Badge + Modal.
+ * Theme-compliant author card using flowbite-react Card + Badge.
  *
- * DESIGN RULES (absolute — no exceptions without explicit user request):
+ * ── DESIGN RULES (absolute — no exceptions without explicit user request) ──
  *   - Zero hardcoded hex / rgb / rgba / hsl values
  *   - Zero Tailwind colour classes (rose-*, emerald-*, indigo-*, amber-*, slate-*, gray-*, etc.)
  *   - All colours from CSS variable tokens: bg-card, bg-muted, text-foreground,
@@ -12,18 +12,20 @@
  *   - Shadows are neutral — no RGBA colour tinting
  *   - Card content is top-justified (flex-col, items start at top)
  *
- * Features:
- *   - Avatar: hover:scale-[4] with smooth transition, click opens inline bio Modal
- *   - Bio Modal: Flowbite Modal with author photo, category, specialty, bio, links
- *   - Bio data: authorBios.json (JSON) → trpc.authorProfiles.get (DB) → auto-enrich
- *   - Resource pills: icon + label on bg-muted (no per-type colour coding)
- *   - Mini book cover strip with Tooltip enlarged preview
- *   - Framer Motion 3D tilt on card
+ * ── INTERACTION MODEL (exactly 3 hotspots) ──
+ *   1. Avatar / author name group  → click opens AuthorModal (bio, links)
+ *   2. Book cover / book title row → click opens BookModal (summary, Amazon, Drive)
+ *   3. Card surface                → click calls onBioClick (opens full bio panel in parent)
+ *
+ *   Everything else (category chip, Bio-ready badge, resource pills, watermark)
+ *   is purely presentational — cursor-default, no onClick.
+ *
+ *   Avatar hover: scale-[1.15] — subtle, doesn't break layout.
+ *   Book cover hover: scale-[1.2] — subtle, doesn't break layout.
  */
-
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Card, Badge, Modal, ModalBody, ModalHeader } from "flowbite-react";
+import { Card, Badge } from "flowbite-react";
 import {
   BookOpen,
   Briefcase,
@@ -50,12 +52,7 @@ import {
   Newspaper,
   Link,
   File,
-  Globe,
-  Twitter,
-  Linkedin,
-  RefreshCw,
 } from "lucide-react";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
 import { canonicalName } from "@/lib/authorAliases";
@@ -63,149 +60,12 @@ import {
   CATEGORY_ICONS,
   CONTENT_TYPE_ICONS,
   type AuthorEntry,
+  type BookEntry,
 } from "@/lib/libraryData";
-import { trpc } from "@/lib/trpc";
-import authorBios from "@/lib/authorBios.json";
-
-// ── BookDetailModal — fetches enriched data inline ────────────────────────────
-
-type BookMiniType = { id: string; titleKey: string; coverUrl: string | undefined; contentTypes: Record<string, number> };
-
-function BookDetailModal({
-  book,
-  authorName,
-  category,
-  onClose,
-}: {
-  book: BookMiniType | null;
-  authorName: string;
-  category: string;
-  onClose: () => void;
-}) {
-  const { data: profile, isLoading } = trpc.bookProfiles.get.useQuery(
-    { bookTitle: book?.titleKey ?? "" },
-    { enabled: !!book, staleTime: 5 * 60 * 1000 }
-  );
-
-  const amazonUrl =
-    profile?.amazonUrl ??
-    (book ? `https://www.amazon.com/s?k=${encodeURIComponent(book.titleKey)}` : undefined);
-
-  const goodreadsUrl = profile?.goodreadsUrl ?? undefined;
-
-  return (
-    <Modal show={!!book} size="md" onClose={onClose} popup>
-      {book && (
-        <>
-          <ModalHeader>
-            <span className="text-sm font-semibold text-card-foreground line-clamp-2">
-              {book.titleKey}
-            </span>
-          </ModalHeader>
-          <ModalBody>
-            <div className="flex flex-col gap-4 text-sm">
-              {/* Cover + meta row */}
-              <div className="flex items-start gap-4">
-                {book.coverUrl ? (
-                  <img
-                    src={book.coverUrl}
-                    alt={book.titleKey}
-                    className="h-28 w-20 rounded-md object-cover shadow-sm ring-1 ring-border flex-shrink-0"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-28 w-20 rounded-md bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border">
-                    <BookOpen className="w-6 h-6 text-muted-foreground opacity-40" />
-                  </div>
-                )}
-                <div className="flex flex-col gap-1.5 min-w-0 pt-1">
-                  <p className="text-sm font-semibold text-card-foreground leading-snug">{book.titleKey}</p>
-                  <p className="text-[11px] text-muted-foreground">{authorName} · {category}</p>
-                  {profile?.publishedDate && (
-                    <p className="text-[11px] text-muted-foreground">{profile.publishedDate.slice(0, 4)}{profile.publisher ? ` · ${profile.publisher}` : ""}</p>
-                  )}
-                  {profile?.rating && (
-                    <p className="text-[11px] text-muted-foreground">★ {profile.rating}{profile.ratingCount ? ` (${profile.ratingCount})` : ""}</p>
-                  )}
-                  {/* Content-type pills */}
-                  {Object.keys(normalizeContentTypes(book.contentTypes)).length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-0.5">
-                      {Object.entries(normalizeContentTypes(book.contentTypes)).map(([type, count]) => (
-                        <ResourcePill key={type} type={type} count={count} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Summary / description */}
-              {isLoading ? (
-                <p className="text-[11px] text-muted-foreground animate-pulse">Loading description…</p>
-              ) : profile?.summary ? (
-                <>
-                  <div className="h-px bg-border" />
-                  <p className="text-[12px] text-muted-foreground leading-relaxed">{profile.summary}</p>
-                </>
-              ) : null}
-
-              {/* Key themes */}
-              {profile?.keyThemes && (
-                <div className="flex flex-wrap gap-1.5">
-                  {profile.keyThemes.split(",").map((t) => t.trim()).filter(Boolean).map((theme) => (
-                    <span key={theme} className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {theme}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="h-px bg-border" />
-
-              {/* Links */}
-              <div className="flex flex-col gap-2">
-                <a
-                  href={`https://drive.google.com/drive/folders/${book.id}?view=grid`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-xs text-primary hover:underline"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                  Open folder in Google Drive
-                </a>
-                {amazonUrl && (
-                  <a
-                    href={amazonUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs text-primary hover:underline"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                    {profile?.amazonUrl ? "View on Amazon" : "Search on Amazon"}
-                  </a>
-                )}
-                {goodreadsUrl && (
-                  <a
-                    href={goodreadsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs text-primary hover:underline"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
-                    View on Goodreads
-                  </a>
-                )}
-              </div>
-            </div>
-          </ModalBody>
-        </>
-      )}
-    </Modal>
-  );
-}
+import { AuthorModal } from "@/components/AuthorModal";
+import { BookModal, type BookModalBook } from "@/components/BookModal";
 
 // ── Shared LucideIcon type ─────────────────────────────────────────────────────
-
 type LucideIcon = React.FC<{
   className?: string;
   style?: React.CSSProperties;
@@ -213,7 +73,6 @@ type LucideIcon = React.FC<{
 }>;
 
 // ── Icon maps ──────────────────────────────────────────────────────────────────
-
 const ICON_MAP: Record<string, LucideIcon> = {
   briefcase:        Briefcase as LucideIcon,
   brain:            Brain as LucideIcon,
@@ -242,7 +101,6 @@ const CT_ICON_MAP: Record<string, LucideIcon> = {
 };
 
 // ── Content-type normalisation ─────────────────────────────────────────────────
-
 const DISPLAY_NAME_MAP: Record<string, string> = {
   "Additional DOC":       "Supplemental",
   "PDF Extra":            "PDF",
@@ -258,7 +116,6 @@ const DISPLAY_NAME_MAP: Record<string, string> = {
   "Temp":                 "Supplemental",
   "TEMP":                 "Supplemental",
 };
-
 function normalizeContentTypes(raw: Record<string, number>): Record<string, number> {
   const result: Record<string, number> = {};
   for (const [type, count] of Object.entries(raw)) {
@@ -268,13 +125,26 @@ function normalizeContentTypes(raw: Record<string, number>): Record<string, numb
   return result;
 }
 
-// ── Resource pill — theme-token only ──────────────────────────────────────────
+// ── Search highlight ───────────────────────────────────────────────────────────
+function Highlight({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="bg-transparent font-bold text-foreground">{text.slice(idx, idx + query.length)}</mark>
+      {text.slice(idx + query.length)}
+    </>
+  );
+}
 
+// ── Resource pill — presentational only, no onClick ───────────────────────────
 function ResourcePill({ type, count }: { type: string; count: number }) {
   const iconName = CONTENT_TYPE_ICONS[type] ?? "folder";
   const Icon = (CT_ICON_MAP[iconName] ?? Folder) as LucideIcon;
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground cursor-default select-none">
       <Icon className="w-3 h-3" />
       {type}
       {count > 1 && <span className="opacity-60 ml-0.5">{count}</span>}
@@ -282,350 +152,173 @@ function ResourcePill({ type, count }: { type: string; count: number }) {
   );
 }
 
-// ── Book subfolder row ─────────────────────────────────────────────────────────
-
-function ContentTypeBadge({ type, count }: { type: string; count: number }) {
-  const iconName = CONTENT_TYPE_ICONS[type] ?? "folder";
-  const Icon = (CT_ICON_MAP[iconName] ?? Folder) as LucideIcon;
-  return (
-    <span
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium"
-      title={`${type}: ${count} file${count !== 1 ? "s" : ""}`}
-    >
-      <Icon className="w-2.5 h-2.5" />
-      {type}
-      {count > 1 && <span className="opacity-60">·{count}</span>}
-    </span>
-  );
-}
-
-function BookSubfolderRow({
+// ── HOTSPOT 2: Book row — clicking opens BookModal ────────────────────────────
+function BookRow({
   book,
+  onBookClick,
 }: {
-  book: { name: string; id: string; contentTypes: Record<string, number> };
+  book: BookEntry;
+  onBookClick: (b: BookModalBook) => void;
 }) {
-  const hasContent = Object.keys(book.contentTypes).length > 0;
-  const displayTitle = (() => {
-    const dashIdx = book.name.lastIndexOf(" - ");
-    return dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
-  })();
+  const rawTitle = book.name.includes(" - ")
+    ? book.name.slice(0, book.name.lastIndexOf(" - "))
+    : book.name;
+  const titleKey = rawTitle.trim().toLowerCase();
+  const displayTitle = rawTitle.trim();
+  const normalised = normalizeContentTypes(book.contentTypes ?? {});
+  const hasContent = Object.keys(normalised).length > 0;
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onBookClick({ id: book.id, titleKey, contentTypes: book.contentTypes ?? {} });
+    },
+    [book, titleKey, onBookClick]
+  );
 
   return (
-    <a
-      href={`https://drive.google.com/drive/folders/${book.id}?view=grid`}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="flex flex-col gap-1 px-2 py-1.5 rounded-md hover:bg-accent transition-colors group/book"
+    <button
+      type="button"
+      onClick={handleClick}
+      className="flex flex-col gap-1 px-2 py-1.5 rounded-md hover:bg-accent transition-colors group/book w-full text-left"
     >
       <div className="flex items-center gap-1.5">
         <BookOpen className="w-3 h-3 text-muted-foreground flex-shrink-0 group-hover/book:text-foreground transition-colors" />
         <span className="text-[11px] font-medium leading-tight text-muted-foreground group-hover/book:text-foreground transition-colors line-clamp-1 flex-1">
           {displayTitle}
         </span>
-        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground opacity-0 group-hover/book:opacity-60 transition-opacity flex-shrink-0" />
+        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground opacity-0 group-hover/book:opacity-50 transition-opacity flex-shrink-0" />
       </div>
       {hasContent && (
         <div className="flex flex-wrap gap-1 pl-4">
-          {Object.entries(normalizeContentTypes(book.contentTypes)).map(([type, count]) => (
-            <ContentTypeBadge key={type} type={type} count={count} />
+          {Object.entries(normalised).map(([type, count]) => (
+            <span
+              key={type}
+              className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium"
+            >
+              {type}{count > 1 && <span className="opacity-60">·{count}</span>}
+            </span>
           ))}
         </div>
       )}
-    </a>
+    </button>
   );
 }
 
 // ── 3-D tilt hook ─────────────────────────────────────────────────────────────
-
 function useCardTilt(maxDeg = 10) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [maxDeg, -maxDeg]), {
-    stiffness: 300, damping: 25, mass: 0.5,
-  });
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-maxDeg, maxDeg]), {
-    stiffness: 300, damping: 25, mass: 0.5,
-  });
-  const scale = useSpring(1, { stiffness: 300, damping: 25, mass: 0.5 });
+  const ref = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [maxDeg, -maxDeg]), { stiffness: 200, damping: 20 });
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-maxDeg, maxDeg]), { stiffness: 200, damping: 20 });
+  const scale   = useSpring(1, { stiffness: 200, damping: 20 });
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      x.set((e.clientX - rect.left) / rect.width - 0.5);
-      y.set((e.clientY - rect.top) / rect.height - 0.5);
-      scale.set(1.03);
-    },
-    [x, y, scale]
-  );
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
+    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
+    scale.set(1.02);
+  }, [rawX, rawY, scale]);
 
   const handleMouseLeave = useCallback(() => {
-    x.set(0);
-    y.set(0);
+    rawX.set(0);
+    rawY.set(0);
     scale.set(1);
-  }, [x, y, scale]);
+  }, [rawX, rawY, scale]);
 
-  return { rotateX, rotateY, scale, handleMouseMove, handleMouseLeave };
-}
-
-// ── Highlight helper ───────────────────────────────────────────────────────────
-
-function Highlight({ text, query }: { text: string; query: string }) {
-  if (!query) return <>{text}</>;
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
-  if (idx === -1) return <>{text}</>;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark className="search-highlight">{text.slice(idx, idx + query.length)}</mark>
-      {text.slice(idx + query.length)}
-    </>
-  );
-}
-
-// ── Inline bio modal ───────────────────────────────────────────────────────────
-
-function AuthorBioModal({
-  open,
-  onClose,
-  displayName,
-  specialty,
-  category,
-  photoUrl,
-  Icon,
-}: {
-  open: boolean;
-  onClose: () => void;
-  displayName: string;
-  specialty: string;
-  category: string;
-  photoUrl: string | null;
-  Icon: LucideIcon;
-}) {
-  const jsonBio = (authorBios as Record<string, string>)[displayName] ?? null;
-
-  const { data: profile, isLoading } = trpc.authorProfiles.get.useQuery(
-    { authorName: displayName },
-    { enabled: open && !jsonBio }
-  );
-
-  const enrichMutation = trpc.authorProfiles.enrich.useMutation();
-  const hasTriggered = useRef(false);
-
-  useEffect(() => {
-    if (open && !jsonBio && !isLoading && !profile && !hasTriggered.current) {
-      hasTriggered.current = true;
-      enrichMutation.mutate({ authorName: displayName });
-    }
-  }, [open, jsonBio, isLoading, profile]);
-
-  const bioText = jsonBio ?? profile?.bio ?? null;
-  const isBioLoading = !jsonBio && (isLoading || enrichMutation.isPending);
-
-  return (
-    <Modal show={open} size="md" onClose={onClose} popup>
-      <ModalHeader>
-        <span className="text-sm font-semibold text-card-foreground">{displayName}</span>
-      </ModalHeader>
-      <ModalBody>
-        <div className="flex flex-col gap-4 text-sm">
-          {/* Author header: photo + category + specialty */}
-          <div className="flex items-center gap-3">
-            {photoUrl ? (
-              <img
-                src={photoUrl}
-                alt={displayName}
-                className="h-14 w-14 rounded-full object-cover shadow-sm ring-2 ring-border ring-offset-1 flex-shrink-0"
-                loading="lazy"
-              />
-            ) : (
-              <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground flex-shrink-0 ring-2 ring-border ring-offset-1">
-                {displayName.charAt(0)}
-              </div>
-            )}
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 mb-1">
-                <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {category}
-                </span>
-              </div>
-              {specialty && (
-                <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
-                  {specialty}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-border" />
-
-          {/* Bio */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              About
-            </p>
-            {isBioLoading ? (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span className="text-xs">Loading bio…</span>
-              </div>
-            ) : bioText ? (
-              <p className="text-sm leading-relaxed text-card-foreground">{bioText}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">No bio available yet.</p>
-            )}
-          </div>
-
-          {/* Links */}
-          {profile && (profile.websiteUrl || profile.twitterUrl || profile.linkedinUrl) && (
-            <>
-              <div className="h-px bg-border" />
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                  Links
-                </p>
-                <div className="flex flex-col gap-1.5">
-                  {profile.websiteUrl && (
-                    <a
-                      href={profile.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs text-primary hover:underline"
-                    >
-                      <Globe className="w-3.5 h-3.5 flex-shrink-0" />
-                      {profile.websiteUrl.replace(/^https?:\/\/(www\.)?/, "")}
-                    </a>
-                  )}
-                  {profile.twitterUrl && (
-                    <a
-                      href={profile.twitterUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs text-primary hover:underline"
-                    >
-                      <Twitter className="w-3.5 h-3.5 flex-shrink-0" />
-                      Twitter / X
-                    </a>
-                  )}
-                  {profile.linkedinUrl && (
-                    <a
-                      href={profile.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-xs text-primary hover:underline"
-                    >
-                      <Linkedin className="w-3.5 h-3.5 flex-shrink-0" />
-                      LinkedIn
-                    </a>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </ModalBody>
-    </Modal>
-  );
+  return { ref, rotateX, rotateY, scale, handleMouseMove, handleMouseLeave };
 }
 
 // ── Props ──────────────────────────────────────────────────────────────────────
-
 export interface FlowbiteAuthorCardProps {
   author: AuthorEntry;
   query: string;
+  /** HOTSPOT 3: called when the user clicks the card surface */
   onBioClick: (a: AuthorEntry) => void;
   isEnriched?: boolean;
   coverMap?: Map<string, string>;
+  /** Kept for API compatibility — not used for navigation */
   onBookClick?: (bookId: string, titleKey: string) => void;
   dbPhotoMap?: Map<string, string>;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-
 export function FlowbiteAuthorCard({
   author,
   query,
   onBioClick,
   isEnriched,
   coverMap,
-  onBookClick,
   dbPhotoMap,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
-  const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
-
   const displayName = canonicalName(author.name);
   const specialty = author.name.includes(" - ")
     ? author.name.slice(author.name.indexOf(" - ") + 3)
     : "";
-
   const photoUrl =
     dbPhotoMap?.get(displayName.toLowerCase()) ?? getAuthorPhoto(displayName) ?? null;
-
   const hasBooks = author.books && author.books.length > 0;
 
-  // ── Avatar bio modal state ──
-  const [openBio, setOpenBio] = useState(false);
-
-  // ── Book detail modal state ──
-  type BookMini = { id: string; titleKey: string; coverUrl: string | undefined; contentTypes: Record<string, number> };
-  const [activeBook, setActiveBook] = useState<BookMini | null>(null);
-  const handleBookCoverClick = useCallback(
-    (e: React.MouseEvent, book: BookMini) => {
-      e.stopPropagation();
-      setActiveBook(book);
-    },
-    []
-  );
+  // ── HOTSPOT 1: Author modal ──
+  const [authorModalOpen, setAuthorModalOpen] = useState(false);
   const handleAvatarClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setOpenBio(true);
+    setAuthorModalOpen(true);
   }, []);
 
-  // Aggregate resource counts across all books
-  const resourceTotals = (() => {
+  // ── HOTSPOT 2: Book modal ──
+  const [activeBook, setActiveBook] = useState<BookModalBook | null>(null);
+  const handleBookClick = useCallback((b: BookModalBook) => {
+    setActiveBook(b);
+  }, []);
+
+  // ── Resource totals across all books ──
+  const resourceTotals = useMemo(() => {
     const totals: Record<string, number> = {};
     for (const book of author.books ?? []) {
-      for (const [type, count] of Object.entries(
-        normalizeContentTypes(book.contentTypes ?? {})
-      )) {
+      for (const [type, count] of Object.entries(normalizeContentTypes(book.contentTypes ?? {}))) {
         totals[type] = (totals[type] ?? 0) + count;
       }
     }
     return totals;
-  })();
+  }, [author.books]);
 
-  // Deduplicated books list — filters out entries with the same titleKey
+  // ── Deduplicated books for the cover strip ──
   const dedupedBooks = useMemo(() => {
     const seen = new Set<string>();
     return (author.books ?? []).filter((book) => {
       const tk = book.name.includes(" - ")
-        ? book.name.slice(0, book.name.lastIndexOf(" - ")).trim()
-        : book.name.trim();
+        ? book.name.slice(0, book.name.lastIndexOf(" - ")).trim().toLowerCase()
+        : book.name.trim().toLowerCase();
       if (seen.has(tk)) return false;
       seen.add(tk);
       return true;
     });
   }, [author.books]);
 
-  const { rotateX, rotateY, scale, handleMouseMove, handleMouseLeave } = useCardTilt(10);
+  const { ref, rotateX, rotateY, scale, handleMouseMove, handleMouseLeave } = useCardTilt(10);
 
   return (
     <>
       <motion.div
+        ref={ref}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         className="card-animate group h-full"
         style={{ rotateX, rotateY, scale, willChange: "transform" }}
       >
         {/*
-         * Card layout: flex-col with items-start ensures all content stacks
-         * from the top — no vertical centering regardless of card height.
+         * HOTSPOT 3: clicking the Card surface calls onBioClick.
+         * Child interactive elements stop propagation so they don't
+         * accidentally trigger this handler.
          */}
         <Card
+          onClick={() => onBioClick(author)}
           className="
             h-full overflow-hidden relative !p-0
             bg-card text-card-foreground
@@ -633,9 +326,10 @@ export function FlowbiteAuthorCard({
             shadow-sm hover:shadow-md
             transition-shadow duration-200
             flex flex-col items-stretch justify-start
+            cursor-pointer
           "
         >
-          {/* Category watermark — neutral opacity, no colour tint */}
+          {/* Category watermark — presentational, no pointer events */}
           <div
             className="pointer-events-none absolute bottom-2 right-2 select-none"
             aria-hidden
@@ -643,12 +337,9 @@ export function FlowbiteAuthorCard({
             <Icon className="w-16 h-16 text-foreground opacity-[0.04]" strokeWidth={1} />
           </div>
 
-          {/* ── Clickable header (opens full bio panel in parent) ── */}
-          <button
-            onClick={() => onBioClick(author)}
-            className="block w-full text-left px-4 pt-4 pb-3 cursor-pointer relative z-10 hover:bg-accent transition-colors flex-shrink-0"
-          >
-            {/* Top row: category icon + label + Drive link + Bio badge */}
+          {/* ── SECTION 1: Header ── */}
+          <div className="px-4 pt-4 pb-3 flex-shrink-0">
+            {/* Category row — presentational */}
             <div className="flex items-start justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
@@ -658,29 +349,19 @@ export function FlowbiteAuthorCard({
                   {author.category}
                 </p>
               </div>
-
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {isEnriched && (
-                  <Badge color="success" className="text-[10px] shrink-0">
-                    Bio ready
-                  </Badge>
-                )}
-                <a
-                  href={driveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-0.5 rounded hover:bg-muted transition-colors"
-                  title="Open in Google Drive"
-                >
-                  <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-40 transition-opacity text-muted-foreground" />
-                </a>
-              </div>
+              {isEnriched && (
+                <Badge color="success" className="text-[10px] shrink-0">
+                  Bio ready
+                </Badge>
+              )}
             </div>
 
-            {/* Author avatar + name + specialty — items-center keeps avatar and name on the same baseline */}
-            <div className="flex items-center gap-3">
-              {/* Avatar with 4× hover scale — click opens bio modal */}
+            {/* HOTSPOT 1: Avatar + name group — stopPropagation so card click doesn't fire */}
+            <div
+              className="flex items-center gap-3 mb-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Avatar — 1.15× hover scale, click opens AuthorModal */}
               <div className="relative h-9 w-9 flex-shrink-0">
                 <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={40}>
                   {(url) =>
@@ -693,7 +374,7 @@ export function FlowbiteAuthorCard({
                           h-9 w-9 rounded-full object-cover shadow-sm
                           ring-2 ring-border ring-offset-1
                           transition-transform duration-300 ease-out
-                          hover:scale-[4]
+                          hover:scale-[1.15]
                           origin-center
                           cursor-pointer
                           relative z-20
@@ -708,7 +389,7 @@ export function FlowbiteAuthorCard({
                           flex items-center justify-center text-sm font-bold
                           ring-2 ring-border ring-offset-1
                           transition-transform duration-300 ease-out
-                          hover:scale-[4]
+                          hover:scale-[1.15]
                           origin-center
                           cursor-pointer
                           relative z-20
@@ -721,7 +402,11 @@ export function FlowbiteAuthorCard({
                 </AvatarUpload>
               </div>
 
-              <div className="flex-1 min-w-0">
+              {/* Name + specialty — clicking name also opens AuthorModal */}
+              <div
+                className="min-w-0 flex-1 cursor-pointer"
+                onClick={handleAvatarClick}
+              >
                 <h3 className="text-sm font-semibold text-card-foreground leading-snug tracking-tight">
                   <Highlight text={displayName} query={query} />
                 </h3>
@@ -733,8 +418,8 @@ export function FlowbiteAuthorCard({
               </div>
             </div>
 
-            {/* Bio status line */}
-            <div className="mt-3 text-[11px]">
+            {/* Bio status — presentational */}
+            <div className="text-[11px]">
               {isEnriched ? (
                 <span className="flex items-center gap-1.5 text-muted-foreground">
                   <UserCheck className="w-3 h-3" />
@@ -748,19 +433,19 @@ export function FlowbiteAuthorCard({
                 </span>
               )}
             </div>
-          </button>
+          </div>
 
           {/* ── Divider ── */}
           <div className="mx-4 h-px bg-border flex-shrink-0" />
 
-          {/* ── Books section — top-justified, grows naturally ── */}
+          {/* ── SECTION 2: Books ── */}
           {hasBooks && (
             <div className="px-4 py-3 relative z-10 flex flex-col items-start gap-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground cursor-default">
                 Books ({author.books.length})
               </p>
 
-              {/* Resource type pills */}
+              {/* Resource pills — presentational */}
               {Object.keys(resourceTotals).length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(resourceTotals).map(([type, count]) => (
@@ -769,48 +454,51 @@ export function FlowbiteAuthorCard({
                 </div>
               )}
 
-              {/* Mini book cover strip — deduplicated by titleKey, each cover scales 4× on hover */}
+              {/* Cover strip — HOTSPOT 2: each cover opens BookModal */}
               {coverMap && (
                 <div className="flex flex-wrap gap-2 w-full">
-                  {dedupedBooks.map((book: import("@/lib/libraryData").BookEntry) => {
-                    const titleKey = book.name.includes(" - ")
-                      ? book.name.slice(0, book.name.lastIndexOf(" - ")).trim()
-                      : book.name.trim();
+                  {dedupedBooks.map((book) => {
+                    const rawTitle = book.name.includes(" - ")
+                      ? book.name.slice(0, book.name.lastIndexOf(" - "))
+                      : book.name;
+                    const titleKey = rawTitle.trim().toLowerCase();
                     const coverUrl = coverMap.get(titleKey);
-                    const bookMini = { id: book.id, titleKey, coverUrl, contentTypes: book.contentTypes ?? {} };
+                    const bookMini: BookModalBook = {
+                      id: book.id,
+                      titleKey,
+                      coverUrl,
+                      contentTypes: book.contentTypes ?? {},
+                    };
                     return (
                       <div
                         key={book.id}
                         className="relative h-11 w-8 flex-shrink-0 cursor-pointer"
-                        title={titleKey}
+                        title={rawTitle.trim()}
+                        onClick={(e) => { e.stopPropagation(); handleBookClick(bookMini); }}
                       >
                         {coverUrl ? (
                           <img
                             src={coverUrl}
-                            alt={titleKey}
-                            onClick={(e) => handleBookCoverClick(e, bookMini)}
+                            alt={rawTitle.trim()}
                             className="
                               h-full w-full rounded-sm object-cover shadow-sm
                               ring-1 ring-border
                               transition-transform duration-300 ease-out
-                              hover:scale-[4]
+                              hover:scale-[1.2]
                               origin-center
-                              cursor-pointer
                               relative z-20
                             "
                             loading="lazy"
                           />
                         ) : (
                           <div
-                            onClick={(e) => handleBookCoverClick(e, bookMini)}
                             className="
                               h-full w-full rounded-sm bg-muted shadow-sm
                               ring-1 ring-border
                               flex items-center justify-center
                               transition-transform duration-300 ease-out
-                              hover:scale-[4]
+                              hover:scale-[1.2]
                               origin-center
-                              cursor-pointer
                               relative z-20
                             "
                           >
@@ -823,10 +511,10 @@ export function FlowbiteAuthorCard({
                 </div>
               )}
 
-              {/* Book subfolder rows */}
+              {/* Book rows — HOTSPOT 2: each row opens BookModal */}
               <div className="flex flex-col gap-0.5 max-h-40 overflow-y-auto w-full">
                 {author.books.map((book) => (
-                  <BookSubfolderRow key={book.id} book={book} />
+                  <BookRow key={book.id} book={book} onBookClick={handleBookClick} />
                 ))}
               </div>
             </div>
@@ -834,22 +522,16 @@ export function FlowbiteAuthorCard({
         </Card>
       </motion.div>
 
-      {/* ── Flowbite bio modal ── */}
-      <AuthorBioModal
-        open={openBio}
-        onClose={() => setOpenBio(false)}
-        displayName={displayName}
-        specialty={specialty}
-        category={author.category}
+      {/* ── HOTSPOT 1 modal: Author bio ── */}
+      <AuthorModal
+        author={authorModalOpen ? author : null}
         photoUrl={photoUrl}
-        Icon={Icon}
+        onClose={() => setAuthorModalOpen(false)}
       />
 
-      {/* ── Flowbite book-detail modal — uses BookDetailModal component above ── */}
-      <BookDetailModal
+      {/* ── HOTSPOT 2 modal: Book detail ── */}
+      <BookModal
         book={activeBook}
-        authorName={displayName}
-        category={author.category}
         onClose={() => setActiveBook(null)}
       />
     </>

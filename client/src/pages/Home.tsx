@@ -1480,10 +1480,29 @@ export default function Home() {
 
   const filteredAuthors = useMemo(() => {
     const q = query.toLowerCase();
+
+    // ── Phase 0: Expand multi-author entries into one entry per author ──────────
+    // e.g. "Aaron Ross and Jason Lemkin - specialty" → two entries, each with the same books
+    const splitSeparators = /\s+(?:and|&)\s+/i;
+    const expandedAuthors: typeof AUTHORS[number][] = [];
+    for (const a of AUTHORS) {
+      const namePart = a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name;
+      const specialty = a.name.includes(" - ") ? a.name.slice(a.name.indexOf(" - ")) : "";
+      const parts = namePart.split(splitSeparators).map((p) => p.trim()).filter(Boolean);
+      if (parts.length > 1) {
+        // Create one entry per individual author, each carrying the same books
+        for (const part of parts) {
+          expandedAuthors.push({ ...a, name: part + specialty });
+        }
+      } else {
+        expandedAuthors.push(a);
+      }
+    }
+
     // Deduplicate authors by base name (before " - "), merging all book lists
     const seen = new Map<string, typeof AUTHORS[number]>();
     const booksSeen = new Map<string, Set<string>>(); // track book IDs per author
-    for (const a of AUTHORS) {
+    for (const a of expandedAuthors) {
       const baseName = canonicalName(a.name).toLowerCase();
       const existing = seen.get(baseName);
       if (!existing) {

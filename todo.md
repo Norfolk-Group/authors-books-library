@@ -451,3 +451,21 @@
 - [x] Add view-mode toggle (Cards / Accordion) to the Authors section header
 - [ ] Persist view-mode preference to localStorage
 - [x] Run tests and save checkpoint
+
+## Session March 17, 2026 — Author Card Refactor (One Author Per Card, 3 Hotspots)
+- [x] Split multi-author entries in filteredAuthors (e.g. "Aaron Ross and Jason Lemkin" → 2 separate cards, each with shared books)
+- [x] Build shared AuthorModal component (bio, photo, category, specialty, links)
+- [x] Build shared BookModal component (cover, title, summary, Amazon link, content-type pills)
+- [x] Rewrite FlowbiteAuthorCard: 3-section layout (header / status / books), exactly 3 hotspots
+  - [x] Card surface: onClick → onBioClick (opens full bio panel in parent)
+  - [x] Avatar + author name group: onClick → open AuthorModal (stop propagation)
+  - [x] Book title / mini cover: onClick → open BookModal (stop propagation)
+  - [x] All other elements (category chip, Bio ready badge, resource pills): non-interactive (cursor-default, no onClick)
+  - [x] Avatar hover: scale-[1.15] only
+  - [x] Book cover hover: scale-[1.2] only
+- [x] Rewrite AuthorAccordionRow to use shared AuthorModal + BookModal (same 3-hotspot model)
+  - [x] Accordion row shows: chevron, avatar, author name, category icon, book count, file count, Bio ready badge
+  - [x] Clicking chevron/row expands inline (Framer Motion AnimatePresence)
+  - [x] Avatar + name click opens AuthorModal (stop propagation)
+  - [x] Mini cover click opens BookModal (stop propagation)
+- [x] Run tests and save checkpoint
