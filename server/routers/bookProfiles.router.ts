@@ -8,7 +8,7 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { bookProfiles } from "../../drizzle/schema";
-import { eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
+import { eq, inArray, isNotNull, isNull, or, and, ne } from "drizzle-orm";
 import { mirrorBatchToS3 } from "../mirrorToS3";
 import { invokeLLM } from "../_core/llm";
 
@@ -440,5 +440,76 @@ export const bookProfilesRouter = router({
       }
 
       return results;
+    }),
+
+  /**
+   * Return counts of books with/without summaries for the admin dashboard.
+   */
+  getSummaryStats: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { total: 0, withSummary: 0, missingSummary: 0 };
+    const all = await db
+      .select({ summary: bookProfiles.summary })
+      .from(bookProfiles);
+    const withSummary = all.filter((b) => b.summary && b.summary.trim().length > 0).length;
+    return { total: all.length, withSummary, missingSummary: all.length - withSummary };
+  }),
+
+  /**
+   * Enrich all books that are missing a summary.
+   * Processes in batches of 5 to avoid rate-limiting.
+   * Returns { total, enriched, skipped, failed } counts.
+   */
+  enrichAllMissingSummaries: publicProcedure
+    .input(z.object({ model: z.string().optional() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Find all books with no summary (or empty summary)
+      const missing = await db
+        .select({ bookTitle: bookProfiles.bookTitle, authorName: bookProfiles.authorName })
+        .from(bookProfiles)
+        .where(
+          or(
+            isNull(bookProfiles.summary),
+            eq(bookProfiles.summary, "")
+          )
+        );
+
+      const total = missing.length;
+      let enriched = 0;
+      let failed = 0;
+      let skipped = 0;
+
+      // Process in batches of 5 to avoid overwhelming the API
+      const BATCH_SIZE = 5;
+      for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+        const batch = missing.slice(i, i + BATCH_SIZE);
+        await Promise.all(
+          batch.map(async (item) => {
+            try {
+              const data = await enrichBookViaGoogleBooks(
+                item.bookTitle,
+                item.authorName ?? "",
+                input.model
+              );
+              if (!data.summary) {
+                skipped++;
+                return;
+              }
+              await db
+                .update(bookProfiles)
+                .set({ summary: data.summary, enrichedAt: new Date() })
+                .where(eq(bookProfiles.bookTitle, item.bookTitle));
+              enriched++;
+            } catch {
+              failed++;
+            }
+          })
+        );
+      }
+
+      return { total, enriched, skipped, failed };
     }),
 });

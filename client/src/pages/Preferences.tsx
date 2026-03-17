@@ -493,6 +493,35 @@ function StorageTab() {
     [avatarDone, avatarTotal]
   );
 
+  // ── Enrich All Missing Summaries ──
+  type EnrichSummaryStatus = "idle" | "running" | "done" | "error";
+  const [summaryStatus, setSummaryStatus] = useState<EnrichSummaryStatus>("idle");
+  const [summaryResult, setSummaryResult] = useState<{ total: number; enriched: number; skipped: number; failed: number } | null>(null);
+  const enrichAllSummariesMutation = trpc.bookProfiles.enrichAllMissingSummaries.useMutation();
+  const summaryStats = trpc.bookProfiles.getSummaryStats.useQuery(undefined, { staleTime: 30_000 });
+
+  const runEnrichAllSummaries = useCallback(async () => {
+    if (summaryStatus === "running") return;
+    const missing = summaryStats.data?.missingSummary ?? 0;
+    if (missing === 0) {
+      toast.info("All books already have summaries.");
+      return;
+    }
+    setSummaryStatus("running");
+    setSummaryResult(null);
+    try {
+      const result = await enrichAllSummariesMutation.mutateAsync({});
+      setSummaryResult(result);
+      setSummaryStatus("done");
+      void summaryStats.refetch();
+      toast.success(`Enriched ${result.enriched} book summaries (${result.skipped} skipped, ${result.failed} failed).`);
+      if (result.enriched > 0) fireConfetti("enrich");
+    } catch {
+      setSummaryStatus("error");
+      toast.error("Summary enrichment failed. Check the console for details.");
+    }
+  }, [summaryStatus, summaryStats, enrichAllSummariesMutation]);
+
   return (
     <div className="space-y-4">
       <div className="mb-2">
@@ -632,6 +661,104 @@ function StorageTab() {
               : (avatarStats.data?.missing ?? 0) === 0
               ? "All authors have photos ✓"
               : `Generate Avatars (${avatarStats.data?.missing ?? "?"} missing)`}
+          </button>
+        </Card>
+      </div>
+
+      {/* ── Book Summary Enrichment ── */}
+      <div className="mt-6 pt-5 border-t border-border">
+        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest mb-1">
+          Book Summary Enrichment
+        </p>
+        <p className="text-xs text-muted-foreground mb-4">
+          Fetches 2–3 sentence summaries for books that are missing one, using Google Books API with
+          an LLM fallback. Summaries appear in hover tooltips on book cover thumbnails.
+        </p>
+
+        <Card className="p-5">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+              <BooksIcon size={18} className="text-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-foreground mb-0.5">Enrich All Missing Summaries</h3>
+              <p className="text-xs text-muted-foreground">Run Google Books + LLM enrichment for all books without a summary.</p>
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
+            {summaryStats.data && (
+              <>
+                <span className="flex items-center gap-1">
+                  <CheckCircleIcon size={13} className="text-green-500" />
+                  {summaryStats.data.withSummary} have summaries
+                </span>
+                {summaryStats.data.missingSummary > 0 && (
+                  <span className="flex items-center gap-1">
+                    <WarningCircleIcon size={13} className="text-amber-500" />
+                    {summaryStats.data.missingSummary} missing
+                  </span>
+                )}
+                {summaryStats.data.missingSummary === 0 && (
+                  <span className="flex items-center gap-1 text-green-600">
+                    <CheckCircleIcon size={13} />
+                    All books have summaries
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Running spinner */}
+          {summaryStatus === "running" && (
+            <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+              <ArrowsClockwiseIcon size={13} className="animate-spin" />
+              <span>Enriching summaries… this may take a few minutes.</span>
+            </div>
+          )}
+
+          {/* Results after done */}
+          {summaryStatus === "done" && summaryResult && (
+            <div className="mb-3 rounded-md bg-muted/40 p-3 text-xs space-y-1">
+              <div className="flex items-center gap-2">
+                <CheckCircleIcon size={13} className="text-green-500" />
+                <span>{summaryResult.enriched} enriched</span>
+              </div>
+              {summaryResult.skipped > 0 && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span className="w-3" />
+                  <span>{summaryResult.skipped} skipped (no data found)</span>
+                </div>
+              )}
+              {summaryResult.failed > 0 && (
+                <div className="flex items-center gap-2 text-amber-600">
+                  <WarningCircleIcon size={13} />
+                  <span>{summaryResult.failed} failed</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          <button
+            onClick={runEnrichAllSummaries}
+            disabled={summaryStatus === "running" || (summaryStats.data?.missingSummary ?? 1) === 0}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {summaryStatus === "running" ? (
+              <ArrowsClockwiseIcon size={14} className="animate-spin" />
+            ) : summaryStatus === "done" ? (
+              <CheckCircleIcon size={14} className="text-green-600" />
+            ) : (
+              <BooksIcon size={14} />
+            )}
+            {summaryStatus === "running"
+              ? "Enriching summaries…"
+              : summaryStatus === "done"
+              ? `Done — ${summaryResult?.enriched ?? 0} summaries added`
+              : (summaryStats.data?.missingSummary ?? 0) === 0
+              ? "All books have summaries ✓"
+              : `Enrich All Missing Summaries (${summaryStats.data?.missingSummary ?? "?"} books)`}
           </button>
         </Card>
       </div>

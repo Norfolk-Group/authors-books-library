@@ -636,3 +636,11 @@
 - [x] Pass bookSummaryMap from Home.tsx using existing bookCoversQuery data (summary field)
 - [x] Tooltip only appears when a summary is available; gracefully skip if not
 - [x] Run tests and save checkpoint
+
+## Session March 17, 2026 — Enrich All Missing Summaries Button
+
+- [x] Add enrichAllMissingSummaries tRPC mutation to bookProfiles router (batch enrich books with no summary)
+- [x] Add progress tracking: return { total, enriched, failed, skipped } counts
+- [x] Add "Enrich All Missing Summaries" button to admin sidebar/dashboard with progress display
+- [x] Show real-time progress (X of Y enriched) while running, success/error toast on completion
+- [x] Run tests and save checkpoint
