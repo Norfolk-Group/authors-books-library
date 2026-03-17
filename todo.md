@@ -674,3 +674,11 @@
 
 ### Suggestion 3: Skill multi-project reuse docs
 - [x] Updated book-cover-scrape-mirror SKILL.md with full multi-project reuse section: e-commerce example, film library example, complete flag reference table, scheduling snippet
+
+## Session March 17, 2026 — Book Cover Dedup Skill
+
+- [x] Create book-cover-dedup skill (detect-duplicates.mjs + remove-duplicates.mjs + UI dedup patterns reference)
+- [x] Smoke-test both scripts against live database — found 2 near-duplicate rows and 10 shared-S3-URL groups
+- [x] Apply cleanup: deleted 2 near-duplicate rows ("Do You Talk Funny" / "The Leader's Guide" variants)
+- [ ] Manual review: 10 books share same S3 cover URL (different titles for same book — needs human decision to merge or keep)
+- [ ] Manual review: "The Jolt Effect" exact duplicate (ids 98 and 30005) — decide which to keep
