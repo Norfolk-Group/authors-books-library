@@ -740,3 +740,12 @@
 - [ ] `@keyframes meteor` — shooting star effect; consider using for confetti/celebration on "Enrich All" completion
 - [ ] `@keyframes norfolkPulse` — Norfolk AI theme pulse; apply to "Powered by Norfolk AI" badge in sidebar footer
 - [ ] `@keyframes badgeSlideUp` — Amazon badge slide-in; apply `.amazon-badge` animation on BookCard mount so badge slides up when card appears
+
+## Session March 18, 2026 — New Features from Suggestions
+
+- [ ] AudioCard detail modal — replace direct Drive link with a detail sheet showing format breakdown, file count, and "Open in Drive" CTA
+- [ ] Resource pill deep-links — PDF/Transcript/Binder/Supplemental badges open filtered Drive view instead of root folder
+- [ ] Book count badge collapsible toggle — "BOOKS (3)" label in AuthorCard accordion toggles the book list open/closed on click
+
+- [x] Remove duplicate book covers on author cards (same cover shown multiple times in cover strip)
+- [x] Diagnose and fix avatar/portrait generation failure (Replicate/AI portrait pipeline broken — new token set, improved error handling/timeout/logging)

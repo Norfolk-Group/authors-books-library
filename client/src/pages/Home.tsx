@@ -340,6 +340,7 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
   };
 
   const [isTiltingAuthor, setIsTiltingAuthor] = useState(false);
+  const [booksExpanded, setBooksExpanded] = useState(true);
   const hasBooks = author.books && author.books.length > 0;
 
   return (
@@ -544,9 +545,17 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
               })}
             </div>
           )}
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mb-1 px-2">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setBooksExpanded(v => !v); }}
+            className="flex items-center gap-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mb-1 px-2 hover:text-foreground transition-colors cursor-pointer"
+          >
+            {booksExpanded
+              ? <ChevronUp className="w-3 h-3" />
+              : <ChevronDown className="w-3 h-3" />}
             Books ({author.books.length})
-          </p>
+          </button>
+          {booksExpanded && (
           <div className="flex flex-col gap-0.5 max-h-40 overflow-y-auto">
             {author.books.map((book) => (
               <BookSubfolderRow
@@ -559,9 +568,10 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
                     setActiveBookModal({ id, titleKey: tk, contentTypes: book.contentTypes });
                   }
                 }}
-              />
+                  />
             ))}
           </div>
+          )}
         </div>
       )}
     </div>
@@ -736,6 +746,7 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
 // ── Audio Book Card ──────────────────────────────────────────────
 function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const driveUrl = `https://drive.google.com/drive/folders/${audio.id}?view=grid`;
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // Framer Motion spring tilt
   const { rotateX: audioRotX, rotateY: audioRotY, scale: audioScale, handleMouseMove: handleAudioMouseMove, handleMouseLeave: handleAudioMouseLeave } = useCardTilt(14);
@@ -757,16 +768,15 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const totalFiles = Object.values(audio.formats).reduce((sum, f) => sum + f.fileCount, 0);
 
   return (
+    <>
     <motion.div
       onMouseMove={(e) => { handleAudioMouseMove(e); setIsTiltingAudio(true); }}
       onMouseLeave={(e) => { handleAudioMouseLeave(); setIsTiltingAudio(false); }}
       className="card-animate group relative audio-card-tilt"
       style={{ rotateX: audioRotX, rotateY: audioRotY, scale: audioScale, willChange: "transform" }}
     >
-    <a
-      href={driveUrl}
-      target="_blank"
-      rel="noopener noreferrer"
+    <div
+      onClick={() => setSheetOpen(true)}
       className={`rounded-lg border border-border shadow-sm overflow-hidden block cursor-pointer relative bg-card border-l-[3px] border-l-primary h-full card-lift${isTiltingAudio ? " tilt-shadow-active" : ""}`}
     >
       {/* Watermark */}
@@ -821,8 +831,85 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
           </span>
         </div>
       </div>
-    </a>
+    </div>
     </motion.div>
+
+    {/* AudioCard detail Sheet */}
+    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+        <SheetHeader className="pb-4 border-b border-border">
+          <SheetTitle className="flex items-center gap-2">
+            <Headphones className="w-5 h-5 text-primary" />
+            {audio.title}
+          </SheetTitle>
+          <SheetDescription>
+            {audio.bookAuthors ? `by ${audio.bookAuthors}` : "Audiobook details"}
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="py-6 space-y-6">
+          {/* Format breakdown table */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3 text-foreground">Format Breakdown</h4>
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="text-left px-3 py-2 font-medium text-muted-foreground">Format</th>
+                    <th className="text-center px-3 py-2 font-medium text-muted-foreground">Files</th>
+                    <th className="text-right px-3 py-2 font-medium text-muted-foreground">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(audio.formats).map(([fmt, info]) => {
+                    const cls = FORMAT_CLASSES[fmt] ?? "bg-muted text-muted-foreground";
+                    const label = FORMAT_LABEL[fmt] ?? fmt;
+                    return (
+                      <tr key={fmt} className="border-t border-border/50">
+                        <td className="px-3 py-2">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${cls}`}>
+                            {label}
+                          </span>
+                        </td>
+                        <td className="text-center px-3 py-2 text-muted-foreground">
+                          {info.fileCount} file{info.fileCount !== 1 ? "s" : ""}
+                        </td>
+                        <td className="text-right px-3 py-2">
+                          <a
+                            href={`https://drive.google.com/drive/folders/${info.folderId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                          >
+                            <Folder className="w-3 h-3" />
+                            Open
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {totalFiles} total file{totalFiles !== 1 ? "s" : ""} across {Object.keys(audio.formats).length} format{Object.keys(audio.formats).length !== 1 ? "s" : ""}
+            </p>
+          </div>
+
+          {/* Open in Drive button */}
+          <a
+            href={driveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Open in Google Drive
+          </a>
+        </div>
+      </SheetContent>
+    </Sheet>
+    </>
   );
 }
 

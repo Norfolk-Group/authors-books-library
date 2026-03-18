@@ -151,7 +151,9 @@ function ResourcePill({ type, count, driveId }: { type: string; count: number; d
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (driveId) {
-      window.open(`https://drive.google.com/drive/folders/${driveId}?q=${encodeURIComponent(type)}`, "_blank");
+      // Use Drive search URL to filter by content type within the author's folder
+      const searchUrl = `https://drive.google.com/drive/search?q=${encodeURIComponent(type)}+in:${driveId}`;
+      window.open(searchUrl, "_blank");
     }
   }, [driveId, type]);
   return (
@@ -318,9 +320,14 @@ export function FlowbiteAuthorCard({
   const dedupedBooks = useMemo(() => {
     const seen = new Set<string>();
     return (author.books ?? []).filter((book) => {
-      const tk = book.name.includes(" - ")
-        ? book.name.slice(0, book.name.lastIndexOf(" - ")).trim().toLowerCase()
-        : book.name.trim().toLowerCase();
+      // Normalize: strip " - suffix" and " (edition)" variants
+      let tk = book.name.trim().toLowerCase();
+      // Remove everything after last " - "
+      const dashIdx = tk.lastIndexOf(" - ");
+      if (dashIdx > 0) tk = tk.slice(0, dashIdx).trim();
+      // Remove everything after " (" (e.g. "Book Title (2nd Edition)")
+      const parenIdx = tk.indexOf(" (");
+      if (parenIdx > 0) tk = tk.slice(0, parenIdx).trim();
       if (seen.has(tk)) return false;
       seen.add(tk);
       return true;
@@ -559,7 +566,22 @@ export function FlowbiteAuthorCard({
               {/* Cover strip — HOTSPOT 2: each cover opens BookModal */}
               {coverMap && (
                 <div className="flex flex-wrap gap-2 w-full">
-                  {dedupedBooks.map((book) => {
+                  {(() => {
+                    // Second dedup pass: filter out books sharing the same cover URL
+                    const seenCoverUrls = new Set<string>();
+                    return dedupedBooks.filter((book) => {
+                      const rawT = book.name.includes(" - ")
+                        ? book.name.slice(0, book.name.lastIndexOf(" - "))
+                        : book.name;
+                      const tk = rawT.trim().toLowerCase();
+                      const url = coverMap.get(tk);
+                      if (url) {
+                        if (seenCoverUrls.has(url)) return false;
+                        seenCoverUrls.add(url);
+                      }
+                      return true;
+                    });
+                  })().map((book) => {
                     const rawTitle = book.name.includes(" - ")
                       ? book.name.slice(0, book.name.lastIndexOf(" - "))
                       : book.name;
