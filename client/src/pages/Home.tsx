@@ -1472,6 +1472,15 @@ export default function Home() {
   const bookEnrichBatchMutation = trpc.bookProfiles.enrichBatch.useMutation();
   const utils = trpc.useUtils();
 
+  // ── Amazon enrichment state ─────────────────────────────────────────────
+  const [amzEnrichStatus, setAmzEnrichStatus] = useState<"idle" | "running" | "done" | "error">("idle");
+  const [amzEnrichProgress, setAmzEnrichProgress] = useState(0);
+  const [amzEnrichDone, setAmzEnrichDone] = useState(0);
+  const [amzEnrichTotal, setAmzEnrichTotal] = useState(0);
+  const [amzEnrichFailed, setAmzEnrichFailed] = useState(0);
+  const [amzEnrichCurrent, setAmzEnrichCurrent] = useState<string | null>(null);
+  const enrichFromAmazonMutation = trpc.bookProfiles.enrichFromAmazon.useMutation();
+
   // ── Scrape covers state ──────────────────────────────────────────────────
   const [scrapeCoversStatus, setScrapeCoversStatus] = useState<"idle" | "running" | "done" | "error">("idle");
   const [scrapeCoversProgress, setScrapeCoversProgress] = useState(0);
@@ -1571,6 +1580,49 @@ export default function Home() {
       toast.error("Book enrichment failed: " + (err instanceof Error ? err.message : String(err)));
     }
   }, [bookEnrichStatus, bookEnrichBatchMutation, utils]);
+
+  // ── Enrich all books from Amazon (detail page scrape) ─────────────────────
+  const enrichAllFromAmazon = useCallback(async () => {
+    if (amzEnrichStatus === "running") return;
+    const titles = Array.from(
+      new Set(BOOKS.map((b) => {
+        const d = b.name.indexOf(" - ");
+        return d !== -1 ? b.name.slice(0, d) : b.name;
+      }))
+    );
+    setAmzEnrichStatus("running");
+    setAmzEnrichProgress(0);
+    setAmzEnrichDone(0);
+    setAmzEnrichFailed(0);
+    setAmzEnrichTotal(titles.length);
+    let done = 0;
+    let failed = 0;
+    try {
+      for (let i = 0; i < titles.length; i++) {
+        const bookTitle = titles[i];
+        const book = BOOKS.find((b) => b.name.startsWith(bookTitle));
+        const authorName = book?.name.includes(" - ") ? book.name.split(" - ").slice(1).join(" - ") : "";
+        setAmzEnrichCurrent(bookTitle);
+        try {
+          await enrichFromAmazonMutation.mutateAsync({ bookTitle, authorName });
+          done++;
+        } catch {
+          failed++;
+        }
+        setAmzEnrichDone(done);
+        setAmzEnrichFailed(failed);
+        setAmzEnrichProgress(Math.round(((i + 1) / titles.length) * 100));
+      }
+      setAmzEnrichStatus("done");
+      toast.success(`Amazon enrichment: ${done} books${failed > 0 ? ` (${failed} failed)` : ""}`);
+      if (done > 0) fireConfetti("enrich");
+      void utils.bookProfiles.getAllEnrichedTitles.invalidate();
+      void utils.bookProfiles.getMany.invalidate();
+    } catch (err) {
+      setAmzEnrichStatus("error");
+      toast.error("Amazon enrichment failed: " + (err instanceof Error ? err.message : String(err)));
+    }
+  }, [amzEnrichStatus, enrichFromAmazonMutation, utils]);
 
   // ── Generate AI portraits for all authors missing one ───────────────────────
   const generateAllPortraits = useCallback(async () => {
@@ -2141,6 +2193,52 @@ export default function Home() {
 
             {bookEnrichStatus === "done" && bookEnrichFailed > 0 && (
               <p className="text-[10px] text-muted-foreground mt-1">{bookEnrichFailed} books could not be enriched.</p>
+            )}
+
+            {/* Enrich All from Amazon button */}
+            <button
+              onClick={enrichAllFromAmazon}
+              disabled={amzEnrichStatus === "running" || regenerate.isPending}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1.5 hover-glow"
+              title="Scrape Amazon product pages for ratings, ISBN, publisher, description"
+            >
+              {amzEnrichStatus === "running" ? (
+                <ShoppingCart className="w-3.5 h-3.5 animate-pulse" />
+              ) : amzEnrichStatus === "done" ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+              ) : amzEnrichStatus === "error" ? (
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+              ) : (
+                <ShoppingCart className="w-3.5 h-3.5" />
+              )}
+              {amzEnrichStatus === "running"
+                ? `Amazon… ${amzEnrichDone}/${amzEnrichTotal}`
+                : amzEnrichStatus === "done"
+                ? `Amazon done (${amzEnrichDone})`
+                : amzEnrichStatus === "error"
+                ? "Amazon failed — retry"
+                : "Enrich All from Amazon"}
+            </button>
+            {/* Amazon enrichment progress bar */}
+            {amzEnrichStatus === "running" && (
+              <div className="mt-2">
+                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                  <span className="truncate max-w-[140px]">{amzEnrichCurrent ?? "Starting…"}</span>
+                  <span className="flex-shrink-0 ml-1">{amzEnrichProgress}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full progress-shimmer"
+                    style={{ width: `${amzEnrichProgress}%` }}
+                  />
+                </div>
+                {amzEnrichFailed > 0 && (
+                  <p className="text-[10px] text-red-500 mt-1">{amzEnrichFailed} failed</p>
+                )}
+              </div>
+            )}
+            {amzEnrichStatus === "done" && amzEnrichFailed > 0 && (
+              <p className="text-[10px] text-muted-foreground mt-1">{amzEnrichFailed} books could not be enriched from Amazon.</p>
             )}
 
             {/* Generate Missing Portraits button */}

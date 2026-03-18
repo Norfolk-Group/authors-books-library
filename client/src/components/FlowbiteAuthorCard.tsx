@@ -609,13 +609,19 @@ export function FlowbiteAuthorCard({
                       titleKey,
                       coverUrl,
                       contentTypes: book.contentTypes ?? {},
+                      authorName: displayName,
                     };
+                    const isBookEnriched = !!summary || !!rating;
                     const coverEl = (
                       <div
                         key={book.id}
                         className="relative h-11 w-8 flex-shrink-0 cursor-pointer"
                         onClick={(e) => { e.stopPropagation(); handleBookClick(bookMini); }}
                       >
+                        {/* Enrichment status dot */}
+                        {isBookEnriched && (
+                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-green-500 z-30 ring-1 ring-card" title="Enriched" />
+                        )}
                         {coverUrl ? (
                           <img
                             src={coverUrl}

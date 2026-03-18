@@ -11,6 +11,7 @@ import { bookProfiles } from "../../drizzle/schema";
 import { eq, inArray, isNotNull, isNull, or, and, ne } from "drizzle-orm";
 import { mirrorBatchToS3 } from "../mirrorToS3";
 import { invokeLLM } from "../_core/llm";
+import { enrichBookFromAmazon, type AmazonBookDetailResult } from "../apify";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -441,6 +442,170 @@ export const bookProfilesRouter = router({
 
       return results;
     }),
+
+  /**
+   * Enrich a single book from Amazon (search + detail page scrape).
+   * Returns full metadata: description, rating, ISBN, publisher, page count, categories.
+   */
+  enrichFromAmazon: publicProcedure
+    .input(z.object({ bookTitle: z.string(), authorName: z.string().optional() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const detail = await enrichBookFromAmazon(input.bookTitle, input.authorName ?? "");
+      if (!detail) {
+        return { success: false as const, message: "No results found on Amazon" };
+      }
+
+      // Upsert into book_profiles
+      const updateData: Record<string, unknown> = {
+        enrichedAt: new Date(),
+      };
+      if (detail.coverUrl) updateData.coverImageUrl = detail.coverUrl;
+      if (detail.amazonUrl) updateData.amazonUrl = detail.amazonUrl;
+      if (detail.description) updateData.summary = detail.description.slice(0, 600);
+      if (detail.rating) updateData.rating = detail.rating;
+      if (detail.ratingCount) updateData.ratingCount = detail.ratingCount;
+      if (detail.isbn) updateData.isbn = detail.isbn;
+      if (detail.publisher) updateData.publisher = detail.publisher;
+      if (detail.publicationDate) updateData.publishedDate = detail.publicationDate;
+      if (detail.categories) updateData.keyThemes = detail.categories;
+
+      const existing = await db
+        .select({ id: bookProfiles.id })
+        .from(bookProfiles)
+        .where(eq(bookProfiles.bookTitle, input.bookTitle))
+        .limit(1);
+
+      if (existing.length > 0) {
+        await db
+          .update(bookProfiles)
+          .set(updateData)
+          .where(eq(bookProfiles.bookTitle, input.bookTitle));
+      } else {
+        await db.insert(bookProfiles).values({
+          bookTitle: input.bookTitle,
+          authorName: input.authorName ?? "",
+          ...updateData,
+        });
+      }
+
+      const updated = await db
+        .select()
+        .from(bookProfiles)
+        .where(eq(bookProfiles.bookTitle, input.bookTitle))
+        .limit(1);
+
+      return {
+        success: true as const,
+        profile: updated[0],
+        amazonDetail: detail,
+      };
+    }),
+
+  /**
+   * Batch enrich all books from Amazon.
+   * Processes one book per call (call repeatedly from the client).
+   * Returns the enriched book and remaining count.
+   */
+  enrichNextFromAmazon: publicProcedure
+    .mutation(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Find the next book that hasn't been enriched (no summary or no rating)
+      const [next] = await db
+        .select({
+          id: bookProfiles.id,
+          bookTitle: bookProfiles.bookTitle,
+          authorName: bookProfiles.authorName,
+          summary: bookProfiles.summary,
+          rating: bookProfiles.rating,
+        })
+        .from(bookProfiles)
+        .where(
+          or(
+            isNull(bookProfiles.summary),
+            eq(bookProfiles.summary, ""),
+            isNull(bookProfiles.rating),
+            eq(bookProfiles.rating, "")
+          )
+        )
+        .limit(1);
+
+      if (!next) {
+        return { done: true as const, remaining: 0 };
+      }
+
+      const detail = await enrichBookFromAmazon(next.bookTitle, next.authorName ?? "");
+
+      if (detail) {
+        const updateData: Record<string, unknown> = { enrichedAt: new Date() };
+        if (detail.coverUrl && !next.summary) updateData.coverImageUrl = detail.coverUrl;
+        if (detail.amazonUrl) updateData.amazonUrl = detail.amazonUrl;
+        if (detail.description) updateData.summary = detail.description.slice(0, 600);
+        if (detail.rating) updateData.rating = detail.rating;
+        if (detail.ratingCount) updateData.ratingCount = detail.ratingCount;
+        if (detail.isbn) updateData.isbn = detail.isbn;
+        if (detail.publisher) updateData.publisher = detail.publisher;
+        if (detail.publicationDate) updateData.publishedDate = detail.publicationDate;
+        if (detail.categories) updateData.keyThemes = detail.categories;
+
+        await db
+          .update(bookProfiles)
+          .set(updateData)
+          .where(eq(bookProfiles.id, next.id));
+      } else {
+        // Mark as attempted so we don't retry endlessly
+        await db
+          .update(bookProfiles)
+          .set({ enrichedAt: new Date(), summary: next.summary || "not-found" })
+          .where(eq(bookProfiles.id, next.id));
+      }
+
+      // Count remaining
+      const remaining = await db
+        .select({ id: bookProfiles.id })
+        .from(bookProfiles)
+        .where(
+          or(
+            isNull(bookProfiles.summary),
+            eq(bookProfiles.summary, ""),
+            isNull(bookProfiles.rating),
+            eq(bookProfiles.rating, "")
+          )
+        );
+
+      return {
+        done: false as const,
+        bookTitle: next.bookTitle,
+        enriched: !!detail,
+        remaining: remaining.length,
+      };
+    }),
+
+  /**
+   * Get enrichment stats for the sidebar dashboard.
+   */
+  getEnrichmentStats: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { total: 0, withSummary: 0, withRating: 0, withCover: 0, needsEnrichment: 0 };
+    const all = await db
+      .select({
+        summary: bookProfiles.summary,
+        rating: bookProfiles.rating,
+        coverImageUrl: bookProfiles.coverImageUrl,
+      })
+      .from(bookProfiles);
+    const withSummary = all.filter((b) => b.summary && b.summary.trim().length > 0 && b.summary !== "not-found").length;
+    const withRating = all.filter((b) => b.rating && b.rating.trim().length > 0).length;
+    const withCover = all.filter((b) => b.coverImageUrl?.startsWith("http")).length;
+    const needsEnrichment = all.filter(
+      (b) => !b.summary || b.summary.trim() === "" || !b.rating || b.rating.trim() === ""
+    ).length;
+    return { total: all.length, withSummary, withRating, withCover, needsEnrichment };
+  }),
 
   /**
    * Return counts of books with/without summaries for the admin dashboard.
