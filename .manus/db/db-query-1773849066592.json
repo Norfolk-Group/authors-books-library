@@ -1,0 +1,15 @@
+{
+  "query": "SELECT s3CoverUrl, GROUP_CONCAT(bookTitle SEPARATOR ' | ') as books, COUNT(*) as cnt \nFROM book_profiles \nWHERE s3CoverUrl IS NOT NULL AND s3CoverUrl != '' \nGROUP BY s3CoverUrl \nHAVING cnt > 1",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT s3CoverUrl, GROUP_CONCAT(bookTitle SEPARATOR ' | ') as books, COUNT(*) as cnt \nFROM book_profiles \nWHERE s3CoverUrl IS NOT NULL AND s3CoverUrl != '' \nGROUP BY s3CoverUrl \nHAVING cnt > 1",
+  "rows": [
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/10cd451f.jpg",
+      "books": "From Impossible to Inevitable | Predictable Revenue",
+      "cnt": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "s3CoverUrl\tbooks\tcnt\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/10cd451f.jpg\tFrom Impossible to Inevitable | Predictable Revenue\t2\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

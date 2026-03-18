@@ -715,45 +715,45 @@
   --sidebar-ring: 43 98% 54%;
 }
 
-/* ── Noir Dark Executive Theme (white bg, black typography) ── */
+/* ── Noir Dark Executive Theme (white bg, black typography, grey surfaces) ── */
 .theme-noir-dark {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 4%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 4%;
+  --background: 0 0% 99%;           /* near-white #FCFCFC */
+  --foreground: 0 0% 6%;            /* near-black #0F0F0F */
+  --card: 0 0% 100%;                /* pure white cards */
+  --card-foreground: 0 0% 6%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 4%;
-  --primary: 0 0% 4%;
+  --popover-foreground: 0 0% 6%;
+  --primary: 0 0% 8%;               /* charcoal black primary */
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 4%;
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 0 0% 20%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 84% 60%;
+  --secondary: 0 0% 95%;            /* light grey surfaces */
+  --secondary-foreground: 0 0% 8%;
+  --muted: 0 0% 94%;                /* muted grey */
+  --muted-foreground: 0 0% 42%;     /* medium grey text */
+  --accent: 0 0% 92%;               /* subtle grey accent */
+  --accent-foreground: 0 0% 8%;
+  --destructive: 0 72% 51%;         /* muted red */
   --destructive-foreground: 0 0% 100%;
-  --border: 0 0% 88%;
-  --input: 0 0% 88%;
-  --ring: 0 0% 4%;
-  --radius: 0.5rem;
-  --accent-pop: 0 0% 4%;
+  --border: 0 0% 82%;               /* visible grey border */
+  --input: 0 0% 86%;                /* input border */
+  --ring: 0 0% 8%;                  /* focus ring = near-black */
+  --radius: 0.625rem;               /* slightly larger radius for executive feel */
+  --accent-pop: 0 0% 8%;            /* black accent */
   --accent-pop-foreground: 0 0% 100%;
-  --accent-pop-2: 0 0% 40%;
+  --accent-pop-2: 0 0% 35%;         /* dark grey secondary accent */
   --accent-pop-2-foreground: 0 0% 100%;
-  --chart-1: 0 0% 4%;
-  --chart-2: 0 0% 20%;
-  --chart-3: 0 0% 40%;
-  --chart-4: 0 0% 60%;
-  --chart-5: 0 0% 80%;
-  --sidebar: 0 0% 100%;
-  --sidebar-foreground: 0 0% 4%;
-  --sidebar-primary: 0 0% 4%;
+  --chart-1: 0 0% 8%;               /* near-black */
+  --chart-2: 0 0% 25%;              /* dark grey */
+  --chart-3: 0 0% 42%;              /* medium grey */
+  --chart-4: 0 0% 62%;              /* light grey */
+  --chart-5: 0 0% 82%;              /* pale grey */
+  --sidebar: 0 0% 98%;              /* off-white sidebar */
+  --sidebar-foreground: 0 0% 8%;
+  --sidebar-primary: 0 0% 8%;       /* black active item */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 96%;
-  --sidebar-accent-foreground: 0 0% 4%;
-  --sidebar-border: 0 0% 88%;
-  --sidebar-ring: 0 0% 4%;
+  --sidebar-accent: 0 0% 94%;       /* grey hover */
+  --sidebar-accent-foreground: 0 0% 8%;
+  --sidebar-border: 0 0% 82%;       /* visible border */
+  --sidebar-ring: 0 0% 8%;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -794,27 +794,152 @@
 .tilt-shadow-active { box-shadow: 0 16px 48px -8px rgba(0,0,0,0.18), 0 6px 16px -4px rgba(0,0,0,0.1); }
 
 
-/* NOIR DARK THEME - Component-level overrides */
-/* Cards: white bg, 1px near-black border, no left-colour stripe */
+/* ═══════════════════════════════════════════════════════════════════════════
+   NOIR DARK EXECUTIVE — Component-Level Overrides
+   Executive aesthetic: white surfaces, black borders, grey accents,
+   3D buttons, duotone icons, no category colour accents.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Cards: white bg, 1px dark border, no left-colour stripe */
 .theme-noir-dark .rounded-lg.border.border-border {
-  border-color: hsl(0 0% 12%) !important;
-  border-left-color: hsl(0 0% 12%) !important;
+  border-color: hsl(0 0% 78%) !important;
+  border-left-color: hsl(0 0% 78%) !important;
   border-left-width: 1px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 }
-/* Stat cards */
+
+/* Card category border — suppress colour stripe in Noir */
+.theme-noir-dark .card-category-border {
+  border-left-color: hsl(0 0% 30%) !important;
+}
+
+/* Stat cards — refined shadow */
 .theme-noir-dark .stat-card-3d {
-  border: 1px solid hsl(0 0% 12%);
+  border: 1px solid hsl(0 0% 78%);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-/* Search highlight in Noir */
+.theme-noir-dark .stat-card-3d:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* Search highlight in Noir — subtle grey */
 .theme-noir-dark mark.search-highlight {
-  background: hsl(0 0% 85%);
-  color: hsl(0 0% 4%);
+  background: hsl(0 0% 88%);
+  color: hsl(0 0% 6%);
 }
-/* Remove category colour from watermark icons in Noir */
+
+/* Duotone icons — all icons become greyscale in Noir */
 .theme-noir-dark .watermark-icon svg {
   color: hsl(0 0% 50%) !important;
 }
-/* Modals/Dialogs in Noir */
+.theme-noir-dark svg.lucide {
+  color: currentColor;
+  opacity: 0.85;
+}
+
+/* Category pills — grey in Noir, no colour accents */
+.theme-noir-dark .badge-pill {
+  background: hsl(0 0% 92%) !important;
+  color: hsl(0 0% 20%) !important;
+  border: 1px solid hsl(0 0% 78%);
+}
+
+/* 3D Round-Rectangular Buttons */
+.theme-noir-dark button:not([data-slot]),
+.theme-noir-dark [role="button"]:not([data-slot]) {
+  border-radius: var(--radius);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+.theme-noir-dark button:not([data-slot]):hover,
+.theme-noir-dark [role="button"]:not([data-slot]):hover {
+  box-shadow: 0 3px 0 rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.theme-noir-dark button:not([data-slot]):active,
+.theme-noir-dark [role="button"]:not([data-slot]):active {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+  transform: translateY(1px);
+}
+
+/* Primary buttons — black bg, white text, 3D depth */
+.theme-noir-dark .bg-primary {
+  background: hsl(0 0% 8%) !important;
+  color: hsl(0 0% 100%) !important;
+  box-shadow: 0 3px 0 hsl(0 0% 0%), 0 2px 8px rgba(0,0,0,0.15);
+}
+.theme-noir-dark .bg-primary:hover {
+  background: hsl(0 0% 15%) !important;
+  box-shadow: 0 4px 0 hsl(0 0% 0%), 0 4px 12px rgba(0,0,0,0.18);
+}
+
+/* Sidebar in Noir — clean white with subtle left border */
+.theme-noir-dark [data-sidebar] {
+  border-right: 1px solid hsl(0 0% 82%);
+}
+
+/* Sidebar active item — black bg pill */
+.theme-noir-dark [data-sidebar] [data-active="true"] {
+  background: hsl(0 0% 8%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Modals/Dialogs in Noir — refined border + shadow */
 .theme-noir-dark [role="dialog"] {
-  border: 1px solid hsl(0 0% 12%);
+  border: 1px solid hsl(0 0% 78%);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* Progress bars in Noir — black fill */
+.theme-noir-dark .progress-shimmer {
+  background: linear-gradient(90deg, hsl(0 0% 8%) 0%, hsl(0 0% 25%) 50%, hsl(0 0% 8%) 100%);
+  background-size: 200% 100%;
+}
+
+/* Card lift shadow in Noir — more subtle */
+.theme-noir-dark .card-lift:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Hover effects in Noir — greyscale shadows */
+.theme-noir-dark .hover-lift:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+}
+.theme-noir-dark .hover-glow:hover {
+  box-shadow: 0 0 16px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+}
+
+/* Tabs in Noir — black active indicator */
+.theme-noir-dark [data-state="active"][role="tab"] {
+  border-bottom-color: hsl(0 0% 8%) !important;
+  color: hsl(0 0% 8%) !important;
+}
+
+/* Tooltips in Noir — dark bg */
+.theme-noir-dark [role="tooltip"] {
+  background: hsl(0 0% 8%) !important;
+  color: hsl(0 0% 100%) !important;
+  border: none;
+}
+
+/* Charts in Noir — greyscale palette already set via CSS vars */
+
+/* Norfolk AI badge in Noir — subtle grey */
+.theme-noir-dark .norfolk-logo-pulse {
+  opacity: 0.5;
+}
+
+/* Scrollbar in Noir */
+.theme-noir-dark ::-webkit-scrollbar {
+  width: 6px;
+}
+.theme-noir-dark ::-webkit-scrollbar-track {
+  background: hsl(0 0% 96%);
+}
+.theme-noir-dark ::-webkit-scrollbar-thumb {
+  background: hsl(0 0% 75%);
+  border-radius: 3px;
+}
+.theme-noir-dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(0 0% 55%);
 }

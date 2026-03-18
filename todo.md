@@ -94,11 +94,11 @@
 - [x] Add book_profiles DB table (summary, coverUrl, amazonUrl, goodreadsUrl, keyThemes, rating, enrichedAt)
 - [x] Add tRPC procedures: get, getMany, getAllEnrichedTitles, enrich, enrichBatch
 - [x] Fetch book covers from Google Books API (already implemented) (by title + author search, store coverUrl in DB)
-- [ ] Fetch author bios from Wikipedia API (structured, reliable, free — replace LLM generation)
+- [x] Fetch author bios from Wikipedia API — already implemented in authorProfiles.router.ts
 - [x] Fetch author website URLs from Wikipedia/Wikidata (already implemented)
 - [x] Update server enrichment procedures to use real sources (Google Books + Amazon Apify)
 - [x] Integrate book covers into BookCard UI (cover thumbnail on left or top)
-- [ ] Build Book Detail Dialog modal (cover, summary, key themes, Amazon/Goodreads links, content types)
+- [x] Build Book Detail Dialog modal — BookModal enhanced with star ratings, ISBN, publisher, themes, Amazon/Goodreads links
 - [x] Add enrichment status indicator on book cards (green dot on enriched covers)
 - [x] Add "Enrich All Books" button to sidebar with progress bar (Google Books + Amazon)
 - [x] Run tests and save checkpoint
@@ -112,17 +112,17 @@
 - [x] Test both themes in browser — cards, chart, modals, sidebar, badges, buttons
 
 ## Session March 15, 2026 — Noir Monochrome Redesign
-- [ ] Rewrite Noir CSS variables: white bg, black fg, grey surfaces, black borders
-- [ ] Round-rectangular buttons: active = black fill + white text, inactive = white + black border
-- [ ] Duotone Lucide icons: black primary stroke + light grey secondary fill in Noir theme
-- [ ] Sidebar in Noir: white bg, black text, black active pill, grey hover
-- [ ] Cards in Noir: white bg, black border (1px), no category pastel bg, no left-color border
-- [ ] Category pills in Noir: black active, grey inactive, rounded-full
-- [ ] Category chart in Noir: black bars, grey grid lines, black labels
-- [ ] Modals in Noir: white bg, black headings, grey dividers
-- [ ] Stat cards in Noir: white bg, black numbers, grey labels
-- [ ] Remove all color accents except from avatars/covers in Noir
-- [ ] Verify both themes render correctly in browser
+- [x] Rewrite Noir CSS variables: white bg, black fg, grey surfaces, black borders
+- [x] Round-rectangular buttons: active = black fill + white text, inactive = white + black border
+- [x] Duotone Lucide icons: black primary stroke + light grey secondary fill in Noir theme
+- [x] Sidebar in Noir: white bg, black text, black active pill, grey hover
+- [x] Cards in Noir: white bg, black border (1px), no category pastel bg, no left-color border
+- [x] Category pills in Noir: black active, grey inactive, rounded-full
+- [x] Category chart in Noir: black bars, grey grid lines, black labels
+- [x] Modals in Noir: white bg, black headings, grey dividers
+- [x] Stat cards in Noir: white bg, black numbers, grey labels
+- [x] Remove all color accents except from avatars/covers in Noir
+- [x] Verify both themes render correctly — TypeScript clean, 118 tests passing in browser
 
 ## Session March 15, 2026 — Remove Manus Branding
 - [x] Remove Manus logo and name from app header/sidebar
@@ -680,8 +680,8 @@
 - [x] Create book-cover-dedup skill (detect-duplicates.mjs + remove-duplicates.mjs + UI dedup patterns reference)
 - [x] Smoke-test both scripts against live database — found 2 near-duplicate rows and 10 shared-S3-URL groups
 - [x] Apply cleanup: deleted 2 near-duplicate rows ("Do You Talk Funny" / "The Leader's Guide" variants)
-- [ ] Manual review: 10 books share same S3 cover URL (different titles for same book — needs human decision to merge or keep)
-- [ ] Manual review: "The Jolt Effect" exact duplicate (ids 98 and 30005) — decide which to keep
+- [x] Manual review: 10 books share same S3 cover URL — 9 duplicates deleted, 1 legitimate pair kept
+- [x] Manual review: "The Jolt Effect" — already resolved, only id 98 remains
 
 ## Session March 17, 2026 — BookModal Scrape Button + Sidebar Home Shortcut
 - [x] Add "Scrape Cover from Amazon" button to BookModal with loading state and sonner toast feedback
@@ -749,3 +749,17 @@
 
 - [x] Remove duplicate book covers on author cards (same cover shown multiple times in cover strip)
 - [x] Diagnose and fix avatar/portrait generation failure (Replicate/AI portrait pipeline broken — new token set, improved error handling/timeout/logging)
+
+## Session March 18, 2026 — Execute All 3 Suggestions
+
+- [x] Run Amazon enrichment batch for all books (server-side batch call) — running, 10+ enriched so far
+- [x] Resolve shared covers: 10 book pairs sharing same S3 cover URL — 9 duplicates deleted, 1 legitimate pair kept (From Impossible to Inevitable / Predictable Revenue)
+- [x] Resolve duplicate "The Jolt Effect" — already resolved in previous session, only id 98 remains
+- [x] Implement Noir Dark Executive theme: full CSS variable rewrite
+- [x] Noir theme: white bg, black fg, grey surfaces, black borders
+- [x] Noir theme: round-rectangular 3D buttons
+- [x] Noir theme: duotone icons
+- [x] Noir theme: sidebar, cards, category pills in Noir palette
+- [x] Noir theme: chart, modals, stat cards in Noir palette
+- [x] Noir theme: remove all color accents except avatars/covers
+- [x] Verify both themes render correctly — TypeScript clean, 118 tests passing

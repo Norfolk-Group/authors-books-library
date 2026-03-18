@@ -1,0 +1,60 @@
+{
+  "query": "SELECT s3CoverUrl, GROUP_CONCAT(bookTitle SEPARATOR ' | ') as books, COUNT(*) as cnt \nFROM book_profiles \nWHERE s3CoverUrl IS NOT NULL AND s3CoverUrl != '' \nGROUP BY s3CoverUrl \nHAVING cnt > 1 \nORDER BY cnt DESC",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT s3CoverUrl, GROUP_CONCAT(bookTitle SEPARATOR ' | ') as books, COUNT(*) as cnt \nFROM book_profiles \nWHERE s3CoverUrl IS NOT NULL AND s3CoverUrl != '' \nGROUP BY s3CoverUrl \nHAVING cnt > 1 \nORDER BY cnt DESC",
+  "rows": [
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/722aaf11.jpg",
+      "books": "Start with No | No | Start with a No",
+      "cnt": "3"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/3ae6a664.jpg",
+      "books": "Immune | Immune by Philip Dettmer",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/632de615.jpg",
+      "books": "Lead Engaging Meetings | Leading Engaging Meetings",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/7cf2940e.jpg",
+      "books": "Effortless Experience | The Effortless Experience",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1b6c6b0f.jpg",
+      "books": "Active Listening Techniques | Active Listening",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/10cd451f.jpg",
+      "books": "From Impossible to Inevitable | Predictable Revenue",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/3574b217.jpg",
+      "books": "Slow Productivity | Slow Productivity The Lost Art of Accomplishment Without Burnout",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/033e1bb9.jpg",
+      "books": "Never Split the Difference | Never Split the Difference by Chris Voss",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/71e2a92e.jpg",
+      "books": "Misbehaving | Misbehaving The Making of Behavior Economics by Richard H. Thaler",
+      "cnt": "2"
+    },
+    {
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1367fbf6.jpg",
+      "books": "The Customer Success Professional | The Customer Success Professional Handbook",
+      "cnt": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "s3CoverUrl\tbooks\tcnt\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/722aaf11.jpg\tStart with No | No | Start with a No\t3\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/3ae6a664.jpg\tImmune | Immune by Philip Dettmer\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/632de615.jpg\tLead Engaging Meetings | Leading Engaging Meetings\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/7cf2940e.jpg\tEffortless Experience | The Effortless Experience\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1b6c6b0f.jpg\tActive Listening Techniques | Active Listening\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/10cd451f.jpg\tFrom Impossible to Inevitable | Predictable Revenue\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/3574b217.jpg\tSlow Productivity | Slow Productivity The Lost Art of Accomplishment Without Burnout\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/033e1bb9.jpg\tNever Split the Difference | Never Split the Difference by Chris Voss\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/71e2a92e.jpg\tMisbehaving | Misbehaving The Making of Behavior Economics by Richard H. Thaler\t2\nhttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1367fbf6.jpg\tThe Customer Success Professional | The Customer Success Professional Handbook\t2\n",
+  "stderr": "",
+  "execution_time_ms": 180
+}
