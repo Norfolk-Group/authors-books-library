@@ -698,3 +698,45 @@
 - [x] Add "Clear Filters & Show All" shortcut to sidebar footer (visible only when filters are active)
 - [x] Mark all previously completed Apify/scrape todo items as done
 - [x] 118 tests passing, tsc --noEmit clean
+
+## Session March 18, 2026 — Opus 4.6 Audit: Unimplemented Animations, 3D Effects & Card Hotspots
+
+### A. CSS Classes Defined But Never Applied to Components
+
+- [ ] Apply `.card-lift` class to `FlowbiteAuthorCard` outer `<Card>` wrapper and `BookCard` in Home.tsx — hover lift (scale + shadow) exists in CSS but cards don't have the class
+- [ ] Apply `.watermark-icon` class to the category watermark `<Icon>` in `FlowbiteAuthorCard.tsx` (line ~197) — 3D perspective tilt on card hover is defined but class not on element
+- [ ] Apply `.book-cover-3d` class to book cover images in `BookModal.tsx` and cover strip thumbnails in `FlowbiteAuthorCard.tsx` — 3D tilt + zoom-in cursor defined but never used
+- [ ] Apply `.author-avatar-3d` class to avatar `<img>` in `FlowbiteAuthorCard.tsx` and `AuthorModal.tsx` — 3D perspective tilt on hover defined but never applied
+- [ ] Apply `.book-card-tilt` / `.audio-card-tilt` companion class to `BookCard` and `AudioCard` motion wrappers — needed for `.tilt-shadow-active` elevated shadow to trigger during Framer Motion tilt
+- [ ] Toggle `.tilt-shadow-active` class dynamically on `BookCard` and `AudioCard` when mouse is over card (use onMouseEnter/onMouseLeave state) — shadow elevation on tilt not working
+- [ ] Apply `.tab-content-enter` class to tab content panels in Home.tsx on tab switch — slide-in animation defined but tab content doesn't animate in
+- [ ] Apply `.category-pulse-active` class briefly to category filter buttons when clicked — `@keyframes categoryPulse` defined but never triggered
+- [ ] Apply `.modal-spring-in` class to `AuthorModal` and `BookModal` dialog containers — `@keyframes modalSpringIn` defined but modals use default Flowbite fade
+- [ ] Apply `.avatar-bob` class to author avatar in `FlowbiteAuthorCard.tsx` sidebar/header — gentle bobbing animation defined but not applied to any avatar
+- [ ] Apply `.hover-lift` class to `AuthorAccordionRow` list items — simpler lift effect for rows defined but unused
+- [x] Apply `.hover-glow` class to primary action buttons (Regenerate, Enrich All Bios) (Enrich, Scrape, etc.) — glow on hover defined but unused
+- [ ] Apply `.animate-float` class to empty-state icons and decorative elements — float animation defined but unused
+- [ ] Apply `.sparkle-spin` class to the Sparkles icon on enriched "Bio ready" indicators — rotating sparkle animation defined but unused
+- [ ] Apply `.progress-shimmer` class to all active progress bars in sidebar and Preferences page — shimmer defined but bars are static
+
+### B. Missing Card Click Hotspots (Critical UX)
+
+- [ ] **AuthorCard (Home.tsx Books tab)**: clicking author name "by Malcolm Gladwell" on a `BookCard` should open that author's bio modal — currently just static text
+- [ ] **AudioCard**: entire card links to Google Drive; add an audio book detail modal (or reuse BookModal) so clicking shows title, formats, file counts, Drive link — currently no modal at all
+- [ ] **Category label chip** in `FlowbiteAuthorCard.tsx` (e.g., "Business & Strategy") is `cursor-default` — clicking it should filter the library to that category
+- [ ] **ResourcePill** components (PDF, Transcript, Binder, etc.) in `FlowbiteAuthorCard.tsx` are `cursor-default` — clicking should open the Drive folder filtered to that content type
+- [ ] **Book count badge** in `AuthorAccordionRow.tsx` (e.g., "5 books") is purely decorative — clicking it should expand the accordion row or scroll to the books list
+- [ ] **BookSubfolderRow** in `AuthorCard` (Home.tsx Authors tab) opens Google Drive on click — should open `BookModal` with book detail instead of redirecting to Drive
+- [ ] **FlowbiteAuthorCard cover strip**: book covers already open BookModal (HOTSPOT 2) ✓ — but books with no cover image show a grey placeholder that opens Drive instead of BookModal; fix to always open BookModal
+
+### C. Framer Motion Wiring Gaps
+
+- [ ] `FlowbiteAuthorCard.tsx` uses `useCardTilt` hook (line 96) but the `<motion.div>` wrapper (line 171) is missing the CSS fallback `.card-lift` class — users with `prefers-reduced-motion` see no hover effect at all
+- [ ] `AuthorCard` in Home.tsx has `useCardTilt` wired but the inner card element (`<div className="rounded-lg...">`) is missing `.card-lift` — the Framer Motion tilt works but the CSS hover shadow fallback is absent
+
+### D. Unused Premium Animations (Nice-to-Have)
+
+- [ ] `@keyframes aurora` — beautiful background gradient animation; consider applying to hero stat bar or empty state background
+- [ ] `@keyframes meteor` — shooting star effect; consider using for confetti/celebration on "Enrich All" completion
+- [ ] `@keyframes norfolkPulse` — Norfolk AI theme pulse; apply to "Powered by Norfolk AI" badge in sidebar footer
+- [ ] `@keyframes badgeSlideUp` — Amazon badge slide-in; apply `.amazon-badge` animation on BookCard mount so badge slides up when card appears

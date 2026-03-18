@@ -144,12 +144,24 @@ function Highlight({ text, query }: { text: string; query: string }) {
   );
 }
 
-// ── Resource pill — presentational only, no onClick ───────────────────────────
-function ResourcePill({ type, count }: { type: string; count: number }) {
+/// ── Resource pill — clickable: opens Drive folder filtered to content type ────
+function ResourcePill({ type, count, driveId }: { type: string; count: number; driveId?: string }) {
   const iconName = CONTENT_TYPE_ICONS[type] ?? "folder";
   const Icon = (CT_ICON_MAP[iconName] ?? Folder) as LucideIcon;
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (driveId) {
+      window.open(`https://drive.google.com/drive/folders/${driveId}?q=${encodeURIComponent(type)}`, "_blank");
+    }
+  }, [driveId, type]);
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground cursor-default select-none">
+    <span
+      onClick={driveId ? handleClick : undefined}
+      className={`inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground select-none transition-colors duration-150 ${
+        driveId ? "cursor-pointer hover:bg-accent hover:text-accent-foreground" : "cursor-default"
+      }`}
+      title={driveId ? `Open ${type} files in Drive` : undefined}
+    >
       <Icon className="w-3 h-3" />
       {type}
       {count > 1 && <span className="opacity-60 ml-0.5">{count}</span>}
@@ -252,6 +264,8 @@ export interface FlowbiteAuthorCardProps {
   bio?: string | null;
   /** Map of lowercase book title → { summary, rating, ratingCount } for cover thumbnail tooltips. */
   bookInfoMap?: Map<string, { summary?: string; rating?: string; ratingCount?: string }>;
+  /** Called when user clicks the category chip to filter the library */
+  onCategoryClick?: (category: string) => void;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
@@ -264,6 +278,7 @@ export function FlowbiteAuthorCard({
   dbPhotoMap,
   bio,
   bookInfoMap,
+  onCategoryClick,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -349,11 +364,12 @@ export function FlowbiteAuthorCard({
             transition-shadow duration-200
             flex flex-col items-stretch justify-start
             cursor-pointer
+            card-lift
           "
         >
-          {/* Category watermark — presentational, no pointer events */}
+          {/* Category watermark — 3D tilt on card hover */}
           <div
-            className="pointer-events-none absolute bottom-2 right-2 select-none"
+            className="pointer-events-none absolute bottom-2 right-2 select-none watermark-icon"
             aria-hidden
           >
             <Icon className="w-16 h-16 text-foreground opacity-[0.04]" strokeWidth={1} />
@@ -375,12 +391,23 @@ export function FlowbiteAuthorCard({
                 <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center flex-shrink-0">
                   <Icon className="w-3.5 h-3.5 text-muted-foreground" />
                 </div>
-                <p
-                  className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground truncate min-w-0"
-                  title={author.category}
-                >
-                  {author.category}
-                </p>
+                {onCategoryClick ? (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onCategoryClick(author.category); }}
+                    className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground truncate min-w-0 cursor-pointer hover:text-foreground transition-colors category-pulse-active"
+                    title={`Filter by ${author.category}`}
+                  >
+                    {author.category}
+                  </button>
+                ) : (
+                  <p
+                    className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground truncate min-w-0 cursor-default"
+                    title={author.category}
+                  >
+                    {author.category}
+                  </p>
+                )}
               </div>
               {/* Bio-ready dot — always rendered to keep row height constant */}
               <div className="shrink-0 h-[20px] flex items-center">
@@ -418,6 +445,7 @@ export function FlowbiteAuthorCard({
                           origin-center
                           cursor-pointer
                           relative z-20
+                          author-avatar-3d avatar-bob
                         "
                         loading="lazy"
                       />
@@ -519,11 +547,11 @@ export function FlowbiteAuthorCard({
                 Books ({author.books.length})
               </p>
 
-              {/* Resource pills — presentational */}
+              {/* Resource pills — clickable to open Drive folder */}
               {Object.keys(resourceTotals).length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {Object.entries(resourceTotals).map(([type, count]) => (
-                    <ResourcePill key={type} type={type} count={count} />
+                    <ResourcePill key={type} type={type} count={count} driveId={author.id} />
                   ))}
                 </div>
               )}
@@ -575,6 +603,7 @@ export function FlowbiteAuthorCard({
                               hover:scale-[1.2]
                               origin-center
                               relative z-20
+                              book-cover-3d
                             "
                             loading="lazy"
                           />

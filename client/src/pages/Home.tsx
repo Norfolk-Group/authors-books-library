@@ -67,6 +67,7 @@ import {
 } from "@/lib/libraryData";
 import { AUDIO_BOOKS, type AudioBook } from "@/lib/audioData";
 import { FlowbiteAuthorCard } from "@/components/FlowbiteAuthorCard";
+import { BookModal, type BookModalBook } from "@/components/BookModal";
 import { AuthorAccordionRow } from "@/components/AuthorAccordionRow";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
 import { canonicalName } from "@/lib/authorAliases";
@@ -224,26 +225,29 @@ function ContentTypeBadge({ type, count }: { type: string; count: number }) {
 }
 
 // ── Book Subfolder Row ───────────────────────────────────────
-function BookSubfolderRow({ book }: { book: { name: string; id: string; contentTypes: Record<string, number> } }) {
+function BookSubfolderRow({ book, onBookModalClick }: { book: { name: string; id: string; contentTypes: Record<string, number> }; onBookModalClick?: (bookId: string, titleKey: string) => void }) {
   const hasContent = Object.keys(book.contentTypes).length > 0;
+  const titleKey = book.name.includes(" - ") ? book.name.slice(0, book.name.lastIndexOf(" - ")) : book.name;
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onBookModalClick) {
+      onBookModalClick(book.id, titleKey);
+    } else {
+      window.open(`https://drive.google.com/drive/folders/${book.id}?view=grid`, "_blank");
+    }
+  };
   return (
-    <a
-      href={`https://drive.google.com/drive/folders/${book.id}?view=grid`}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="flex flex-col gap-1 px-2 py-1.5 rounded-md hover:bg-muted/60 transition-colors group/book"
+    <button
+      type="button"
+      onClick={handleClick}
+      className="flex flex-col gap-1 px-2 py-1.5 rounded-md hover:bg-muted/60 transition-colors group/book text-left w-full"
     >
       <div className="flex items-center gap-1.5">
         <BookOpen className="w-3 h-3 text-muted-foreground flex-shrink-0 group-hover/book:text-foreground transition-colors" />
         <span className="text-[11px] font-medium leading-tight text-foreground/80 group-hover/book:text-foreground transition-colors line-clamp-1 flex-1">
-          {(() => {
-            // Strip " - Author Name" suffix from book name if present
-            const dashIdx = book.name.lastIndexOf(" - ");
-            return dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
-          })()}
+          {titleKey}
         </span>
-        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground opacity-0 group-hover/book:opacity-60 transition-opacity flex-shrink-0" />
+        <ChevronRight className="w-2.5 h-2.5 text-muted-foreground opacity-0 group-hover/book:opacity-60 transition-opacity flex-shrink-0" />
       </div>
       {hasContent && (
         <div className="flex flex-wrap gap-1 pl-4">
@@ -252,14 +256,14 @@ function BookSubfolderRow({ book }: { book: { name: string; id: string; contentT
           ))}
         </div>
       )}
-    </a>
+    </button>
   );
 }
 
 // ── Stat Card ────────────────────────────────────────────────
 function StatCard({ label, value, icon: Icon }: { label: string; value: number | string; icon: LucideIcon }) {
   return (
-    <div className="flex flex-col gap-1 px-3 sm:px-5 py-3 sm:py-4 bg-card rounded-lg border border-border shadow-sm stat-card-3d">
+    <div className="flex flex-col gap-1 px-3 sm:px-5 py-3 sm:py-4 bg-card rounded-lg border border-border shadow-sm stat-card-3d hover-lift">
       <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="w-3.5 h-3.5" />
         <span className="text-xs font-medium uppercase tracking-widest">{label}</span>
@@ -275,7 +279,7 @@ function StatCard({ label, value, icon: Icon }: { label: string; value: number |
 function EmptyState({ query }: { query: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <BookMarked className="w-10 h-10 text-muted-foreground/30 mb-3" />
+      <BookMarked className="w-10 h-10 text-muted-foreground/30 mb-3 animate-float" />
       <p className="text-sm text-muted-foreground">
         {query ? `No results for "${query}"` : "Nothing here yet."}
       </p>
@@ -306,6 +310,8 @@ function useCardTilt(maxDeg = 14) {
 
 // ── Author Card ──────────────────────────────────────────────
 function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookClick, dbPhotoMap }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean; coverMap?: Map<string, string>; onBookClick?: (bookId: string, titleKey: string) => void; dbPhotoMap?: Map<string, string> }) {
+  // BookModal state for BookSubfolderRow clicks
+  const [activeBookModal, setActiveBookModal] = useState<{ id: string; titleKey: string; contentTypes: Record<string, number> } | null>(null);
   const color = CATEGORY_COLORS[author.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
@@ -333,22 +339,24 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
     );
   };
 
+  const [isTiltingAuthor, setIsTiltingAuthor] = useState(false);
   const hasBooks = author.books && author.books.length > 0;
 
   return (
+    <>
     <motion.div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
+      onMouseMove={(e) => { handleMouseMove(e); setIsTiltingAuthor(true); }}
+      onMouseLeave={(e) => { handleMouseLeave(); setIsTiltingAuthor(false); }}
       className="card-animate group relative"
       style={{ rotateX, rotateY, scale, willChange: "transform" }}
     >
     <div
-      className="rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full"
+      className={`rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full card-lift${isTiltingAuthor ? " tilt-shadow-active" : ""}`}
       style={{ borderLeftWidth: 3, borderLeftColor: color }}
     >
-      {/* Watermark illustration */}
+      {/* Watermark illustration — 3D tilt on card hover */}
       <div
-        className="pointer-events-none absolute bottom-2 right-2 select-none"
+        className="pointer-events-none absolute bottom-2 right-2 select-none watermark-icon"
         aria-hidden
       >
         <Icon
@@ -541,17 +549,35 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
           </p>
           <div className="flex flex-col gap-0.5 max-h-40 overflow-y-auto">
             {author.books.map((book) => (
-              <BookSubfolderRow key={book.id} book={book} />
+              <BookSubfolderRow
+                key={book.id}
+                book={book}
+                onBookModalClick={(id, tk) => {
+                  if (onBookClick) {
+                    onBookClick(id, tk);
+                  } else {
+                    setActiveBookModal({ id, titleKey: tk, contentTypes: book.contentTypes });
+                  }
+                }}
+              />
             ))}
           </div>
         </div>
       )}
     </div>
     </motion.div>
-  );
+
+    {/* BookModal for subfolder row clicks */}
+    {activeBookModal && (
+      <BookModal
+        book={{ id: activeBookModal.id, titleKey: activeBookModal.titleKey, contentTypes: activeBookModal.contentTypes }}
+        onClose={() => setActiveBookModal(null)}
+      />
+    )}
+  </>);
 }
 // -- Book Card --
-function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazonUrl, onCoverClick }: { book: BookRecord; query: string; onDetailClick?: (b: BookRecord) => void; coverImageUrl?: string; isEnriched?: boolean; amazonUrl?: string; onCoverClick?: (url: string, title: string, color: string) => void }) {
+function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazonUrl, onCoverClick, onAuthorClick }: { book: BookRecord; query: string; onDetailClick?: (b: BookRecord) => void; coverImageUrl?: string; isEnriched?: boolean; amazonUrl?: string; onCoverClick?: (url: string, title: string, color: string) => void; onAuthorClick?: (authorName: string) => void }) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarked;
@@ -577,17 +603,18 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
     );
   };
 
+  const [isTiltingBook, setIsTiltingBook] = useState(false);
   const hasContent = Object.keys(book.contentTypes).length > 0;
   return (
     <motion.div
-      onMouseMove={handleBookMouseMove}
-      onMouseLeave={handleBookMouseLeave}
-      className="card-animate group relative cursor-pointer"
+      onMouseMove={(e) => { handleBookMouseMove(e); setIsTiltingBook(true); }}
+      onMouseLeave={(e) => { handleBookMouseLeave(); setIsTiltingBook(false); }}
+      className="card-animate group relative cursor-pointer book-card-tilt"
       style={{ rotateX: bookRotX, rotateY: bookRotY, scale: bookScale, willChange: "transform" }}
       onClick={() => onDetailClick?.(book)}
     >
     <div
-      className="rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full"
+      className={`rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full card-lift${isTiltingBook ? " tilt-shadow-active" : ""}`}
       style={{ borderLeftWidth: 3, borderLeftColor: color }}
     >
       {/* Watermark (only when no cover) */}
@@ -641,7 +668,19 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
             </h3>
             {bookAuthor && (
               <p className="text-xs text-muted-foreground leading-relaxed">
-                <span className="font-medium">by</span> {highlight(bookAuthor)}
+                <span className="font-medium">by</span>{" "}
+                {onAuthorClick ? (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onAuthorClick(bookAuthor); }}
+                    className="hover:text-foreground hover:underline underline-offset-2 transition-colors cursor-pointer"
+                    title={`View ${bookAuthor}'s bio`}
+                  >
+                    {highlight(bookAuthor)}
+                  </button>
+                ) : (
+                  highlight(bookAuthor)
+                )}
               </p>
             )}
           </div>
@@ -714,20 +753,21 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
     );
   };
 
+  const [isTiltingAudio, setIsTiltingAudio] = useState(false);
   const totalFiles = Object.values(audio.formats).reduce((sum, f) => sum + f.fileCount, 0);
 
   return (
     <motion.div
-      onMouseMove={handleAudioMouseMove}
-      onMouseLeave={handleAudioMouseLeave}
-      className="card-animate group relative"
+      onMouseMove={(e) => { handleAudioMouseMove(e); setIsTiltingAudio(true); }}
+      onMouseLeave={(e) => { handleAudioMouseLeave(); setIsTiltingAudio(false); }}
+      className="card-animate group relative audio-card-tilt"
       style={{ rotateX: audioRotX, rotateY: audioRotY, scale: audioScale, willChange: "transform" }}
     >
     <a
       href={driveUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="rounded-lg border border-border shadow-sm overflow-hidden block cursor-pointer relative bg-card border-l-[3px] border-l-primary h-full"
+      className={`rounded-lg border border-border shadow-sm overflow-hidden block cursor-pointer relative bg-card border-l-[3px] border-l-primary h-full card-lift${isTiltingAudio ? " tilt-shadow-active" : ""}`}
     >
       {/* Watermark */}
       <div className="pointer-events-none absolute bottom-2 right-2 select-none watermark-icon" aria-hidden>
@@ -1906,7 +1946,7 @@ export default function Home() {
             <button
               onClick={() => regenerate.mutate()}
               disabled={regenerate.isPending || enrichStatus === "running"}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover-glow"
               title="Re-scan Google Drive and rebuild the library data"
             >
               {regenerate.isPending ? (
@@ -1923,7 +1963,7 @@ export default function Home() {
             <button
               onClick={enrichAllBios}
               disabled={enrichStatus === "running" || regenerate.isPending}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1.5"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md text-xs font-medium border border-border hover:bg-muted/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1.5 hover-glow"
               title="Generate AI bios and links for all authors"
             >
               {enrichStatus === "running" ? (
@@ -2395,6 +2435,10 @@ export default function Home() {
                           const color = found ? (CATEGORY_COLORS[found.category] ?? undefined) : undefined;
                           setLightboxCover({ url: coverUrl, title: titleKey, color });
                         }}
+                        onCategoryClick={(cat) => {
+                          setSelectedCategories(new Set([cat]));
+                          setActiveTab("authors");
+                        }}
                       />
                     </div>
                   ))}
@@ -2431,6 +2475,15 @@ export default function Home() {
                           isEnriched={enrichedTitlesSet.has(titleKey)}
                           amazonUrl={amazonUrlMap.get(titleKey)}
                           onCoverClick={(url, title, color) => setLightboxCover({ url, title, color })}
+                          onAuthorClick={(authorName) => {
+                            // Find the author in AUTHORS and open their bio modal
+                            const found = AUTHORS.find((a) => {
+                              const baseName = a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name;
+                              return baseName.toLowerCase() === authorName.toLowerCase() ||
+                                     canonicalName(a.name).toLowerCase() === authorName.toLowerCase();
+                            });
+                            if (found) { setSelectedAuthor(found); setBioSheetOpen(true); }
+                          }}
                         />
                       </div>
                     );
@@ -2441,7 +2494,7 @@ export default function Home() {
             ) : filteredAudio.length === 0 ? (
               <EmptyState query={query} />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 tab-content-enter">
                 {filteredAudio.map((a, i) => (
                   <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
                     <AudioCard audio={a} query={query} />
