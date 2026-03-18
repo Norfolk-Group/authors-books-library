@@ -70,7 +70,7 @@
     "embla-carousel-react": "^8.6.0",
     "express": "^4.21.2",
     "flowbite": "^4.0.1",
-    "flowbite-react": "^0.12.16",
+    "flowbite-react": "0.12.16",
     "framer-motion": "^12.23.22",
     "input-otp": "^1.4.2",
     "jose": "6.1.0",
