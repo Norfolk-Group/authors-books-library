@@ -720,3 +720,12 @@
 - [x] Add tRPC endpoint to read/write action timestamps
 - [x] Display "Last run: X ago" on each action card
 - [x] Update timestamp after each successful action execution
+
+## Session March 19, 2026 — Comprehensive Documentation
+
+- [x] Audit entire codebase: server routers, enrichment pipelines, schema, storage
+- [x] Audit UI components, themes, CSS, fonts, Google Drive integration
+- [x] Audit existing skills and identify documentation gaps
+- [x] Write claude.md master documentation (architecture, pipelines, data storage, UI, themes)
+- [x] Write/update skills documentation with enrichment cascade details
+- [x] Commit, push to GitHub, save checkpoint
