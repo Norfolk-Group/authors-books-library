@@ -804,7 +804,7 @@
 - [ ] Optimize storage.ts: add helper for presigned URLs, standardize key naming
 - [ ] Consolidate duplicate fetch logic across routers into shared server/lib/httpClient.ts
 - [ ] Standardize tRPC input validation with Zod schemas across all routers
-- [ ] Fix N+1 queries: batch DB lookups in bookProfiles and authorProfiles routers
+- [x] Fix N+1 queries: batch DB lookups in bookProfiles and authorProfiles routers
 - [ ] Add missing DB indexes: authorName on book_profiles, authorName on author_profiles
 - [ ] Fix Drizzle schema: add updatedAt timestamps to author_profiles and book_profiles
 - [ ] Optimize libraryData.ts dedup: ensure no duplicate author/book entries
@@ -841,8 +841,8 @@
 - [x] Add listVendors, refreshVendors tRPC procedures; update listModels to accept vendorId
 - [x] Add primaryVendor, primaryModel, secondaryLlmEnabled, secondaryVendor, secondaryModel to AppSettings
 - [x] Redesign SettingsTab AI Model card: 3-column layout, vendor dropdown, model radio list, secondary toggle
-- [ ] Wire secondary LLM model to research enrichment procedures
-- [ ] Update tests for new llm router procedures
+- [x] Wire secondary LLM model to research enrichment procedures
+- [x] Update tests for new llm router procedures
 
 ## Session March 21, 2026 — Norfolk AI Palette + Codebase Optimization
 

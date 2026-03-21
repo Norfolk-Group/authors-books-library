@@ -226,3 +226,29 @@ All 122 tests still passing. claude.md architecture overview updated with new fi
 - `client/src/contexts/AppSettingsContext.tsx` — Added primaryVendor/Model, secondaryLlm* fields
 - `server/routers/llm.router.ts` — Full vendor catalogue, listVendors, refreshVendors
 - `claude.md` — Updated design system, theme tables, admin tab 4 description
+
+## March 21, 2026 — Session 2: Codebase Optimization + Secondary LLM Wiring
+
+### Completed
+- **Secondary LLM wired**: `enrichAuthorViaWikipedia` and `enrichBookViaGoogleBooks` now accept `secondaryModel` parameter; when enabled, secondary LLM runs a refinement pass on the primary LLM output
+- **Admin.tsx**: batch enrichment calls now pass `secondaryModel` when `settings.secondaryLlmEnabled` is true
+- **N+1 queries fixed**: both `authorProfiles.enrichBatch` and `bookProfiles.enrichBatch` pre-fetch all existing rows in a single `inArray` query before the loop
+- **httpClient.ts created**: `server/lib/httpClient.ts` with `fetchJson()` and `fetchBuffer()` — timeout, retry, typed errors
+- **apify.ts optimized**: `runActorWithRetry()` helper, `ApifyRunResult` typed interface, retry constants
+- **mirrorToS3.ts fixed**: dedup check now correctly skips re-upload when `existingKey` exists; uses `fetchBuffer` from httpClient
+- **waterfall.ts optimized**: per-tier timeouts, `skipAlreadyEnriched` option, structured timing logs
+- **claude.md updated**: LLM Configuration section, Performance Optimizations section, Last Updated date
+- **122 tests passing, 0 TypeScript errors**
+
+## March 21, 2026 — Session 3: Codebase Optimization + Secondary LLM Wiring
+
+### Completed
+- **Secondary LLM wired**: enrichAuthorViaWikipedia and enrichBookViaGoogleBooks now accept secondaryModel parameter; when enabled, secondary LLM runs a refinement pass on the primary LLM output
+- **Admin.tsx**: batch enrichment calls now pass secondaryModel when settings.secondaryLlmEnabled is true
+- **N+1 queries fixed**: both authorProfiles.enrichBatch and bookProfiles.enrichBatch pre-fetch all existing rows in a single inArray query before the loop
+- **httpClient.ts created**: server/lib/httpClient.ts with fetchJson() and fetchBuffer() -- timeout, retry, typed errors
+- **apify.ts optimized**: runActorWithRetry() helper, ApifyRunResult typed interface, retry constants
+- **mirrorToS3.ts fixed**: dedup check now correctly skips re-upload when existingKey exists; uses fetchBuffer from httpClient
+- **waterfall.ts optimized**: per-tier timeouts, skipAlreadyEnriched option, structured timing logs
+- **claude.md updated**: LLM Configuration section, Performance Optimizations section, Last Updated date
+- **122 tests passing, 0 TypeScript errors**

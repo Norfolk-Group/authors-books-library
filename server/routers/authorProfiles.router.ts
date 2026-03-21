@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, ne, isNull, or, sql } from "drizzle-orm";
+import { eq, ne, isNull, or, sql, inArray } from "drizzle-orm";
 import { mirrorBatchToS3 } from "../mirrorToS3";
 import { storagePut } from "../storage";
 import { getDb } from "../db";
@@ -32,14 +32,16 @@ export const authorProfilesRouter = router({
       if (input.authorNames.length === 0) return [];
       const db = await getDb();
       if (!db) return [];
-      const rows = await db.select().from(authorProfiles);
-      const nameSet = new Set(input.authorNames);
-      return rows.filter((r) => nameSet.has(r.authorName));
+      // Use inArray for an indexed lookup instead of a full table scan
+      return db
+        .select()
+        .from(authorProfiles)
+        .where(inArray(authorProfiles.authorName, input.authorNames));
     }),
 
   /** Enrich a single author via Wikipedia + LLM fallback and upsert into DB */
   enrich: publicProcedure
-    .input(z.object({ authorName: z.string(), model: z.string().optional() }))
+    .input(z.object({ authorName: z.string(), model: z.string().optional(), secondaryModel: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) return { success: false, cached: false, profile: null };
@@ -57,7 +59,7 @@ export const authorProfilesRouter = router({
       }
 
       // Enrich via Wikipedia/Wikidata (with LLM fallback for missing bios)
-      const info = await enrichAuthorViaWikipedia(input.authorName, input.model);
+      const info = await enrichAuthorViaWikipedia(input.authorName, input.model, input.secondaryModel);
       const now = new Date();
 
       if (existing[0]) {
@@ -164,7 +166,11 @@ export const authorProfilesRouter = router({
 
   /** Batch enrich a list of authors (up to 20 at a time to avoid timeout) */
   enrichBatch: publicProcedure
-    .input(z.object({ authorNames: z.array(z.string()).max(20), model: z.string().optional() }))
+    .input(z.object({
+      authorNames: z.array(z.string()).max(20),
+      model: z.string().optional(),
+      secondaryModel: z.string().optional(),
+    }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) return { results: [], total: 0, succeeded: 0 };
@@ -172,23 +178,27 @@ export const authorProfilesRouter = router({
       const results: Array<{ authorName: string; success: boolean }> = [];
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-      for (const authorName of input.authorNames) {
-        try {
-          const existing = await db
+      // Pre-fetch all existing rows in a single query (avoids N+1 per-author lookup)
+      const existingRows = input.authorNames.length > 0
+        ? await db
             .select()
             .from(authorProfiles)
-            .where(eq(authorProfiles.authorName, authorName))
-            .limit(1);
+            .where(inArray(authorProfiles.authorName, input.authorNames))
+        : [];
+      const existingMap = new Map(existingRows.map((r) => [r.authorName, r]));
 
-          if (existing[0]?.enrichedAt && existing[0].enrichedAt > thirtyDaysAgo) {
+      for (const authorName of input.authorNames) {
+        try {
+          const existing = existingMap.get(authorName);
+          if (existing?.enrichedAt && existing.enrichedAt > thirtyDaysAgo) {
             results.push({ authorName, success: true });
             continue;
           }
 
-          const info = await enrichAuthorViaWikipedia(authorName, input.model);
+          const info = await enrichAuthorViaWikipedia(authorName, input.model, input.secondaryModel);
           const now = new Date();
 
-          if (existing[0]) {
+          if (existing) {
             await db
               .update(authorProfiles)
               .set({ ...info, enrichedAt: now })

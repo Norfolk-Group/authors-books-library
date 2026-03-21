@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** March 21, 2026 (Manus theme → black/white/grey seed; Norfolk AI palette applied; AI Model settings redesigned — 3-column layout, vendor catalogue, secondary LLM toggle; AppSettings extended with primaryVendor/primaryModel/secondaryLlm* fields; avatar swatches updated to Norfolk AI palette; one-author-per-card enforced; TS errors fixed)
+**Last Updated:** March 21, 2026 — Session 2 (Secondary LLM wired into enrichment pipeline; N+1 queries fixed with batch pre-fetch; shared httpClient.ts created; waterfall.ts optimized with per-tier timeouts; apify.ts optimized with retry logic; mirrorToS3.ts dedup check fixed; 10 codebase optimization items completed)
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state.
 
@@ -562,6 +562,28 @@ The `client/src/lib/authorAliases.ts` file maps every known name variant to a ca
 ```
 
 The `canonicalName(raw)` function must be called before any photo/bio lookup.
+
+---
+
+## LLM Configuration
+
+- **Primary model**: stored in `settings.primaryModel` (AppSettings); falls back to `settings.geminiModel` for backward compat
+- **Secondary LLM**: `settings.secondaryLlmEnabled` toggle; when true, `settings.secondaryModel` is used for a second-pass refinement of LLM-generated bios and book summaries
+  - `enrichAuthorViaWikipedia(name, model, secondaryModel)` — secondary refines bio when Wikipedia returns nothing
+  - `enrichBookViaGoogleBooks(title, author, model, secondaryModel)` — secondary refines summary when Google Books returns nothing
+  - `Admin.tsx` batch enrichment passes `secondaryModel` when `secondaryLlmEnabled` is true
+- **Vendor catalogue**: `VENDOR_CATALOGUE` in `server/routers/llm.router.ts` — 10 vendors, 40+ models
+- **Seeded defaults**: Google → Gemini 2.5 Pro (primary), OpenAI → GPT-4o (secondary)
+
+---
+
+## Performance Optimizations (March 2026)
+
+- **N+1 queries fixed**: `authorProfiles.router.ts` and `bookProfiles.router.ts` `enrichBatch` procedures now pre-fetch all existing rows in a single `inArray` query before the loop
+- **Shared httpClient**: `server/lib/httpClient.ts` provides `fetchJson()` and `fetchBuffer()` with timeout, retry, and structured error handling
+- **apify.ts**: Added `runActorWithRetry()` helper with configurable retry count and delay; typed `ApifyRunResult` interface
+- **mirrorToS3.ts**: Fixed dedup check — skips re-upload when `existingKey` already exists in S3; uses `fetchBuffer` from httpClient
+- **waterfall.ts**: Per-tier timeouts (Wikipedia 8s, Tavily 10s, Apify 15s, Gemini 12s, Replicate 30s); `skipAlreadyEnriched` option; structured timing logs
 
 ---
 

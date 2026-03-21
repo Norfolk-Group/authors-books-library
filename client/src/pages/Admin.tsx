@@ -396,7 +396,8 @@ export default function Admin() {
         const batch = names.slice(i, i + batchSize);
         const result = await enrichBiosMutation.mutateAsync({
           authorNames: batch,
-          model: settings.geminiModel,
+          model: settings.primaryModel ?? settings.geminiModel,
+          secondaryModel: settings.secondaryLlmEnabled ? settings.secondaryModel : undefined,
         });
         done += result.succeeded;
         failed += result.total - result.succeeded;
@@ -458,7 +459,8 @@ export default function Admin() {
         const batch = books.slice(i, i + batchSize);
         const result = await enrichBooksMutation.mutateAsync({
           books: batch,
-          model: settings.geminiModel,
+          model: settings.primaryModel ?? settings.geminiModel,
+          secondaryModel: settings.secondaryLlmEnabled ? settings.secondaryModel : undefined,
         });
         done += result.filter((r) => r.status === "enriched").length;
         failed += result.filter((r) => r.status === "error").length;

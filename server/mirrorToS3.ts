@@ -15,7 +15,8 @@
  *   const { url, key } = await mirrorImageToS3(externalUrl, "book-covers/hidden-potential.jpg");
  */
 
-import { storagePut } from "./storage";
+import { storagePut, storageGet } from "./storage";
+import { fetchBuffer } from "./lib/httpClient";
 
 /** Supported image MIME types and their file extensions */
 const MIME_TO_EXT: Record<string, string> = {
@@ -80,37 +81,23 @@ export async function mirrorImageToS3(
 
   const key = makeS3Key(s3Prefix, sourceUrl);
 
-  // Skip re-upload if the key is already stored (idempotent)
+  // Skip re-upload if the key is already stored — derive the CDN URL from the key
   if (existingKey && existingKey === key) {
-    // Key already exists - return the existing URL by re-deriving it
-    // (storagePut returns the URL; we need to re-upload to get the URL back)
-    // For now, re-upload is safe since storagePut is idempotent (overwrites same key)
+    try {
+      const { url } = await storageGet(key);
+      console.log(`[Mirror] Skipping re-upload (key exists): ${key}`);
+      return { url, key, uploaded: false };
+    } catch {
+      // storageGet failed (key may not exist yet) — fall through to re-upload
+      console.warn(`[Mirror] storageGet failed for ${key}, re-uploading`);
+    }
   }
 
   // Fetch the image from the external URL
-  const response = await fetch(sourceUrl, {
-    headers: {
-      // Mimic a browser to avoid bot-blocking
-      "User-Agent": "Mozilla/5.0 (compatible; NCGLibrary/1.0; +https://ncg.com)",
-      "Accept": "image/webp,image/avif,image/jpeg,image/*,*/*;q=0.8",
-    },
-    signal: AbortSignal.timeout(15_000), // 15s timeout
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch image from ${sourceUrl}: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const contentType = response.headers.get("content-type")?.split(";")[0]?.trim()
-    ?? inferMimeFromUrl(sourceUrl);
-
-  const buffer = Buffer.from(await response.arrayBuffer());
-
-  if (buffer.length === 0) {
-    throw new Error(`Empty image response from ${sourceUrl}`);
-  }
+  const { buffer, contentType: fetchedContentType } = await fetchBuffer(sourceUrl);
+  const contentType = fetchedContentType !== "application/octet-stream"
+    ? fetchedContentType
+    : inferMimeFromUrl(sourceUrl);
 
   // Upload to S3
   const { url } = await storagePut(key, buffer, contentType);

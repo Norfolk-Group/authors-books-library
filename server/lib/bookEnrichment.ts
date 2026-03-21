@@ -58,7 +58,12 @@ interface GoogleBooksResponse {
 /**
  * Generate book summary using LLM when Google Books returns nothing.
  */
-async function generateBookSummaryWithLLM(bookTitle: string, authorName: string, model?: string): Promise<string> {
+async function generateBookSummaryWithLLM(
+  bookTitle: string,
+  authorName: string,
+  model?: string,
+  secondaryModel?: string
+): Promise<string> {
   try {
     const result = await invokeLLM({
       model,
@@ -75,7 +80,37 @@ async function generateBookSummaryWithLLM(bookTitle: string, authorName: string,
     });
     const raw = result?.choices?.[0]?.message?.content ?? "";
     const content = typeof raw === "string" ? raw : "";
-    return content.trim().slice(0, 600);
+    const primarySummary = content.trim().slice(0, 600);
+
+    // Secondary LLM refinement pass (if enabled)
+    if (secondaryModel && primarySummary) {
+      try {
+        const secondaryResult = await invokeLLM({
+          model: secondaryModel,
+          messages: [
+            {
+              role: "system",
+              content: "You are a senior editorial assistant. Improve and refine the following book summary to be more precise, engaging, and informative. Keep it under 600 characters.",
+            },
+            {
+              role: "user",
+              content: `Refine this summary for "${bookTitle}": "${primarySummary}"`,
+            },
+          ],
+        });
+        const secondaryRaw = secondaryResult?.choices?.[0]?.message?.content ?? "";
+        const secondaryContent = typeof secondaryRaw === "string" ? secondaryRaw : "";
+        const refined = secondaryContent.trim().slice(0, 600);
+        if (refined) {
+          console.log(`[bookEnrich] Secondary LLM (${secondaryModel}) refined summary for "${bookTitle}"`);
+          return refined;
+        }
+      } catch (err) {
+        console.warn(`[bookEnrich] Secondary LLM refinement failed for "${bookTitle}", using primary:`, err);
+      }
+    }
+
+    return primarySummary;
   } catch (err) {
     console.error(`[bookEnrich] LLM summary generation failed for "${bookTitle}":`, err);
     return "";
@@ -90,7 +125,8 @@ async function generateBookSummaryWithLLM(bookTitle: string, authorName: string,
 export async function enrichBookViaGoogleBooks(
   bookTitle: string,
   authorName: string,
-  model?: string
+  model?: string,
+  secondaryModel?: string
 ): Promise<BookEnrichmentData> {
   const result: BookEnrichmentData = {
     summary: "",
@@ -204,8 +240,8 @@ export async function enrichBookViaGoogleBooks(
 
   // LLM fallback: if Google Books returned no summary, generate one with the selected model
   if (!result.summary) {
-    console.log(`[bookEnrich] No Google Books summary for "${bookTitle}", using LLM fallback (model: ${model ?? "default"})`);
-    result.summary = await generateBookSummaryWithLLM(bookTitle, authorName, model);
+    console.log(`[bookEnrich] No Google Books summary for "${bookTitle}", using LLM fallback (primary: ${model ?? "default"}, secondary: ${secondaryModel ?? "none"})`);
+    result.summary = await generateBookSummaryWithLLM(bookTitle, authorName, model, secondaryModel);
   }
 
   return result;

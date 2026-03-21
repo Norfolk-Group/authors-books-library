@@ -56,7 +56,7 @@ export const bookProfilesRouter = router({
 
   /** Enrich a single book - auto-skips if enriched within 30 days */
   enrich: publicProcedure
-    .input(z.object({ bookTitle: z.string(), authorName: z.string().optional(), model: z.string().optional() }))
+    .input(z.object({ bookTitle: z.string(), authorName: z.string().optional(), model: z.string().optional(), secondaryModel: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
@@ -72,7 +72,7 @@ export const bookProfilesRouter = router({
         return { skipped: true, profile: existing[0] };
       }
 
-      const enriched = await enrichBookViaGoogleBooks(input.bookTitle, input.authorName ?? "", input.model);
+      const enriched = await enrichBookViaGoogleBooks(input.bookTitle, input.authorName ?? "", input.model, input.secondaryModel);
 
       await db
         .insert(bookProfiles)
@@ -160,29 +160,34 @@ export const bookProfilesRouter = router({
           z.object({ bookTitle: z.string(), authorName: z.string().optional() })
         ).max(10),
         model: z.string().optional(),
+        secondaryModel: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
       const results: { bookTitle: string; status: "enriched" | "skipped" | "error" }[] = [];
+
+      // Pre-fetch all existing rows in a single query (avoids N+1 per-book lookup)
+      const bookTitles = input.books.map((b) => b.bookTitle);
+      const existingRows = bookTitles.length > 0
+        ? await db
+            .select()
+            .from(bookProfiles)
+            .where(inArray(bookProfiles.bookTitle, bookTitles))
+        : [];
+      const existingMap = new Map(existingRows.map((r) => [r.bookTitle, r]));
 
       for (const item of input.books) {
         try {
-          const existing = await db
-            .select()
-            .from(bookProfiles)
-            .where(eq(bookProfiles.bookTitle, item.bookTitle))
-            .limit(1);
-
-          if (existing[0]?.enrichedAt && existing[0].enrichedAt > thirtyDaysAgo) {
+          const existing = existingMap.get(item.bookTitle);
+          if (existing?.enrichedAt && existing.enrichedAt > thirtyDaysAgo) {
             results.push({ bookTitle: item.bookTitle, status: "skipped" });
             continue;
           }
 
-          const enriched = await enrichBookViaGoogleBooks(item.bookTitle, item.authorName ?? "", input.model);
+          const enriched = await enrichBookViaGoogleBooks(item.bookTitle, item.authorName ?? "", input.model, input.secondaryModel);
 
           await db
             .insert(bookProfiles)

@@ -20,10 +20,14 @@ export interface AuthorInfo {
 // -- LLM fallback bio ----------------------------------------------------------
 
 /**
- * Generate a short author bio using the configured LLM when Wikipedia
- * returns no content. Caps the result at 400 characters.
+ * Generate a short author bio using the primary LLM, with optional secondary LLM
+ * for a second-pass refinement when dual-LLM processing is enabled.
  */
-export async function generateBioWithLLM(authorName: string, model?: string): Promise<string> {
+export async function generateBioWithLLM(
+  authorName: string,
+  model?: string,
+  secondaryModel?: string
+): Promise<string> {
   try {
     const result = await invokeLLM({
       model,
@@ -41,7 +45,38 @@ export async function generateBioWithLLM(authorName: string, model?: string): Pr
     });
     const raw = result?.choices?.[0]?.message?.content ?? "";
     const content = typeof raw === "string" ? raw : "";
-    return content.trim().slice(0, 400);
+    const primaryBio = content.trim().slice(0, 400);
+
+    // Secondary LLM refinement pass (if enabled)
+    if (secondaryModel && primaryBio) {
+      try {
+        const secondaryResult = await invokeLLM({
+          model: secondaryModel,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a senior editorial assistant. Improve and refine the following author bio to be more precise, professional, and engaging. Keep it under 400 characters.",
+            },
+            {
+              role: "user",
+              content: `Refine this bio for ${authorName}: "${primaryBio}"`,
+            },
+          ],
+        });
+        const secondaryRaw = secondaryResult?.choices?.[0]?.message?.content ?? "";
+        const secondaryContent = typeof secondaryRaw === "string" ? secondaryRaw : "";
+        const refined = secondaryContent.trim().slice(0, 400);
+        if (refined) {
+          console.log(`[authorEnrich] Secondary LLM (${secondaryModel}) refined bio for "${authorName}"`);
+          return refined;
+        }
+      } catch (err) {
+        console.warn(`[authorEnrich] Secondary LLM refinement failed for "${authorName}", using primary:`, err);
+      }
+    }
+
+    return primaryBio;
   } catch (err) {
     console.error(`[authorEnrich] LLM bio generation failed for "${authorName}":`, err);
     return "";
@@ -64,7 +99,8 @@ export async function generateBioWithLLM(authorName: string, model?: string): Pr
  */
 export async function enrichAuthorViaWikipedia(
   authorName: string,
-  model?: string
+  model?: string,
+  secondaryModel?: string
 ): Promise<AuthorInfo> {
   const result: AuthorInfo = { bio: "", websiteUrl: "", twitterUrl: "", linkedinUrl: "" };
 
@@ -153,12 +189,12 @@ export async function enrichAuthorViaWikipedia(
     console.error(`[authorEnrich] Failed to enrich "${authorName}":`, err);
   }
 
-  // 4. LLM fallback if Wikipedia returned no bio
+  // 4. LLM fallback if Wikipedia returned no bio (with optional secondary LLM refinement)
   if (!result.bio) {
     console.log(
-      `[authorEnrich] No Wikipedia bio for "${authorName}", using LLM fallback (model: ${model ?? "default"})`
+      `[authorEnrich] No Wikipedia bio for "${authorName}", using LLM fallback (primary: ${model ?? "default"}, secondary: ${secondaryModel ?? "none"})`
     );
-    result.bio = await generateBioWithLLM(authorName, model);
+    result.bio = await generateBioWithLLM(authorName, model, secondaryModel);
   }
 
   return result;
