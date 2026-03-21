@@ -73,6 +73,7 @@ import { canonicalName } from "@/lib/authorAliases";
 import { useAppSettings, type ColorMode as AppTheme } from "@/contexts/AppSettingsContext";
 
 import { AvatarUpload } from "@/components/AvatarUpload";
+import { BackToTop } from "@/components/BackToTop";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import {
   Search,
@@ -1213,6 +1214,8 @@ export default function Home() {
   // Book detail panel state
   const [selectedBook, setSelectedBook] = useState<typeof BOOKS[number] | null>(null);
   const [bookSheetOpen, setBookSheetOpen] = useState(false);
+  // Scroll container ref for BackToTop
+  const mainRef = useRef<HTMLElement>(null);
   // Cover lightbox state
   const [lightboxCover, setLightboxCover] = useState<{ url: string | null; title: string; author?: string; color?: string; amazonUrl?: string } | null>(null);
   // Fetch all enriched author names for indicators — refetch after batch completes
@@ -1751,7 +1754,7 @@ export default function Home() {
           </header>
 
           {/* Body */}
-          <main className="flex-1 px-3 sm:px-6 py-4 sm:py-6 overflow-auto">
+          <main ref={mainRef} className="flex-1 px-3 sm:px-6 py-4 sm:py-6 overflow-auto">
             {/* Stats strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               <StatCard label="Authors" value={STATS.totalAuthors} icon={Users} />
@@ -1955,6 +1958,8 @@ export default function Home() {
         onClose={() => setLightboxCover(null)}
       />
     )}
+    {/* ── Back to Top ────────────────────── */}
+    <BackToTop scrollContainerRef={mainRef} />
     </>
   );
 }

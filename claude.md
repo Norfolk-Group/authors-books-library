@@ -1,5 +1,13 @@
 # Ricardo Cidale's Authors & Books Library
 
+## Standing Rules
+
+**Last Updated:** March 21, 2026
+
+> **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state.
+
+---
+
 ## Project Identity
 
 **Name:** authors-books-library
@@ -289,7 +297,8 @@ Home.tsx
 ├── AuthorModal (Flowbite Modal)
 ├── BookModal (Flowbite Modal)
 ├── CoverLightbox (Framer Motion overlay)
-└── AvatarUpload + AvatarCropModal
+├── AvatarUpload + AvatarCropModal
+└── BackToTop (floating scroll-to-top button)
 
 Admin.tsx
 ├── Tabs: Data Pipeline | Media | Research Cascade | Settings | About
@@ -320,6 +329,7 @@ Everything else (category chip, badges, resource pills, watermark icon) is **pur
 | `CoverLightbox` | Framer Motion | Full-screen book cover overlay with backdrop blur |
 | `AvatarUpload` | Custom + `react-image-crop` | Camera overlay → file picker → crop modal → S3 upload |
 | `AvatarCropModal` | `react-image-crop` | Circular crop mask, zoom slider, 256x256 export |
+| `BackToTop` | Framer Motion | Floating arrow-up button, appears after 300px scroll, 3D shadow style |
 | `StatCard` | Custom | Summary stat with icon, value, label; 3D tilt on hover |
 
 ### Animations & Micro-interactions

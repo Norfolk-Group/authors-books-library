@@ -740,3 +740,19 @@
 - [x] Add visible exit/close button to any other overlay panels (AlertDialog in Admin already had Cancel; ManusDialog already had X)
 - [x] Ensure Escape key closes all overlays (all 6 components support Escape)
 - [x] Run tests, save checkpoint, push to GitHub
+
+## Session March 21, 2026 — Back to Top Button
+
+- [x] Create BackToTop floating button component with scroll detection
+- [x] Integrate into main library page (Home.tsx) — ref on <main>, BackToTop rendered after CoverLightbox
+- [x] Run tests, commit, push to GitHub, save checkpoint
+
+## Session March 21, 2026 — Memory Log
+
+- [x] Create memory.md with full session action history
+- [x] Keep memory.md updated with every future action (rule now in claude.md)
+
+## Session March 21, 2026 — Rules and Memory
+
+- [x] Add "update claude.md at end of every task" rule to claude.md
+- [x] Create memory.md with full session action history
