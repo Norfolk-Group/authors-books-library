@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** March 21, 2026 (File re-architecture: Home.tsx 1908->687 lines, Admin.tsx 1187->857 lines, extracted lib helpers, deleted 4 legacy dead files, fixed unicode in 52 files)
+**Last Updated:** March 21, 2026 (Manus theme → black/white/grey seed; Norfolk AI palette applied; AI Model settings redesigned — 3-column layout, vendor catalogue, secondary LLM toggle; AppSettings extended with primaryVendor/primaryModel/secondaryLlm* fields; avatar swatches updated to Norfolk AI palette; one-author-per-card enforced; TS errors fixed)
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state.
 
@@ -64,7 +64,7 @@ server/
     apify.router.ts              → Amazon scraping + S3 mirroring (~329 lines)
     cascade.router.ts            → Research cascade stats
     admin.router.ts              → Action log tracking
-    llm.router.ts                → Gemini model listing + testing
+    llm.router.ts                → Multi-vendor LLM catalogue (10 vendors, 40+ models), listVendors/listModels/refreshVendors/testModel
   lib/
     authorEnrichment.ts          → enrichAuthorViaWikipedia() + generateBioWithLLM() helpers
     bookEnrichment.ts            → enrichBookViaGoogleBooks() + generateBookSummaryWithLLM() helpers
@@ -418,23 +418,45 @@ The app has three named themes managed by `AppSettingsContext`:
 
 | Theme | Class | Style | Sidebar | Cards |
 |---|---|---|---|---|
-| **Manus** (default) | `:root` / `.dark` | Swiss Modernist — NCG brand colors | Navy bg, yellow text | White bg, category border stripe |
-| **Norfolk AI** | `.theme-norfolk-ai` | NCG brand — navy + yellow | Navy bg, yellow text | White bg, category border stripe |
-| **Noir Dark** | `.theme-noir-dark` | Executive monochrome — pure B&W | White bg, black text | White bg, 1px dark border, no color |
+| **Manus** (default/seed) | `.theme-manus` | Black / white / grey — clean default | `#E4E4E4` light grey | `#FFFFFF` white bg |
+| **Norfolk AI** | `.theme-norfolk-ai` | Official NCG palette — navy + yellow | `#112548` navy | `#FFFFFF` white bg |
+| **Noir Dark** | `.theme-noir-dark` | Executive monochrome — pure B&W | White bg, black text | White bg, 1px dark border |
+
+**Design System Rule — Manus as Seed:** The Manus theme is the living default. Always update it first when making design changes. Other themes branch from Manus and override only their brand-specific tokens.
 
 Theme switching is controlled by `AppSettingsProvider` in `client/src/contexts/AppSettingsContext.tsx`. Settings are persisted to `localStorage` under key `app-settings-v2`.
 
-### Color Palette (Manus Light Theme — Default)
+### Manus Theme (Black / White / Grey)
 
-| Token | HSL Value | Hex Equivalent | Usage |
+| Token | Value | Hex | Usage |
 |---|---|---|---|
-| `--background` | `210 33% 97%` | `#F5F8FA` | Page background |
-| `--foreground` | `215 28% 27%` | `#34475B` | Primary text |
-| `--primary` | `222 57% 18%` | `#112548` | NCG Navy — buttons, sidebar |
-| `--primary-foreground` | `43 98% 54%` | `#FDB817` | Yellow text on navy |
-| `--accent` | `43 98% 54%` | `#FDB817` | NCG Yellow — highlights |
-| `--ring` | `193 100% 34%` | `#0091AE` | NCG Teal — focus rings |
-| `--destructive` | `0 84% 60%` | Red | Error states |
+| `--background` | `0 0% 95%` | `#F2F2F2` | Light grey page background |
+| `--foreground` | `0 0% 7%` | `#111111` | Near-black text |
+| `--card` | `0 0% 100%` | `#FFFFFF` | Pure white cards |
+| `--primary` | `0 0% 7%` | `#111111` | Black CTAs, active states |
+| `--border` | `0 0% 83%` | `#D4D4D4` | Subtle grey dividers |
+| `--muted-foreground` | `0 0% 42%` | `#6B6B6B` | Secondary labels |
+| `--sidebar` | `0 0% 89%` | `#E4E4E4` | Slightly darker than background |
+
+### Norfolk AI Theme (Official Palette)
+
+| Token | Hex | Name |
+|---|---|---|
+| Yellow/Gold | `#FDB817` | Primary accent, CTAs |
+| Navy | `#112548` | Dark navy, headings, sidebar |
+| Orange | `#F4795B` | Warm accent |
+| Teal 1 | `#0091AE` | Font color, focus rings, avatar bg default |
+| Teal 2 | `#00A9B8` | Help pages |
+| Green | `#21B9A3` | Selected items |
+| White | `#FFFFFF` | Background |
+| Light Gray | `#F5F8FA` | Surface |
+| Gray | `#CCD6E2` | Inactive |
+| Dark Gray | `#34475B` | Body text |
+| Green alt | `#6A9E56` | Secondary green |
+
+### Color Palette (Manus Theme — Default / Seed)
+
+See Manus Theme table above. The Manus theme uses pure black/white/grey with no brand colors.
 
 ### NCG Brand Tokens (OKLCH)
 
@@ -502,7 +524,12 @@ The Admin Console (`/admin`, lazy-loaded) has 5 tabs:
 - Per-tier breakdown (Wikipedia, Tavily, Apify, AI)
 
 ### Tab 4: Settings
-- LLM model selector (13 Gemini models with radio buttons)
+- **Theme selector** — Manus (default) | Norfolk AI | Noir Dark, with mini palette preview swatches
+- **Avatar Background Color** — Norfolk AI palette swatches (11 colors, seed: #0091AE darker teal) + custom color picker with live preview
+- **AI Model** — 3-column layout:
+  - Column 1: Primary LLM — vendor dropdown (10 vendors) → model radio list with Test button per model
+  - Column 2: Secondary LLM — enable/disable toggle + vendor/model selectors (used for research parallel processing)
+  - Column 3: Active configuration summary + Refresh Vendors & Models button
 - Icon set selector (Phosphor Regular / Duotone)
 - View mode preference (Cards / Accordion)
 
@@ -570,8 +597,10 @@ These rules apply to all UI work on this project:
 4. **Business-like monocolor icons** — All icons are single-color. Add subtle hover animation to interactive icons.
 5. **3-hotspot interaction model** — Every card has exactly 3 clickable areas (avatar/name, cover/title, card surface). Everything else is presentational.
 6. **Amazon-first for book covers** — Always scrape Amazon before falling back to Google Books or other sources.
-7. **Gemini model selection** — Present available models as radio buttons for user selection.
+7. **AI Model selection** — Present vendors as a dropdown, models as radio buttons. Primary + optional Secondary LLM. Seeded: Google → Gemini 2.5 Pro.
 8. **Content categorization** — Authors' content is categorized into Books, Papers, and Articles.
+9. **Manus theme is the seed** — Always update the Manus theme first when making design changes. Other themes branch from it.
+10. **Avatar background color** — Default is Norfolk AI Teal `#0091AE`. Swatches use the official Norfolk AI palette.
 
 ---
 

@@ -791,7 +791,7 @@
 - [ ] Audit: find all multi-author entries in libraryData.ts and book_profiles DB
 - [ ] Fix data layer: split co-authored books so each author gets their own card entry
 - [ ] Fix UI layer: enforce one-author-per-card in all card components
-- [ ] Update or create skill documenting one-author-per-card rule and avatar background system
+- [x] Update or create skill documenting one-author-per-card rule and avatar background system
 - [ ] Test, update claude.md and memory.md, commit, push, save checkpoint
 
 ## Session March 21, 2026 — Full Codebase Optimization
@@ -834,3 +834,46 @@
 - [x] Pass avatarBgColor to generatePortrait tRPC mutation input
 - [x] Update replicateGeneration.ts buildPrompt() to accept and inject bgColor into prompt
 - [ ] Test, update claude.md and memory.md, commit, push, save checkpoint
+
+## Session March 21, 2026 — AI Model Settings Redesign
+
+- [ ] Build VENDOR_CATALOGUE in llm.router.ts with all major LLM vendors and models
+- [x] Add listVendors, refreshVendors tRPC procedures; update listModels to accept vendorId
+- [x] Add primaryVendor, primaryModel, secondaryLlmEnabled, secondaryVendor, secondaryModel to AppSettings
+- [x] Redesign SettingsTab AI Model card: 3-column layout, vendor dropdown, model radio list, secondary toggle
+- [ ] Wire secondary LLM model to research enrichment procedures
+- [ ] Update tests for new llm router procedures
+
+## Session March 21, 2026 — Norfolk AI Palette + Codebase Optimization
+
+### Norfolk AI Palette (Norfolk AI theme only — Manus theme unchanged)
+- [x] Update .theme-norfolk-ai CSS variables in index.css with official palette colors
+- [x] Update avatar background swatches in SettingsTab to use Norfolk AI colors (seed: #0091AE darker teal)
+- [ ] Verify Norfolk AI theme renders correctly with new palette
+
+### AI Model Settings Redesign (continued)
+- [ ] Build VENDOR_CATALOGUE in llm.router.ts with all major LLM vendors and models (done — needs SettingsTab wiring)
+- [ ] Add primaryVendor, primaryModel, secondaryLlmEnabled, secondaryVendor, secondaryModel to AppSettings
+- [ ] Redesign SettingsTab AI Model card: 3-column layout, vendor dropdown, model radio list, secondary LLM toggle
+- [ ] Wire secondary LLM model to research enrichment procedures
+- [ ] Update tests for new llm router procedures
+
+### Codebase Optimization
+- [ ] Audit and remove dead/unused code (imports, components, helpers)
+- [ ] Consolidate duplicate utility functions
+- [ ] Check and fix any large component files that can be split further
+- [ ] Review and optimize tRPC query patterns (stale times, caching)
+
+### Documentation
+- [x] Update claude.md with current architecture, file map, and design decisions
+- [x] Update memory.md with this session's changes
+- [ ] Review and update skills if needed
+
+### Manus Theme Redesign (black/white/grey)
+- [x] Rewrite .theme-manus CSS variables: light grey bg, white cards, darker grey sidebar, black text
+- [x] Verify all components render correctly with new monochrome Manus theme
+
+### Design System Rule — Manus Theme as Seed
+- [x] Manus theme is the living seed/default — always update it first when making design changes
+- [x] Other themes (Norfolk AI, Noir Dark) branch from Manus and override only their brand-specific tokens
+- [x] Document this rule in claude.md design section

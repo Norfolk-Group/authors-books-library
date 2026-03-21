@@ -40,11 +40,21 @@ export interface AppSettings {
   colorMode: ColorMode;
   /** Icon set: which Phosphor variant to use globally */
   iconSet: IconSetId;
-  /** Preferred Gemini model for LLM calls */
+  /** Preferred Gemini model for LLM calls (legacy — maps to primaryModel) */
   geminiModel: string;
+  /** Primary LLM vendor ID (e.g. "google") */
+  primaryVendor: string;
+  /** Primary LLM model ID (e.g. "gemini-2.5-pro") */
+  primaryModel: string;
+  /** Whether to use a secondary LLM for research processes */
+  secondaryLlmEnabled: boolean;
+  /** Secondary LLM vendor ID */
+  secondaryVendor: string;
+  /** Secondary LLM model ID */
+  secondaryModel: string;
   /** Authors view mode: card grid or accordion list */
   viewMode: "cards" | "accordion";
-  /** Background color injected into AI portrait generation prompt (hex string, e.g. "#1e293b") */
+  /** Background color injected into AI portrait generation prompt (hex string, e.g. "#0091ae") */
   avatarBgColor: string;
 }
 
@@ -61,9 +71,14 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: "manus",
   colorMode: "light",
   iconSet: "phosphor-regular",
-  geminiModel: "gemini-2.5-flash",
+  geminiModel: "gemini-2.5-pro",
+  primaryVendor: "google",
+  primaryModel: "gemini-2.5-pro",
+  secondaryLlmEnabled: false,
+  secondaryVendor: "openai",
+  secondaryModel: "gpt-4o",
   viewMode: "cards",
-  avatarBgColor: "#1e293b",
+  avatarBgColor: "#0091ae",
 };
 
 const STORAGE_KEY = "app-settings-v2";

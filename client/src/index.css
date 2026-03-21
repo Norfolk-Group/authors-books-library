@@ -632,87 +632,142 @@
    theme-noir-dark  → executive white + black
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Manus Theme (indigo-blue primary, warm off-white surface) ── */
+/* ── Manus Theme — Black / White / Grey ──
+   Background:  #F2F2F2  light grey page bg
+   Cards:       #FFFFFF  pure white
+   Sidebar:     #E4E4E4  one shade darker than bg
+   Foreground:  #111111  near-black text
+   Primary:     #111111  black CTAs / active states
+   Borders:     #D4D4D4  subtle grey dividers
+   Muted text:  #6B6B6B  secondary labels
+   ────────────────────────────────────────────────── */
 .theme-manus {
-  /* Manus Brand — Indigo-blue primary, warm off-white surface, clean slate text */
-  --background: 220 20% 97%;        /* #F4F6FA warm off-white */
-  --foreground: 224 40% 14%;        /* #1A2340 deep indigo-slate */
-  --card: 0 0% 100%;                /* pure white cards */
-  --card-foreground: 224 40% 14%;
+  /* Surfaces */
+  --background: 0 0% 95%;            /* #F2F2F2 light grey page bg */
+  --foreground: 0 0% 7%;             /* #111111 near-black */
+  --card: 0 0% 100%;                 /* #FFFFFF pure white cards */
+  --card-foreground: 0 0% 7%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 40% 14%;
-  --primary: 234 89% 60%;           /* #4F6EF7 Manus indigo-blue */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 220 18% 93%;         /* #EDF0F7 light blue-grey */
-  --secondary-foreground: 224 40% 14%;
-  --muted: 220 16% 93%;             /* #EDF0F7 */
-  --muted-foreground: 220 14% 46%;  /* #6B7A99 */
-  --accent: 234 89% 95%;            /* #EEF1FE indigo tint */
-  --accent-foreground: 234 89% 40%;
-  --destructive: 0 84% 60%;
+  --popover-foreground: 0 0% 7%;
+
+  /* Primary = black */
+  --primary: 0 0% 7%;                /* #111111 */
+  --primary-foreground: 0 0% 100%;   /* white text on black */
+
+  /* Secondary = light grey surface */
+  --secondary: 0 0% 91%;             /* #E8E8E8 */
+  --secondary-foreground: 0 0% 7%;
+
+  /* Muted */
+  --muted: 0 0% 93%;                 /* #EDEDED */
+  --muted-foreground: 0 0% 42%;      /* #6B6B6B */
+
+  /* Accent = dark grey (hover/selected states) */
+  --accent: 0 0% 88%;                /* #E0E0E0 */
+  --accent-foreground: 0 0% 7%;
+
+  --destructive: 0 72% 50%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 18% 88%;            /* #D8DDED */
-  --input: 220 18% 88%;
-  --ring: 234 89% 60%;
+
+  /* Borders */
+  --border: 0 0% 83%;                /* #D4D4D4 */
+  --input: 0 0% 83%;
+  --ring: 0 0% 7%;                   /* black focus ring */
   --radius: 0.5rem;
-  --accent-pop: 234 89% 60%;        /* Manus indigo */
+
+  /* Accent pops = black */
+  --accent-pop: 0 0% 7%;
   --accent-pop-foreground: 0 0% 100%;
-  --accent-pop-2: 262 83% 58%;      /* #7C3AED violet accent */
+  --accent-pop-2: 0 0% 35%;          /* dark grey secondary */
   --accent-pop-2-foreground: 0 0% 100%;
-  --chart-1: 234 89% 60%;           /* indigo */
-  --chart-2: 262 83% 58%;           /* violet */
-  --chart-3: 199 89% 48%;           /* sky blue */
-  --chart-4: 172 66% 44%;           /* teal */
-  --chart-5: 220 14% 70%;           /* grey */
-  --sidebar: 224 40% 14%;           /* deep indigo sidebar */
-  --sidebar-foreground: 220 20% 90%;
-  --sidebar-primary: 234 89% 65%;   /* lighter indigo for active items */
+
+  /* Charts — greyscale ramp */
+  --chart-1: 0 0% 7%;                /* near-black */
+  --chart-2: 0 0% 25%;               /* dark grey */
+  --chart-3: 0 0% 45%;               /* mid grey */
+  --chart-4: 0 0% 62%;               /* light-mid grey */
+  --chart-5: 0 0% 80%;               /* light grey */
+
+  /* Sidebar = one shade darker than background */
+  --sidebar: 0 0% 89%;               /* #E4E4E4 slightly darker grey */
+  --sidebar-foreground: 0 0% 7%;     /* black text */
+  --sidebar-primary: 0 0% 7%;        /* active item = black pill */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 224 35% 20%;    /* slightly lighter indigo hover */
-  --sidebar-accent-foreground: 220 20% 95%;
-  --sidebar-border: 224 35% 22%;
-  --sidebar-ring: 234 89% 60%;
+  --sidebar-accent: 0 0% 83%;        /* hover = border grey */
+  --sidebar-accent-foreground: 0 0% 7%;
+  --sidebar-border: 0 0% 78%;        /* #C7C7C7 sidebar divider */
+  --sidebar-ring: 0 0% 7%;
 }
 
-/* ── Norfolk AI Theme (NCG navy + yellow brand) ── */
+/* ── Norfolk AI Theme — Official Palette (March 2026) ──
+   Yellow/Gold  #FDB817  HSL(42 98% 54%)   — primary accent, CTAs
+   Yellow/Other #FFD02B  HSL(47 100% 58%)  — secondary yellow
+   Blue (Navy)  #112548  HSL(218 62% 17%)  — dark bg, headings, sidebar
+   Orange       #F4795B  HSL(12 87% 66%)   — warm accent
+   Teal 1       #0091AE  HSL(190 100% 34%) — font color, ring, selected
+   Teal 2       #00A9B8  HSL(185 100% 36%) — help pages, chart
+   Green        #21B9A3  HSL(171 70% 43%)  — selected items, chart
+   Light Gray   #F5F8FA  HSL(204 33% 97%)  — background
+   Gray (unsel) #CCD6E2  HSL(213 27% 84%)  — borders, unselected
+   Gray (dark)  #34475B  HSL(211 27% 28%)  — body text, muted fg
+   Green alt    #6A9E56  HSL(103 30% 48%)  — chart 5
+   ─────────────────────────────────────────────────────────────────── */
 .theme-norfolk-ai {
-  --background: 210 33% 97%;
-  --foreground: 215 28% 27%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 57% 18%;
+  /* Surfaces */
+  --background: 204 33% 97%;           /* #F5F8FA light gray */
+  --foreground: 211 27% 28%;           /* #34475B dark font */
+  --card: 0 0% 100%;                   /* white cards */
+  --card-foreground: 218 62% 17%;      /* #112548 navy */
   --popover: 0 0% 100%;
-  --popover-foreground: 215 28% 27%;
-  --primary: 222 57% 18%;
-  --primary-foreground: 43 98% 54%;
-  --secondary: 210 20% 93%;
-  --secondary-foreground: 222 57% 18%;
-  --muted: 210 22% 94%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 43 98% 54%;
-  --accent-foreground: 222 57% 18%;
+  --popover-foreground: 211 27% 28%;
+
+  /* Primary = Navy #112548 with Yellow/Gold foreground */
+  --primary: 218 62% 17%;              /* #112548 */
+  --primary-foreground: 42 98% 54%;    /* #FDB817 */
+
+  /* Secondary = light gray surface */
+  --secondary: 213 27% 91%;            /* slightly darker than bg */
+  --secondary-foreground: 218 62% 17%;
+
+  /* Muted */
+  --muted: 213 27% 93%;
+  --muted-foreground: 211 27% 44%;     /* mid-range gray */
+
+  /* Accent = Yellow/Gold #FDB817 */
+  --accent: 42 98% 54%;                /* #FDB817 */
+  --accent-foreground: 218 62% 17%;    /* navy on yellow */
+
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 210 20% 86%;
-  --input: 210 20% 86%;
-  --ring: 193 100% 34%;
+
+  /* Borders = Gray unselected */
+  --border: 213 27% 84%;               /* #CCD6E2 */
+  --input: 213 27% 84%;
+  --ring: 190 100% 34%;                /* #0091AE teal ring */
   --radius: 0.5rem;
-  --accent-pop: 43 98% 54%;
-  --accent-pop-foreground: 222 57% 18%;
-  --accent-pop-2: 193 100% 34%;
+
+  /* Accent pops */
+  --accent-pop: 42 98% 54%;            /* #FDB817 yellow/gold */
+  --accent-pop-foreground: 218 62% 17%;
+  --accent-pop-2: 190 100% 34%;        /* #0091AE teal */
   --accent-pop-2-foreground: 0 0% 100%;
-  --chart-1: 222 57% 18%;
-  --chart-2: 193 100% 34%;
-  --chart-3: 43 98% 54%;
-  --chart-4: 14 88% 65%;
-  --chart-5: 174 69% 42%;
-  --sidebar: 222 57% 18%;
-  --sidebar-foreground: 43 98% 54%;
-  --sidebar-primary: 43 98% 54%;
-  --sidebar-primary-foreground: 222 57% 18%;
-  --sidebar-accent: 222 50% 24%;
+
+  /* Charts — full Norfolk AI palette */
+  --chart-1: 218 62% 17%;              /* navy */
+  --chart-2: 190 100% 34%;             /* teal 1 */
+  --chart-3: 42 98% 54%;               /* yellow/gold */
+  --chart-4: 12 87% 66%;               /* orange */
+  --chart-5: 171 70% 43%;              /* green */
+
+  /* Sidebar = Navy bg + Yellow/Gold accents */
+  --sidebar: 218 62% 17%;              /* #112548 navy */
+  --sidebar-foreground: 42 98% 54%;    /* #FDB817 yellow */
+  --sidebar-primary: 42 98% 54%;       /* active item = yellow */
+  --sidebar-primary-foreground: 218 62% 17%;
+  --sidebar-accent: 218 55% 23%;       /* hover = slightly lighter navy */
   --sidebar-accent-foreground: 0 0% 97%;
-  --sidebar-border: 222 45% 28%;
-  --sidebar-ring: 43 98% 54%;
+  --sidebar-border: 218 50% 26%;
+  --sidebar-ring: 42 98% 54%;
 }
 
 /* ── Noir Dark Executive Theme ──

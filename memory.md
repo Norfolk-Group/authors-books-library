@@ -178,3 +178,51 @@ All 122 tests still passing. claude.md architecture overview updated with new fi
 
 ### Test Results
 - 122 tests passing (9 test files), 0 TypeScript errors.
+
+---
+
+## Session: March 21, 2026 — Theme System, AI Model Settings, Avatar Swatches
+
+### Changes Made
+
+**Manus Theme Redesign (Black/White/Grey Seed):**
+- Rewrote `.theme-manus` CSS variables in `index.css` to pure black/white/grey system
+- Background: `#F2F2F2`, Cards: `#FFFFFF`, Sidebar: `#E4E4E4`, Foreground: `#111111`
+- Established Manus as the living seed/default — all other themes branch from it
+- Rule: always update Manus theme first when making design changes
+
+**Norfolk AI Official Palette Applied:**
+- Updated `.theme-norfolk-ai` CSS variables with official palette from Palette.docx
+- Colors: Navy `#112548`, Yellow `#FDB817`, Teal `#0091AE`/`#00A9B8`, Orange `#F4795B`, Green `#21B9A3`
+
+**Avatar Background Swatches:**
+- Replaced generic swatches with official Norfolk AI palette colors (11 swatches)
+- Seeded default changed from `#1e293b` to `#0091AE` (Norfolk AI Teal 1)
+- Added live preview swatch and custom color picker with hex display
+
+**AI Model Settings Redesign (3-Column Layout):**
+- Built `VENDOR_CATALOGUE` in `llm.router.ts` with 10 vendors and 40+ models
+- Vendors: Google, OpenAI, Anthropic, Meta, Mistral, Cohere, xAI, DeepSeek, Amazon, Microsoft
+- Added `listVendors`, `refreshVendors` tRPC procedures; updated `listModels` to accept `vendorId`
+- Added to `AppSettings`: `primaryVendor`, `primaryModel`, `secondaryLlmEnabled`, `secondaryVendor`, `secondaryModel`
+- Default seeded: Google → Gemini 2.5 Pro (primary), OpenAI → GPT-4o (secondary)
+- Rewrote `SettingsTab.tsx` with 3-column AI Model card:
+  - Col 1: Primary LLM (vendor dropdown → model radio list with Test button)
+  - Col 2: Secondary LLM toggle + vendor/model selectors
+  - Col 3: Active summary + Refresh Vendors & Models button
+
+**One-Author-Per-Card Enforcement:**
+- Confirmed split logic in `filteredAuthors` (Home.tsx) correctly handles co-author names at render time
+- `canonicalName()` called in all card components before any photo/bio lookup
+- `authorAliases.ts` and `authorPhotos.ts` updated to map individual co-authors
+
+**TypeScript Fixes:**
+- Fixed TS2554 in `SettingsTab.tsx` (listModels.useQuery now requires vendorId)
+- 0 TypeScript errors, 122 tests passing
+
+### Files Changed
+- `client/src/index.css` — Manus theme + Norfolk AI theme CSS variables
+- `client/src/components/admin/SettingsTab.tsx` — Full rewrite with 3-column AI Model card
+- `client/src/contexts/AppSettingsContext.tsx` — Added primaryVendor/Model, secondaryLlm* fields
+- `server/routers/llm.router.ts` — Full vendor catalogue, listVendors, refreshVendors
+- `claude.md` — Updated design system, theme tables, admin tab 4 description
