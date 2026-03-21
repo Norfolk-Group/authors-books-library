@@ -101,7 +101,22 @@ export function SettingsTab({ settings, updateSettings }: SettingsTabProps) {
   function handleRefreshVendors() {
     refreshVendorsMutation.mutate(undefined, {
       onSuccess: (data) => {
-        toast.success(`Vendor catalogue refreshed — ${data.vendors.length} vendors loaded`);
+        const rec = data.recommendations;
+        const resModel = rec.research?.modelId ?? "";
+        const refModel = rec.refinement?.modelId ?? "";
+        const resVendor = rec.research?.vendorId ?? "";
+        const refVendor = rec.refinement?.vendorId ?? "";
+        toast.success(
+          `Catalogue refreshed — ${data.vendors.length} vendors. ` +
+          `Recommendations: LLM 1 → ${resModel || "none"}, LLM 2 → ${refModel || "none"}`
+        );
+        // Auto-apply updated recommendations
+        if (resVendor && resModel) {
+          updateSettings({ primaryVendor: resVendor, primaryModel: resModel, geminiModel: resModel });
+        }
+        if (refVendor && refModel) {
+          updateSettings({ secondaryVendor: refVendor, secondaryModel: refModel });
+        }
       },
       onError: (err) => toast.error(`Refresh failed: ${err.message}`),
     });
@@ -417,12 +432,17 @@ export function SettingsTab({ settings, updateSettings }: SettingsTabProps) {
                             className={`w-full p-2 rounded-md border text-left transition-all text-xs ${
                               settings.secondaryModel === m.id
                                 ? "border-primary bg-primary/5 font-medium"
+                                : m.recommended === "refinement"
+                                ? "border-amber-400/60 hover:border-amber-400"
                                 : "border-border hover:border-primary/40"
                             }`}
                           >
                             <div className="flex items-center justify-between gap-1">
                               <span className="truncate">{m.displayName}</span>
                               <div className="flex items-center gap-1 shrink-0">
+                                {m.recommended === "refinement" && (
+                                  <Badge className="text-[8px] px-1 py-0 bg-amber-500 hover:bg-amber-500 text-white border-0">★ Recommended</Badge>
+                                )}
                                 {settings.secondaryModel === m.id && (
                                   <Badge className="text-[8px] px-1 py-0">Active</Badge>
                                 )}
@@ -440,7 +460,9 @@ export function SettingsTab({ settings, updateSettings }: SettingsTabProps) {
                                 </button>
                               </div>
                             </div>
-                            <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-1">{m.description}</p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-1">
+                              {m.recommended === "refinement" ? m.recommendedReason ?? m.description : m.description}
+                            </p>
                           </button>
                         ))
                       )}

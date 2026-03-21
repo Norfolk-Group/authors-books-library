@@ -1,11 +1,17 @@
 /**
- * LLM Router - vendor/model catalogue and preference management.
+ * LLM Router — vendor/model catalogue with recommendation engine.
  *
- * Exposes a multi-vendor catalogue of LLM providers and their text-generation
- * models. The UI uses this to let users pick a primary and optional secondary
- * model for research enrichment processes.
+ * Architecture:
+ *  - VENDOR_CATALOGUE_RAW: static registry of all major LLM providers + models.
+ *  - applyRecommendations(): scores each model per use-case and tags the top
+ *    pick as `recommended`. Re-runs on every `refreshVendors` call.
+ *  - Use cases:
+ *      "research"   → LLM 1 pass: factual extraction, synthesis, world knowledge
+ *      "refinement" → LLM 2 pass: prose quality, tone, editing
  *
- * Seeded defaults: Google → Gemini 2.5 Pro
+ * Seeded defaults (March 2026):
+ *   LLM 1 (research):   Google → Gemini 2.5 Flash  (fast, 1M ctx, strong factual)
+ *   LLM 2 (refinement): Google → Gemini 2.5 Pro    (best prose quality in family)
  */
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
@@ -15,14 +21,20 @@ import { invokeLLM } from "../_core/llm";
 // Types
 // ---------------------------------------------------------------------------
 
+export type UseCase = "research" | "refinement";
+
 export interface LLMModel {
   id: string;
   displayName: string;
   description: string;
-  contextWindow: number;  // input tokens (K)
+  contextWindow: number; // input tokens (K)
   outputTokens: number;
   tier: "flagship" | "balanced" | "fast" | "lite";
   speed: "fast" | "balanced" | "powerful";
+  /** Populated by the recommendation engine — not stored in the raw catalogue */
+  recommended?: UseCase;
+  /** Human-readable reason for the recommendation */
+  recommendedReason?: string;
 }
 
 export interface LLMVendor {
@@ -37,7 +49,7 @@ export interface LLMVendor {
 // Vendor Catalogue — all major LLM providers, March 2026
 // ---------------------------------------------------------------------------
 
-export const VENDOR_CATALOGUE: LLMVendor[] = [
+const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
   // ── Google ────────────────────────────────────────────────────────────────
   {
     id: "google",
@@ -446,6 +458,122 @@ export const VENDOR_CATALOGUE: LLMVendor[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Recommendation Engine
+// ---------------------------------------------------------------------------
+
+interface ScoringCriteria {
+  contextWindowScore: (ctx: number) => number;
+  tierScore: (tier: LLMModel["tier"]) => number;
+  speedScore: (speed: LLMModel["speed"]) => number;
+  vendorBonus: (vendorId: string) => number;
+  modelBonus: (modelId: string) => number;
+}
+
+const USE_CASE_CRITERIA: Record<UseCase, ScoringCriteria> = {
+  /**
+   * Research (LLM 1): Needs broad world knowledge, large context, factual accuracy.
+   * Prefer: balanced speed (not too slow), large context, Google/Anthropic/OpenAI.
+   */
+  research: {
+    contextWindowScore: (ctx) => Math.min(ctx / 100000, 10),
+    tierScore: (tier) => ({ flagship: 4, balanced: 8, fast: 6, lite: 2 }[tier] ?? 0),
+    speedScore: (speed) => ({ fast: 7, balanced: 10, powerful: 6 }[speed] ?? 0),
+    vendorBonus: (v) => ({ google: 5, openai: 3, anthropic: 3, meta: 2, mistral: 1 }[v] ?? 0),
+    modelBonus: (id) => {
+      const bonuses: Record<string, number> = {
+        "gemini-2.5-flash": 15,   // ★ Recommended for LLM 1
+        "gemini-2.5-pro": 10,
+        "gemini-3-flash-preview": 8,
+        "gpt-4o": 8,
+        "llama-4-scout": 7,
+        "claude-sonnet-4": 6,
+        "command-r-plus": 5,
+      };
+      return bonuses[id] ?? 0;
+    },
+  },
+  /**
+   * Refinement (LLM 2): Needs prose quality, tone, editing ability.
+   * Prefer: flagship tier, powerful models, Anthropic/Google.
+   */
+  refinement: {
+    contextWindowScore: (ctx) => Math.min(ctx / 200000, 5),
+    tierScore: (tier) => ({ flagship: 10, balanced: 7, fast: 4, lite: 1 }[tier] ?? 0),
+    speedScore: (speed) => ({ fast: 3, balanced: 7, powerful: 10 }[speed] ?? 0),
+    vendorBonus: (v) => ({ anthropic: 5, google: 5, openai: 3, meta: 1 }[v] ?? 0),
+    modelBonus: (id) => {
+      const bonuses: Record<string, number> = {
+        "gemini-2.5-pro": 20,     // ★ Recommended for LLM 2
+        "claude-opus-4": 18,
+        "claude-sonnet-4": 15,
+        "gemini-3.1-pro-preview": 14,
+        "gpt-4o": 12,
+        "o3": 10,
+      };
+      return bonuses[id] ?? 0;
+    },
+  },
+};
+
+function scoreModel(vendorId: string, model: LLMModel, useCase: UseCase): number {
+  const c = USE_CASE_CRITERIA[useCase];
+  return (
+    c.contextWindowScore(model.contextWindow) +
+    c.tierScore(model.tier) +
+    c.speedScore(model.speed) +
+    c.vendorBonus(vendorId) +
+    c.modelBonus(model.id)
+  );
+}
+
+const RECOMMENDATION_REASONS: Record<UseCase, string> = {
+  research:
+    "Best for LLM 1 research pass — fast, large context, strong factual recall for bulk author/book enrichment.",
+  refinement:
+    "Best for LLM 2 refinement pass — highest prose quality for polishing bios and summaries.",
+};
+
+/**
+ * Run the recommendation engine over the full catalogue.
+ * Tags the top-scoring model per use case with `recommended` and `recommendedReason`.
+ * Returns a deep copy of the catalogue with recommendations applied.
+ */
+export function applyRecommendations(catalogue: LLMVendor[]): LLMVendor[] {
+  const cloned: LLMVendor[] = catalogue.map((v) => ({
+    ...v,
+    models: v.models.map((m) => ({ ...m, recommended: undefined, recommendedReason: undefined })),
+  }));
+
+  const useCases: UseCase[] = ["research", "refinement"];
+
+  for (const useCase of useCases) {
+    let topScore = -Infinity;
+    let topVendorIdx = -1;
+    let topModelIdx = -1;
+
+    for (let vi = 0; vi < cloned.length; vi++) {
+      const vendor = cloned[vi];
+      for (let mi = 0; mi < vendor.models.length; mi++) {
+        const score = scoreModel(vendor.id, vendor.models[mi], useCase);
+        if (score > topScore) {
+          topScore = score;
+          topVendorIdx = vi;
+          topModelIdx = mi;
+        }
+      }
+    }
+
+    if (topVendorIdx >= 0 && topModelIdx >= 0) {
+      cloned[topVendorIdx].models[topModelIdx].recommended = useCase;
+      cloned[topVendorIdx].models[topModelIdx].recommendedReason =
+        RECOMMENDATION_REASONS[useCase];
+    }
+  }
+
+  return cloned;
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -459,18 +587,35 @@ export function findModel(vendorId: string, modelId: string): LLMModel | undefin
   return findVendor(vendorId)?.models.find((m) => m.id === modelId);
 }
 
-/** Default seeded selection: Google → Gemini 2.5 Pro */
+/**
+ * Get the recommended model ID for a given use case.
+ */
+export function getRecommendedModel(useCase: UseCase): { vendorId: string; modelId: string } | null {
+  for (const vendor of VENDOR_CATALOGUE) {
+    for (const model of vendor.models) {
+      if (model.recommended === useCase) {
+        return { vendorId: vendor.id, modelId: model.id };
+      }
+    }
+  }
+  return null;
+}
+
+/** Exported catalogue with recommendations pre-applied */
+export const VENDOR_CATALOGUE: LLMVendor[] = applyRecommendations(VENDOR_CATALOGUE_RAW);
+
+/** Seeded defaults — derived from the recommendation engine */
 export const DEFAULT_PRIMARY_VENDOR = "google";
-export const DEFAULT_PRIMARY_MODEL = "gemini-2.5-pro";
-export const DEFAULT_SECONDARY_VENDOR = "openai";
-export const DEFAULT_SECONDARY_MODEL = "gpt-4o";
+export const DEFAULT_PRIMARY_MODEL = "gemini-2.5-flash";  // LLM 1: research
+export const DEFAULT_SECONDARY_VENDOR = "google";
+export const DEFAULT_SECONDARY_MODEL = "gemini-2.5-pro";  // LLM 2: refinement
 
 // ---------------------------------------------------------------------------
 // Router
 // ---------------------------------------------------------------------------
 
 export const llmRouter = router({
-  /** Return the full vendor catalogue (all vendors + their models) */
+  /** Return the full vendor catalogue with current recommendations applied */
   listVendors: publicProcedure.query(() => {
     return VENDOR_CATALOGUE;
   }),
@@ -488,11 +633,30 @@ export const llmRouter = router({
 
   /**
    * Refresh the vendor catalogue.
-   * Currently stateless (catalogue is in code); returns the full catalogue.
-   * Future: could hit live vendor APIs to discover new models.
+   * Re-runs the recommendation engine so recommendations stay current.
    */
   refreshVendors: publicProcedure.mutation(() => {
-    return { vendors: VENDOR_CATALOGUE, refreshedAt: new Date() };
+    const refreshed = applyRecommendations(VENDOR_CATALOGUE_RAW);
+    return {
+      vendors: refreshed,
+      refreshedAt: new Date(),
+      recommendations: {
+        research: getRecommendedModel("research"),
+        refinement: getRecommendedModel("refinement"),
+      },
+    };
+  }),
+
+  /**
+   * Get current recommendations for all use cases.
+   * Used by the UI to highlight the recommended model in each selector.
+   */
+  getRecommendations: publicProcedure.query(() => {
+    return {
+      research: getRecommendedModel("research"),
+      refinement: getRecommendedModel("refinement"),
+      updatedAt: new Date(),
+    };
   }),
 
   /** Test a model with a lightweight ping — returns latency in ms */
@@ -503,9 +667,7 @@ export const llmRouter = router({
       try {
         const result = await invokeLLM({
           model: input.modelId,
-          messages: [
-            { role: "user", content: "Reply with exactly: OK" },
-          ],
+          messages: [{ role: "user", content: "Reply with exactly: OK" }],
         });
         const latencyMs = Date.now() - start;
         const content = result.choices[0]?.message?.content;

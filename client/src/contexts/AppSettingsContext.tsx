@@ -71,12 +71,12 @@ const DEFAULT_SETTINGS: AppSettings = {
   theme: "manus",
   colorMode: "light",
   iconSet: "phosphor-regular",
-  geminiModel: "gemini-2.5-pro",
+  geminiModel: "gemini-2.5-flash",
   primaryVendor: "google",
-  primaryModel: "gemini-2.5-pro",
+  primaryModel: "gemini-2.5-flash",   // LLM 1: research pass — fast, 1M ctx, strong factual
   secondaryLlmEnabled: false,
-  secondaryVendor: "openai",
-  secondaryModel: "gpt-4o",
+  secondaryVendor: "google",
+  secondaryModel: "gemini-2.5-pro",   // LLM 2: refinement pass — best prose quality
   viewMode: "cards",
   avatarBgColor: "#0091ae",
 };

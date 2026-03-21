@@ -837,7 +837,7 @@
 
 ## Session March 21, 2026 — AI Model Settings Redesign
 
-- [ ] Build VENDOR_CATALOGUE in llm.router.ts with all major LLM vendors and models
+- [x] Build VENDOR_CATALOGUE in llm.router.ts with all major LLM vendors and models
 - [x] Add listVendors, refreshVendors tRPC procedures; update listModels to accept vendorId
 - [x] Add primaryVendor, primaryModel, secondaryLlmEnabled, secondaryVendor, secondaryModel to AppSettings
 - [x] Redesign SettingsTab AI Model card: 3-column layout, vendor dropdown, model radio list, secondary toggle
@@ -853,10 +853,10 @@
 
 ### AI Model Settings Redesign (continued)
 - [ ] Build VENDOR_CATALOGUE in llm.router.ts with all major LLM vendors and models (done — needs SettingsTab wiring)
-- [ ] Add primaryVendor, primaryModel, secondaryLlmEnabled, secondaryVendor, secondaryModel to AppSettings
-- [ ] Redesign SettingsTab AI Model card: 3-column layout, vendor dropdown, model radio list, secondary LLM toggle
-- [ ] Wire secondary LLM model to research enrichment procedures
-- [ ] Update tests for new llm router procedures
+- [x] Add primaryVendor, primaryModel, secondaryLlmEnabled, secondaryVendor, secondaryModel to AppSettings
+- [x] Redesign SettingsTab AI Model card: 3-column layout, vendor dropdown, model radio list, secondary LLM toggle
+- [x] Wire secondary LLM model to research enrichment procedures
+- [x] Update tests for new llm router procedures
 
 ### Codebase Optimization
 - [ ] Audit and remove dead/unused code (imports, components, helpers)
@@ -877,3 +877,17 @@
 - [x] Manus theme is the living seed/default — always update it first when making design changes
 - [x] Other themes (Norfolk AI, Noir Dark) branch from Manus and override only their brand-specific tokens
 - [x] Document this rule in claude.md design section
+
+## Session March 21, 2026 — Two-Level LLM Research + Nano-Banana Avatar Generation
+
+- [ ] Wire two-level LLM to ALL research procedures (not just batch): enrich single author, enrich single book, AuthorBioPanel generate bio button, BookDetailPanel
+- [ ] Integrate nano-banana latest image generation model for avatar generation (replace Replicate tier 5 in waterfall)
+- [ ] Add Avatar Generation LLM card to Admin Console Settings: model selector for image gen (nano-banana)
+- [ ] Add avatarGenModel to AppSettings (default: nano-banana latest)
+- [ ] Update generateAIPortrait to use nano-banana via invokeLLM image generation
+- [ ] Update replicateGeneration.ts or create nanoBananaGeneration.ts for new image gen path
+- [ ] Update waterfall.ts to use avatarGenModel setting
+- [ ] Update generatePortrait tRPC procedure to accept avatarGenModel
+- [ ] Update Admin.tsx batch portrait generation to pass avatarGenModel
+- [ ] Update AuthorBioPanel generate portrait button to pass avatarGenModel
+- [ ] Update claude.md and memory.md with changes
