@@ -39,7 +39,7 @@ export const apifyRouter = router({
         return { success: false as const, message: "No results found on Amazon" };
       }
 
-      // Persist to DB — upsert into book_profiles
+      // Persist to DB - upsert into book_profiles
       const db = await getDb();
       if (db) {
         const existing = await db
@@ -271,7 +271,7 @@ export const apifyRouter = router({
         return { success: false as const, message: "No photo found on Wikipedia" };
       }
 
-      // Persist to DB — upsert into author_profiles
+      // Persist to DB - upsert into author_profiles
       const db = await getDb();
       if (db) {
         const existing = await db

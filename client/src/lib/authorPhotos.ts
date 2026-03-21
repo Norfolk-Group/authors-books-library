@@ -1,5 +1,6 @@
 export const AUTHOR_PHOTOS: Record<string, string> = {
-  "Aaron Ross and Jason Lemkin": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Aaron Ross and Jason Lemkin_3249e4d8.png",
+  // Aaron Ross: individual photo (was combined with Jason Lemkin)
+  "Aaron Ross": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Aaron Ross and Jason Lemkin_3249e4d8.png",
   "Adam Grant": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Adam Grant_a616ab2a.png",
   "Al Ries": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Al Ries_70131b4c.png",
   "Alan Dib": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Alan Dib_32540142.png",
@@ -10,7 +11,8 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "April Dunford": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/April Dunford_f5a35cb3.png",
   "Arianna Huffington": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Arianna Huffington_b6da418b.png",
   "Ben Horowitz": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Ben Horowitz_dae69ccc.png",
-  "Bob Burg and John David Mann": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Bob Burg and John David Mann_69211fd0.png",
+  // Bob Burg: individual photo (was combined with John David Mann)
+  "Bob Burg": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Bob Burg and John David Mann_69211fd0.png",
   "Brad Stone": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Brad Stone_bd8b310a.png",
   "Brene Brown": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Brene Brown_5c47869b.png",
   "Brian Tracy": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Brian Tracy_eadcc03a.png",
@@ -21,7 +23,8 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "Clayton Christensen": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Clayton Christensen_87e580c4.png",
   "Colt Dodd": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Colt Dodd_ce84a132.png",
   "Dale Carnegie": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Dale Carnegie_de54083d.png",
-  "Dan Heath and Chip Heath": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Dan Heath and Chip Heath_359c28e7.png",
+  // Dan Heath: individual photo (was combined with Chip Heath)
+  "Dan Heath": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Dan Heath and Chip Heath_359c28e7.png",
   "Daniel Kahneman": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Daniel Kahneman_f4855fe6.png",
   "Daniel Pink": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Daniel Pink_e5055d26.png",
   "David Goggins": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/David Goggins_85809f1a.png",
@@ -71,7 +74,8 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "Robert B. Cialdini": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Robert Cialdini_0c35425f.png",
   "Robert Greene": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Robert Greene_e3e4bc4b.png",
   "Robin Sharma": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Robin Sharma_85a36249.png",
-  "Roger Fisher and William Ury": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Roger Fisher and William Ury_b532f823.png",
+  // Roger Fisher: individual photo (was combined with William Ury)
+  "Roger Fisher": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Roger Fisher and William Ury_b532f823.png",
   "Ryan Holiday": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Ryan Holiday_43f04d60.png",
   "Sam Walton": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Sam Walton_b5366b0a.png",
   "Scott Adams": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Scott Adams_b62d8aba.png",
@@ -99,7 +103,8 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "Amy Morin": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Amy Morin_8ed982e1.png",
   "Angela Duckworth": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Angela Duckworth_8e3f7048.png",
   "Ash Maurya": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Ash Maurya_df7b354a.png",
-  "Ashvin Vaidyanathan and Ruben Rabago": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Ashvin Vaidyanathan and Ruben Rabago_2fb8a71b.png",
+  // Ashvin Vaidyanathan: individual photo (was combined with Ruben Rabago)
+  "Ashvin Vaidyanathan": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Ashvin Vaidyanathan and Ruben Rabago_2fb8a71b.png",
   "Aubrey Marcus": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Aubrey Marcus_2e681884.png",
   "Barbara Fredrickson": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Barbara Fredrickson_26f19726.png",
   "Barry Schwartz": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Barry Schwartz_f0899581.png",
@@ -121,7 +126,8 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "Eric Topol": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Eric Topol_35b06490.png",
   "Esther Perel": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Esther Perel_88581ea1.png",
   "Ezra Klein": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Ezra Klein_abc0bda2.png",
-  "Frances Frei and Anne Morriss": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Frances Frei and Anne Morriss_b5c1d2e3.png",
+  // Frances Frei: individual photo (was combined with Anne Morriss)
+  "Frances Frei": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Frances Frei and Anne Morriss_b5c1d2e3.png",
   "Fred Dust": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Fred Dust_9a4d2682.png",
   "George Friedman": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/George Friedman_13dc2975.png",
   "Gino Wickman": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Gino Wickman_ec8f7eb2.png",
@@ -134,7 +140,8 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "Karen Blumenthal": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Karen Blumenthal_61e66c5f.png",
   "Karen Eber": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Karen Eber_813e0e2f.png",
   "Kelly Leonard": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Kelly Leonard_5c980cc4.png",
-  "Kelly Leonard and Tom Yorton": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Kelly Leonard and Tom Yorton_94cc0b22.png",
+  // Kelly Leonard already has an individual entry above; Tom Yorton will use DB waterfall
+  // (Removed combined entry: Kelly Leonard and Tom Yorton)
   "Lawrence Weinstein": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Lawrence Weinstein_d40c760e.png",
   "Matthew Dixon": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Matthew Dixon_48b346a8.png",
   "Mike Smerkle": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Mike Smerkle_830fb1e4.png",
@@ -167,12 +174,6 @@ export function getAuthorPhoto(name: string): string | undefined {
   const lower = name.toLowerCase();
   const key = Object.keys(AUTHOR_PHOTOS).find(k => k.toLowerCase() === lower);
   if (key) return AUTHOR_PHOTOS[key];
-  // Try partial match: check if any combined-name key contains this name as a part
-  // e.g. "Aaron Ross" matches "Aaron Ross and Jason Lemkin"
-  const splitSep = /\s+(?:and|&)\s+/i;
-  const combinedKey = Object.keys(AUTHOR_PHOTOS).find(k => {
-    const parts = k.split(splitSep).map(p => p.trim().toLowerCase());
-    return parts.length > 1 && parts.includes(lower);
-  });
-  return combinedKey ? AUTHOR_PHOTOS[combinedKey] : undefined;
+  // No combined-name entries remain; co-authors now have individual entries or use DB waterfall
+  return undefined;
 }

@@ -1,5 +1,5 @@
 /**
- * FileTypeIcons — renders a row of file-type icons for a given list of extensions
+ * FileTypeIcons - renders a row of file-type icons for a given list of extensions
  * Uses react-file-icon for rich, recognizable file type visuals
  */
 

@@ -1,4 +1,4 @@
-// Ricardo Cidale's Library — Books Audio Data
+// Ricardo Cidale's Library - Books Audio Data
 // Source: Google Drive Books Audio folder
 // Last updated: March 13, 2026
 

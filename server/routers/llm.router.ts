@@ -1,5 +1,5 @@
 /**
- * LLM Router — model discovery and preference management.
+ * LLM Router - model discovery and preference management.
  * Exposes the list of available Gemini text-generation models
  * and allows callers to test a model with a lightweight ping.
  */
@@ -7,7 +7,7 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
 
-// ── Static model catalogue (sourced from Google AI API, March 2026) ───────────
+// -- Static model catalogue (sourced from Google AI API, March 2026) -----------
 // Filtered to text-generation models only (generateContent, ≥32K context).
 // Grouped by tier for display in the UI.
 
@@ -22,11 +22,11 @@ export interface GeminiModel {
 }
 
 export const GEMINI_MODELS: GeminiModel[] = [
-  // ── Gemini 3.x Preview ──────────────────────────────────────────────────────
+  // -- Gemini 3.x Preview ------------------------------------------------------
   {
     id: "gemini-3.1-pro-preview",
     displayName: "Gemini 3.1 Pro Preview",
-    description: "Latest Gemini 3.1 Pro — most capable, best for complex reasoning and long-form writing.",
+    description: "Latest Gemini 3.1 Pro - most capable, best for complex reasoning and long-form writing.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "preview",
@@ -35,7 +35,7 @@ export const GEMINI_MODELS: GeminiModel[] = [
   {
     id: "gemini-3-pro-preview",
     displayName: "Gemini 3 Pro Preview",
-    description: "Gemini 3 Pro — high-capability model for demanding tasks.",
+    description: "Gemini 3 Pro - high-capability model for demanding tasks.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "preview",
@@ -44,7 +44,7 @@ export const GEMINI_MODELS: GeminiModel[] = [
   {
     id: "gemini-3-flash-preview",
     displayName: "Gemini 3 Flash Preview",
-    description: "Gemini 3 Flash — fast and capable, great balance of speed and quality.",
+    description: "Gemini 3 Flash - fast and capable, great balance of speed and quality.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "preview",
@@ -53,17 +53,17 @@ export const GEMINI_MODELS: GeminiModel[] = [
   {
     id: "gemini-3.1-flash-lite-preview",
     displayName: "Gemini 3.1 Flash Lite Preview",
-    description: "Gemini 3.1 Flash Lite — ultra-fast, ideal for high-volume enrichment tasks.",
+    description: "Gemini 3.1 Flash Lite - ultra-fast, ideal for high-volume enrichment tasks.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "preview",
     speed: "fast",
   },
-  // ── Gemini 2.5 Stable ───────────────────────────────────────────────────────
+  // -- Gemini 2.5 Stable -------------------------------------------------------
   {
     id: "gemini-2.5-pro",
     displayName: "Gemini 2.5 Pro",
-    description: "Stable Gemini 2.5 Pro — best reasoning and writing quality in the 2.5 family.",
+    description: "Stable Gemini 2.5 Pro - best reasoning and writing quality in the 2.5 family.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "stable",
@@ -72,7 +72,7 @@ export const GEMINI_MODELS: GeminiModel[] = [
   {
     id: "gemini-2.5-flash",
     displayName: "Gemini 2.5 Flash",
-    description: "Stable Gemini 2.5 Flash — recommended default. Fast, accurate, 1M context.",
+    description: "Stable Gemini 2.5 Flash - recommended default. Fast, accurate, 1M context.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "stable",
@@ -81,17 +81,17 @@ export const GEMINI_MODELS: GeminiModel[] = [
   {
     id: "gemini-2.5-flash-lite",
     displayName: "Gemini 2.5 Flash-Lite",
-    description: "Stable Gemini 2.5 Flash-Lite — lightest model, best for bulk tasks with tight latency.",
+    description: "Stable Gemini 2.5 Flash-Lite - lightest model, best for bulk tasks with tight latency.",
     inputTokens: 1048576,
     outputTokens: 65536,
     tier: "stable",
     speed: "fast",
   },
-  // ── Gemini 2.0 Stable ───────────────────────────────────────────────────────
+  // -- Gemini 2.0 Stable -------------------------------------------------------
   {
     id: "gemini-2.0-flash",
     displayName: "Gemini 2.0 Flash",
-    description: "Stable Gemini 2.0 Flash — reliable and fast, proven in production.",
+    description: "Stable Gemini 2.0 Flash - reliable and fast, proven in production.",
     inputTokens: 1048576,
     outputTokens: 8192,
     tier: "stable",
@@ -100,13 +100,13 @@ export const GEMINI_MODELS: GeminiModel[] = [
   {
     id: "gemini-2.0-flash-lite",
     displayName: "Gemini 2.0 Flash-Lite",
-    description: "Stable Gemini 2.0 Flash-Lite — smallest and fastest, minimal cost.",
+    description: "Stable Gemini 2.0 Flash-Lite - smallest and fastest, minimal cost.",
     inputTokens: 1048576,
     outputTokens: 8192,
     tier: "stable",
     speed: "fast",
   },
-  // ── Latest aliases ──────────────────────────────────────────────────────────
+  // -- Latest aliases ----------------------------------------------------------
   {
     id: "gemini-flash-latest",
     displayName: "Gemini Flash (Latest)",
@@ -134,7 +134,7 @@ export const GEMINI_MODELS: GeminiModel[] = [
     tier: "latest",
     speed: "fast",
   },
-  // ── 2.5 Flash-Lite Preview ──────────────────────────────────────────────────
+  // -- 2.5 Flash-Lite Preview --------------------------------------------------
   {
     id: "gemini-2.5-flash-lite-preview-09-2025",
     displayName: "Gemini 2.5 Flash-Lite Preview (Sep 2025)",
@@ -146,7 +146,7 @@ export const GEMINI_MODELS: GeminiModel[] = [
   },
 ];
 
-// ── Router ────────────────────────────────────────────────────────────────────
+// -- Router --------------------------------------------------------------------
 
 export const llmRouter = router({
   /** Return the full list of available Gemini text-generation models */
@@ -154,7 +154,7 @@ export const llmRouter = router({
     return GEMINI_MODELS;
   }),
 
-  /** Test a model with a lightweight ping — returns latency in ms */
+  /** Test a model with a lightweight ping - returns latency in ms */
   testModel: publicProcedure
     .input(z.object({ modelId: z.string() }))
     .mutation(async ({ input }) => {

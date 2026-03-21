@@ -1,17 +1,17 @@
 /**
- * AuthorAccordionRow — compact single-row author entry for the accordion/list view.
+ * AuthorAccordionRow - compact single-row author entry for the accordion/list view.
  *
  * Collapsed: chevron · avatar · name · category icon · book count · file count · bio indicator
  * Expanded:  + specialty · mini cover strip (HOTSPOT 2) · content-type pills · action row
  *
- * ── INTERACTION MODEL (exactly 3 hotspots, same as FlowbiteAuthorCard) ──
+ * -- INTERACTION MODEL (exactly 3 hotspots, same as FlowbiteAuthorCard) --
  *   1. Avatar / author name → click opens AuthorModal (bio, links)
  *   2. Book cover (in expanded panel) → click opens BookModal
  *   3. Row toggle button → click expands/collapses the row
  *   "View bio" button in expanded panel → calls onBioClick (opens full bio panel in parent)
  *
- * ── DESIGN RULES ──
- *   - Zero hardcoded colours — CSS tokens only
+ * -- DESIGN RULES --
+ *   - Zero hardcoded colours - CSS tokens only
  *   - Category identity via icon only
  *   - Smooth height animation via Framer Motion AnimatePresence
  */
@@ -53,14 +53,14 @@ import { getAuthorPhoto } from "@/lib/authorPhotos";
 import { AuthorModal } from "@/components/AuthorModal";
 import { BookModal, type BookModalBook } from "@/components/BookModal";
 
-// ── LucideIcon type ────────────────────────────────────────────────────────────
+// -- LucideIcon type ------------------------------------------------------------
 type LucideIcon = React.FC<{
   className?: string;
   style?: React.CSSProperties;
   strokeWidth?: number;
 }>;
 
-// ── Icon maps ──────────────────────────────────────────────────────────────────
+// -- Icon maps ------------------------------------------------------------------
 const ICON_MAP: Record<string, LucideIcon> = {
   briefcase:        Briefcase as LucideIcon,
   brain:            Brain as LucideIcon,
@@ -88,7 +88,7 @@ const CT_ICON_MAP: Record<string, LucideIcon> = {
   "folder":     Folder as LucideIcon,
 };
 
-// ── Content-type normalisation ─────────────────────────────────────────────────
+// -- Content-type normalisation -------------------------------------------------
 const DISPLAY_NAME_MAP: Record<string, string> = {
   "Additional DOC":       "Supplemental",
   "PDF Extra":            "PDF",
@@ -113,7 +113,7 @@ function normalizeContentTypes(raw: Record<string, number>): Record<string, numb
   return result;
 }
 
-// ── Search highlight ───────────────────────────────────────────────────────────
+// -- Search highlight -----------------------------------------------------------
 function Highlight({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
@@ -129,7 +129,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
   );
 }
 
-// ── Resource pill — presentational ────────────────────────────────────────────
+// -- Resource pill - presentational --------------------------------------------
 function ResourcePill({ type, count }: { type: string; count: number }) {
   const iconName = CONTENT_TYPE_ICONS[type] ?? "folder";
   const Icon = (CT_ICON_MAP[iconName] ?? Folder) as LucideIcon;
@@ -141,7 +141,7 @@ function ResourcePill({ type, count }: { type: string; count: number }) {
   );
 }
 
-// ── Props ──────────────────────────────────────────────────────────────────────
+// -- Props ----------------------------------------------------------------------
 export interface AuthorAccordionRowProps {
   author: AuthorEntry;
   query: string;
@@ -152,7 +152,7 @@ export interface AuthorAccordionRowProps {
   onBioClick: (author: AuthorEntry) => void;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// -- Component -----------------------------------------------------------------
 export function AuthorAccordionRow({
   author,
   query,
@@ -163,14 +163,14 @@ export function AuthorAccordionRow({
 }: AuthorAccordionRowProps) {
   const [open, setOpen] = useState(false);
 
-  // ── HOTSPOT 1: Author modal ──
+  // -- HOTSPOT 1: Author modal --
   const [authorModalOpen, setAuthorModalOpen] = useState(false);
   const handleAvatarClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setAuthorModalOpen(true);
   }, []);
 
-  // ── HOTSPOT 2: Book modal ──
+  // -- HOTSPOT 2: Book modal --
   const [activeBook, setActiveBook] = useState<BookModalBook | null>(null);
   const handleBookCoverClick = useCallback(
     (e: React.MouseEvent, book: BookModalBook) => {
@@ -228,7 +228,7 @@ export function AuthorAccordionRow({
   return (
     <>
       <div className="border-b border-border last:border-0">
-        {/* ── HOTSPOT 3: Row toggle ── */}
+        {/* -- HOTSPOT 3: Row toggle -- */}
         <div className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50 transition-colors">
           {/* Expand chevron */}
           <button
@@ -245,7 +245,7 @@ export function AuthorAccordionRow({
             )}
           </button>
 
-          {/* HOTSPOT 1: Avatar — click opens AuthorModal */}
+          {/* HOTSPOT 1: Avatar - click opens AuthorModal */}
           <div
             className="relative h-[84px] w-[84px] flex-shrink-0 cursor-pointer"
             onClick={handleAvatarClick}
@@ -273,7 +273,7 @@ export function AuthorAccordionRow({
             )}
           </div>
 
-          {/* HOTSPOT 1: Name — click opens AuthorModal */}
+          {/* HOTSPOT 1: Name - click opens AuthorModal */}
           <button
             type="button"
             onClick={handleAvatarClick}
@@ -284,29 +284,29 @@ export function AuthorAccordionRow({
             </span>
           </button>
 
-          {/* Category icon — presentational */}
+          {/* Category icon - presentational */}
           <Icon className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
 
-          {/* Book count — presentational */}
+          {/* Book count - presentational */}
           <span className="flex-shrink-0 flex items-center gap-1 text-[11px] text-muted-foreground">
             <BookOpen className="w-3 h-3" />
             {dedupedBooks.length}
           </span>
 
-          {/* File count — presentational */}
+          {/* File count - presentational */}
           {totalFiles > 0 && (
             <span className="flex-shrink-0 text-[11px] text-muted-foreground">
               {totalFiles} files
             </span>
           )}
 
-          {/* Bio indicator — presentational */}
+          {/* Bio indicator - presentational */}
           {isEnriched && (
             <UserCheck className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
           )}
         </div>
 
-        {/* ── Expanded panel ── */}
+        {/* -- Expanded panel -- */}
         <AnimatePresence initial={false}>
           {open && (
             <motion.div
@@ -318,12 +318,12 @@ export function AuthorAccordionRow({
               className="overflow-hidden"
             >
               <div className="px-10 pb-3 flex flex-col gap-3">
-                {/* Specialty — presentational */}
+                {/* Specialty - presentational */}
                 {specialty && (
                   <p className="text-[11px] text-muted-foreground leading-relaxed">{specialty}</p>
                 )}
 
-                {/* HOTSPOT 2: Mini cover strip — each cover opens BookModal */}
+                {/* HOTSPOT 2: Mini cover strip - each cover opens BookModal */}
                 {coverMap && dedupedBooks.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {dedupedBooks.map((book) => {
@@ -375,7 +375,7 @@ export function AuthorAccordionRow({
                   </div>
                 )}
 
-                {/* Content-type pills — presentational */}
+                {/* Content-type pills - presentational */}
                 {Object.keys(totals).length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {Object.entries(totals).map(([type, count]) => (
@@ -414,14 +414,14 @@ export function AuthorAccordionRow({
         </AnimatePresence>
       </div>
 
-      {/* ── HOTSPOT 1 modal: Author bio ── */}
+      {/* -- HOTSPOT 1 modal: Author bio -- */}
       <AuthorModal
         author={authorModalOpen ? author : null}
         photoUrl={photoUrl}
         onClose={() => setAuthorModalOpen(false)}
       />
 
-      {/* ── HOTSPOT 2 modal: Book detail ── */}
+      {/* -- HOTSPOT 2 modal: Book detail -- */}
       <BookModal
         book={activeBook}
         onClose={() => setActiveBook(null)}

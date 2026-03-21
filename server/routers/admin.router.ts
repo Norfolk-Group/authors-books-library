@@ -1,5 +1,5 @@
 /**
- * Admin Router — action log tracking for admin operations
+ * Admin Router - action log tracking for admin operations
  */
 import { z } from "zod";
 import { eq } from "drizzle-orm";

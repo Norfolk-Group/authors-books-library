@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// ── Mock getAuthorPhoto ────────────────────────────────────────────────────────
+// -- Mock getAuthorPhoto --------------------------------------------------------
 const MOCK_PHOTOS: Record<string, string> = {
   "Adam Grant": "https://cdn.example.com/adam-grant.png",
   "James Clear": "https://cdn.example.com/james-clear.png",
@@ -15,7 +15,7 @@ vi.mock("../client/src/lib/authorPhotos", () => ({
   getAuthorPhoto: (name: string) => MOCK_PHOTOS[name] ?? undefined,
 }));
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// -- Helpers --------------------------------------------------------------------
 
 /** Simulate the client-side batch logic extracted from generateAllPortraits */
 async function runBatchPortraits(
@@ -47,7 +47,7 @@ async function runBatchPortraits(
   return { done, failed, processed };
 }
 
-// ── Tests ──────────────────────────────────────────────────────────────────────
+// -- Tests ----------------------------------------------------------------------
 
 describe("batch portrait generation logic", () => {
   beforeEach(() => {

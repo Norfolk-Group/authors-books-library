@@ -8,7 +8,7 @@ export default function NotFound() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageHeader crumbs={[{ label: "404 — Page Not Found" }]} />
+      <PageHeader crumbs={[{ label: "404 - Page Not Found" }]} />
       <div className="flex items-center justify-center min-h-[calc(100vh-49px)]">
         <div className="text-center px-6 max-w-md">
           <div className="flex justify-center mb-6">

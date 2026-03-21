@@ -1,20 +1,20 @@
 /**
- * useConfetti — Reusable confetti celebration hook.
+ * useConfetti - Reusable confetti celebration hook.
  * Wraps canvas-confetti with named celebration modes for different task completions.
  */
 import confetti from "canvas-confetti";
 
 type ConfettiMode =
-  | "portrait"      // Single portrait generated — small burst
-  | "batch"         // Batch operation complete — full celebration
-  | "scrape"        // Amazon scrape success — quick pop
-  | "mirror"        // Mirror covers/photos done — gentle rain
-  | "upload"        // Avatar uploaded — sparkle burst
-  | "enrich";       // Bio enrichment done — medium burst
+  | "portrait"      // Single portrait generated - small burst
+  | "batch"         // Batch operation complete - full celebration
+  | "scrape"        // Amazon scrape success - quick pop
+  | "mirror"        // Mirror covers/photos done - gentle rain
+  | "upload"        // Avatar uploaded - sparkle burst
+  | "enrich";       // Bio enrichment done - medium burst
 
 /**
  * Fire a confetti burst appropriate to the completed task.
- * Call this directly — no React state needed.
+ * Call this directly - no React state needed.
  */
 export function fireConfetti(mode: ConfettiMode = "portrait"): void {
   switch (mode) {
@@ -124,7 +124,7 @@ export function fireConfetti(mode: ConfettiMode = "portrait"): void {
 }
 
 /**
- * React hook version — returns a stable fireConfetti function bound to the mode.
+ * React hook version - returns a stable fireConfetti function bound to the mode.
  * Use when you want to call confetti from a component without importing the util directly.
  */
 export function useConfetti() {

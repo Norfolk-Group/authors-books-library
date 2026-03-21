@@ -1,12 +1,12 @@
 /**
- * Admin Console — Consolidated admin operations for the NCG Library.
+ * Admin Console - Consolidated admin operations for the NCG Library.
  *
  * Tabs:
- *   1. Data Pipeline — Regenerate DB, Enrich Bios, Enrich Books
- *   2. Media — Generate Portraits, Scrape Covers, Mirror to S3
- *   3. Research Cascade — Live DB enrichment stats
- *   4. Settings — Theme, Icon Set, AI Model
- *   5. About — App info
+ *   1. Data Pipeline - Regenerate DB, Enrich Bios, Enrich Books
+ *   2. Media - Generate Portraits, Scrape Covers, Mirror to S3
+ *   3. Research Cascade - Live DB enrichment stats
+ *   4. Settings - Theme, Icon Set, AI Model
+ *   5. About - App info
  *
  * Every action:
  *   - Wired to real tRPC mutations
@@ -50,16 +50,17 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
-  Palette,
-  Cpu,
   type LucideIcon,
 } from "lucide-react";
 import { AUTHORS, BOOKS } from "@/lib/libraryData";
 import { AUDIO_BOOKS } from "@/lib/audioData";
 import { getAuthorPhoto } from "@/lib/authorPhotos";
 import { canonicalName } from "@/lib/authorAliases";
+import { CascadeTab } from "@/components/admin/CascadeTab";
+import { SettingsTab } from "@/components/admin/SettingsTab";
+import { AboutTab } from "@/components/admin/AboutTab";
 
-// ── Types ──────────────────────────────────────────────────────
+// -- Types ------------------------------------------------------
 type ActionStatus = "idle" | "running" | "done" | "error";
 
 interface ActionState {
@@ -80,7 +81,7 @@ const INITIAL_STATE: ActionState = {
   failed: 0,
 };
 
-// ── Helpers ────────────────────────────────────────────────────
+// -- Helpers ----------------------------------------------------
 function formatTimeAgo(date: Date | string | null | undefined): string {
   if (!date) return "Never";
   const d = typeof date === "string" ? new Date(date) : date;
@@ -109,7 +110,7 @@ function StatusIcon({ status }: { status: ActionStatus }) {
   }
 }
 
-// ── Action Card Component ──────────────────────────────────────
+// -- Action Card Component --------------------------------------
 interface ActionCardProps {
   title: string;
   description: string;
@@ -242,12 +243,12 @@ function ActionCard({
   );
 }
 
-// ── Main Admin Page ────────────────────────────────────────────
+// -- Main Admin Page --------------------------------------------
 export default function Admin() {
   const { settings, updateSettings } = useAppSettings();
   const utils = trpc.useUtils();
 
-  // ── Action logs (last-run timestamps) ──
+  // -- Action logs (last-run timestamps) --
   const actionLogsQuery = trpc.admin.getActionLogs.useQuery(undefined, { staleTime: 30_000 });
   const recordActionMutation = trpc.admin.recordAction.useMutation({
     onSuccess: () => void actionLogsQuery.refetch(),
@@ -271,7 +272,7 @@ export default function Admin() {
     [actionLogsQuery.data],
   );
 
-  // ── Mutations ──
+  // -- Mutations --
   const regenerateMutation = trpc.library.regenerate.useMutation();
   const enrichBiosMutation = trpc.authorProfiles.enrichBatch.useMutation();
   const enrichBooksMutation = trpc.bookProfiles.enrichBatch.useMutation();
@@ -280,7 +281,7 @@ export default function Admin() {
   const mirrorCoversMutation = trpc.bookProfiles.mirrorCovers.useMutation();
   const mirrorPhotosMutation = trpc.authorProfiles.mirrorPhotos.useMutation();
 
-  // ── Action states ──
+  // -- Action states --
   const [regenerateState, setRegenerateState] = useState<ActionState>(INITIAL_STATE);
   const [enrichBiosState, setEnrichBiosState] = useState<ActionState>(INITIAL_STATE);
   const [enrichBooksState, setEnrichBooksState] = useState<ActionState>(INITIAL_STATE);
@@ -289,17 +290,14 @@ export default function Admin() {
   const [mirrorCoversState, setMirrorCoversState] = useState<ActionState>(INITIAL_STATE);
   const [mirrorPhotosState, setMirrorPhotosState] = useState<ActionState>(INITIAL_STATE);
 
-  // ── Research Cascade stats ──
+  // -- Research Cascade stats --
   const authorStats = trpc.cascade.authorStats.useQuery(undefined, { staleTime: 60_000 });
   const bookStats = trpc.cascade.bookStats.useQuery(undefined, { staleTime: 60_000 });
   const batchScrapeStats = trpc.apify.getBatchScrapeStats.useQuery(undefined, { staleTime: 60_000 });
 
-  // ── LLM models ──
-  const modelsQuery = trpc.llm.listModels.useQuery();
-  const testModelMutation = trpc.llm.testModel.useMutation();
-  const [testingModel, setTestingModel] = useState<string | null>(null);
+  // -- LLM models --
 
-  // ── Helpers ──
+  // -- Helpers --
   const anyRunning = [
     regenerateState,
     enrichBiosState,
@@ -328,7 +326,7 @@ export default function Admin() {
     [recordActionMutation],
   );
 
-  // ── 1. Regenerate Database ──
+  // -- 1. Regenerate Database --
   const handleRegenerate = useCallback(async () => {
     if (regenerateState.status === "running") return;
     setRegenerateState({ ...INITIAL_STATE, status: "running", message: "Scanning Google Drive..." });
@@ -345,7 +343,7 @@ export default function Admin() {
           failed: 0,
         });
         toast.success(
-          `Library rebuilt — ${result.stats.authors} authors, ${result.stats.books} books (${result.stats.elapsedSeconds}s). Reload to see changes.`,
+          `Library rebuilt - ${result.stats.authors} authors, ${result.stats.books} books (${result.stats.elapsedSeconds}s). Reload to see changes.`,
           { duration: 8000 },
         );
         await recordAction(
@@ -369,7 +367,7 @@ export default function Admin() {
     }
   }, [regenerateState.status, regenerateMutation, recordAction]);
 
-  // ── 2. Enrich All Bios ──
+  // -- 2. Enrich All Bios --
   const handleEnrichBios = useCallback(async () => {
     if (enrichBiosState.status === "running") return;
     const names = Array.from(
@@ -428,7 +426,7 @@ export default function Admin() {
     }
   }, [enrichBiosState.status, enrichBiosMutation, settings.geminiModel, utils, recordAction]);
 
-  // ── 3. Enrich All Books ──
+  // -- 3. Enrich All Books --
   const handleEnrichBooks = useCallback(async () => {
     if (enrichBooksState.status === "running") return;
     const books = Array.from(new Set(BOOKS.map((b) => b.name.split(" - ")[0].trim()))).map(
@@ -491,7 +489,7 @@ export default function Admin() {
     }
   }, [enrichBooksState.status, enrichBooksMutation, settings.geminiModel, utils, recordAction]);
 
-  // ── 4. Generate All Portraits ──
+  // -- 4. Generate All Portraits --
   const handleGeneratePortraits = useCallback(async () => {
     if (portraitState.status === "running") return;
     const allNames = Array.from(
@@ -532,7 +530,7 @@ export default function Admin() {
       for (let i = 0; i < missing.length; i++) {
         const authorName = missing[i];
         try {
-          await generatePortraitMutation.mutateAsync({ authorName });
+          await generatePortraitMutation.mutateAsync({ authorName, bgColor: settings.avatarBgColor });
           done++;
         } catch {
           failed++;
@@ -543,7 +541,7 @@ export default function Admin() {
           progress: pct,
           done,
           failed,
-          message: `${done}/${total} — ${authorName}`,
+          message: `${done}/${total} - ${authorName}`,
         }));
       }
       setPortraitState((s) => ({
@@ -563,7 +561,7 @@ export default function Admin() {
     }
   }, [portraitState.status, generatePortraitMutation, utils, recordAction]);
 
-  // ── 5. Scrape All Covers ──
+  // -- 5. Scrape All Covers --
   const handleScrapeCovers = useCallback(async () => {
     if (scrapeState.status === "running") return;
     const stats = batchScrapeStats.data;
@@ -592,7 +590,7 @@ export default function Admin() {
           ...s,
           progress: pct,
           done: scraped,
-          message: remaining > 0 ? `${scraped} scraped — ${remaining} remaining` : `${scraped} scraped — done!`,
+          message: remaining > 0 ? `${scraped} scraped - ${remaining} remaining` : `${scraped} scraped - done!`,
         }));
         if (remaining === 0) break;
       }
@@ -614,7 +612,7 @@ export default function Admin() {
     }
   }, [scrapeState.status, scrapeNextMutation, batchScrapeStats.data, utils, recordAction]);
 
-  // ── 6. Mirror Covers to S3 ──
+  // -- 6. Mirror Covers to S3 --
   const handleMirrorCovers = useCallback(async () => {
     if (mirrorCoversState.status === "running") return;
     setMirrorCoversState({ ...INITIAL_STATE, status: "running", message: "Mirroring covers..." });
@@ -649,7 +647,7 @@ export default function Admin() {
     }
   }, [mirrorCoversState.status, mirrorCoversMutation, recordAction]);
 
-  // ── 7. Mirror Photos to S3 ──
+  // -- 7. Mirror Photos to S3 --
   const handleMirrorPhotos = useCallback(async () => {
     if (mirrorPhotosState.status === "running") return;
     setMirrorPhotosState({ ...INITIAL_STATE, status: "running", message: "Mirroring photos..." });
@@ -684,14 +682,7 @@ export default function Admin() {
     }
   }, [mirrorPhotosState.status, mirrorPhotosMutation, recordAction]);
 
-  // ── Theme options ──
-  const themes = [
-    { id: "manus" as const, label: "Manus", desc: "Clean light theme" },
-    { id: "norfolk-ai" as const, label: "Norfolk AI", desc: "Green-accented dark" },
-    { id: "noir-dark" as const, label: "Noir Dark", desc: "Violet-accented dark" },
-  ];
-
-  // ── Stats for Research Cascade ──
+  // -- Stats for Research Cascade --
   const aStats = authorStats.data;
   const bStats = bookStats.data;
   const scrapeStats = batchScrapeStats.data;
@@ -744,7 +735,7 @@ export default function Admin() {
             </TabsTrigger>
           </TabsList>
 
-          {/* ── Tab 1: Data Pipeline ── */}
+          {/* -- Tab 1: Data Pipeline -- */}
           <TabsContent value="pipeline" className="space-y-3">
             <ActionCard
               title="Regenerate Database"
@@ -790,7 +781,7 @@ export default function Admin() {
             />
           </TabsContent>
 
-          {/* ── Tab 2: Media ── */}
+          {/* -- Tab 2: Media -- */}
           <TabsContent value="media" className="space-y-3">
             <ActionCard
               title="Generate Missing Portraits"
@@ -844,343 +835,22 @@ export default function Admin() {
             />
           </TabsContent>
 
-          {/* ── Tab 3: Research Cascade ── */}
-          <TabsContent value="cascade" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Author Stats */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Author Enrichment</CardTitle>
-                  <CardDescription className="text-xs">
-                    Database coverage for author profiles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {aStats ? (
-                    <div className="space-y-2">
-                      {[
-                        { label: "Total Profiles", value: aStats.total },
-                        { label: "With Photo", value: aStats.withPhoto, total: aStats.total },
-                        { label: "With S3 Photo", value: aStats.withS3Photo, total: aStats.total },
-                        { label: "With Bio", value: aStats.withBio, total: aStats.total },
-                        {
-                          label: "With Social Links",
-                          value: aStats.withSocialLinks,
-                          total: aStats.total,
-                        },
-                        {
-                          label: "Enriched",
-                          value: aStats.withEnrichedAt,
-                          total: aStats.total,
-                        },
-                      ].map((row) => (
-                        <div key={row.label} className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{row.label}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{row.value}</span>
-                            {row.total != null && row.total > 0 && (
-                              <>
-                                <Progress
-                                  value={(row.value / row.total) * 100}
-                                  className="w-16 h-1.5"
-                                />
-                                <span className="text-[10px] text-muted-foreground w-8 text-right">
-                                  {Math.round((row.value / row.total) * 100)}%
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      {/* Photo sources */}
-                      <div className="pt-2 mt-2 border-t border-border/50">
-                        <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">
-                          Photo Sources
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            { label: "Wikipedia", value: aStats.fromWikipedia },
-                            { label: "Tavily", value: aStats.fromTavily },
-                            { label: "Apify", value: aStats.fromApify },
-                            { label: "AI Generated", value: aStats.fromAI },
-                            { label: "Unknown", value: aStats.sourceUnknown },
-                          ]
-                            .filter((s) => s.value > 0)
-                            .map((s) => (
-                              <Badge
-                                key={s.label}
-                                variant="outline"
-                                className="text-[10px] px-1.5 py-0"
-                              >
-                                {s.label}: {s.value}
-                              </Badge>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Loading...</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Book Stats */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Book Enrichment</CardTitle>
-                  <CardDescription className="text-xs">
-                    Database coverage for book profiles
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {bStats ? (
-                    <div className="space-y-2">
-                      {[
-                        { label: "Total Profiles", value: bStats.total },
-                        { label: "With Cover", value: bStats.withCover, total: bStats.total },
-                        { label: "With S3 Cover", value: bStats.withS3Cover, total: bStats.total },
-                        { label: "With Summary", value: bStats.withSummary, total: bStats.total },
-                        { label: "With Rating", value: bStats.withRating, total: bStats.total },
-                        {
-                          label: "Enriched",
-                          value: bStats.withEnrichedAt,
-                          total: bStats.total,
-                        },
-                      ].map((row) => (
-                        <div key={row.label} className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{row.label}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{row.value}</span>
-                            {row.total != null && row.total > 0 && (
-                              <>
-                                <Progress
-                                  value={(row.value / row.total) * 100}
-                                  className="w-16 h-1.5"
-                                />
-                                <span className="text-[10px] text-muted-foreground w-8 text-right">
-                                  {Math.round((row.value / row.total) * 100)}%
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Loading...</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Scrape/Mirror Stats */}
-            {scrapeStats && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold">Cover Pipeline</CardTitle>
-                  <CardDescription className="text-xs">
-                    Amazon scraping and S3 mirroring status
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[
-                      { label: "Total Books", value: scrapeStats.total },
-                      { label: "Need Scraping", value: scrapeStats.needsScrape },
-                      { label: "Need Mirroring", value: scrapeStats.needsMirror },
-                      { label: "In S3 CDN", value: scrapeStats.withS3 },
-                    ].map((s) => (
-                      <div key={s.label} className="text-center">
-                        <p className="text-2xl font-bold">{s.value}</p>
-                        <p className="text-[10px] text-muted-foreground">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          {/* -- Tab 3: Research Cascade -- */}
+          <TabsContent value="cascade">
+            <CascadeTab aStats={aStats} bStats={bStats} scrapeStats={scrapeStats} />
           </TabsContent>
 
-          {/* ── Tab 4: Settings ── */}
-          <TabsContent value="settings" className="space-y-4">
-            {/* Theme */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Palette className="w-4 h-4" />
-                  Theme
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Choose the visual theme for the library
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {themes.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        const colorMode = t.id === "norfolk-ai" ? ("dark" as const) : ("light" as const);
-                        updateSettings({ theme: t.id, colorMode });
-                      }}
-                      className={`p-3 rounded-lg border-2 text-left transition-all ${
-                        settings.theme === t.id
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <p className="text-sm font-medium">{t.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{t.desc}</p>
-                      {settings.theme === t.id && <Badge className="mt-1.5 text-[9px]">Active</Badge>}
-                    </button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* AI Model */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Cpu className="w-4 h-4" />
-                  AI Model
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Select the Gemini model for enrichment operations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {(modelsQuery.data ?? []).map(
-                    (m) => (
-                      <button
-                        key={m.id}
-                        onClick={() => updateSettings({ geminiModel: m.id })}
-                        className={`w-full p-3 rounded-lg border text-left transition-all flex items-center justify-between ${
-                          settings.geminiModel === m.id
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                      >
-                        <div>
-                          <p className="text-sm font-medium">{m.displayName}</p>
-                          <p className="text-[10px] text-muted-foreground">{m.description}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {settings.geminiModel === m.id && (
-                            <Badge className="text-[9px]">Active</Badge>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 text-[10px]"
-                            disabled={testingModel === m.id}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setTestingModel(m.id);
-                              testModelMutation.mutate(
-                                { modelId: m.id },
-                                {
-                                  onSuccess: (data) => {
-                                    setTestingModel(null);
-                                    if (data.success) {
-                                      toast.success(
-                                        `${m.displayName}: ${data.latencyMs}ms — "${data.response}"`,
-                                      );
-                                    } else {
-                                      toast.error(
-                                        `${m.displayName}: ${(data as { error?: string }).error ?? "Failed"}`,
-                                      );
-                                    }
-                                  },
-                                  onError: (err) => {
-                                    setTestingModel(null);
-                                    toast.error(`Test failed: ${err.message}`);
-                                  },
-                                },
-                              );
-                            }}
-                          >
-                            {testingModel === m.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              "Test"
-                            )}
-                          </Button>
-                        </div>
-                      </button>
-                    ),
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {/* -- Tab 4: Settings -- */}
+          <TabsContent value="settings">
+            <SettingsTab settings={settings} updateSettings={updateSettings} />
           </TabsContent>
 
-          {/* ── Tab 5: About ── */}
+          {/* -- Tab 5: About -- */}
           <TabsContent value="about">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold">NCG Library</CardTitle>
-                <CardDescription className="text-xs">
-                  Ricardo Cidale's Books and Authors Library
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold">{AUTHORS.length}</p>
-                    <p className="text-[10px] text-muted-foreground">Authors</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold">{BOOKS.length}</p>
-                    <p className="text-[10px] text-muted-foreground">Books</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold">{AUDIO_BOOKS.length}</p>
-                    <p className="text-[10px] text-muted-foreground">Audiobooks</p>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-muted/50">
-                    <p className="text-2xl font-bold">9</p>
-                    <p className="text-[10px] text-muted-foreground">Categories</p>
-                  </div>
-                </div>
-                <div className="pt-3 border-t border-border/50 space-y-1.5">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">Theme:</span> {settings.theme} (
-                    {settings.colorMode})
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">AI Model:</span>{" "}
-                    {settings.geminiModel}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">View Mode:</span>{" "}
-                    {settings.viewMode}
-                  </p>
-                </div>
-                <div className="pt-3 border-t border-border/50">
-                  <a
-                    href="https://norfolkai.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  >
-                    <img
-                      src={
-                        settings.colorMode === "dark"
-                          ? "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/norfolk-ai-logo-white_d92c1722.png"
-                          : "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/norfolk-ai-logo-blue_9ed63fc7.png"
-                      }
-                      alt="Norfolk AI"
-                      className="w-5 h-5 object-contain"
-                    />
-                    <span className="text-xs text-muted-foreground">Powered by Norfolk AI</span>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
+            <AboutTab settings={settings} />
           </TabsContent>
-        </Tabs>
+
+                </Tabs>
       </div>
     </div>
   );

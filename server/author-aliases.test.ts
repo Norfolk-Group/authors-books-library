@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from "vitest";
 
-// ── Inline the canonicalName logic (mirrors client/src/lib/authorAliases.ts) ──
+// -- Inline the canonicalName logic (mirrors client/src/lib/authorAliases.ts) --
 // We duplicate here to keep tests server-side (no client imports in vitest).
 
 const AUTHOR_ALIASES: Record<string, string> = {
@@ -55,9 +55,9 @@ function canonicalName(raw: string): string {
   return raw;
 }
 
-// ──────────────────────────────────────────────────────────────
+// --------------------------------------------------------------
 
-describe("canonicalName — Drive-folder suffix stripping", () => {
+describe("canonicalName - Drive-folder suffix stripping", () => {
   it("strips specialty suffix from Matthew Dixon", () => {
     expect(canonicalName("Matthew Dixon - Sales strategy and customer psychology experts")).toBe("Matthew Dixon");
     expect(canonicalName("Matthew Dixon - Customer experience and loyalty")).toBe("Matthew Dixon");
@@ -90,7 +90,7 @@ describe("canonicalName — Drive-folder suffix stripping", () => {
   });
 });
 
-describe("canonicalName — alias resolution", () => {
+describe("canonicalName - alias resolution", () => {
   it("maps abbreviated 'Stephen Covey' → 'Stephen R. Covey'", () => {
     expect(canonicalName("Stephen Covey")).toBe("Stephen R. Covey");
   });
@@ -112,7 +112,7 @@ describe("canonicalName — alias resolution", () => {
   });
 });
 
-describe("canonicalName — co-author separator normalization", () => {
+describe("canonicalName - co-author separator normalization", () => {
   it("normalizes ampersand to 'and' for Ashvin/Ruben", () => {
     expect(canonicalName("Ashvin Vaidyanathan & Ruben Rabago")).toBe("Ashvin Vaidyanathan and Ruben Rabago");
   });
@@ -126,7 +126,7 @@ describe("canonicalName — co-author separator normalization", () => {
   });
 });
 
-describe("canonicalName — round-trip stability", () => {
+describe("canonicalName - round-trip stability", () => {
   it("returns canonical names unchanged (idempotent)", () => {
     const canonicals = [
       "Matthew Dixon",
@@ -154,7 +154,7 @@ describe("canonicalName — round-trip stability", () => {
   });
 });
 
-describe("canonicalName — deduplication key consistency", () => {
+describe("canonicalName - deduplication key consistency", () => {
   it("two entries for Matthew Dixon produce the same dedup key", () => {
     const key1 = canonicalName("Matthew Dixon - Sales strategy and customer psychology experts").toLowerCase();
     const key2 = canonicalName("Matthew Dixon - Customer experience and loyalty").toLowerCase();

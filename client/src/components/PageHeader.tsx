@@ -1,5 +1,5 @@
 /**
- * PageHeader — Persistent top bar for all non-home pages.
+ * PageHeader - Persistent top bar for all non-home pages.
  *
  * Shows:
  *   [← Home]  Ricardo Cidale's Library › [segment] › [segment] ...
@@ -31,7 +31,7 @@ export default function PageHeader({ crumbs, title }: PageHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 flex items-center gap-3 px-4 h-12 border-b border-border bg-background/95 backdrop-blur-sm">
-      {/* Home button — always visible, prominent */}
+      {/* Home button - always visible, prominent */}
       <Button
         variant="outline"
         size="sm"

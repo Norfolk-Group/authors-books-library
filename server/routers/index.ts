@@ -1,5 +1,5 @@
 /**
- * App Router — combines all domain routers.
+ * App Router - combines all domain routers.
  * This file is the single source of truth for the tRPC router tree.
  *
  * Router files follow the pattern: <domain>.router.ts

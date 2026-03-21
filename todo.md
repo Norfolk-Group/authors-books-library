@@ -770,3 +770,67 @@
 - [ ] Add Three.js (via @react-three/fiber + @react-three/drei) to project
 - [ ] Decide use case: 3D background scene, card flip effect, interactive globe, or other
 - [ ] Implement Three.js feature once use case is confirmed by user
+
+## Session March 21, 2026 — One-Author-Per-Card Rule
+
+- [ ] Audit: find all multi-author entries in libraryData.ts and book_profiles DB
+- [ ] Audit: find all card components that render multi-person avatars or list multiple authors
+- [ ] Fix data layer: split co-authored books so each author gets their own card entry
+- [ ] Fix UI layer: enforce one-author-per-card in FlowbiteAuthorCard, AuthorCard, AuthorAccordionRow
+- [ ] Fix avatar sourcing: ensure only individual author photos are fetched (no group shots)
+- [ ] Update or create skill documenting the one-author-per-card rule
+- [ ] Test, update claude.md and memory.md, commit, push, save checkpoint
+
+## Session March 21, 2026 — Avatar Background Color & One-Author-Per-Card
+
+- [ ] Fix Vite parse error: unicode em-dash comment on line 279 of Home.tsx
+- [ ] Add avatarBgColor column to user table (default: #1a1a2e)
+- [ ] Add avatar background color picker to Preferences panel
+- [ ] Store avatarBgColor in AppSettingsContext and persist to DB
+- [ ] Inject avatarBgColor into Replicate AI portrait generation prompt (forced background)
+- [ ] Audit: find all multi-author entries in libraryData.ts and book_profiles DB
+- [ ] Fix data layer: split co-authored books so each author gets their own card entry
+- [ ] Fix UI layer: enforce one-author-per-card in all card components
+- [ ] Update or create skill documenting one-author-per-card rule and avatar background system
+- [ ] Test, update claude.md and memory.md, commit, push, save checkpoint
+
+## Session March 21, 2026 — Full Codebase Optimization
+
+- [ ] Fix Vite parse error: unicode em-dash comment line 279 Home.tsx
+- [ ] Remove dead imports and unused hooks from Home.tsx (useCallback, unused motion imports)
+- [ ] Optimize apify.ts: add retry logic, timeout constants, typed return interfaces
+- [ ] Optimize mirrorToS3.ts: add content-type detection, dedup check before re-upload
+- [ ] Optimize waterfall.ts: add per-tier timeout, structured logging, skip already-enriched authors
+- [ ] Optimize storage.ts: add helper for presigned URLs, standardize key naming
+- [ ] Consolidate duplicate fetch logic across routers into shared server/lib/httpClient.ts
+- [ ] Standardize tRPC input validation with Zod schemas across all routers
+- [ ] Fix N+1 queries: batch DB lookups in bookProfiles and authorProfiles routers
+- [ ] Add missing DB indexes: authorName on book_profiles, authorName on author_profiles
+- [ ] Fix Drizzle schema: add updatedAt timestamps to author_profiles and book_profiles
+- [ ] Optimize libraryData.ts dedup: ensure no duplicate author/book entries
+- [ ] Tighten authorAliases.ts: add missing aliases found in DB vs Drive mismatch
+- [ ] Update all skills to reflect current architecture and Amazon-first cascade
+- [ ] Test, update claude.md and memory.md, commit, push, save checkpoint
+
+## Session March 21, 2026 — File Re-Architecture
+
+- [x] Audit all source files for line count and identify oversized files
+- [x] Fix Vite parse error -- unicode box-drawing characters fixed in 52 files project-wide
+- [x] Split Home.tsx (1908 -> 687 lines) -- extracted AuthorCard, BookCard, AudioCard, AuthorBioPanel, BookDetailPanel, LibraryPrimitives, libraryConstants into client/src/components/library/
+- [x] Split Admin.tsx (1187 -> 857 lines) -- extracted CascadeTab, SettingsTab, AboutTab into client/src/components/admin/
+- [x] Split authorProfiles.router.ts (672 -> 532 lines) -- extracted enrichAuthorViaWikipedia into server/lib/authorEnrichment.ts
+- [x] Split bookProfiles.router.ts (515 -> 313 lines) -- extracted enrichBookViaGoogleBooks into server/lib/bookEnrichment.ts
+- [x] Delete 4 legacy dead-code router files (1590 lines total removed)
+- [x] Run tests (122/122 passing), update claude.md and memory.md, commit, push, save checkpoint
+
+## Session March 21, 2026 — One-Author-Per-Card + Avatar Background Color
+
+- [x] Update authorAliases.ts: add individual canonical entries for all co-authors (Jason Lemkin, Bill Carr, Anne Morriss, Bo Burlingham, Ruben Rabago, Ted McKenna, Brent Adamson, Nick Toman, Rick DeLisi)
+- [x] Update authorPhotos.ts: remove combined-name photo entries so individual photos are fetched per person
+- [x] Update DB: split multi-author author_profiles rows into individual rows per co-author
+- [x] Update DB: split multi-author book_profiles rows to have one row per co-author (same book, different authorName)
+- [x] Add avatarBgColor to AppSettings in AppSettingsContext.tsx (default: #1e293b)
+- [x] Add color picker to SettingsTab.tsx (Avatar Background Color section)
+- [x] Pass avatarBgColor to generatePortrait tRPC mutation input
+- [x] Update replicateGeneration.ts buildPrompt() to accept and inject bgColor into prompt
+- [ ] Test, update claude.md and memory.md, commit, push, save checkpoint

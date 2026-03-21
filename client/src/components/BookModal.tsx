@@ -1,10 +1,10 @@
 /**
- * BookModal — shared book detail dialog
+ * BookModal - shared book detail dialog
  *
  * Used by both FlowbiteAuthorCard (Kanban) and AuthorAccordionRow (accordion).
  * Opens when the user clicks a mini book cover or a book title.
  *
- * THEME RULES: zero hardcoded colours — CSS tokens only.
+ * THEME RULES: zero hardcoded colours - CSS tokens only.
  */
 import { Modal, ModalBody, ModalHeader } from "flowbite-react";
 import {
@@ -17,7 +17,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useState } from "react";
 
-// ── Icon map ──────────────────────────────────────────────────────────────────
+// -- Icon map ------------------------------------------------------------------
 type LucideIcon = React.FC<{ className?: string }>;
 const CT_ICON_MAP: Record<string, LucideIcon> = {
   "file-text":  FileText as LucideIcon,
@@ -34,7 +34,7 @@ const CT_ICON_MAP: Record<string, LucideIcon> = {
   "folder":     Folder as LucideIcon,
 };
 
-// ── Content-type normalisation (mirrors FlowbiteAuthorCard) ───────────────────
+// -- Content-type normalisation (mirrors FlowbiteAuthorCard) -------------------
 const DISPLAY_NAME_MAP: Record<string, string> = {
   "Additional DOC":       "Supplemental",
   "PDF Extra":            "PDF",
@@ -59,7 +59,7 @@ function normalizeContentTypes(raw: Record<string, number>): Record<string, numb
   return result;
 }
 
-// ── Content-type pill ─────────────────────────────────────────────────────────
+// -- Content-type pill ---------------------------------------------------------
 function ContentTypePill({ type, count }: { type: string; count: number }) {
   const iconName = CONTENT_TYPE_ICONS[type] ?? "folder";
   const Icon = (CT_ICON_MAP[iconName] ?? Folder) as LucideIcon;
@@ -72,7 +72,7 @@ function ContentTypePill({ type, count }: { type: string; count: number }) {
   );
 }
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+// -- Props ---------------------------------------------------------------------
 export interface BookModalBook {
   /** Drive folder ID */
   id: string;
@@ -92,7 +92,7 @@ export interface BookModalProps {
   onClose: () => void;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// -- Component -----------------------------------------------------------------
 export function BookModal({ book, onClose }: BookModalProps) {
   const utils = trpc.useUtils();
   const [scrapedCoverUrl, setScrapedCoverUrl] = useState<string | null>(null);
@@ -141,7 +141,7 @@ export function BookModal({ book, onClose }: BookModalProps) {
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-4 text-sm">
-              {/* Prominent close button — top right */}
+              {/* Prominent close button - top right */}
               <button
                 onClick={onClose}
                 className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-muted/80 hover:bg-muted flex items-center justify-center shadow-sm border border-border transition-all hover:scale-105 active:scale-95"

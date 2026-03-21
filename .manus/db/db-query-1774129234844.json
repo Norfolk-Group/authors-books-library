@@ -1,0 +1,70 @@
+{
+  "query": "SELECT id, bookTitle, authorName, s3CoverUrl FROM book_profiles WHERE authorName LIKE '%&%' OR authorName LIKE '% and %' OR authorName LIKE '%,%' ORDER BY authorName LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName, s3CoverUrl FROM book_profiles WHERE authorName LIKE '%&%' OR authorName LIKE '% and %' OR authorName LIKE '%,%' ORDER BY authorName LIMIT 50;",
+  "rows": [
+    {
+      "id": "3",
+      "bookTitle": "From Impossible to Inevitable",
+      "authorName": "Aaron Ross and Jason Lemkin",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/10cd451f.jpg"
+    },
+    {
+      "id": "4",
+      "bookTitle": "Predictable Revenue",
+      "authorName": "Aaron Ross and Jason Lemkin",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/predictable-revenue-cover_7d0995b0.jpg"
+    },
+    {
+      "id": "30004",
+      "bookTitle": "The Customer Success Professional's Handbook",
+      "authorName": "Ashvin Vaidyanathan & Ruben Rabago",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/115e2950.jpg"
+    },
+    {
+      "id": "19",
+      "bookTitle": "The Customer Success Professional",
+      "authorName": "Ashvin Vaidyanathan and Ruben Rabago",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1367fbf6.jpg"
+    },
+    {
+      "id": "31",
+      "bookTitle": "Working Backwards",
+      "authorName": "Colin Bryar & Bill Carr",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/36f165f3.jpg"
+    },
+    {
+      "id": "58",
+      "bookTitle": "Move Fast and Fix Things",
+      "authorName": "Frances Frei & Anne Morriss",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/2453a24e.jpg"
+    },
+    {
+      "id": "66",
+      "bookTitle": "The Great Game of Business",
+      "authorName": "Jack Stack and Bo Burlingham",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1dee8f32.jpg"
+    },
+    {
+      "id": "67",
+      "bookTitle": "Great Game Business",
+      "authorName": "Jack Stack and Bo Burlingham",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/0b2c4c0d.jpg"
+    },
+    {
+      "id": "88",
+      "bookTitle": "Yes, And",
+      "authorName": "Kelly Leonard and Tom Yorton",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/5912b3a5.jpg"
+    },
+    {
+      "id": "30005",
+      "bookTitle": "The JOLT Effect",
+      "authorName": "Matthew Dixon & Ted McKenna",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1e7ad7de.jpg"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\ts3CoverUrl\n3\tFrom Impossible to Inevitable\tAaron Ross and Jason Lemkin\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/10cd451f.jpg\n4\tPredictable Revenue\tAaron Ross and Jason Lemkin\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/predictable-revenue-cover_7d0995b0.jpg\n30004\tThe Customer Success Professional's Handbook\tAshvin Vaidyanathan & Ruben Rabago\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/115e2950.jpg\n19\tThe Customer Success Professional\tAshvin Vaidyanathan and Ruben Rabago\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1367fbf6.jpg\n31\tWorking Backwards\tColin Bryar & Bill Carr\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/36f165f3.jpg\n58\tMove Fast and Fix Things\tFrances Frei & Anne Morriss\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/2453a24e.jpg\n66\tThe Great Game of Business\tJack Stack and Bo Burlingham\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1dee8f32.jpg\n67\tGreat Game Business\tJack Stack and Bo Burlingham\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/0b2c4c0d.jpg\n88\tYes, And\tKelly Leonard and Tom Yorton\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/5912b3a5.jpg\n30005\tThe JOLT Effect\tMatthew Dixon & Ted McKenna\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/1e7ad7de.jpg\n",
+  "stderr": "",
+  "execution_time_ms": 130
+}

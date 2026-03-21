@@ -25,7 +25,7 @@ import { AvatarCropModal } from "./AvatarCropModal";
 interface AvatarUploadProps {
   authorName: string;
   currentPhotoUrl?: string | null;
-  /** Rendered size in pixels — used to size the overlay ring */
+  /** Rendered size in pixels - used to size the overlay ring */
   size?: number;
   /** Render prop: receives the current (possibly optimistically updated) URL */
   children: (photoUrl: string | null | undefined) => React.ReactNode;
@@ -35,7 +35,7 @@ interface AvatarUploadProps {
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 type MimeType = (typeof ACCEPTED)[number];
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB raw — crop output will be ≤ 5 MB
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB raw - crop output will be ≤ 5 MB
 
 export function AvatarUpload({
   authorName,
@@ -57,7 +57,7 @@ export function AvatarUpload({
 
   const displayUrl = optimisticUrl ?? currentPhotoUrl;
 
-  // ── Step 1: File selected → open crop modal ──────────────────────────────
+  // -- Step 1: File selected → open crop modal ------------------------------
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -70,7 +70,7 @@ export function AvatarUpload({
       }
 
       if (file.size > MAX_BYTES) {
-        toast.error("Image too large — maximum raw size is 10 MB.");
+        toast.error("Image too large - maximum raw size is 10 MB.");
         return;
       }
 
@@ -82,7 +82,7 @@ export function AvatarUpload({
     []
   );
 
-  // ── Step 2: Crop confirmed → upload blob to S3 ───────────────────────────
+  // -- Step 2: Crop confirmed → upload blob to S3 ---------------------------
   const handleCropConfirm = useCallback(
     async (blob: Blob, mimeType: "image/jpeg") => {
       setShowCrop(false);
@@ -136,7 +136,7 @@ export function AvatarUpload({
     [authorName, cropSrc, uploadMutation, utils]
   );
 
-  // ── Step 2 (cancel): user dismissed crop modal ───────────────────────────
+  // -- Step 2 (cancel): user dismissed crop modal ---------------------------
   const handleCropCancel = useCallback(() => {
     setShowCrop(false);
     if (cropSrc) {
@@ -216,7 +216,7 @@ export function AvatarUpload({
         />
       </div>
 
-      {/* Crop modal — rendered outside the positioned wrapper to avoid z-index issues */}
+      {/* Crop modal - rendered outside the positioned wrapper to avoid z-index issues */}
       {cropSrc && (
         <AvatarCropModal
           open={showCrop}

@@ -2,7 +2,7 @@
  * Phosphor Regular Icon Set
  *
  * Closest open-source match to Manus icon style.
- * weight="regular" = 1.5px stroke, rounded caps — matches Manus exactly.
+ * weight="regular" = 1.5px stroke, rounded caps - matches Manus exactly.
  *
  * Install: pnpm add @phosphor-icons/react
  */

@@ -14,7 +14,7 @@ import { ApifyClient } from "apify-client";
 const APIFY_TOKEN = process.env.APIFY_API_TOKEN ?? "";
 const ACTOR_ID = "apify/cheerio-scraper";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// -- Types ---------------------------------------------------------------------
 
 export interface AmazonBookResult {
   asin: string;
@@ -31,14 +31,14 @@ export interface AuthorPhotoResult {
   sourceName: string;
 }
 
-// ── Apify client factory ──────────────────────────────────────────────────────
+// -- Apify client factory ------------------------------------------------------
 
 function getClient(): ApifyClient {
   if (!APIFY_TOKEN) throw new Error("APIFY_API_TOKEN is not set");
   return new ApifyClient({ token: APIFY_TOKEN });
 }
 
-// ── Amazon book scraper ───────────────────────────────────────────────────────
+// -- Amazon book scraper -------------------------------------------------------
 
 /**
  * Search Amazon for a book by title + author and return the best match.
@@ -116,7 +116,7 @@ async function pageFunction(context) {
   }
 }
 
-// ── Author photo scraper ──────────────────────────────────────────────────────
+// -- Author photo scraper ------------------------------------------------------
 
 /**
  * Search for a real author headshot from Wikipedia and publisher pages.
@@ -189,7 +189,7 @@ async function pageFunction(context) {
   }
 }
 
-// ── Generic URL scraper ───────────────────────────────────────────────────────
+// -- Generic URL scraper -------------------------------------------------------
 
 /**
  * Scrape any URL with a custom Cheerio page function.

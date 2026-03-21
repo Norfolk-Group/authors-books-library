@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** March 21, 2026 (Avatar sizes tripled; 3D tilt replaced with expand/contract hover)
+**Last Updated:** March 21, 2026 (File re-architecture: Home.tsx 1908->687 lines, Admin.tsx 1187->857 lines, extracted lib helpers, deleted 4 legacy dead files, fixed unicode in 52 files)
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state.
 
@@ -25,26 +25,55 @@ This is a personal knowledge library application that catalogues business books 
 ```
 client/                          → React 19 SPA (Vite)
   src/
-    pages/Home.tsx               → Main library UI (1960 lines)
-    pages/Admin.tsx              → Admin Console (1187 lines)
-    components/                  → Reusable UI components
+    pages/
+      Home.tsx                   → Main library UI orchestrator (~687 lines)
+      Admin.tsx                  → Admin Console orchestrator (~857 lines)
+    components/
+      library/                   → Extracted library card/panel components
+        AuthorCard.tsx           → Single author card with avatar + expand/contract hover
+        BookCard.tsx             → Single book card with cover thumbnail
+        AudioCard.tsx            → Single audio book card
+        AuthorBioPanel.tsx       → Author bio dialog (photo, bio, links, book list)
+        BookDetailPanel.tsx      → Book detail dialog (cover, summary, themes, links)
+        LibraryPrimitives.tsx    → ContentTypeBadge, BookSubfolderRow, StatCard, EmptyState
+        libraryConstants.ts      → Shared icon maps, format labels, display name maps
+      admin/                     → Extracted admin tab components
+        CascadeTab.tsx           → Research cascade stats display
+        SettingsTab.tsx          → App settings (icon set, LLM model)
+        AboutTab.tsx             → App info and version
+        ActionCard.tsx           → Reusable action card with progress
+        adminTypes.ts            → Shared admin types
+      FlowbiteAuthorCard.tsx     → Flowbite-styled author card (grid view)
+      AuthorAccordionRow.tsx     → Accordion list row for author
+      AuthorModal.tsx            → Author detail modal (Flowbite)
+      BookModal.tsx              → Book detail modal (Flowbite)
+      BackToTop.tsx              → Floating back-to-top button
+      CoverLightbox.tsx          → Full-screen book cover viewer
+      AvatarCropModal.tsx        → Avatar upload + crop editor
     contexts/                    → ThemeContext, AppSettingsContext
-    lib/                         → Static data, helpers, icon sets
+    lib/
+      libraryData.ts             → Auto-generated Drive scan data (1218 lines)
+      audioData.ts               → Audio books data
+      authorPhotos.ts            → Static author photo URL map
+      authorAliases.ts           → Drive folder name → display name map
 server/
   routers/                       → tRPC routers (feature-split)
-    library.router.ts            → Google Drive scanning + TS code generation
-    authorProfiles.router.ts     → Author enrichment (Wikipedia/Wikidata/LLM)
-    bookProfiles.router.ts       → Book enrichment (Google Books API)
-    apify.router.ts              → Amazon scraping + S3 mirroring
+    library.router.ts            → Google Drive scanning + TS code generation (~475 lines)
+    authorProfiles.router.ts     → Author enrichment procedures (~532 lines)
+    bookProfiles.router.ts       → Book enrichment procedures (~313 lines)
+    apify.router.ts              → Amazon scraping + S3 mirroring (~329 lines)
     cascade.router.ts            → Research cascade stats
     admin.router.ts              → Action log tracking
     llm.router.ts                → Gemini model listing + testing
-  lib/authorPhotos/              → 5-tier author photo waterfall
-    waterfall.ts                 → Main orchestrator
-    wikipedia.ts                 → Tier 1: Wikipedia REST API
-    tavily.ts                    → Tier 2: Tavily image search
-    geminiValidation.ts          → Tier 4: Gemini vision validation
-    replicateGeneration.ts       → Tier 5: Replicate AI portrait
+  lib/
+    authorEnrichment.ts          → enrichAuthorViaWikipedia() + generateBioWithLLM() helpers
+    bookEnrichment.ts            → enrichBookViaGoogleBooks() + generateBookSummaryWithLLM() helpers
+    authorPhotos/                → 5-tier author photo waterfall
+      waterfall.ts               → Main orchestrator
+      wikipedia.ts               → Tier 1: Wikipedia REST API
+      tavily.ts                  → Tier 2: Tavily image search
+      geminiValidation.ts        → Tier 4: Gemini vision validation
+      replicateGeneration.ts     → Tier 5: Replicate AI portrait
   apify.ts                       → Apify cheerio-scraper helpers
   mirrorToS3.ts                  → External image → S3 CDN mirror
   storage.ts                     → S3 upload/download helpers

@@ -1,5 +1,5 @@
 /**
- * Tier 1: Wikipedia REST API — free, fast (~200ms)
+ * Tier 1: Wikipedia REST API - free, fast (~200ms)
  * Best for famous authors with Wikipedia pages.
  */
 

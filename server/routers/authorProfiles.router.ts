@@ -6,150 +6,10 @@ import { getDb } from "../db";
 import { authorProfiles } from "../../drizzle/schema";
 import { publicProcedure, router } from "../_core/trpc";
 import { processAuthorPhotoWaterfall } from "../lib/authorPhotos/waterfall";
-import { invokeLLM } from "../_core/llm";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-interface AuthorInfo {
-  bio: string;
-  websiteUrl: string;
-  twitterUrl: string;
-  linkedinUrl: string;
-}
+import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
 
-// ── Wikipedia + Wikidata enrichment ──────────────────────────────────────────
-
-/**
- * Generate author bio using LLM when Wikipedia returns nothing.
- */
-async function generateBioWithLLM(authorName: string, model?: string): Promise<string> {
-  try {
-    const result = await invokeLLM({
-      model,
-      messages: [
-        {
-          role: "system",
-          content: "You are a concise literary reference assistant. Write factual, professional author bios in 2-3 sentences. Focus on their main field, notable works, and impact. No fluff.",
-        },
-        {
-          role: "user",
-          content: `Write a 2-sentence professional bio for the author "${authorName}". Include their main field of expertise and 1-2 notable works if known. Keep it under 300 characters.`,
-        },
-      ],
-    });
-    const raw = result?.choices?.[0]?.message?.content ?? "";
-    const content = typeof raw === "string" ? raw : "";
-    return content.trim().slice(0, 400);
-  } catch (err) {
-    console.error(`[authorEnrich] LLM bio generation failed for "${authorName}":`, err);
-    return "";
-  }
-}
-
-/**
- * Fetch author bio from Wikipedia REST API and social/website links from Wikidata.
- * Falls back to LLM generation when Wikipedia returns no content.
- */
-export async function enrichAuthorViaWikipedia(authorName: string, model?: string): Promise<AuthorInfo> {
-  const result: AuthorInfo = { bio: "", websiteUrl: "", twitterUrl: "", linkedinUrl: "" };
-
-  try {
-    // 1. Wikipedia summary (bio + wikibase_item for Wikidata lookup)
-    const searchSlug = encodeURIComponent(authorName.replace(/ /g, "_"));
-    const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${searchSlug}`;
-    const wikiRes = await fetch(wikiUrl, {
-      headers: { "User-Agent": "NCG-Library/1.0 (contact@norfolkconsulting.com)" },
-    });
-
-    let wikidataId: string | null = null;
-
-    if (wikiRes.ok) {
-      const wikiData = (await wikiRes.json()) as {
-        extract?: string;
-        wikibase_item?: string;
-      };
-      // Use the first 2 sentences of the extract as the bio
-      const extract = wikiData.extract ?? "";
-      const sentences = extract.match(/[^.!?]+[.!?]+/g) ?? [];
-      result.bio = sentences.slice(0, 2).join(" ").trim().slice(0, 400);
-      wikidataId = wikiData.wikibase_item ?? null;
-    } else {
-      // Try searching for the author by name if direct slug fails
-      const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(authorName)}&srlimit=1&format=json&origin=*`;
-      const searchRes = await fetch(searchUrl, {
-        headers: { "User-Agent": "NCG-Library/1.0" },
-      });
-      if (searchRes.ok) {
-        const searchData = (await searchRes.json()) as {
-          query?: { search?: Array<{ title: string }> };
-        };
-        const firstResult = searchData.query?.search?.[0];
-        if (firstResult) {
-          const altSlug = encodeURIComponent(firstResult.title.replace(/ /g, "_"));
-          const altRes = await fetch(
-            `https://en.wikipedia.org/api/rest_v1/page/summary/${altSlug}`,
-            { headers: { "User-Agent": "NCG-Library/1.0" } }
-          );
-          if (altRes.ok) {
-            const altData = (await altRes.json()) as {
-              extract?: string;
-              wikibase_item?: string;
-            };
-            const extract = altData.extract ?? "";
-            const sentences = extract.match(/[^.!?]+[.!?]+/g) ?? [];
-            result.bio = sentences.slice(0, 2).join(" ").trim().slice(0, 400);
-            wikidataId = altData.wikibase_item ?? null;
-          }
-        }
-      }
-    }
-
-    // 2. Wikidata for website + Twitter
-    if (wikidataId) {
-      const wdUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&props=claims&format=json&origin=*`;
-      const wdRes = await fetch(wdUrl, {
-        headers: { "User-Agent": "NCG-Library/1.0" },
-      });
-      if (wdRes.ok) {
-        const wdData = (await wdRes.json()) as {
-          entities?: Record<string, {
-            claims?: Record<string, Array<{
-              mainsnak?: { datavalue?: { value?: string } };
-            }>>;
-          }>;
-        };
-        const entity = wdData.entities?.[wikidataId];
-        const claims = entity?.claims ?? {};
-
-        // P856 = official website
-        const websiteClaim = claims["P856"]?.[0];
-        const website = websiteClaim?.mainsnak?.datavalue?.value ?? "";
-        if (website) result.websiteUrl = website;
-
-        // P2002 = Twitter username
-        const twitterClaim = claims["P2002"]?.[0];
-        const twitterHandle = twitterClaim?.mainsnak?.datavalue?.value ?? "";
-        if (twitterHandle) result.twitterUrl = `https://twitter.com/${twitterHandle}`;
-
-        // P6634 = LinkedIn personal profile ID
-        const linkedinClaim = claims["P6634"]?.[0];
-        const linkedinId = linkedinClaim?.mainsnak?.datavalue?.value ?? "";
-        if (linkedinId) result.linkedinUrl = `https://www.linkedin.com/in/${linkedinId}`;
-      }
-    }
-  } catch (err) {
-    console.error(`[authorEnrich] Failed to enrich "${authorName}":`, err);
-  }
-
-  // LLM fallback: if Wikipedia returned no bio, generate one with the selected model
-  if (!result.bio) {
-    console.log(`[authorEnrich] No Wikipedia bio for "${authorName}", using LLM fallback (model: ${model ?? "default"})`);
-    result.bio = await generateBioWithLLM(authorName, model);
-  }
-
-  return result;
-}
-
-// ── Router ────────────────────────────────────────────────────────────────────
+// -- Router --------------------------------------------------------------------
 export const authorProfilesRouter = router({
   /** Get a single author profile by base name */
   get: publicProcedure
@@ -380,7 +240,7 @@ export const authorProfilesRouter = router({
       };
     }),
 
-  // ── Avatar generation stats ─────────────────────────────────────────────────
+  // -- Avatar generation stats -------------------------------------------------
   getAvatarStats: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) return { total: 0, hasPhoto: 0, inS3: 0, missing: 0 };
@@ -399,7 +259,7 @@ export const authorProfilesRouter = router({
     };
   }),
 
-  // ── Batch avatar generation via waterfall ───────────────────────────────────
+  // -- Batch avatar generation via waterfall -----------------------------------
   generateAvatarsBatch: publicProcedure
     .input(
       z.object({
@@ -477,7 +337,7 @@ export const authorProfilesRouter = router({
       };
     }),
 
-  // ── Generate avatars for ALL authors missing photos ─────────────────────────
+  // -- Generate avatars for ALL authors missing photos -------------------------
   generateAllMissingAvatars: publicProcedure
     .input(
       z.object({
@@ -567,17 +427,17 @@ export const authorProfilesRouter = router({
       };
     }),
 
-  // ── Generate an AI portrait via Replicate (last-resort fallback) ────────
+  // -- Generate an AI portrait via Replicate (last-resort fallback) --------
   generatePortrait: publicProcedure
-    .input(z.object({ authorName: z.string().min(1) }))
+    .input(z.object({ authorName: z.string().min(1), bgColor: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
 
       // Generate via Replicate flux-schnell
       const { generateAIPortrait } = await import("../lib/authorPhotos/replicateGeneration");
-      const generated = await generateAIPortrait(input.authorName);
-      if (!generated) throw new Error("Portrait generation failed — please try again");
+      const generated = await generateAIPortrait(input.authorName, input.bgColor);
+      if (!generated) throw new Error("Portrait generation failed - please try again");
 
       // Mirror to S3 immediately (Replicate URLs expire after ~1 hour)
       const res = await fetch(generated.url, { signal: AbortSignal.timeout(20_000) });
@@ -590,7 +450,7 @@ export const authorProfilesRouter = router({
       const key = `author-photos/ai-${slug}-${Date.now()}.webp`;
       const { url } = await storagePut(key, buffer, "image/webp");
 
-      // Persist to DB — AI-generated portrait
+      // Persist to DB - AI-generated portrait
       await db
         .update(authorProfiles)
         .set({ photoUrl: url, s3PhotoUrl: url, s3PhotoKey: key, enrichedAt: new Date(), photoSource: "ai" })
@@ -599,7 +459,7 @@ export const authorProfilesRouter = router({
       return { url, key, isAiGenerated: true };
     }),
 
-  // ── Upload a custom author photo (base64) ─────────────────────────────
+  // -- Upload a custom author photo (base64) -----------------------------
   uploadPhoto: publicProcedure
     .input(
       z.object({
@@ -619,7 +479,7 @@ export const authorProfilesRouter = router({
 
       // Enforce 5 MB size limit
       if (buffer.byteLength > 5 * 1024 * 1024) {
-        throw new Error("Image too large — maximum size is 5 MB");
+        throw new Error("Image too large - maximum size is 5 MB");
       }
 
       // Build a unique S3 key
@@ -633,7 +493,7 @@ export const authorProfilesRouter = router({
       // Upload to S3
       const { url } = await storagePut(key, buffer, input.mimeType);
 
-      // Persist to DB — mark as custom so waterfall won't overwrite it
+      // Persist to DB - mark as custom so waterfall won't overwrite it
       await db
         .update(authorProfiles)
         .set({

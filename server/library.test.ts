@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from "vitest";
 
-// ── Replicate the normalization logic from Home.tsx ──────────
+// -- Replicate the normalization logic from Home.tsx ----------
 const DISPLAY_NAME_MAP: Record<string, string> = {
   "Additional DOC": "Supplemental",
   "PDF Extra": "PDF",
@@ -30,7 +30,7 @@ function normalizeContentTypes(raw: Record<string, number>): Record<string, numb
   return result;
 }
 
-// ── Replicate the deduplication logic from Home.tsx ──────────
+// -- Replicate the deduplication logic from Home.tsx ----------
 interface AuthorLike {
   name: string;
   id: string;
@@ -76,7 +76,7 @@ function deduplicateBooks(books: BookLike[]): BookLike[] {
   return Array.from(seen.values());
 }
 
-// ── Tests ─────────────────────────────────────────────────────
+// -- Tests -----------------------------------------------------
 describe("normalizeContentTypes", () => {
   it("passes through canonical types unchanged", () => {
     const input = { PDF: 2, Transcript: 5, Binder: 1 };
@@ -216,7 +216,7 @@ describe("book name display", () => {
   });
 });
 
-// ── Author Photo Lookup Tests ─────────────────────────────────
+// -- Author Photo Lookup Tests ---------------------------------
 const SAMPLE_PHOTOS: Record<string, string> = {
   "Adam Grant": "https://cdn.example.com/Adam Grant_abc123.png",
   "Simon Sinek": "https://cdn.example.com/Simon Sinek_def456.png",

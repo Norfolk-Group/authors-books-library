@@ -143,3 +143,38 @@ Three.js integration added to todo list (use case TBD by user).
 
 Files changed: `FlowbiteAuthorCard.tsx`, `AuthorAccordionRow.tsx`, `Home.tsx`, `claude.md`, `memory.md`, `todo.md`
 122 tests passing.
+
+### File Re-Architecture & Codebase Optimization (Context-Compacted Session)
+
+The session inherited from a prior context that exceeded limits. The following work was completed in the previous context and is being documented here:
+
+Fixed unicode box-drawing characters (U+2500 family, em-dashes, curly quotes) in 52 files project-wide. These were causing a Vite parse error at Home.tsx line 279.
+
+Split Home.tsx from 1908 lines to 687 lines by extracting 6 components into client/src/components/library/: AuthorCard.tsx, BookCard.tsx, AudioCard.tsx, AuthorBioPanel.tsx, BookDetailPanel.tsx, LibraryPrimitives.tsx, and libraryConstants.ts.
+
+Split Admin.tsx from 1187 lines to 857 lines by extracting 3 tab components into client/src/components/admin/: CascadeTab.tsx, SettingsTab.tsx, AboutTab.tsx, ActionCard.tsx, adminTypes.ts.
+
+Extracted server helpers: enrichAuthorViaWikipedia() + generateBioWithLLM() into server/lib/authorEnrichment.ts (authorProfiles.router.ts: 672 -> 532 lines). Extracted enrichBookViaGoogleBooks() + generateBookSummaryWithLLM() into server/lib/bookEnrichment.ts (bookProfiles.router.ts: 515 -> 313 lines).
+
+Deleted 4 legacy dead-code router files totalling 1590 lines.
+
+All 122 tests still passing. claude.md architecture overview updated with new file structure. Checkpoint: 6ef6c867.
+
+## Session March 21, 2026 — One-Author-Per-Card + Avatar Background Color
+
+### One-Author-Per-Card Rule (Item 1)
+- **authorAliases.ts**: All combined-name entries (e.g. "Aaron Ross and Jason Lemkin") now resolve to the first author's canonical name. Added individual canonical entries for 14 co-authors: Jason Lemkin, Bill Carr, Anne Morriss, Bo Burlingham, Ruben Rabago, Ted McKenna, Brent Adamson, Nick Toman, Rick DeLisi, William Ury, Chip Heath, John David Mann, Kelly Leonard, Tom Yorton.
+- **authorPhotos.ts**: Removed all combined-name photo entries (group shots). Each primary co-author now has their own individual entry pointing to the same CDN URL. Secondary co-authors (Jason Lemkin, William Ury, Chip Heath, etc.) will use the DB waterfall for individual portraits.
+- **DB author_profiles**: Added individual rows for 11 co-authors who had no DB row.
+- **DB book_profiles**: Split multi-author book rows — each co-author now has their own book_profiles row with the same cover/metadata.
+
+### Avatar Background Color (Item 2)
+- **AppSettingsContext.tsx**: Added `avatarBgColor: string` to `AppSettings` type (default `#1e293b`). Persisted to localStorage via existing `app-settings-v2` key.
+- **SettingsTab.tsx**: Added "Avatar Background Color" card with 9 preset swatches (Slate, Navy, Charcoal, Forest, Ocean, Plum, Warm Grey, Cream, White) + native `<input type="color">` picker + live hex preview.
+- **replicateGeneration.ts**: Added `describeColor(hex)` helper that converts hex to human-readable color name. Updated `buildPrompt(authorName, bgColor?)` to inject the color description into the portrait prompt (e.g. "solid deep navy blue background"). Updated `generateAIPortrait(authorName, bgColor?)` signature.
+- **authorProfiles.router.ts**: Updated `generatePortrait` procedure input schema to accept optional `bgColor` string, passed through to `generateAIPortrait`.
+- **AuthorBioPanel.tsx**: Reads `settings.avatarBgColor` from `useAppSettings()` and passes it to the generate portrait button's mutation call.
+- **Admin.tsx**: Batch portrait generation passes `settings.avatarBgColor` to each `generatePortrait` mutation.
+
+### Test Results
+- 122 tests passing (9 test files), 0 TypeScript errors.

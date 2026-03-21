@@ -1,6 +1,6 @@
 /**
- * Tier 4 (Quality Gate): Gemini Vision — validates found images are real headshots.
- * Runs after Tiers 1–3 to reject book covers, logos, or irrelevant images.
+ * Tier 4 (Quality Gate): Gemini Vision - validates found images are real headshots.
+ * Runs after Tiers 1-3 to reject book covers, logos, or irrelevant images.
  */
 import { GoogleGenAI } from "@google/genai";
 

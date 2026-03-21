@@ -14,10 +14,10 @@
 
 /** Raw name → canonical display name */
 export const AUTHOR_ALIASES: Record<string, string> = {
-  // ── Self-referential (canonical → canonical, keeps lookup safe) ─────────────
-  // These are listed implicitly; no entry needed — the fallback returns the input unchanged.
+  // -- Self-referential (canonical → canonical, keeps lookup safe) -------------
+  // These are listed implicitly; no entry needed - the fallback returns the input unchanged.
 
-  // ── Drive-folder suffix variants (same person, different specialty strings) ──
+  // -- Drive-folder suffix variants (same person, different specialty strings) --
   "Charles Duhigg - Habits, Productivity & Communication": "Charles Duhigg",
   "Charles Duhigg - Habits, productivity, and willpower": "Charles Duhigg",
   "Eric Topol - Longevity and precision medicine": "Eric Topol",
@@ -42,37 +42,61 @@ export const AUTHOR_ALIASES: Record<string, string> = {
   "David Brooks - political commentary, social psychology, and cultural analysis - communication":
     "David Brooks",
 
-  // ── Middle-initial / abbreviated name aliases ────────────────────────────────
+  // -- Middle-initial / abbreviated name aliases --------------------------------
   "Stephen Covey": "Stephen R. Covey",
   "Robert Cialdini": "Robert B. Cialdini",
   "Geoffrey Moore": "Geoffrey A. Moore",
   "Geoffrey A. Moore": "Geoffrey A. Moore",
 
-  // ── Alternate spelling / typo variants ──────────────────────────────────────
+  // -- Alternate spelling / typo variants --------------------------------------
   "Brené Brown": "Brene Brown",
   "Steven Hawking": "Stephen Hawking", // common misspelling
 
-  // ── Co-author separator variants (& vs and) ──────────────────────────────────
-  "Ashvin Vaidyanathan & Ruben Rabago": "Ashvin Vaidyanathan and Ruben Rabago",
-  "Frances Frei & Anne Morriss": "Frances Frei and Anne Morriss",
-  "Colin Bryar & Bill Carr": "Colin Bryar and Bill Carr",
-  "Roger Fisher & William Ury": "Roger Fisher and William Ury",
-  "Roger Fisher and William Ury": "Roger Fisher and William Ury",
-  "Dan Heath and Chip Heath": "Dan Heath and Chip Heath",
-  "Kelly Leonard and Tom Yorton": "Kelly Leonard and Tom Yorton",
-  "Jack Stack and Bo Burlingham": "Jack Stack and Bo Burlingham",
-  "Bob Burg and John David Mann": "Bob Burg and John David Mann",
-  "Aaron Ross and Jason Lemkin": "Aaron Ross and Jason Lemkin",
+  // -- Co-author combined-name → first author canonical (one-author-per-card rule) -------
+  // Combined Drive folder names resolve to the primary (first-listed) author.
+  // The filteredAuthors logic in Home.tsx splits these into individual cards.
+  "Ashvin Vaidyanathan & Ruben Rabago": "Ashvin Vaidyanathan",
+  "Ashvin Vaidyanathan and Ruben Rabago": "Ashvin Vaidyanathan",
+  "Frances Frei & Anne Morriss": "Frances Frei",
+  "Frances Frei and Anne Morriss": "Frances Frei",
+  "Colin Bryar & Bill Carr": "Colin Bryar",
+  "Colin Bryar and Bill Carr": "Colin Bryar",
+  "Roger Fisher & William Ury": "Roger Fisher",
+  "Roger Fisher and William Ury": "Roger Fisher",
+  "Dan Heath and Chip Heath": "Dan Heath",
+  "Kelly Leonard and Tom Yorton": "Kelly Leonard",
+  "Jack Stack and Bo Burlingham": "Jack Stack",
+  "Bob Burg and John David Mann": "Bob Burg",
+  "Aaron Ross and Jason Lemkin": "Aaron Ross",
+  "Matthew Dixon & Ted McKenna": "Matthew Dixon",
+  "Matthew Dixon and Ted McKenna": "Matthew Dixon",
+  "Brent Adamson & Matthew Dixon": "Brent Adamson",
+  "Brent Adamson and Matthew Dixon": "Brent Adamson",
+  "Matthew Dixon & Brent Adamson": "Matthew Dixon",
+  "Matthew Dixon and Brent Adamson": "Matthew Dixon",
+  "Matthew Dixon, Nick Toman & Rick DeLisi": "Matthew Dixon",
 
-  // ── Solo entries that also appear as part of a co-author pair ────────────────
-  // (These are separate people who happen to share a Drive folder; keep both)
+  // -- Individual co-author canonical names (one-author-per-card rule) ----------
+  // Each co-author gets their own card; these ensure clean display names.
+  "Jason Lemkin": "Jason Lemkin",
+  "Bill Carr": "Bill Carr",
+  "Anne Morriss": "Anne Morriss",
+  "Bo Burlingham": "Bo Burlingham",
+  "Ruben Rabago": "Ruben Rabago",
+  "Ted McKenna": "Ted McKenna",
+  "Brent Adamson": "Brent Adamson",
+  "Nick Toman": "Nick Toman",
+  "Rick DeLisi": "Rick DeLisi",
+  "William Ury": "William Ury",
+  "Chip Heath": "Chip Heath",
+  "John David Mann": "John David Mann",
   "Kelly Leonard": "Kelly Leonard",
   "Tom Yorton": "Tom Yorton",
 
-  // ── Suffix-only entries (Drive folders named after books, not authors) ───────
+  // -- Suffix-only entries (Drive folders named after books, not authors) -------
   // Map to the author name so bio/photo lookups still work
   "Aaron Ross and Jason Lemkin - sales strategy, B2B growth, and predictable revenue generation":
-    "Aaron Ross and Jason Lemkin",
+    "Aaron Ross",
   "Adam Grant - organizational psychology, workplace culture, and leadership": "Adam Grant",
   "Al Ries - Marketing and positioning strategy": "Al Ries",
   "Alan Dib - Marketing strategy and business growth": "Alan Dib",

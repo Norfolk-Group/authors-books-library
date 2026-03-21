@@ -1,7 +1,7 @@
 /**
  * Phosphor Duotone Icon Set
  *
- * Two-tone fill style — richer on dark themes (Noir Dark, dark mode).
+ * Two-tone fill style - richer on dark themes (Noir Dark, dark mode).
  * Same component names as regular set; weight prop changes the visual style.
  *
  * Install: pnpm add @phosphor-icons/react

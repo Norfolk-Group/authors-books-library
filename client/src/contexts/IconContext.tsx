@@ -1,5 +1,5 @@
 /**
- * IconContext — Switchable Icon Set Provider
+ * IconContext - Switchable Icon Set Provider
  *
  * Allows the active icon library to be changed globally from a Preferences page.
  * Components consume icons via useIcons() instead of importing directly.
@@ -11,7 +11,7 @@
 
 import { createContext, useContext, type ComponentType } from "react";
 
-// ── Icon catalogue type ───────────────────────────────────────────────────────
+// -- Icon catalogue type -------------------------------------------------------
 
 export interface IconProps {
   size?: number;
@@ -65,9 +65,9 @@ export interface IconCatalogue {
   bio: IconComponent;
 }
 
-// ── Default context ───────────────────────────────────────────────────────────
+// -- Default context -----------------------------------------------------------
 
-// Import is deferred — the actual default is set in main.tsx via IconProvider
+// Import is deferred - the actual default is set in main.tsx via IconProvider
 const IconContext = createContext<IconCatalogue | null>(null);
 
 export function IconProvider({

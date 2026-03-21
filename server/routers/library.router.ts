@@ -8,7 +8,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { publicProcedure, router } from "../_core/trpc";
 
-// ── Constants ────────────────────────────────────────────────
+// -- Constants ------------------------------------------------
 const AUTHORS_ROOT = "119tuydLrpyvavFEouf3SCq38LAD4_ln5";
 const BOOKS_AUDIO_ROOT = "1VRHbFqZFWHRhNJYiRlJCnKFBvGUdRBFM";
 
@@ -81,7 +81,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   "History & Biography": "book-open",
 };
 
-// ── Drive helpers ─────────────────────────────────────────────
+// -- Drive helpers ---------------------------------------------
 interface DriveFile {
   id: string;
   name: string;
@@ -136,7 +136,7 @@ function normalizeContentType(rawName: string): string {
   return CONTENT_TYPE_NORMALIZE[key] ?? rawName;
 }
 
-// ── Scan Authors ──────────────────────────────────────────────
+// -- Scan Authors ----------------------------------------------
 interface BookEntry {
   name: string;
   id: string;
@@ -211,7 +211,7 @@ function scanAuthors(): { authors: AuthorEntry[]; books: BookRecord[] } {
           const contentTypes: Record<string, number> = {};
 
           if (ctFolders.length === 0) {
-            // No subfolders — count files directly
+            // No subfolders - count files directly
             const count = countFilesInFolder(bookFolder.id);
             if (count > 0) contentTypes["Other"] = count;
           } else {
@@ -251,7 +251,7 @@ function scanAuthors(): { authors: AuthorEntry[]; books: BookRecord[] } {
   return { authors, books };
 }
 
-// ── Scan Books Audio ──────────────────────────────────────────
+// -- Scan Books Audio ------------------------------------------
 interface AudioFormat {
   folderId: string;
   fileCount: number;
@@ -299,7 +299,7 @@ function scanAudio(): AudioBook[] {
   return audioBooks;
 }
 
-// ── TypeScript generators ─────────────────────────────────────
+// -- TypeScript generators -------------------------------------
 function generateLibraryTs(authors: AuthorEntry[], books: BookRecord[]): string {
   const now = new Date().toISOString().slice(0, 16).replace("T", " ");
 
@@ -324,9 +324,9 @@ function generateLibraryTs(authors: AuthorEntry[], books: BookRecord[]): string 
   const bgTs = Object.entries(CATEGORY_BG).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(",\n");
   const iconsTs = Object.entries(CATEGORY_ICONS).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(",\n");
 
-  return `// NCG Knowledge Library — auto-generated from Google Drive scan
+  return `// NCG Knowledge Library - auto-generated from Google Drive scan
 // Generated: ${now} UTC
-// Design: Editorial Intelligence — Playfair Display + DM Sans, warm paper palette, 9-category system
+// Design: Editorial Intelligence - Playfair Display + DM Sans, warm paper palette, 9-category system
 export interface BookEntry {
   name: string;
   id: string;
@@ -414,7 +414,7 @@ function generateAudioTs(audioBooks: AudioBook[]): string {
     return `  {\n    id: ${JSON.stringify(a.id)},\n    title: ${JSON.stringify(a.title)},\n    bookAuthors: ${JSON.stringify(a.bookAuthors)},\n    formats: {${fmtsTs}},\n  }`;
   };
 
-  return `// NCG Library — Books Audio Data
+  return `// NCG Library - Books Audio Data
 // Source: Google Drive Books Audio folder
 // Last updated: ${now} UTC
 export interface AudioFormat {
@@ -433,7 +433,7 @@ ${audioBooks.map(tsAudio).join(",\n")}
 `;
 }
 
-// ── Router ────────────────────────────────────────────────────
+// -- Router ----------------------------------------------------
 const PROJECT_ROOT = path.resolve(process.cwd());
 const LIBRARY_DATA_PATH = path.join(PROJECT_ROOT, "client", "src", "lib", "libraryData.ts");
 const AUDIO_DATA_PATH = path.join(PROJECT_ROOT, "client", "src", "lib", "audioData.ts");

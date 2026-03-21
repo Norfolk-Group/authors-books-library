@@ -1,7 +1,7 @@
 // @ts-nocheck
 /**
  * CardGridSparkles
- * Isolated React Three Fiber component — @ts-nocheck prevents R3F's JSX
+ * Isolated React Three Fiber component - @ts-nocheck prevents R3F's JSX
  * namespace from polluting the rest of the project's type checking.
  * pointer-events: none so it never blocks card interactions.
  */

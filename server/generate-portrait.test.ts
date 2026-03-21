@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────────
+// -- Mocks ----------------------------------------------------------------------
 
 const mockGenerateAIPortrait = vi.fn();
 vi.mock("../server/lib/authorPhotos/replicateGeneration", () => ({
@@ -28,7 +28,7 @@ vi.mock("../server/db", () => ({
   getDb: vi.fn().mockResolvedValue(mockDb),
 }));
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// -- Helpers --------------------------------------------------------------------
 
 function makeFetchMock(ok: boolean, buffer: ArrayBuffer = new ArrayBuffer(8)) {
   return vi.fn().mockResolvedValue({
@@ -38,7 +38,7 @@ function makeFetchMock(ok: boolean, buffer: ArrayBuffer = new ArrayBuffer(8)) {
   });
 }
 
-// ── Tests ──────────────────────────────────────────────────────────────────────
+// -- Tests ----------------------------------------------------------------------
 
 describe("generatePortrait procedure logic", () => {
   beforeEach(() => {

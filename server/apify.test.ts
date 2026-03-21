@@ -13,7 +13,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-// ── Mock the apify-client module ──────────────────────────────────────────────
+// -- Mock the apify-client module ----------------------------------------------
 
 vi.mock("apify-client", () => {
   const mockDataset = {
@@ -35,14 +35,14 @@ vi.mock("apify-client", () => {
   return { ApifyClient: MockApifyClient };
 });
 
-// ── Import after mocking ──────────────────────────────────────────────────────
+// -- Import after mocking ------------------------------------------------------
 
 import { scrapeAmazonBook, scrapeAuthorPhoto, scrapeUrl } from "./apify";
 import { ApifyClient } from "apify-client";
 
-// ── Tests ─────────────────────────────────────────────────────────────────────
+// -- Tests ---------------------------------------------------------------------
 
-describe("Apify helper — module structure", () => {
+describe("Apify helper - module structure", () => {
   it("exports scrapeAmazonBook as a function", () => {
     expect(typeof scrapeAmazonBook).toBe("function");
   });
@@ -56,7 +56,7 @@ describe("Apify helper — module structure", () => {
   });
 });
 
-describe("scrapeAmazonBook — with mocked Apify client", () => {
+describe("scrapeAmazonBook - with mocked Apify client", () => {
   beforeEach(() => {
     process.env.APIFY_API_TOKEN = "test-token";
     vi.clearAllMocks();
@@ -130,7 +130,7 @@ describe("scrapeAmazonBook — with mocked Apify client", () => {
   });
 });
 
-describe("scrapeAuthorPhoto — with mocked Apify client", () => {
+describe("scrapeAuthorPhoto - with mocked Apify client", () => {
   beforeEach(() => {
     process.env.APIFY_API_TOKEN = "test-token";
     vi.clearAllMocks();
@@ -157,7 +157,7 @@ describe("scrapeAuthorPhoto — with mocked Apify client", () => {
   });
 });
 
-describe("scrapeUrl — generic scraper", () => {
+describe("scrapeUrl - generic scraper", () => {
   beforeEach(() => {
     process.env.APIFY_API_TOKEN = "test-token";
     vi.clearAllMocks();

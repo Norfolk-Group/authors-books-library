@@ -1,5 +1,5 @@
 /**
- * BackToTop — floating "back to top" button
+ * BackToTop - floating "back to top" button
  *
  * Attaches to a scrollable container via a ref.
  * Appears after the user scrolls down 300px, fades in/out with Framer Motion.

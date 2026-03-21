@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 
-// ── Batch chunking logic ──────────────────────────────────────
+// -- Batch chunking logic --------------------------------------
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -40,7 +40,7 @@ describe("chunkArray", () => {
   });
 });
 
-// ── Progress calculation ──────────────────────────────────────
+// -- Progress calculation --------------------------------------
 
 function calcProgress(processed: number, total: number): number {
   if (total === 0) return 100;
@@ -70,7 +70,7 @@ describe("calcProgress", () => {
   });
 });
 
-// ── Author name normalization for batch ───────────────────────
+// -- Author name normalization for batch -----------------------
 
 function extractDisplayName(rawName: string): string {
   const dashIdx = rawName.indexOf(" - ");
@@ -110,7 +110,7 @@ describe("getUniqueAuthorNames", () => {
   });
 });
 
-// ── Batch result aggregation ──────────────────────────────────
+// -- Batch result aggregation ----------------------------------
 
 type BatchResult = { authorName: string; success: boolean };
 
@@ -162,7 +162,7 @@ describe("aggregateResults", () => {
   });
 });
 
-// ── Enrichment cache check logic ──────────────────────────────
+// -- Enrichment cache check logic ------------------------------
 
 describe("enrichment cache check", () => {
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -194,7 +194,7 @@ describe("enrichment cache check", () => {
   });
 });
 
-// ── Enrichment indicator tests ──────────────────────────────────────────────
+// -- Enrichment indicator tests ----------------------------------------------
 
 describe("enrichedSet logic", () => {
   it("correctly identifies enriched authors from a name list", () => {

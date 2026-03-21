@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from "vitest";
 
-// ── Sort logic tests ─────────────────────────────────────────
+// -- Sort logic tests -----------------------------------------
 
 type AuthorEntry = {
   id: string;
@@ -131,7 +131,7 @@ describe("Book sort", () => {
   });
 });
 
-// ── Author profile enrichment logic tests ────────────────────
+// -- Author profile enrichment logic tests --------------------
 
 describe("Author profile LLM response parsing", () => {
   function parseProfileResponse(json: string): { bio: string; websiteUrl: string; twitterUrl: string; linkedinUrl: string } {
@@ -192,7 +192,7 @@ describe("Author profile LLM response parsing", () => {
   });
 });
 
-// ── Author Bio Modal tests ──────────────────────────────────────────────────
+// -- Author Bio Modal tests --------------------------------------------------
 
 describe("Author bio modal behavior", () => {
   it("modal opens with the correct author when card is clicked", () => {

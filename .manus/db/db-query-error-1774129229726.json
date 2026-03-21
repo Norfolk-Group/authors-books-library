@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, bookTitle, authorName, s3CoverUrl, coverUrl FROM book_profiles WHERE authorName LIKE '%&%' OR authorName LIKE '% and %' OR authorName LIKE '%,%' ORDER BY authorName LIMIT 50;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName, s3CoverUrl, coverUrl FROM book_profiles WHERE authorName LIKE '%&%' OR authorName LIKE '% and %' OR authorName LIKE '%,%' ORDER BY authorName LIMIT 50;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'coverurl' in 'field list'"
+  ]
+}

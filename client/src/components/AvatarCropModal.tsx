@@ -6,7 +6,7 @@
  *
  * Features:
  *  - Circular crop mask (1:1 aspect ratio locked)
- *  - Zoom slider (1× – 3×) via CSS transform scale on the image
+ *  - Zoom slider (1× - 3×) via CSS transform scale on the image
  *  - "Crop & Save" exports a 256×256 JPEG canvas blob
  *  - Keyboard accessible (Enter = confirm, Escape = cancel)
  *
@@ -39,7 +39,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ZoomInIcon, ZoomOutIcon } from "lucide-react";
 
-const OUTPUT_SIZE = 256; // px — final avatar resolution
+const OUTPUT_SIZE = 256; // px - final avatar resolution
 const OUTPUT_MIME = "image/jpeg" as const;
 const OUTPUT_QUALITY = 0.92;
 
@@ -136,7 +136,7 @@ export function AvatarCropModal({
       <DialogContent className="max-w-lg w-full">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">
-            Crop Avatar — {authorName}
+            Crop Avatar - {authorName}
           </DialogTitle>
         </DialogHeader>
 

@@ -1,18 +1,18 @@
 /**
- * Animated Icon Components — Manus Design System
+ * Animated Icon Components - Manus Design System
  *
  * Hand-crafted CSS animations for loading and status states.
  * Phosphor icons are static SVGs; use these for motion.
  *
  * Components:
- *   ManusSpinner   — 3D morphing primary-colored square (primary loading indicator)
- *   SpinningArc    — Thin circular arc (inline progress)
- *   ThinkingDots   — Three bouncing dots (AI composing)
- *   PulsingRing    — Expanding pulse ring (active task indicator)
- *   SkeletonShimmer — Horizontal shimmer bar (content loading)
+ *   ManusSpinner   - 3D morphing primary-colored square (primary loading indicator)
+ *   SpinningArc    - Thin circular arc (inline progress)
+ *   ThinkingDots   - Three bouncing dots (AI composing)
+ *   PulsingRing    - Expanding pulse ring (active task indicator)
+ *   SkeletonShimmer - Horizontal shimmer bar (content loading)
  */
 
-// ── ManusSpinner ──────────────────────────────────────────────────────────────
+// -- ManusSpinner --------------------------------------------------------------
 
 export function ManusSpinner({ size = 40 }: { size?: number }) {
   return (
@@ -36,7 +36,7 @@ export function ManusSpinner({ size = 40 }: { size?: number }) {
   );
 }
 
-// ── SpinningArc ───────────────────────────────────────────────────────────────
+// -- SpinningArc ---------------------------------------------------------------
 
 export function SpinningArc({ size = 16, color }: { size?: number; color?: string }) {
   // Default to CSS variable if no explicit color provided
@@ -61,7 +61,7 @@ export function SpinningArc({ size = 16, color }: { size?: number; color?: strin
   );
 }
 
-// ── ThinkingDots ──────────────────────────────────────────────────────────────
+// -- ThinkingDots --------------------------------------------------------------
 
 export function ThinkingDots({ color }: { color?: string }) {
   const dotColor = color ?? "hsl(var(--muted-foreground))";
@@ -88,7 +88,7 @@ export function ThinkingDots({ color }: { color?: string }) {
   );
 }
 
-// ── PulsingRing ───────────────────────────────────────────────────────────────
+// -- PulsingRing ---------------------------------------------------------------
 
 export function PulsingRing({ color, size = 12 }: { color?: string; size?: number }) {
   const ringColor = color ?? "hsl(var(--primary))";
@@ -115,7 +115,7 @@ export function PulsingRing({ color, size = 12 }: { color?: string; size?: numbe
   );
 }
 
-// ── SkeletonShimmer ───────────────────────────────────────────────────────────
+// -- SkeletonShimmer -----------------------------------------------------------
 
 export function SkeletonShimmer({
   width = "100%",

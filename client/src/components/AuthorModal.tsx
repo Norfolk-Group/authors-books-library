@@ -1,10 +1,10 @@
 /**
- * AuthorModal — shared author bio dialog
+ * AuthorModal - shared author bio dialog
  *
  * Used by both FlowbiteAuthorCard (Kanban) and AuthorAccordionRow (accordion).
  * Opens when the user clicks the avatar or author name.
  *
- * THEME RULES: zero hardcoded colours — CSS tokens only.
+ * THEME RULES: zero hardcoded colours - CSS tokens only.
  */
 import { useRef, useEffect, useState } from "react";
 import { Modal, ModalBody, ModalHeader } from "flowbite-react";
@@ -19,7 +19,7 @@ import { trpc } from "@/lib/trpc";
 import authorBios from "@/lib/authorBios.json";
 import { toast } from "sonner";
 
-// ── Icon map ──────────────────────────────────────────────────────────────────
+// -- Icon map ------------------------------------------------------------------
 type LucideIcon = React.FC<{ className?: string; style?: React.CSSProperties }>;
 const ICON_MAP: Record<string, LucideIcon> = {
   briefcase:        Briefcase as LucideIcon,
@@ -33,7 +33,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   "book-open":      BookMarked as LucideIcon,
 };
 
-// ── Props ─────────────────────────────────────────────────────────────────────
+// -- Props ---------------------------------------------------------------------
 export interface AuthorModalProps {
   /** The author whose bio to show. Pass null to hide the modal. */
   author: AuthorEntry | null;
@@ -42,7 +42,7 @@ export interface AuthorModalProps {
   onClose: () => void;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// -- Component -----------------------------------------------------------------
 export function AuthorModal({ author, photoUrl: photoOverride, onClose }: AuthorModalProps) {
   const open = !!author;
   const displayName = author ? canonicalName(author.name) : "";
@@ -87,7 +87,7 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
     }
   }, [open, jsonBio, isLoading, profile, displayName]);
 
-  // Find Real Photo — Apify Wikipedia scrape
+  // Find Real Photo - Apify Wikipedia scrape
   const scrapePhotoMutation = trpc.apify.scrapeAuthorPhoto.useMutation({
     onSuccess: (data) => {
       if (data.success && data.photoUrl) {
@@ -112,7 +112,7 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col gap-4 text-sm">
-              {/* Prominent close button — top right */}
+              {/* Prominent close button - top right */}
               <button
                 onClick={onClose}
                 className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-muted/80 hover:bg-muted flex items-center justify-center shadow-sm border border-border transition-all hover:scale-105 active:scale-95"
@@ -136,7 +136,7 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
                       {displayName.charAt(0)}
                     </div>
                   )}
-                  {/* Find Real Photo button — small overlay on avatar */}
+                  {/* Find Real Photo button - small overlay on avatar */}
                   <button
                     onClick={() => scrapePhotoMutation.mutate({ authorName: displayName })}
                     disabled={scrapePhotoMutation.isPending}

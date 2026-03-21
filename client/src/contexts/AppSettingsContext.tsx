@@ -1,9 +1,9 @@
 /**
- * AppSettingsContext — Unified App Preferences
+ * AppSettingsContext - Unified App Preferences
  *
  * Single source of truth for ALL app-wide settings:
  *   - Active named theme (manus | norfolk-ai | noir-dark)
- *   - Color mode (light | dark) — applies .dark class to <html>
+ *   - Color mode (light | dark) - applies .dark class to <html>
  *   - Active icon set (phosphor-regular | phosphor-duotone)
  *
  * Replaces the former ThemeContext (light/dark toggle).
@@ -27,7 +27,7 @@ import React, {
   useCallback,
 } from "react";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// -- Types ---------------------------------------------------------------------
 
 export type ThemeName = "manus" | "norfolk-ai" | "noir-dark";
 export type ColorMode = "light" | "dark";
@@ -44,6 +44,8 @@ export interface AppSettings {
   geminiModel: string;
   /** Authors view mode: card grid or accordion list */
   viewMode: "cards" | "accordion";
+  /** Background color injected into AI portrait generation prompt (hex string, e.g. "#1e293b") */
+  avatarBgColor: string;
 }
 
 interface AppSettingsContextType {
@@ -53,7 +55,7 @@ interface AppSettingsContextType {
   toggleColorMode: () => void;
 }
 
-// ── Defaults ──────────────────────────────────────────────────────────────────
+// -- Defaults ------------------------------------------------------------------
 
 const DEFAULT_SETTINGS: AppSettings = {
   theme: "manus",
@@ -61,13 +63,14 @@ const DEFAULT_SETTINGS: AppSettings = {
   iconSet: "phosphor-regular",
   geminiModel: "gemini-2.5-flash",
   viewMode: "cards",
+  avatarBgColor: "#1e293b",
 };
 
 const STORAGE_KEY = "app-settings-v2";
 const LEGACY_KEY_V1 = "app-settings-v1";
 const LEGACY_THEME_KEY = "ncg-app-theme";
 
-// ── Context ───────────────────────────────────────────────────────────────────
+// -- Context -------------------------------------------------------------------
 
 const AppSettingsContext = createContext<AppSettingsContextType | null>(null);
 
@@ -106,7 +109,7 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
     );
     // Apply named theme class
     root.classList.add(`theme-${settings.theme}`);
-    // Noir Dark is a light-background monochrome theme — never add .dark
+    // Noir Dark is a light-background monochrome theme - never add .dark
     // Adding .dark would activate Flowbite's dark:bg-gray-800 and break the white bg
     const effectiveColorMode = settings.theme === "noir-dark" ? "light" : settings.colorMode;
     if (effectiveColorMode === "dark") {
@@ -144,10 +147,10 @@ export function useAppSettings(): AppSettingsContextType {
   return ctx;
 }
 
-// ── Compatibility shim: replaces useTheme() from former ThemeContext ──────────
+// -- Compatibility shim: replaces useTheme() from former ThemeContext ----------
 /**
  * @deprecated Use useAppSettings() instead.
- * Provided for backward compatibility — mirrors the old useTheme() API.
+ * Provided for backward compatibility - mirrors the old useTheme() API.
  */
 export function useThemeCompat() {
   const { settings, updateSettings, toggleColorMode } = useAppSettings();

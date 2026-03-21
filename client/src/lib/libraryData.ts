@@ -1,6 +1,6 @@
-// NCG Knowledge Library — auto-generated from Google Drive scan
+// NCG Knowledge Library - auto-generated from Google Drive scan
 // Generated: 2026-03-15 03:43 UTC
-// Design: Editorial Intelligence — Playfair Display + DM Sans, warm paper palette, 9-category system
+// Design: Editorial Intelligence - Playfair Display + DM Sans, warm paper palette, 9-category system
 export interface BookEntry {
   name: string;
   id: string;

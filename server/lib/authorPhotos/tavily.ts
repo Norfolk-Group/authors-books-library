@@ -1,5 +1,5 @@
 /**
- * Tier 2: Tavily Image Search — fast (~1-2s), $0.001/search
+ * Tier 2: Tavily Image Search - fast (~1-2s), $0.001/search
  * Best for business authors on LinkedIn, publisher sites, speaker bios.
  */
 

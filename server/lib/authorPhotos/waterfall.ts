@@ -4,12 +4,12 @@
  * Priority order (Opus-designed):
  *   Tier 1: Wikipedia REST API (free, ~200ms)
  *   Tier 2: Tavily Image Search ($0.001/search, ~1-2s)
- *   Tier 3: Apify Cheerio Scraper ($0.001/run, ~30-60s) — uses existing server/apify.ts
+ *   Tier 3: Apify Cheerio Scraper ($0.001/run, ~30-60s) - uses existing server/apify.ts
  *   Tier 4: Gemini Vision validation gate (runs after each tier)
  *   Tier 5: Replicate AI Portrait Generation ($0.003/image, ~5-10s)
  *
  * Expected success rate: ~95%+ across all 109 authors
- * Estimated total cost: $1.50–$3.00
+ * Estimated total cost: $1.50-$3.00
  */
 import { fetchWikipediaPhoto } from "./wikipedia";
 import { fetchTavilyAuthorPhoto } from "./tavily";
@@ -18,7 +18,7 @@ import { validateHeadshotWithGemini } from "./geminiValidation";
 import { generateAIPortrait } from "./replicateGeneration";
 import { storagePut } from "../../storage";
 
-// ── Multi-author mapping ──────────────────────────────────────────────────────
+// -- Multi-author mapping ------------------------------------------------------
 const MULTI_AUTHOR_MAP: Record<string, string> = {
   "Aaron Ross and Jason Lemkin": "Aaron Ross",
   "Colin Bryar & Bill Carr": "Colin Bryar",
@@ -31,14 +31,14 @@ const MULTI_AUTHOR_MAP: Record<string, string> = {
   "Kerry Leonard": "Kelly Leonard",
 };
 
-// ── Skip list ─────────────────────────────────────────────────────────────────
+// -- Skip list -----------------------------------------------------------------
 const SKIP_LIST = new Set([
   "Founders Pocket Guide",
   "TEST Matthew Dixon",
   "Your Next Five Moves",
 ]);
 
-// ── Deduplication map (canonical names) ──────────────────────────────────────
+// -- Deduplication map (canonical names) --------------------------------------
 const CANONICAL_MAP: Record<string, string> = {
   "Steven Hawking": "Stephen Hawking",
   "Matt Dixon": "Matthew Dixon",
@@ -48,7 +48,7 @@ const CANONICAL_MAP: Record<string, string> = {
   "Peter Hans Beck": "Hans Peter Bech",
 };
 
-// ── Result type ───────────────────────────────────────────────────────────────
+// -- Result type ---------------------------------------------------------------
 export interface AuthorPhotoWaterfallResult {
   originalName: string;
   primaryName: string;
@@ -64,13 +64,13 @@ export interface AuthorPhotoWaterfallResult {
 export interface WaterfallOptions {
   /** Skip Gemini validation (faster, less accurate) */
   skipValidation?: boolean;
-  /** Maximum tier to try (1–5). Default: 5 */
+  /** Maximum tier to try (1-5). Default: 5 */
   maxTier?: number;
   /** Don't write to DB or S3 */
   dryRun?: boolean;
 }
 
-// ── Upload helper ─────────────────────────────────────────────────────────────
+// -- Upload helper -------------------------------------------------------------
 async function uploadPhotoToS3(
   imageUrl: string,
   authorName: string,
@@ -93,7 +93,7 @@ async function uploadPhotoToS3(
   }
 }
 
-// ── Validate helper ───────────────────────────────────────────────────────────
+// -- Validate helper -----------------------------------------------------------
 async function tryValidate(
   url: string,
   name: string,
@@ -109,7 +109,7 @@ async function tryValidate(
   }
 }
 
-// ── Main waterfall ────────────────────────────────────────────────────────────
+// -- Main waterfall ------------------------------------------------------------
 export async function processAuthorPhotoWaterfall(
   originalAuthorName: string,
   options: WaterfallOptions = {}
@@ -142,7 +142,7 @@ export async function processAuthorPhotoWaterfall(
   let isAiGenerated = false;
   let tier = 0;
 
-  // ── TIER 1: Wikipedia ──────────────────────────────────────────────────────
+  // -- TIER 1: Wikipedia ------------------------------------------------------
   if (!photoUrl && maxTier >= 1) {
     tier = 1;
     console.log(`[Avatar T1] Wikipedia → ${primaryName}`);
@@ -158,7 +158,7 @@ export async function processAuthorPhotoWaterfall(
     }
   }
 
-  // ── TIER 2: Tavily ─────────────────────────────────────────────────────────
+  // -- TIER 2: Tavily ---------------------------------------------------------
   if (!photoUrl && maxTier >= 2) {
     tier = 2;
     console.log(`[Avatar T2] Tavily → ${primaryName}`);
@@ -174,7 +174,7 @@ export async function processAuthorPhotoWaterfall(
     }
   }
 
-  // ── TIER 3: Apify ──────────────────────────────────────────────────────────
+  // -- TIER 3: Apify ----------------------------------------------------------
   if (!photoUrl && maxTier >= 3) {
     tier = 3;
     console.log(`[Avatar T3] Apify → ${primaryName}`);
@@ -190,7 +190,7 @@ export async function processAuthorPhotoWaterfall(
     }
   }
 
-  // ── TIER 5: Replicate AI ───────────────────────────────────────────────────
+  // -- TIER 5: Replicate AI ---------------------------------------------------
   if (!photoUrl && maxTier >= 5) {
     tier = 5;
     console.log(`[Avatar T5] Replicate AI → ${primaryName}`);
@@ -207,7 +207,7 @@ export async function processAuthorPhotoWaterfall(
     }
   }
 
-  // ── Upload to S3 ───────────────────────────────────────────────────────────
+  // -- Upload to S3 -----------------------------------------------------------
   let s3PhotoUrl: string | null = null;
   if (photoUrl && !dryRun) {
     s3PhotoUrl = await uploadPhotoToS3(photoUrl, primaryName, isAiGenerated);

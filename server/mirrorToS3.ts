@@ -1,5 +1,5 @@
 /**
- * mirrorToS3 — Image Mirror Service
+ * mirrorToS3 - Image Mirror Service
  *
  * Fetches an external image URL (e.g. Amazon cover, Wikipedia photo) and
  * uploads it to Manus S3, returning a stable CDN URL.
@@ -82,7 +82,7 @@ export async function mirrorImageToS3(
 
   // Skip re-upload if the key is already stored (idempotent)
   if (existingKey && existingKey === key) {
-    // Key already exists — return the existing URL by re-deriving it
+    // Key already exists - return the existing URL by re-deriving it
     // (storagePut returns the URL; we need to re-upload to get the URL back)
     // For now, re-upload is safe since storagePut is idempotent (overwrites same key)
   }

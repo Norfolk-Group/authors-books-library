@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, authorName, photoUrl, s3PhotoUrl FROM author_profiles WHERE authorName LIKE '%&%' OR authorName LIKE '% and %' OR authorName LIKE '%,%' ORDER BY authorName LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, authorName, photoUrl, s3PhotoUrl FROM author_profiles WHERE authorName LIKE '%&%' OR authorName LIKE '% and %' OR authorName LIKE '%,%' ORDER BY authorName LIMIT 30;",
+  "rows": [
+    {
+      "id": "30003",
+      "authorName": "Aaron Ross and Jason Lemkin",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-aaron-ross-1773702294855.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-aaron-ross-1773702294855.webp"
+    },
+    {
+      "id": "60001",
+      "authorName": "Ashvin Vaidyanathan & Ruben Rabago",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-ruben-rabago-1773837653384.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-ruben-rabago-1773837653384.webp"
+    },
+    {
+      "id": "30012",
+      "authorName": "Ashvin Vaidyanathan and Ruben Rabago",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702497499.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702497499.webp"
+    },
+    {
+      "id": "30013",
+      "authorName": "Ashwin Vaidyanathan and Ruben Rubago",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702536099.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702536099.webp"
+    },
+    {
+      "id": "30019",
+      "authorName": "Colin Bryar & Bill Carr",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-colin-bryar-1773702892299.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-colin-bryar-1773702892299.webp"
+    },
+    {
+      "id": "30035",
+      "authorName": "Frances Frei & Anne Morriss",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-frances-frei-1773724652002.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-frances-frei-1773724652002.webp"
+    },
+    {
+      "id": "30044",
+      "authorName": "Jack Stack and Bo Burlingham",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-jack-stack-and-bo-burlingham-1773837674629.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-jack-stack-and-bo-burlingham-1773837674629.webp"
+    },
+    {
+      "id": "30056",
+      "authorName": "Kelly Leonard and Tom Yorton",
+      "photoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-kelly-leonard-1773725027661.webp",
+      "s3PhotoUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-kelly-leonard-1773725027661.webp"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tauthorName\tphotoUrl\ts3PhotoUrl\n30003\tAaron Ross and Jason Lemkin\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-aaron-ross-1773702294855.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-aaron-ross-1773702294855.webp\n60001\tAshvin Vaidyanathan & Ruben Rabago\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-ruben-rabago-1773837653384.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-ruben-rabago-1773837653384.webp\n30012\tAshvin Vaidyanathan and Ruben Rabago\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702497499.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702497499.webp\n30013\tAshwin Vaidyanathan and Ruben Rubago\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702536099.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-ashvin-vaidyanathan-1773702536099.webp\n30019\tColin Bryar & Bill Carr\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-colin-bryar-1773702892299.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-colin-bryar-1773702892299.webp\n30035\tFrances Frei & Anne Morriss\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-frances-frei-1773724652002.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-frances-frei-1773724652002.webp\n30044\tJack Stack and Bo Burlingham\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-jack-stack-and-bo-burlingham-1773837674629.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-jack-stack-and-bo-burlingham-1773837674629.webp\n30056\tKelly Leonard and Tom Yorton\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-kelly-leonard-1773725027661.webp\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-photos/ai-kelly-leonard-1773725027661.webp\n",
+  "stderr": "",
+  "execution_time_ms": 192
+}
