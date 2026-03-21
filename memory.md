@@ -129,3 +129,17 @@
 - Added **MANDATORY** rule to `claude.md`: update `claude.md` and append to `memory.md` at the end of every task.
 - Created `memory.md` (this file) with full reconstructed session history.
 - Updated `claude.md` last-updated date and added `BackToTop` to component table and tree.
+
+### Avatar Sizes Tripled & 3D Tilt Removed
+
+All author avatar sizes tripled across every card component:
+- `FlowbiteAuthorCard`: `h-9 w-9` (36px) → `h-28 w-28` (112px), column-centered layout
+- `AuthorCard` (Home.tsx): `w-10 h-10` (40px) → `w-[120px] h-[120px]`, column-centered layout
+- `AuthorAccordionRow`: `h-7 w-7` (28px) → `h-[84px] w-[84px]`
+
+The `useCardTilt` 3D tilt hook (using `useMotionValue`, `useSpring`, `useTransform`) was removed from all 4 card components. Replaced with Framer Motion `whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}` spring animation on card wrappers. Avatar images use CSS `hover:scale-110 active:scale-95`.
+
+Three.js integration added to todo list (use case TBD by user).
+
+Files changed: `FlowbiteAuthorCard.tsx`, `AuthorAccordionRow.tsx`, `Home.tsx`, `claude.md`, `memory.md`, `todo.md`
+122 tests passing.

@@ -29,7 +29,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Card } from "flowbite-react";
 import {
   BookOpen,
@@ -211,30 +211,10 @@ function BookRow({
 }
 
 // ── 3-D tilt hook ─────────────────────────────────────────────────────────────
-function useCardTilt(maxDeg = 10) {
+// Simple expand-on-hover, contract-on-click card interaction
+function useCardHover() {
   const ref = useRef<HTMLDivElement>(null);
-  const rawX = useMotionValue(0);
-  const rawY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [maxDeg, -maxDeg]), { stiffness: 200, damping: 20 });
-  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-maxDeg, maxDeg]), { stiffness: 200, damping: 20 });
-  const scale   = useSpring(1, { stiffness: 200, damping: 20 });
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
-    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
-    scale.set(1.02);
-  }, [rawX, rawY, scale]);
-
-  const handleMouseLeave = useCallback(() => {
-    rawX.set(0);
-    rawY.set(0);
-    scale.set(1);
-  }, [rawX, rawY, scale]);
-
-  return { ref, rotateX, rotateY, scale, handleMouseMove, handleMouseLeave };
+  return { ref };
 }
 
 // ── Props ──────────────────────────────────────────────────────────────────────
@@ -312,7 +292,7 @@ export function FlowbiteAuthorCard({
     });
   }, [author.books]);
 
-  const { ref, rotateX, rotateY, scale, handleMouseMove, handleMouseLeave } = useCardTilt(10);
+  const { ref } = useCardHover();
 
   // Bio tooltip: first 200 chars, trimmed at sentence boundary if possible
   const bioSnippet = useMemo(() => {
@@ -329,10 +309,10 @@ export function FlowbiteAuthorCard({
     <>
       <motion.div
         ref={ref}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
         className="card-animate group h-full"
-        style={{ rotateX, rotateY, scale, willChange: "transform" }}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: "spring", stiffness: 350, damping: 28 }}
       >
         {/*
          * HOTSPOT 3: clicking the Card surface calls onBioClick.
@@ -398,12 +378,12 @@ export function FlowbiteAuthorCard({
 
               {/* HOTSPOT 1: Avatar + name group — stopPropagation so card click doesn't fire */}
             <div
-              className="flex items-start gap-3"
+              className="flex flex-col items-center gap-3 text-center"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Avatar — 1.15× hover scale, click opens AuthorModal */}
-              <div className="relative h-10 w-10 flex-shrink-0">
-                <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={40}>
+              {/* Avatar — tripled to 108px, expand-on-hover */}
+              <div className="relative h-28 w-28 flex-shrink-0">
+                <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={112}>
                   {(url) => {
                     const avatarEl = url ? (
                       <img
@@ -411,10 +391,11 @@ export function FlowbiteAuthorCard({
                         alt={displayName}
                         onClick={handleAvatarClick}
                         className="
-                          h-9 w-9 rounded-full object-cover shadow-sm
-                          ring-2 ring-border ring-offset-1
-                          transition-transform duration-300 ease-out
-                          hover:scale-[1.15]
+                          h-28 w-28 rounded-full object-cover shadow-md
+                          ring-2 ring-border ring-offset-2
+                          transition-transform duration-200 ease-out
+                          hover:scale-110
+                          active:scale-95
                           origin-center
                           cursor-pointer
                           relative z-20
@@ -425,11 +406,12 @@ export function FlowbiteAuthorCard({
                       <div
                         onClick={handleAvatarClick}
                         className="
-                          h-9 w-9 rounded-full bg-muted text-muted-foreground
-                          flex items-center justify-center text-sm font-bold
-                          ring-2 ring-border ring-offset-1
-                          transition-transform duration-300 ease-out
-                          hover:scale-[1.15]
+                          h-28 w-28 rounded-full bg-muted text-muted-foreground
+                          flex items-center justify-center text-3xl font-bold
+                          ring-2 ring-border ring-offset-2
+                          transition-transform duration-200 ease-out
+                          hover:scale-110
+                          active:scale-95
                           origin-center
                           cursor-pointer
                           relative z-20
@@ -458,14 +440,14 @@ export function FlowbiteAuthorCard({
 
               {/* Name + specialty — clicking name also opens AuthorModal */}
               <div
-                className="min-w-0 flex-1 cursor-pointer"
+                className="min-w-0 w-full cursor-pointer"
                 onClick={handleAvatarClick}
               >
-                <h3 className="text-sm font-semibold text-card-foreground leading-snug tracking-tight">
+                <h3 className="text-sm font-semibold text-card-foreground leading-snug tracking-tight text-center">
                   <Highlight text={displayName} query={query} />
                 </h3>
                 {specialty && (
-                  <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                  <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-2 leading-relaxed text-center">
                     <Highlight text={specialty} query={query} />
                   </p>
                 )}
@@ -473,7 +455,7 @@ export function FlowbiteAuthorCard({
             </div>
 
             {/* Bio status — presentational (with tooltip on bio-ready label) */}
-            <div className="text-[11px]">
+            <div className="text-[11px] flex justify-center">
               {isEnriched ? (
                 bioSnippet ? (
                   <Tooltip>

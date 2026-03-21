@@ -756,3 +756,17 @@
 
 - [x] Add "update claude.md at end of every task" rule to claude.md
 - [x] Create memory.md with full session action history
+
+## Session March 21, 2026 — Avatar Size & Hover Effect
+
+- [x] Triple avatar sizes in FlowbiteAuthorCard (h-9 w-9 → h-28 w-28, column layout, centered)
+- [x] Triple avatar sizes in AuthorAccordionRow (h-7 w-7 → h-[84px] w-[84px])
+- [x] Triple avatar sizes in AuthorCard in Home.tsx (w-10 h-10 → w-[120px] h-[120px], column layout)
+- [x] Replace 3D tilt effect with expand-on-hover (scale 1.04), contract-on-click (scale 0.97) in AuthorCard, BookCard, AudioCard, FlowbiteAuthorCard
+- [x] Test, update claude.md and memory.md, commit, push, save checkpoint
+
+## Future — Three.js Integration
+
+- [ ] Add Three.js (via @react-three/fiber + @react-three/drei) to project
+- [ ] Decide use case: 3D background scene, card flip effect, interactive globe, or other
+- [ ] Implement Three.js feature once use case is confirmed by user

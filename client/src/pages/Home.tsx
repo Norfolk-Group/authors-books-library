@@ -8,7 +8,7 @@
  */
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { CoverLightbox } from "@/components/CoverLightbox";
 import CardGridSparkles from "@/components/CardGridSparkles";
 import { fireConfetti } from "@/hooks/useConfetti";
@@ -279,27 +279,6 @@ function EmptyState({ query }: { query: string }) {
   );
 }
 
-// ── Framer Motion 3D Tilt Hook ────────────────────────────────
-function useCardTilt(maxDeg = 14) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [maxDeg, -maxDeg]), { stiffness: 300, damping: 25, mass: 0.5 });
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-maxDeg, maxDeg]), { stiffness: 300, damping: 25, mass: 0.5 });
-  const scale = useSpring(1, { stiffness: 300, damping: 25, mass: 0.5 });
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    x.set((e.clientX - rect.left) / rect.width - 0.5);
-    y.set((e.clientY - rect.top) / rect.height - 0.5);
-    scale.set(1.06);
-  }, [x, y, scale]);
-  const handleMouseLeave = useCallback(() => {
-    x.set(0);
-    y.set(0);
-    scale.set(1);
-  }, [x, y, scale]);
-  return { rotateX, rotateY, scale, handleMouseMove, handleMouseLeave };
-}
-
 // ── Author Card ──────────────────────────────────────────────
 function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookClick, dbPhotoMap }: { author: AuthorEntry; query: string; onBioClick: (a: AuthorEntry) => void; isEnriched?: boolean; coverMap?: Map<string, string>; onBookClick?: (bookId: string, titleKey: string) => void; dbPhotoMap?: Map<string, string> }) {
   const color = CATEGORY_COLORS[author.category] ?? "hsl(var(--muted-foreground))";
@@ -313,8 +292,7 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
   // Look up author photo: DB-first (generated portraits) then static map fallback
   const photoUrl = dbPhotoMap?.get(displayName.toLowerCase()) ?? getAuthorPhoto(displayName);
 
-  // Framer Motion spring tilt
-  const { rotateX, rotateY, scale, handleMouseMove, handleMouseLeave } = useCardTilt(14);
+  // Simple expand/contract hover — no 3D tilt
 
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
@@ -333,10 +311,10 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
 
   return (
     <motion.div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className="card-animate group relative"
-      style={{ rotateX, rotateY, scale, willChange: "transform" }}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 350, damping: 28 }}
     >
     <div
       className="rounded-lg border border-border shadow-sm overflow-hidden relative bg-card h-full"
@@ -381,69 +359,36 @@ function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookCli
             <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-muted-foreground" />
           </a>
         </div>
-        {/* Author photo + name row */}
-        <div className="flex items-center gap-2.5 mb-1">
-          <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={40}>
+        {/* Author photo + name — column layout for large avatar */}
+        <div className="flex flex-col items-center gap-2 mb-1">
+          <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={120}>
             {(url) =>
               url ? (
                 <img
                   src={url}
                   alt={displayName}
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-offset-1 flex-shrink-0"
-                  style={{
-                    '--tw-ring-color': color + '55',
-                    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease',
-                    cursor: 'pointer',
-                  } as React.CSSProperties}
+                  className="w-[120px] h-[120px] rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0
+                    transition-transform duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer"
+                  style={{ '--tw-ring-color': color + '55' } as React.CSSProperties}
                   loading="lazy"
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = 'scale(2) translateZ(0)';
-                    el.style.boxShadow = `0 8px 24px -4px ${color}66`;
-                    el.style.zIndex = '50';
-                    el.style.position = 'relative';
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = 'scale(1) translateZ(0)';
-                    el.style.boxShadow = '';
-                    el.style.zIndex = '';
-                  }}
                 />
               ) : (
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
-                  style={{
-                    backgroundColor: color + '22',
-                    color,
-                    transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease',
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = 'scale(2) translateZ(0)';
-                    el.style.boxShadow = `0 8px 24px -4px ${color}66`;
-                    el.style.zIndex = '50';
-                    el.style.position = 'relative';
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.transform = 'scale(1) translateZ(0)';
-                    el.style.boxShadow = '';
-                    el.style.zIndex = '';
-                  }}
+                  className="w-[120px] h-[120px] rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0
+                    transition-transform duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer"
+                  style={{ backgroundColor: color + '22', color }}
                 >
                   {displayName.charAt(0)}
                 </div>
               )
             }
           </AvatarUpload>
-          <div className="flex-1 min-w-0">
+          <div className="w-full text-center">
             <h3 className="text-sm font-semibold leading-snug tracking-tight">
               {highlight(displayName)}
             </h3>
             {specialty && (
-              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                 {highlight(specialty)}
               </p>
             )}
@@ -557,8 +502,7 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
   const displayTitle = dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
   const bookAuthor = dashIdx !== -1 ? book.name.slice(dashIdx + 3) : "";
 
-  // Framer Motion spring tilt
-  const { rotateX: bookRotX, rotateY: bookRotY, scale: bookScale, handleMouseMove: handleBookMouseMove, handleMouseLeave: handleBookMouseLeave } = useCardTilt(14);
+  // Simple expand/contract hover — no 3D tilt
 
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
@@ -576,10 +520,10 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
   const hasContent = Object.keys(book.contentTypes).length > 0;
   return (
     <motion.div
-      onMouseMove={handleBookMouseMove}
-      onMouseLeave={handleBookMouseLeave}
       className="card-animate group relative cursor-pointer"
-      style={{ rotateX: bookRotX, rotateY: bookRotY, scale: bookScale, willChange: "transform" }}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 350, damping: 28 }}
       onClick={() => onDetailClick?.(book)}
     >
     <div
@@ -694,8 +638,7 @@ function BookCard({ book, query, onDetailClick, coverImageUrl, isEnriched, amazo
 function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
   const driveUrl = `https://drive.google.com/drive/folders/${audio.id}?view=grid`;
 
-  // Framer Motion spring tilt
-  const { rotateX: audioRotX, rotateY: audioRotY, scale: audioScale, handleMouseMove: handleAudioMouseMove, handleMouseLeave: handleAudioMouseLeave } = useCardTilt(14);
+  // Simple expand/contract hover — no 3D tilt
 
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
@@ -714,10 +657,10 @@ function AudioCard({ audio, query }: { audio: AudioBook; query: string }) {
 
   return (
     <motion.div
-      onMouseMove={handleAudioMouseMove}
-      onMouseLeave={handleAudioMouseLeave}
       className="card-animate group relative"
-      style={{ rotateX: audioRotX, rotateY: audioRotY, scale: audioScale, willChange: "transform" }}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 350, damping: 28 }}
     >
     <a
       href={driveUrl}

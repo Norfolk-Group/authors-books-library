@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** March 21, 2026
+**Last Updated:** March 21, 2026 (Avatar sizes tripled; 3D tilt replaced with expand/contract hover)
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state.
 

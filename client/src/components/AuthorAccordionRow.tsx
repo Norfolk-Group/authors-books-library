@@ -247,7 +247,7 @@ export function AuthorAccordionRow({
 
           {/* HOTSPOT 1: Avatar — click opens AuthorModal */}
           <div
-            className="relative h-7 w-7 flex-shrink-0 cursor-pointer"
+            className="relative h-[84px] w-[84px] flex-shrink-0 cursor-pointer"
             onClick={handleAvatarClick}
           >
             {photoUrl ? (
@@ -255,17 +255,17 @@ export function AuthorAccordionRow({
                 src={photoUrl}
                 alt={displayName}
                 className="
-                  h-7 w-7 rounded-full object-cover ring-1 ring-border
-                  transition-transform duration-300 ease-out hover:scale-[1.15]
+                  h-[84px] w-[84px] rounded-full object-cover ring-2 ring-border ring-offset-1
+                  transition-transform duration-200 ease-out hover:scale-110 active:scale-95
                   origin-center
                 "
                 loading="lazy"
               />
             ) : (
               <div className="
-                h-7 w-7 rounded-full bg-muted ring-1 ring-border
-                flex items-center justify-center text-[10px] font-bold text-muted-foreground
-                transition-transform duration-300 ease-out hover:scale-[1.15]
+                h-[84px] w-[84px] rounded-full bg-muted ring-2 ring-border ring-offset-1
+                flex items-center justify-center text-2xl font-bold text-muted-foreground
+                transition-transform duration-200 ease-out hover:scale-110 active:scale-95
                 origin-center
               ">
                 {displayName.charAt(0)}
