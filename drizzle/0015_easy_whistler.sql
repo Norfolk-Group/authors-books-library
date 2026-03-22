@@ -1,0 +1,1 @@
+CREATE INDEX `author_profiles_avatarSource_idx` ON `author_profiles` (`avatarSource`);

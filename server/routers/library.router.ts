@@ -6,11 +6,13 @@
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, adminProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
 
 // -- Constants ------------------------------------------------
-const AUTHORS_ROOT = "119tuydLrpyvavFEouf3SCq38LAD4_ln5";
-const BOOKS_AUDIO_ROOT = "1VRHbFqZFWHRhNJYiRlJCnKFBvGUdRBFM";
+// Folder IDs are configurable via DRIVE_AUTHORS_FOLDER_ID / DRIVE_BOOKS_AUDIO_FOLDER_ID env vars
+const AUTHORS_ROOT = ENV.driveAuthorsFolderId;
+const BOOKS_AUDIO_ROOT = ENV.driveBooksAudioFolderId;
 
 const AUDIO_FOLDER_NAMES = new Set([
   "audio mp3", "audible", "mp3", "audiable", "audio mb4", "audio",
@@ -439,7 +441,7 @@ const LIBRARY_DATA_PATH = path.join(PROJECT_ROOT, "client", "src", "lib", "libra
 const AUDIO_DATA_PATH = path.join(PROJECT_ROOT, "client", "src", "lib", "audioData.ts");
 
 export const libraryRouter = router({
-  regenerate: publicProcedure.mutation(async () => {
+  regenerate: adminProcedure.mutation(async () => {
     const startTime = Date.now();
 
     try {

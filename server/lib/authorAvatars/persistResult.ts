@@ -14,6 +14,11 @@ import { eq } from "drizzle-orm";
 import { authorProfiles } from "../../../drizzle/schema";
 import type { AuthorAvatarWaterfallResult } from "./waterfall.js";
 
+// Use a structural type that matches what getDb() returns without circular import
+type Database = {
+  update: (...args: Parameters<ReturnType<typeof import("drizzle-orm/mysql2")["drizzle"]>["update"]>) => ReturnType<ReturnType<typeof import("drizzle-orm/mysql2")["drizzle"]>["update"]>;
+};
+
 type AvatarSourceEnum = "wikipedia" | "tavily" | "apify" | "google-imagen" | "ai";
 
 function mapSource(source: AuthorAvatarWaterfallResult["source"]): AvatarSourceEnum | undefined {
@@ -38,9 +43,7 @@ export interface PersistAvatarOptions {
  * No-ops if both avatarUrl and s3AvatarUrl are null/empty.
  */
 export async function persistAvatarResult(
-  // Accept any drizzle db instance — use unknown to avoid circular import
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any,
+  db: Database,
   authorName: string,
   result: AuthorAvatarWaterfallResult,
   options: PersistAvatarOptions = {}

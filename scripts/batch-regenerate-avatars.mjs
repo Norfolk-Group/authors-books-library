@@ -17,17 +17,33 @@ const PROGRESS_FILE = "/tmp/batch-regen-progress.json";
 const DELAY_BETWEEN_AUTHORS_MS = 2000; // 2s cooldown between authors
 
 // Load progress from previous run (for resumability)
-let progress = { completed: [], failed: [], startedAt: new Date().toISOString() };
+let progress = {
+  total: 0,
+  completed: 0,
+  succeeded: 0,
+  failed: 0,
+  current: null,
+  startedAt: new Date().toISOString(),
+  results: [],
+  // Legacy arrays for resumability
+  _completedNames: [],
+  _failedNames: [],
+};
 if (existsSync(PROGRESS_FILE)) {
   try {
-    progress = JSON.parse(readFileSync(PROGRESS_FILE, "utf8"));
-    console.log(`Resuming from previous run: ${progress.completed.length} completed, ${progress.failed.length} failed`);
+    const saved = JSON.parse(readFileSync(PROGRESS_FILE, "utf8"));
+    // Support both old and new schema
+    progress._completedNames = saved._completedNames ?? saved.completed ?? [];
+    progress._failedNames = saved._failedNames ?? saved.failed ?? [];
+    progress.results = saved.results ?? [];
+    progress.startedAt = saved.startedAt ?? progress.startedAt;
+    console.log(`Resuming from previous run: ${progress._completedNames.length} completed`);
   } catch {
     console.log("Starting fresh (could not parse progress file)");
   }
 }
 
-const completedSet = new Set(progress.completed);
+const completedSet = new Set(progress._completedNames.map(n => typeof n === 'string' ? n : n?.name).filter(Boolean));
 
 async function getAuthorsToProcess() {
   const res = await fetch(`${BASE_URL}/api/trpc/authorProfiles.getAvatarMap`, {
@@ -114,8 +130,20 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function saveProgress() {
-  writeFileSync(PROGRESS_FILE, JSON.stringify(progress, null, 2));
+function saveProgress(current = null) {
+  const snapshot = {
+    total: progress.total,
+    completed: progress.completed,
+    succeeded: progress.succeeded,
+    failed: progress.failed,
+    current,
+    startedAt: progress.startedAt,
+    finishedAt: progress.finishedAt,
+    results: progress.results,
+    _completedNames: progress._completedNames,
+    _failedNames: progress._failedNames,
+  };
+  writeFileSync(PROGRESS_FILE, JSON.stringify(snapshot, null, 2));
 }
 
 async function main() {
@@ -128,14 +156,17 @@ async function main() {
   console.log(`To process: ${toProcess.length}`);
   console.log(`Estimated time: ~${Math.ceil(toProcess.length * 37 / 60)} minutes\n`);
 
-  let successCount = 0;
-  let failCount = 0;
+  progress.total = total;
+  progress.completed = progress._completedNames.length;
+  progress.succeeded = progress._completedNames.length;
+  saveProgress(null);
 
   for (let i = 0; i < toProcess.length; i++) {
     const authorName = toProcess[i];
-    const overallIdx = progress.completed.length + i + 1;
+    const overallIdx = progress._completedNames.length + i + 1;
     
     process.stdout.write(`[${overallIdx}/${total}] ${authorName}... `);
+    saveProgress(authorName); // Mark as currently processing
     
     const startMs = Date.now();
     try {
@@ -145,17 +176,21 @@ async function main() {
       const tier = result?.tier ?? "?";
       
       console.log(`✓ ${source} (tier ${tier}) in ${durationS}s`);
-      progress.completed.push(authorName);
-      successCount++;
+      progress._completedNames.push(authorName);
+      progress.completed = progress._completedNames.length;
+      progress.succeeded++;
+      progress.results.push({ name: authorName, success: true, tier: tier ?? 5, source: source ?? 'meticulous' });
     } catch (err) {
       const durationS = ((Date.now() - startMs) / 1000).toFixed(1);
       console.log(`✗ FAILED in ${durationS}s: ${err.message?.slice(0, 100)}`);
-      progress.failed.push({ name: authorName, error: err.message });
-      failCount++;
+      progress._failedNames.push({ name: authorName, error: err.message });
+      progress.failed++;
+      progress.completed = progress._completedNames.length + progress._failedNames.length;
+      progress.results.push({ name: authorName, success: false, tier: 0, source: 'failed' });
     }
 
     // Save progress after each author
-    saveProgress();
+    saveProgress(null);
 
     // Cooldown between authors (except last)
     if (i < toProcess.length - 1) {
@@ -168,9 +203,12 @@ async function main() {
   console.log(`Failed: ${failCount}`);
   console.log(`Total completed: ${progress.completed.length}/${total}`);
   
-  if (progress.failed.length > 0) {
+  progress.finishedAt = new Date().toISOString();
+  saveProgress(null);
+
+  if (progress._failedNames.length > 0) {
     console.log(`\nFailed authors:`);
-    progress.failed.forEach(f => console.log(`  - ${f.name}: ${f.error?.slice(0, 80)}`));
+    progress._failedNames.forEach(f => console.log(`  - ${f.name}: ${f.error?.slice(0, 80)}`));
   }
 }
 

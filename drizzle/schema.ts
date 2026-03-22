@@ -104,6 +104,8 @@ export const authorProfiles = mysqlTable("author_profiles", {
   authorNameIdx: index("author_profiles_authorName_idx").on(table.authorName),
   /** Index for finding un-enriched rows quickly */
   enrichedAtIdx: index("author_profiles_enrichedAt_idx").on(table.enrichedAt),
+  /** Index for batch queries filtering by avatar source (e.g. upgrading Drive-sourced avatars) */
+  avatarSourceIdx: index("author_profiles_avatarSource_idx").on(table.avatarSource),
 }));
 
 export type AuthorProfile = typeof authorProfiles.$inferSelect;
@@ -122,7 +124,9 @@ export const bookProfiles = mysqlTable("book_profiles", {
   keyThemes: text("keyThemes"),
   /** Average rating out of 5, e.g. "4.6" */
   rating: varchar("rating", { length: 8 }),
-  /** Number of ratings/reviews as a formatted string, e.g. "120,000" */
+  /** Number of ratings/reviews as a formatted string, e.g. "120,000"
+   * TODO: Normalize to INT in a future dedicated migration (requires updating enrichment helpers)
+   */
   ratingCount: varchar("ratingCount", { length: 32 }),
   /** Amazon product page URL */
   amazonUrl: varchar("amazonUrl", { length: 512 }),

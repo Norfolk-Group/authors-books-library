@@ -3,13 +3,13 @@
  */
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { adminActionLog } from "../../drizzle/schema";
 
 export const adminRouter = router({
   /** Get all action logs */
-  getActionLogs: publicProcedure.query(async () => {
+  getActionLogs: adminProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     return db.select().from(adminActionLog);
@@ -27,7 +27,7 @@ export const adminRouter = router({
   }),
 
   /** Record an action run */
-  recordAction: publicProcedure
+  recordAction: adminProcedure
     .input(
       z.object({
         actionKey: z.string(),

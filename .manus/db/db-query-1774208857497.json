@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, bookTitle, coverImageUrl, s3CoverUrl, amazonUrl FROM book_profiles WHERE LOWER(authorName) LIKE '%alan dib%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, coverImageUrl, s3CoverUrl, amazonUrl FROM book_profiles WHERE LOWER(authorName) LIKE '%alan dib%';",
+  "rows": [
+    {
+      "id": "7",
+      "bookTitle": "Lean Marketing",
+      "coverImageUrl": "https://books.google.com/books/content?id=2dbMEAAAQBAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api",
+      "s3CoverUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/2320d154.jpg",
+      "amazonUrl": "https://www.amazon.com/dp/B0D2DTNL44"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tcoverImageUrl\ts3CoverUrl\tamazonUrl\n7\tLean Marketing\thttps://books.google.com/books/content?id=2dbMEAAAQBAJ&printsec=frontcover&img=1&zoom=3&source=gbs_api\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/book-covers/2320d154.jpg\thttps://www.amazon.com/dp/B0D2DTNL44\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

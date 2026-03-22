@@ -1,0 +1,202 @@
+{
+  "query": "DESCRIBE book_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute DESCRIBE book_profiles;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "bookTitle",
+      "Type": "varchar(512)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "authorName",
+      "Type": "varchar(256)",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "summary",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "keyThemes",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "rating",
+      "Type": "varchar(8)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "ratingCount",
+      "Type": "varchar(32)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "amazonUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "goodreadsUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "resourceUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "resourceLabel",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "enrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "coverImageUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "publishedDate",
+      "Type": "varchar(32)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "isbn",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "publisher",
+      "Type": "varchar(256)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "s3CoverUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "s3CoverKey",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "publisherUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastSummaryEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "summaryEnrichmentSource",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "coverImageSource",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nbookTitle\tvarchar(512)\tNO\tUNI\tNULL\t\nauthorName\tvarchar(256)\tYES\tMUL\tNULL\t\nsummary\ttext\tYES\t\tNULL\t\nkeyThemes\ttext\tYES\t\tNULL\t\nrating\tvarchar(8)\tYES\t\tNULL\t\nratingCount\tvarchar(32)\tYES\t\tNULL\t\namazonUrl\tvarchar(512)\tYES\t\tNULL\t\ngoodreadsUrl\tvarchar(512)\tYES\t\tNULL\t\nresourceUrl\tvarchar(512)\tYES\t\tNULL\t\nresourceLabel\tvarchar(128)\tYES\t\tNULL\t\nenrichedAt\ttimestamp\tYES\tMUL\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\ncoverImageUrl\tvarchar(1024)\tYES\t\tNULL\t\npublishedDate\tvarchar(32)\tYES\t\tNULL\t\nisbn\tvarchar(20)\tYES\t\tNULL\t\npublisher\tvarchar(256)\tYES\t\tNULL\t\ns3CoverUrl\tvarchar(1024)\tYES\t\tNULL\t\ns3CoverKey\tvarchar(512)\tYES\t\tNULL\t\npublisherUrl\tvarchar(512)\tYES\t\tNULL\t\nlastSummaryEnrichedAt\ttimestamp\tYES\t\tNULL\t\nsummaryEnrichmentSource\tvarchar(50)\tYES\t\tNULL\t\ncoverImageSource\tvarchar(50)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 50
+}

@@ -28,6 +28,7 @@ import {
   resultToBuffer,
 } from "./imageGenerators/index.js";
 import { storagePut } from "../../storage.js";
+import { ENV } from "../../_core/env.js";
 
 // ── Google Drive upload helper ─────────────────────────────────────────────────
 
@@ -63,7 +64,7 @@ async function uploadToGoogleDrive(
 
     // Upload to Google Drive "Author Pictures" folder using gws CLI.
     // Pass cwd: projectRoot so gws resolves the relative path correctly.
-    const DRIVE_FOLDER_ID = "1_sTZD5m4d7Hnb3oBHxRFXONBnFJlJqJF";
+    const DRIVE_FOLDER_ID = ENV.driveAvatarsFolderId;
     const { stdout } = await execAsync(
       `gws drive files create --params '{"name":"${sanitized}","parents":["${DRIVE_FOLDER_ID}"]}' --upload '${relPath}' --upload-content-type 'image/png'`,
       { cwd: projectRoot }

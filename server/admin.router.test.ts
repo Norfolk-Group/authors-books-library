@@ -49,9 +49,32 @@ function createPublicContext(): TrpcContext {
   };
 }
 
+function createAdminContext(): TrpcContext {
+  return {
+    user: {
+      id: 1,
+      openId: "test-admin-open-id",
+      name: "Test Admin",
+      email: "admin@test.com",
+      role: "admin",
+      loginMethod: "test",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSignedIn: new Date(),
+    },
+    req: {
+      protocol: "https",
+      headers: {},
+    } as TrpcContext["req"],
+    res: {
+      clearCookie: vi.fn(),
+    } as unknown as TrpcContext["res"],
+  };
+}
+
 describe("admin.getActionLogs", () => {
   it("returns a result (empty when no logs exist)", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.admin.getActionLogs();
@@ -63,7 +86,7 @@ describe("admin.getActionLogs", () => {
 
 describe("admin.recordAction", () => {
   it("accepts valid input and returns success", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.admin.recordAction({
@@ -78,7 +101,7 @@ describe("admin.recordAction", () => {
   });
 
   it("accepts null itemCount", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
     const result = await caller.admin.recordAction({
@@ -92,7 +115,7 @@ describe("admin.recordAction", () => {
   });
 
   it("rejects missing required fields", async () => {
-    const ctx = createPublicContext();
+    const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
     await expect(

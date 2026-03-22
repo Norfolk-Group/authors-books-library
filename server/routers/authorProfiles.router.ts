@@ -1,10 +1,13 @@
 import { z } from "zod";
 import { eq, ne, isNull, or, sql, inArray } from "drizzle-orm";
+import { readFileSync, existsSync } from "fs";
+import { spawn } from "child_process";
+import { join } from "path";
 import { mirrorBatchToS3 } from "../mirrorToS3";
 import { storagePut } from "../storage";
 import { getDb } from "../db";
 import { authorProfiles } from "../../drizzle/schema";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { processAuthorAvatarWaterfall } from "../lib/authorAvatars/waterfall";
 import { parallelBatch } from "../lib/parallelBatch";
 import { persistAvatarResult } from "../lib/authorAvatars/persistResult";
@@ -42,7 +45,7 @@ export const authorProfilesRouter = router({
     }),
 
   /** Enrich a single author via Wikipedia + LLM fallback and upsert into DB */
-  enrich: publicProcedure
+  enrich: adminProcedure
     .input(z.object({ authorName: z.string(), model: z.string().optional(), secondaryModel: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -117,7 +120,7 @@ export const authorProfilesRouter = router({
    * Mirror author avatars to Manus S3 for stable CDN serving.
    * Processes authors that have an avatarUrl but no s3AvatarUrl yet.
    */
-  mirrorAvatars: publicProcedure
+  mirrorAvatars: adminProcedure
     .input(z.object({ batchSize: z.number().min(1).max(20).default(10) }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -166,20 +169,9 @@ export const authorProfilesRouter = router({
     return { withAvatar, mirrored, pending: withAvatar - mirrored };
   }),
 
-  /** @deprecated Use getMirrorAvatarStats */
-  getMirrorPhotoStats: publicProcedure.query(async () => {
-    const db = await getDb();
-    if (!db) return { withPhoto: 0, mirrored: 0, pending: 0 };
-    const all = await db
-      .select({ avatarUrl: authorProfiles.avatarUrl, s3AvatarUrl: authorProfiles.s3AvatarUrl })
-      .from(authorProfiles);
-    const withPhoto = all.filter((a) => a.avatarUrl?.startsWith("http")).length;
-    const mirrored = all.filter((a) => a.s3AvatarUrl?.startsWith("http")).length;
-    return { withPhoto, mirrored, pending: withPhoto - mirrored };
-  }),
 
   /** Batch enrich a list of authors (up to 20 at a time to avoid timeout) */
-  enrichBatch: publicProcedure
+  enrichBatch: adminProcedure
     .input(z.object({
       authorNames: z.array(z.string()).max(20),
       model: z.string().optional(),
@@ -286,7 +278,7 @@ export const authorProfilesRouter = router({
   }),
 
   // -- Generate avatars for ALL authors missing avatars -------------------------
-  generateAllMissingAvatars: publicProcedure
+  generateAllMissingAvatars: adminProcedure
     .input(
       z.object({
         concurrency: z.number().min(1).max(10).optional().default(3),
@@ -355,7 +347,7 @@ export const authorProfilesRouter = router({
     }),
 
   // -- Generate an AI avatar (routes to Google Imagen or Replicate based on vendor) --------
-  generateAvatar: publicProcedure
+  generateAvatar: adminProcedure
     .input(z.object({
       authorName: z.string().min(1),
       bgColor: z.string().optional(),
@@ -421,7 +413,7 @@ export const authorProfilesRouter = router({
     }),
 
   // -- Upload a custom author avatar (base64) -----------------------------
-  uploadAvatar: publicProcedure
+  uploadAvatar: protectedProcedure
     .input(
       z.object({
         authorName: z.string().min(1),
@@ -472,7 +464,7 @@ export const authorProfilesRouter = router({
    * Update a single author's online links (website, Twitter, LinkedIn, podcast, blog, Substack, articles).
    * Uses Perplexity (web-grounded) as primary, Gemini as fallback.
    */
-  updateAuthorLinks: publicProcedure
+  updateAuthorLinks: adminProcedure
     .input(
       z.object({
         authorName: z.string().min(1),
@@ -516,7 +508,7 @@ export const authorProfilesRouter = router({
    * Update links for all authors in the database.
    * Processes in batches of 5 to avoid rate-limiting.
    */
-  updateAllAuthorLinks: publicProcedure
+  updateAllAuthorLinks: adminProcedure
     .input(
       z.object({
         researchVendor: z.string().optional(),
@@ -583,7 +575,7 @@ export const authorProfilesRouter = router({
    * have the canonical bokeh-gold background. Returns a list of authors whose
    * avatars need to be regenerated.
    */
-  auditAvatarBackgrounds: publicProcedure
+  auditAvatarBackgrounds: adminProcedure
     .input(z.object({ targetBgDescription: z.string().default("bokeh-gold warm golden bokeh") }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -649,7 +641,7 @@ export const authorProfilesRouter = router({
    * Regenerate avatars for a specific list of authors using the current
    * background color setting. Used by the "Normalize All" batch action.
    */
-  normalizeAvatarBackgrounds: publicProcedure
+  normalizeAvatarBackgrounds: adminProcedure
     .input(
       z.object({
         authorNames: z.array(z.string()),
@@ -717,4 +709,67 @@ export const authorProfilesRouter = router({
         avatarUrl: r.s3AvatarUrl ?? r.avatarUrl ?? "",
       }));
   }),
+
+  /**
+   * Read the live progress of the background batch-regen script.
+   * Returns null if no batch is running or has ever run.
+   */
+  getBatchRegenProgress: publicProcedure.query(() => {
+    const progressFile = "/tmp/batch-regen-progress.json";
+    if (!existsSync(progressFile)) return null;
+    try {
+      const raw = readFileSync(progressFile, "utf8");
+      const data = JSON.parse(raw) as {
+        total: number;
+        completed: number;
+        succeeded: number;
+        failed: number;
+        current: string | null;
+        startedAt: string;
+        finishedAt?: string;
+        results: Array<{ name: string; success: boolean; tier: number; source: string }>;
+      };
+      return data;
+    } catch {
+      return null;
+    }
+  }),
+
+  /**
+   * Trigger the batch-regen script as a background process.
+   * Returns immediately — poll getBatchRegenProgress for live updates.
+   */
+  triggerBatchRegen: adminProcedure
+    .input(z.object({
+      forceRegenerate: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ input }) => {
+      const scriptPath = join(process.cwd(), "scripts/batch-regenerate-avatars.mjs");
+      if (!existsSync(scriptPath)) {
+        throw new Error("Batch regen script not found at " + scriptPath);
+      }
+      // Write a fresh progress file to indicate the batch has started
+      const { writeFileSync } = await import("fs");
+      writeFileSync("/tmp/batch-regen-progress.json", JSON.stringify({
+        total: 0,
+        completed: 0,
+        succeeded: 0,
+        failed: 0,
+        current: null,
+        startedAt: new Date().toISOString(),
+        results: [],
+      }));
+      // Spawn detached so it survives the HTTP request
+      const child = spawn(
+        "node",
+        [scriptPath, input.forceRegenerate ? "--force" : ""].filter(Boolean),
+        {
+          detached: true,
+          stdio: ["ignore", "ignore", "ignore"],
+          env: { ...process.env },
+        }
+      );
+      child.unref();
+      return { started: true, pid: child.pid };
+    }),
 });

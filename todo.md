@@ -1316,3 +1316,20 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Add `bestReferencePhotoUrl` column to `author_profiles` DB schema and persist it from the meticulous pipeline
 - [x] Add per-author Regenerate Avatar button to author cards in the library UI (not just Admin Console)
 - [x] Batch-regenerate remaining Drive-sourced author avatars via Admin Console pipeline (upgrade all to Tier 5 meticulous quality)
+
+## Session March 22, 2026 — Book Cover Fixes & Codebase Audit
+
+- [x] Replace Alan Dib's book covers with correct Amazon images
+- [x] Display reference photo thumbnail in Author Bio modal (bestReferencePhotoUrl)
+- [x] Add batch-regeneration progress indicator in Admin Console (BatchRegenSection component)
+- [x] Add Regenerate All button in Admin Console
+- [x] Claude Opus full codebase audit (code quality, folder structure, schema, DB, S3, Drive)
+- [x] Security hardening: upgrade all mutation/admin procedures from publicProcedure to adminProcedure
+- [x] Remove deprecated getMirrorPhotoStats procedure
+- [x] Fix persistResult.ts any type with proper structural type
+- [x] Add avatarSource index to author_profiles schema (migration 0015 applied)
+- [x] Move Drive folder IDs from hardcoded strings to ENV variables
+- [x] Create scripts/README.md documenting all maintenance scripts
+- [x] Fix admin.router.test.ts to use adminContext for adminProcedure tests
+- [x] 171 tests passing, checkpoint saved
+- [ ] TODO (deferred): Normalize ratingCount from varchar to int (requires updating enrichment helpers + migration)

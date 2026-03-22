@@ -14,7 +14,7 @@
  *   LLM 2 (refinement): Google → Gemini 2.5 Pro    (best prose quality in family)
  */
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
 
 // ---------------------------------------------------------------------------
@@ -665,7 +665,7 @@ export const llmRouter = router({
    * Refresh the vendor catalogue.
    * Re-runs the recommendation engine so recommendations stay current.
    */
-  refreshVendors: publicProcedure.mutation(() => {
+  refreshVendors: adminProcedure.mutation(() => {
     const refreshed = applyRecommendations(VENDOR_CATALOGUE_RAW);
     return {
       vendors: refreshed,
@@ -690,7 +690,7 @@ export const llmRouter = router({
   }),
 
   /** Test a model with a lightweight ping — returns latency in ms */
-  testModel: publicProcedure
+  testModel: adminProcedure
     .input(z.object({ modelId: z.string(), vendorId: z.string().optional() }))
     .mutation(async ({ input }) => {
       const start = Date.now();

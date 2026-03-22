@@ -14,4 +14,11 @@ export const ENV = {
   tavilyApiKey: process.env.TAVILY_API_KEY ?? "",
   perplexityApiKey: process.env.PERPLEXITY_API_KEY ?? "",
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
+  // Google Drive folder IDs (NCG Library structure)
+  // Set via environment variables to avoid hardcoding in source
+  driveAuthorsFolderId: process.env.DRIVE_AUTHORS_FOLDER_ID ?? "119tuydLrpyvavFEouf3SCq38LAD4_ln5",
+  driveBooksAudioFolderId: process.env.DRIVE_BOOKS_AUDIO_FOLDER_ID ?? "1VRHbFqZFWHRhNJYiRlJCnKFBvGUdRBFM",
+  driveAvatarsFolderId: process.env.DRIVE_AVATARS_FOLDER_ID ?? "1_sTZD5m4d7Hnb3oBHxRFXONBnFJlJqJF",
+  // Feature flags
+  enableDriveUpload: process.env.ENABLE_DRIVE_UPLOAD === "true",
 };

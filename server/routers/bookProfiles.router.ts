@@ -5,7 +5,7 @@
  * Amazon and Goodreads links are constructed from search queries.
  */
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { bookProfiles } from "../../drizzle/schema";
 import { eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
@@ -56,7 +56,7 @@ export const bookProfilesRouter = router({
   }),
 
   /** Enrich a single book - auto-skips if enriched within 30 days */
-  enrich: publicProcedure
+  enrich: adminProcedure
     .input(z.object({ bookTitle: z.string(), authorName: z.string().optional(), model: z.string().optional(), secondaryModel: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -104,7 +104,7 @@ export const bookProfilesRouter = router({
    * Mirror book cover images to Manus S3 for stable CDN serving.
    * Processes books that have a coverImageUrl but no s3CoverUrl yet.
    */
-  mirrorCovers: publicProcedure
+  mirrorCovers: adminProcedure
     .input(z.object({ batchSize: z.number().min(1).max(20).default(10) }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -154,7 +154,7 @@ export const bookProfilesRouter = router({
   }),
 
   /** Enrich a batch of books (up to 10 at a time) */
-  enrichBatch: publicProcedure
+  enrichBatch: adminProcedure
     .input(
       z.object({
         books: z.array(
@@ -263,7 +263,7 @@ export const bookProfilesRouter = router({
    * Update a single book's summary using the AI enrichment pipeline.
    * Uses Perplexity (web-grounded) as primary, Gemini as fallback.
    */
-  updateBookSummary: publicProcedure
+  updateBookSummary: adminProcedure
     .input(
       z.object({
         bookTitle: z.string(),
@@ -308,7 +308,7 @@ export const bookProfilesRouter = router({
    * Update summaries for all books in the database using the AI pipeline.
    * Processes in batches of 5. Returns progress counts.
    */
-  updateAllBookSummaries: publicProcedure
+  updateAllBookSummaries: adminProcedure
     .input(
       z.object({
         researchVendor: z.string().optional(),
@@ -373,7 +373,7 @@ export const bookProfilesRouter = router({
    * Processes in batches of 5 to avoid rate-limiting.
    * Returns { total, enriched, skipped, failed } counts.
    */
-  enrichAllMissingSummaries: publicProcedure
+  enrichAllMissingSummaries: adminProcedure
     .input(z.object({ model: z.string().optional() }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -424,7 +424,7 @@ export const bookProfilesRouter = router({
    * 4. Trigger a full S3 re-mirror pass
    * Returns counts of upgraded, re-scraped, failed, and mirrored books.
    */
-  rebuildAllBookCovers: publicProcedure
+  rebuildAllBookCovers: adminProcedure
     .input(z.object({
       concurrency: z.number().min(1).max(5).optional().default(2),
       rescrapeAll: z.boolean().optional().default(false),

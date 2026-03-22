@@ -14,7 +14,7 @@
  */
 
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { bookProfiles, authorProfiles } from "../../drizzle/schema";
 import { eq, isNull, or } from "drizzle-orm";
@@ -26,7 +26,7 @@ export const apifyRouter = router({
    * Scrape Amazon for a book's cover image and product URL.
    * Persists coverUrl and amazonUrl to the book_profiles table.
    */
-  scrapeBook: publicProcedure
+  scrapeBook: adminProcedure
     .input(
       z.object({
         title: z.string().min(1),
@@ -124,7 +124,7 @@ export const apifyRouter = router({
    *   coverUrl: the cover URL found (or null)
    *   mirrored: number of covers mirrored to S3 in this call
    */
-  scrapeNextMissingCover: publicProcedure
+  scrapeNextMissingCover: adminProcedure
     .input(
       z.object({
         /** How many S3 mirrors to run after scraping (default 3) */
@@ -259,7 +259,7 @@ export const apifyRouter = router({
    * Scrape Wikipedia for a real author headshot.
    * Persists avatarUrl to the author_profiles table.
    */
-  scrapeAuthorAvatar: publicProcedure
+  scrapeAuthorAvatar: adminProcedure
     .input(
       z.object({
         authorName: z.string().min(1),
@@ -312,7 +312,7 @@ export const apifyRouter = router({
    * Generic scrape: run any URL through the Apify Cheerio Scraper
    * with a custom page function. Returns raw scraped items.
    */
-  scrapeUrl: publicProcedure
+  scrapeUrl: adminProcedure
     .input(
       z.object({
         url: z.string().url(),

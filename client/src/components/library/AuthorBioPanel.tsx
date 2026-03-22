@@ -19,6 +19,7 @@ import {
   Linkedin,
   RefreshCw,
   Sparkles,
+  Camera,
 } from "lucide-react";
 import { AUTHORS, CATEGORY_COLORS } from "@/lib/libraryData";
 import { canonicalName } from "@/lib/authorAliases";
@@ -196,6 +197,49 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
                 <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-60" />
               </a>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Reference photo used for avatar generation */}
+      {profile?.bestReferencePhotoUrl && (
+        <div>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+            <Camera className="w-3 h-3" />
+            Reference Photo Used
+          </h4>
+          <div className="flex items-start gap-3">
+            <a
+              href={profile.bestReferencePhotoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 group"
+              title="View reference photo source"
+            >
+              <img
+                src={profile.bestReferencePhotoUrl}
+                alt={`Reference photo for ${displayName}`}
+                className="w-16 h-16 rounded-lg object-cover ring-1 ring-border group-hover:ring-primary transition-all duration-200 group-hover:scale-105"
+                onError={(e) => {
+                  // Hide the whole section if the image fails to load
+                  (e.currentTarget.closest('[data-ref-photo]') as HTMLElement | null)?.style.setProperty('display', 'none');
+                }}
+              />
+            </a>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                This photo was used as the visual reference for the AI-generated portrait above.
+              </p>
+              <a
+                href={profile.bestReferencePhotoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+              >
+                <ExternalLink className="w-3 h-3" />
+                View source
+              </a>
+            </div>
           </div>
         </div>
       )}
