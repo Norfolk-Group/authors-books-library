@@ -143,28 +143,35 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
             {/* Avatar with spinner overlay during regeneration */}
             <div className="relative">
               <AvatarUpload authorName={displayName} currentAvatarUrl={avatarUrl} size={120}>
-                {(url) =>
-                  url ? (
-                    <img
+                {(url) => {
+                  const springProps = {
+                    whileHover: { scale: 1.12 },
+                    whileTap: { scale: 0.90 },
+                    transition: { type: "spring" as const, stiffness: 400, damping: 20 },
+                  };
+                  return url ? (
+                    <motion.img
                       src={url}
                       alt={displayName}
-                      className={`w-[120px] h-[120px] rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0 transition-all duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer ${
+                      {...springProps}
+                      className={`w-[120px] h-[120px] rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0 origin-center cursor-pointer ${
                         avatarRegenerating ? "opacity-40 blur-[1px]" : ""
                       }`}
                       style={{ "--tw-ring-color": color + "55" } as React.CSSProperties}
                       loading="lazy"
                     />
                   ) : (
-                    <div
-                      className={`w-[120px] h-[120px] rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0 transition-all duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer ${
+                    <motion.div
+                      {...springProps}
+                      className={`w-[120px] h-[120px] rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0 origin-center cursor-pointer ${
                         avatarRegenerating ? "opacity-40" : ""
                       }`}
                       style={{ backgroundColor: color + "22", color }}
                     >
                       {displayName.charAt(0)}
-                    </div>
-                  )
-                }
+                    </motion.div>
+                  );
+                }}
               </AvatarUpload>
               {/* Spinner overlay — shown while avatar is regenerating */}
               {avatarRegenerating && (

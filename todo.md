@@ -1345,3 +1345,8 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Wire parallelBatch into generateAllPortraits procedure (already implemented via generateAllMissingAvatars delegation — confirmed)
 - [x] Add Research Quality badge (high/medium/low) to author cards based on sourceConfidence.overallConfidence (getResearchQualityMap procedure + FlowbiteAuthorCard badge with tooltip)
 - [x] Add framer-motion spring animation to book cover image in BookDetailPanel and BookModal (scale-in spring, AnimatePresence, stiffness 320 damping 24)
+
+## Session March 22, 2026 — Avatar Hover & Sort by Quality
+
+- [x] Add framer-motion whileHover scale animation to author card avatar circles (FlowbiteAuthorCard + AuthorCard)
+- [x] Add "Sort by Research Quality" option to Authors tab sort dropdown

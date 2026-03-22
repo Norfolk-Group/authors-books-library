@@ -80,7 +80,7 @@ import {
 } from "lucide-react";
 
 type TabType = "authors" | "books" | "audio";
-type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category";
+type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category" | "quality-desc";
 type BookSort = "name-asc" | "name-desc" | "author" | "content-desc";
 
 export default function Home() {
@@ -298,15 +298,22 @@ export default function Home() {
       const matchesQ = !q || a.name.toLowerCase().includes(q) || a.category.toLowerCase().includes(q) || a.books.some((b) => b.name.toLowerCase().includes(q));
       return matchesCat && matchesQ;
     }).sort((a, b) => {
+      const qualityOrder: Record<string, number> = { high: 0, medium: 1, low: 2, undefined: 3 };
       switch (authorSort) {
         case "name-asc": return a.name.localeCompare(b.name);
         case "name-desc": return b.name.localeCompare(a.name);
         case "books-desc": return b.books.length - a.books.length;
         case "category": return a.category.localeCompare(b.category) || a.name.localeCompare(b.name);
+        case "quality-desc": {
+          const aQ = researchQualityMap.get(canonicalName(a.name).toLowerCase()) ?? "undefined";
+          const bQ = researchQualityMap.get(canonicalName(b.name).toLowerCase()) ?? "undefined";
+          const diff = (qualityOrder[aQ] ?? 3) - (qualityOrder[bQ] ?? 3);
+          return diff !== 0 ? diff : a.name.localeCompare(b.name);
+        }
         default: return a.name.localeCompare(b.name);
       }
     });
-  }, [query, selectedCategories, authorSort]);
+  }, [query, selectedCategories, authorSort, researchQualityMap]);
 
   const filteredBooks = useMemo(() => {
     const q = query.toLowerCase();
@@ -608,6 +615,7 @@ export default function Home() {
                         <SelectItem value="name-desc">Name Z to A</SelectItem>
                         <SelectItem value="books-desc">Most Books</SelectItem>
                         <SelectItem value="category">Category</SelectItem>
+                        <SelectItem value="quality-desc">Research Quality</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
