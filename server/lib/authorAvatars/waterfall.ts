@@ -122,7 +122,7 @@ const DEFAULT_TIER_TIMEOUTS: Record<1 | 2 | 3 | 5, number> = {
   1: 5_000,   // Wikipedia REST API
   2: 10_000,  // Tavily image search
   3: 90_000,  // Apify actor (slow)
-  5: 180_000,  // Meticulous pipeline (research + Gemini Vision + image generation — can take 45-120s)
+  5: 240_000,  // Meticulous pipeline (research + Gemini Vision + image generation — allow up to 4 minutes)
 };
 
 // -- Upload helper -------------------------------------------------------------

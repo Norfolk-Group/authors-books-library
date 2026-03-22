@@ -17,6 +17,14 @@ function prioritizeImages(images: string[], authorName: string): string[] {
     if (lower.includes("author")) score += 5;
     if (lower.includes("headshot") || lower.includes("portrait")) score += 5;
     if (nameParts.some((p) => p.length > 3 && lower.includes(p))) score += 3;
+    // Boost recent/current sources
+    if (lower.includes("speaker") || lower.includes("keynote")) score += 6;
+    if (lower.includes("official") || lower.includes("press")) score += 4;
+    if (lower.includes("2024") || lower.includes("2025") || lower.includes("2026")) score += 5;
+    if (lower.includes("2023") || lower.includes("2022")) score += 2;
+    // Penalise old/dated sources
+    if (lower.includes("2015") || lower.includes("2016") || lower.includes("2017")) score -= 3;
+    if (lower.includes("2010") || lower.includes("2011") || lower.includes("2012")) score -= 6;
     // Penalise book covers
     if (lower.includes("book") || lower.includes("cover")) score -= 5;
     if (lower.includes("thumb") || lower.includes("small")) score -= 3;
@@ -30,7 +38,9 @@ export async function fetchTavilyAuthorPhoto(authorName: string): Promise<string
   const apiKey = process.env.TAVILY_API_KEY;
   if (!apiKey) return null;
 
-  const query = `"${authorName}" author headshot avatar photo`;
+  // Use current year to bias search toward recent photos
+  const currentYear = new Date().getFullYear();
+  const query = `"${authorName}" author headshot photo ${currentYear} OR ${currentYear - 1} OR ${currentYear - 2}`;
   try {
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
@@ -41,7 +51,9 @@ export async function fetchTavilyAuthorPhoto(authorName: string): Promise<string
         search_depth: "basic",
         include_images: true,
         include_image_descriptions: false,
-        max_results: 5,
+        max_results: 10,
+        // Prefer recent content — Tavily supports days_back for recency
+        days: 730,  // Search within last 2 years for recent photos
       }),
     });
     if (!res.ok) return null;

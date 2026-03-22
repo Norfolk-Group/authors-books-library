@@ -24,8 +24,9 @@ function generateNameVariants(name: string): string[] {
 }
 
 function upgradeResolution(thumbnailUrl: string): string {
-  // Wikipedia thumbnails: /XXXpx- → /400px-
-  return thumbnailUrl.replace(/\/\d+px-/, "/400px-");
+  // Wikipedia thumbnails: /XXXpx- → /600px- for better quality
+  // Note: Wikipedia photos are the most recent official photo uploaded by editors
+  return thumbnailUrl.replace(/\/\d+px-/, "/600px-");
 }
 
 async function fetchWikiSummary(name: string): Promise<string | null> {

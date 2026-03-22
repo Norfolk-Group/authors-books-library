@@ -60,7 +60,9 @@ async function fetchWikipediaBioAndPhoto(authorName: string): Promise<{
 async function fetchTavilyPhotos(authorName: string): Promise<string[]> {
   const apiKey = process.env.TAVILY_API_KEY;
   if (!apiKey) return [];
-  const query = `"${authorName}" author headshot avatar professional photo`;
+  // Include current year to bias toward recent photos
+  const currentYear = new Date().getFullYear();
+  const query = `"${authorName}" author headshot professional photo ${currentYear} OR ${currentYear - 1} OR ${currentYear - 2}`;
   try {
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
@@ -71,13 +73,14 @@ async function fetchTavilyPhotos(authorName: string): Promise<string[]> {
         search_depth: "basic",
         include_images: true,
         include_image_descriptions: false,
-        max_results: 5,
+        max_results: 10,
+        days: 730,  // Prefer photos from the last 2 years
       }),
     });
     if (!res.ok) return [];
     const data = await res.json();
     const images: string[] = data.images ?? [];
-    // Prioritize trusted sources
+    // Prioritize trusted sources and recent photos
     const nameParts = authorName.toLowerCase().split(" ");
     const scored = images.map((url) => {
       const lower = url.toLowerCase();
@@ -87,7 +90,15 @@ async function fetchTavilyPhotos(authorName: string): Promise<string[]> {
       if (lower.includes("ted.com")) score += 8;
       if (lower.includes("penguin") || lower.includes("harpercollins")) score += 7;
       if (lower.includes("author") || lower.includes("headshot")) score += 5;
+      if (lower.includes("speaker") || lower.includes("keynote")) score += 6;
+      if (lower.includes("official") || lower.includes("press")) score += 4;
       if (nameParts.some((p) => p.length > 3 && lower.includes(p))) score += 3;
+      // Boost recent years
+      if (lower.includes("2024") || lower.includes("2025") || lower.includes("2026")) score += 5;
+      if (lower.includes("2023") || lower.includes("2022")) score += 2;
+      // Penalise old photos
+      if (lower.includes("2015") || lower.includes("2016") || lower.includes("2017")) score -= 3;
+      if (lower.includes("2010") || lower.includes("2011") || lower.includes("2012")) score -= 6;
       if (lower.includes("book") || lower.includes("cover")) score -= 5;
       if (lower.includes("amazon") && lower.includes("images")) score -= 2;
       return { url, score };

@@ -1154,3 +1154,14 @@
 - [x] Fix T5 timeout from 30s to 180s in waterfall.ts
 - [ ] Fix Aaron Ross avatar: regenerate with correct bokeh-gold background using real photo as reference (ready to run)
 - [ ] Verify card updates immediately after regeneration via `getAvatarMap` invalidation
+
+## Session March 22, 2026 — Photo Recency & Regeneration
+- [x] Raise T5 timeout from 180s to 240s (4 minutes)
+- [x] Update Tier 2 (Tavily): add recency filter (days:730), current-year query terms, recency scoring weights
+- [x] Update Tier 1 (Wikipedia): upgrade resolution to 600px
+- [x] Add recency rule to Gemini Vision prompt: prefer most recent-looking photo
+- [x] Create skill: `avatar-photo-recency` — documents recency preference rules for all tiers
+- [x] Update CLAUDE.md v2.4 with Photo Recency section
+- [x] Regenerate avatar for Aaron Ross — bokeh-gold portrait generated in 34.6s (Tier 5, nano-banana)
+- [x] Regenerate avatar for Albert Rutherford — bokeh-gold portrait generated in 20.6s (Tier 5, nano-banana)
+- [ ] Commit and push to GitHub

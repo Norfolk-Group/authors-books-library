@@ -394,6 +394,25 @@ The canonical background for all AI-generated avatars is **`bokeh-gold`** — wa
 
 The full background spec (all named presets, key files, audit procedure, and common pitfalls) is documented in the `avatar-background-consistency` skill at `/home/ubuntu/skills/avatar-background-consistency/SKILL.md`.
 
+### Photo Recency (Tiers 1–3)
+
+Always prefer the **most recent available photo** of an author. A 2010 photo produces an AI avatar that looks 15 years younger than the real person.
+
+**Tier 1 (Wikipedia):** The REST API returns the current infobox photo — already the most recent. Upgrade resolution to `/600px-` (not 400px).
+
+**Tier 2 (Tavily):** Two required changes:
+- Query must include current year: `"${authorName}" author headshot photo ${year} OR ${year-1} OR ${year-2}`
+- API params: `days: 730`, `max_results: 10`
+- Scoring: boost URLs containing `2024/2025/2026` (+5), `speaker/keynote` (+6); penalise URLs containing `2010-2012` (-6)
+
+**Tier 3 (Apify):** Amazon Author Central always shows the current photo — no recency filter needed.
+
+**T5 Timeout:** Must be **≥ 240 seconds (4 minutes)**. Do not reduce — the pipeline silently times out and falls back to legacy generation which ignores background color.
+
+**Important:** `tavily.ts` and `authorResearcher.ts` have **separate** Tavily implementations. Both must be updated when changing recency rules.
+
+Full rules documented in `avatar-photo-recency` skill at `/home/ubuntu/skills/avatar-photo-recency/SKILL.md`.
+
 ---
 
 ## Common Pitfalls
@@ -443,4 +462,4 @@ All scripts use the `gws` CLI. Run with `python3.11 -u <script>.py`.
 
 ---
 
-*Last updated: March 22, 2026 — Ricardo Cidale's Library v2.3 — Avatar background consistency skill added; background spec canonicalized as bokeh-gold; skills table updated*
+*Last updated: March 22, 2026 — Ricardo Cidale's Library v2.4 — Photo recency rules added for Tiers 1-3; T5 timeout raised to 4 minutes; avatar-photo-recency skill created; CLAUDE.md Photo Recency section added*
