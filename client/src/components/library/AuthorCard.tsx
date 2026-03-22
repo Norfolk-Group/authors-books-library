@@ -5,9 +5,11 @@
  */
 
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { BookSubfolderRow } from "@/components/library/LibraryPrimitives";
+import { AuthorCardActions } from "@/components/AuthorCardActions";
 import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
 import {
@@ -30,6 +32,7 @@ import {
   ExternalLink,
   UserCheck,
   Users,
+  Loader2,
 } from "lucide-react";
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -74,7 +77,9 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
   const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
   const displayName = canonicalName(author.name);
   const specialty = author.name.includes(" - ") ? author.name.slice(author.name.indexOf(" - ") + 3) : "";
-  const avatarUrl = dbAvatarMap?.get(displayName.toLowerCase()) ?? getAuthorAvatar(displayName);
+  const [liveAvatarUrl, setLiveAvatarUrl] = useState<string | null>(null);
+  const [avatarRegenerating, setAvatarRegenerating] = useState(false);
+  const avatarUrl = liveAvatarUrl ?? dbAvatarMap?.get(displayName.toLowerCase()) ?? getAuthorAvatar(displayName);
   const hasBooks = author.books && author.books.length > 0;
 
   return (
@@ -107,40 +112,69 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
                 {author.category}
               </span>
             </div>
-            <a
-              href={driveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="p-0.5 rounded hover:bg-black/10 transition-colors"
-              title="Open in Google Drive"
-            >
-              <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-muted-foreground" />
-            </a>
+            <div className="flex items-center gap-1">
+              {/* Per-author actions menu (Regenerate Avatar, Update Bio, Update Links) */}
+              <div onClick={(e) => e.stopPropagation()}>
+                <AuthorCardActions
+                  authorName={displayName}
+                  hasAvatar={!!avatarUrl}
+                  onAvatarUpdated={(newUrl) => {
+                    setLiveAvatarUrl(newUrl);
+                    setAvatarRegenerating(false);
+                  }}
+                  onAvatarRegenerating={() => setAvatarRegenerating(true)}
+                />
+              </div>
+              <a
+                href={driveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="p-0.5 rounded hover:bg-black/10 transition-colors"
+                title="Open in Google Drive"
+              >
+                <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity text-muted-foreground" />
+              </a>
+            </div>
           </div>
 
           {/* Avatar + name */}
           <div className="flex flex-col items-center gap-2 mb-1">
-            <AvatarUpload authorName={displayName} currentAvatarUrl={avatarUrl} size={120}>
-              {(url) =>
-                url ? (
-                  <img
-                    src={url}
-                    alt={displayName}
-                    className="w-[120px] h-[120px] rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0 transition-transform duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer"
-                    style={{ "--tw-ring-color": color + "55" } as React.CSSProperties}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div
-                    className="w-[120px] h-[120px] rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0 transition-transform duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer"
-                    style={{ backgroundColor: color + "22", color }}
-                  >
-                    {displayName.charAt(0)}
+            {/* Avatar with spinner overlay during regeneration */}
+            <div className="relative">
+              <AvatarUpload authorName={displayName} currentAvatarUrl={avatarUrl} size={120}>
+                {(url) =>
+                  url ? (
+                    <img
+                      src={url}
+                      alt={displayName}
+                      className={`w-[120px] h-[120px] rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0 transition-all duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer ${
+                        avatarRegenerating ? "opacity-40 blur-[1px]" : ""
+                      }`}
+                      style={{ "--tw-ring-color": color + "55" } as React.CSSProperties}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div
+                      className={`w-[120px] h-[120px] rounded-full flex items-center justify-center text-3xl font-bold flex-shrink-0 transition-all duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer ${
+                        avatarRegenerating ? "opacity-40" : ""
+                      }`}
+                      style={{ backgroundColor: color + "22", color }}
+                    >
+                      {displayName.charAt(0)}
+                    </div>
+                  )
+                }
+              </AvatarUpload>
+              {/* Spinner overlay — shown while avatar is regenerating */}
+              {avatarRegenerating && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full pointer-events-none">
+                  <div className="bg-black/40 rounded-full p-2">
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
                   </div>
-                )
-              }
-            </AvatarUpload>
+                </div>
+              )}
+            </div>
             <div className="w-full text-center">
               <h3 className="text-base font-bold leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]">
                 {highlight(displayName, query)}

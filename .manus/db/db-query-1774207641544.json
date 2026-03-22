@@ -1,0 +1,17 @@
+{
+  "query": "\nSELECT \n  COUNT(*) as total_authors,\n  SUM(CASE WHEN avatarSource = 'google-imagen' THEN 1 ELSE 0 END) as meticulous_pipeline,\n  SUM(CASE WHEN avatarSource = 'ai' THEN 1 ELSE 0 END) as ai_generated,\n  SUM(CASE WHEN avatarSource IS NULL AND s3AvatarUrl IS NOT NULL THEN 1 ELSE 0 END) as drive_sourced_with_s3,\n  SUM(CASE WHEN s3AvatarUrl IS NULL THEN 1 ELSE 0 END) as no_s3_avatar\nFROM author_profiles;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \nSELECT \n  COUNT(*) as total_authors,\n  SUM(CASE WHEN avatarSource = 'google-imagen' THEN 1 ELSE 0 END) as meticulous_pipeline,\n  SUM(CASE WHEN avatarSource = 'ai' THEN 1 ELSE 0 END) as ai_generated,\n  SUM(CASE WHEN avatarSource IS NULL AND s3AvatarUrl IS NOT NULL THEN 1 ELSE 0 END) as drive_sourced_with_s3,\n  SUM(CASE WHEN s3AvatarUrl IS NULL THEN 1 ELSE 0 END) as no_s3_avatar\nFROM author_profiles;\n",
+  "rows": [
+    {
+      "total_authors": "176",
+      "meticulous_pipeline": "3",
+      "ai_generated": "60",
+      "drive_sourced_with_s3": "67",
+      "no_s3_avatar": "46"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_authors\tmeticulous_pipeline\tai_generated\tdrive_sourced_with_s3\tno_s3_avatar\n176\t3\t60\t67\t46\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

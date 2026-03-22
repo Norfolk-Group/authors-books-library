@@ -1,0 +1,28 @@
+{
+  "query": "\nSELECT \n  authorName,\n  s3AvatarUrl,\n  avatarUrl,\n  LEFT(lastAvatarPrompt, 100) as promptPreview,\n  avatarGenVendor,\n  avatarGenModel,\n  updatedAt\nFROM author_profiles \nWHERE authorName IN ('Adam Grant', 'Brené Brown', 'Malcolm Gladwell')\nORDER BY authorName;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \nSELECT \n  authorName,\n  s3AvatarUrl,\n  avatarUrl,\n  LEFT(lastAvatarPrompt, 100) as promptPreview,\n  avatarGenVendor,\n  avatarGenModel,\n  updatedAt\nFROM author_profiles \nWHERE authorName IN ('Adam Grant', 'Brené Brown', 'Malcolm Gladwell')\nORDER BY authorName;\n",
+  "rows": [
+    {
+      "authorName": "Adam Grant",
+      "s3AvatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png",
+      "avatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png",
+      "promptPreview": "NULL",
+      "avatarGenVendor": "NULL",
+      "avatarGenModel": "NULL",
+      "updatedAt": "2026-03-22 02:26:37"
+    },
+    {
+      "authorName": "Malcolm Gladwell",
+      "s3AvatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-malcolm-gladwell-1774146324240.png",
+      "avatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-malcolm-gladwell-1774146324240.png",
+      "promptPreview": "NULL",
+      "avatarGenVendor": "NULL",
+      "avatarGenModel": "NULL",
+      "updatedAt": "2026-03-22 02:25:25"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\ts3AvatarUrl\tavatarUrl\tpromptPreview\tavatarGenVendor\tavatarGenModel\tupdatedAt\nAdam Grant\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png\tNULL\tNULL\tNULL\t2026-03-22 02:26:37\nMalcolm Gladwell\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-malcolm-gladwell-1774146324240.png\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-malcolm-gladwell-1774146324240.png\tNULL\tNULL\tNULL\t2026-03-22 02:25:25\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

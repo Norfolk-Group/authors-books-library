@@ -1310,3 +1310,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Mirror all 8 covers to S3 CDN via mirrorCovers procedure (8/8 mirrored, 0 failed)
 - [x] Final DB state: 141 books, 141/141 with coverImageUrl, 141/141 with s3CoverUrl, 0 broken covers
 - [x] Run tests, save checkpoint, push to GitHub
+
+## Session March 22, 2026 — Post-Avatar-Test Improvements
+
+- [x] Add `bestReferencePhotoUrl` column to `author_profiles` DB schema and persist it from the meticulous pipeline
+- [x] Add per-author Regenerate Avatar button to author cards in the library UI (not just Admin Console)
+- [x] Batch-regenerate remaining Drive-sourced author avatars via Admin Console pipeline (upgrade all to Tier 5 meticulous quality)

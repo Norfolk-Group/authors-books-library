@@ -1,0 +1,30 @@
+{
+  "query": "SELECT authorName, s3AvatarUrl FROM author_profiles WHERE authorName LIKE '%Bren%' OR authorName LIKE '%Brown%' OR authorName LIKE '%Grant%' OR authorName LIKE '%Gladwell%' ORDER BY authorName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT authorName, s3AvatarUrl FROM author_profiles WHERE authorName LIKE '%Bren%' OR authorName LIKE '%Brown%' OR authorName LIKE '%Grant%' OR authorName LIKE '%Gladwell%' ORDER BY authorName;",
+  "rows": [
+    {
+      "authorName": "Adam Grant",
+      "s3AvatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png"
+    },
+    {
+      "authorName": "Brene Brown",
+      "s3AvatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-brene-brown-1774146378256.png"
+    },
+    {
+      "authorName": "Brent Adamson",
+      "s3AvatarUrl": "NULL"
+    },
+    {
+      "authorName": "Malcolm Gladwell",
+      "s3AvatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-malcolm-gladwell-1774146324240.png"
+    },
+    {
+      "authorName": "Robert M Grant",
+      "s3AvatarUrl": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\ts3AvatarUrl\nAdam Grant\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png\nBrene Brown\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-brene-brown-1774146378256.png\nBrent Adamson\tNULL\nMalcolm Gladwell\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-malcolm-gladwell-1774146324240.png\nRobert M Grant\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

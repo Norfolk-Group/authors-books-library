@@ -76,6 +76,12 @@ export const authorProfiles = mysqlTable("author_profiles", {
   avatarResearchVendor: varchar("avatarResearchVendor", { length: 50 }),
   /** Which model was used for the research LLM stage (e.g. gemini-2.5-flash, claude-3-5-sonnet) */
   avatarResearchModel: varchar("avatarResearchModel", { length: 100 }),
+  /**
+   * The best reference photo URL used during the meticulous pipeline research stage.
+   * Sourced from Tavily image search, Wikipedia, or official author website.
+   * Stored for transparency, auditing, and display alongside the generated portrait.
+   */
+  bestReferencePhotoUrl: varchar("bestReferencePhotoUrl", { length: 1024 }),
   /** Author's podcast URL (e.g. Spotify, Apple Podcasts, own feed) */
   podcastUrl: varchar("podcastUrl", { length: 512 }),
   /** Author's personal blog URL */

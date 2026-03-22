@@ -1,0 +1,18 @@
+{
+  "query": "SHOW COLUMNS FROM author_profiles LIKE 'bestReferencePhotoUrl';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SHOW COLUMNS FROM author_profiles LIKE 'bestReferencePhotoUrl';",
+  "rows": [
+    {
+      "Field": "bestReferencePhotoUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nbestReferencePhotoUrl\tvarchar(1024)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 103
+}

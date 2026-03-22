@@ -77,7 +77,7 @@ export interface AuthorAvatarWaterfallResult {
   error?: string;
   /** Pipeline metadata from meticulous Tier 5 — persisted to DB */
   __pipelineResult?: {
-    authorDescription?: object;
+    authorDescription?: import('./types.js').AuthorDescription;
     imagePrompt?: string;
     driveFileId?: string;
     vendor?: string;

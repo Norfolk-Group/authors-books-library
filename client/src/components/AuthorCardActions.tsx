@@ -33,6 +33,8 @@ interface AuthorCardActionsProps {
   hasAvatar: boolean;
   /** Called after a successful avatar generation so the card can refresh */
   onAvatarUpdated?: (newUrl: string) => void;
+  /** Called when avatar regeneration starts — use to show spinner overlay */
+  onAvatarRegenerating?: () => void;
   /** Called after a successful bio update */
   onBioUpdated?: () => void;
   /** Called after a successful links update */
@@ -43,6 +45,7 @@ export function AuthorCardActions({
   authorName,
   hasAvatar,
   onAvatarUpdated,
+  onAvatarRegenerating,
   onBioUpdated,
   onLinksUpdated,
 }: AuthorCardActionsProps) {
@@ -111,6 +114,7 @@ export function AuthorCardActions({
       e.stopPropagation();
       if (avatarStatus === "loading") return;
       setAvatarStatus("loading");
+      onAvatarRegenerating?.();
       generateAvatarMutation.mutate({
         authorName,
         bgColor: settings.avatarBgColor,

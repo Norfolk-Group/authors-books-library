@@ -74,6 +74,10 @@ export async function persistAvatarResult(
       // pipelineMeta.vendor/model override the input options (more specific)
       ...(pipelineMeta?.vendor ? { avatarGenVendor: pipelineMeta.vendor } : {}),
       ...(pipelineMeta?.model ? { avatarGenModel: pipelineMeta.model } : {}),
+      // Persist the best reference photo URL used during research for transparency/auditing
+      ...(pipelineMeta?.authorDescription?.bestReferencePhotoUrl
+        ? { bestReferencePhotoUrl: pipelineMeta.authorDescription.bestReferencePhotoUrl }
+        : {}),
     })
     .where(eq(authorProfiles.authorName, authorName));
 }

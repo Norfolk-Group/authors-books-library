@@ -1,0 +1,22 @@
+{
+  "query": "SELECT avatarSource, COUNT(*) as count FROM author_profiles GROUP BY avatarSource ORDER BY count DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT avatarSource, COUNT(*) as count FROM author_profiles GROUP BY avatarSource ORDER BY count DESC;",
+  "rows": [
+    {
+      "avatarSource": "NULL",
+      "count": "113"
+    },
+    {
+      "avatarSource": "ai",
+      "count": "60"
+    },
+    {
+      "avatarSource": "google-imagen",
+      "count": "3"
+    }
+  ],
+  "messages": [],
+  "stdout": "avatarSource\tcount\nNULL\t113\nai\t60\ngoogle-imagen\t3\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

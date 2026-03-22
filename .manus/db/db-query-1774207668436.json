@@ -1,0 +1,529 @@
+{
+  "query": "SELECT authorName FROM author_profiles WHERE (avatarSource != 'google-imagen' OR avatarSource IS NULL) ORDER BY authorName LIMIT 200;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT authorName FROM author_profiles WHERE (avatarSource != 'google-imagen' OR avatarSource IS NULL) ORDER BY authorName LIMIT 200;",
+  "rows": [
+    {
+      "authorName": "Aaron Ross"
+    },
+    {
+      "authorName": "Al Ries"
+    },
+    {
+      "authorName": "Alan Dib"
+    },
+    {
+      "authorName": "Albert Rutherford"
+    },
+    {
+      "authorName": "Alex Hormozi"
+    },
+    {
+      "authorName": "Alison Wood Brooks"
+    },
+    {
+      "authorName": "Andrew Ross Sorkin"
+    },
+    {
+      "authorName": "Anne Morriss"
+    },
+    {
+      "authorName": "Annie Duke"
+    },
+    {
+      "authorName": "April Dunford"
+    },
+    {
+      "authorName": "Arianna Huffington"
+    },
+    {
+      "authorName": "Ash Maurya"
+    },
+    {
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "authorName": "Ben Horowitz"
+    },
+    {
+      "authorName": "Benjamin Franklin"
+    },
+    {
+      "authorName": "Bill Carr"
+    },
+    {
+      "authorName": "Bo Burlingham"
+    },
+    {
+      "authorName": "Brad Stone"
+    },
+    {
+      "authorName": "Brent Adamson"
+    },
+    {
+      "authorName": "Brian Tracy"
+    },
+    {
+      "authorName": "Cal Newport"
+    },
+    {
+      "authorName": "Carmine Gallo"
+    },
+    {
+      "authorName": "Charles Duhigg"
+    },
+    {
+      "authorName": "Chip Heath"
+    },
+    {
+      "authorName": "Chris Dixon"
+    },
+    {
+      "authorName": "Chris Voss"
+    },
+    {
+      "authorName": "Clayton Christensen"
+    },
+    {
+      "authorName": "Colin Bryar"
+    },
+    {
+      "authorName": "Colt Dodd"
+    },
+    {
+      "authorName": "Dale Carnegie"
+    },
+    {
+      "authorName": "Dan Harris"
+    },
+    {
+      "authorName": "Daniel J. Siegel"
+    },
+    {
+      "authorName": "Daniel Kahneman"
+    },
+    {
+      "authorName": "Daniel Larose"
+    },
+    {
+      "authorName": "Daniel Pink"
+    },
+    {
+      "authorName": "Darrell Huff"
+    },
+    {
+      "authorName": "David Brooks"
+    },
+    {
+      "authorName": "David Goggins"
+    },
+    {
+      "authorName": "David Meerman Scott"
+    },
+    {
+      "authorName": "David N. Schwartz"
+    },
+    {
+      "authorName": "David Nihill"
+    },
+    {
+      "authorName": "Derek Sivers"
+    },
+    {
+      "authorName": "Donald Miller"
+    },
+    {
+      "authorName": "Emma Leigh Weber"
+    },
+    {
+      "authorName": "Epictetus"
+    },
+    {
+      "authorName": "Eric Ries"
+    },
+    {
+      "authorName": "Eric Topol"
+    },
+    {
+      "authorName": "Esther Perel"
+    },
+    {
+      "authorName": "Ezra Klein"
+    },
+    {
+      "authorName": "Founders Pocket Guide"
+    },
+    {
+      "authorName": "Frances Frei"
+    },
+    {
+      "authorName": "Frank Slootman"
+    },
+    {
+      "authorName": "Fred Dust"
+    },
+    {
+      "authorName": "Gary Vaynerchuk"
+    },
+    {
+      "authorName": "Geoffrey A. Moore"
+    },
+    {
+      "authorName": "Geoffrey Moore"
+    },
+    {
+      "authorName": "George Friedman"
+    },
+    {
+      "authorName": "Gino Wickman"
+    },
+    {
+      "authorName": "Guy Kawasaki"
+    },
+    {
+      "authorName": "Hamilton Helmer"
+    },
+    {
+      "authorName": "Hans Peter Bech"
+    },
+    {
+      "authorName": "Henry Louis Gates Jr"
+    },
+    {
+      "authorName": "Horst Schulze"
+    },
+    {
+      "authorName": "Houston Howard"
+    },
+    {
+      "authorName": "Jack Stack"
+    },
+    {
+      "authorName": "Jack Welch"
+    },
+    {
+      "authorName": "James Clear"
+    },
+    {
+      "authorName": "James Surowiecki"
+    },
+    {
+      "authorName": "Jason Harris"
+    },
+    {
+      "authorName": "Jason Lemkin"
+    },
+    {
+      "authorName": "Jeb Blount"
+    },
+    {
+      "authorName": "Jeff Shannon"
+    },
+    {
+      "authorName": "Jeff Walker"
+    },
+    {
+      "authorName": "Jefferson Fisher"
+    },
+    {
+      "authorName": "Jim Camp"
+    },
+    {
+      "authorName": "Jim Collins"
+    },
+    {
+      "authorName": "Jim Kwik"
+    },
+    {
+      "authorName": "John David Mann"
+    },
+    {
+      "authorName": "John Doerr"
+    },
+    {
+      "authorName": "John Mullins"
+    },
+    {
+      "authorName": "Jonathan Haidt"
+    },
+    {
+      "authorName": "Jordan Belfort"
+    },
+    {
+      "authorName": "Karen Blumenthal"
+    },
+    {
+      "authorName": "Karen Eber"
+    },
+    {
+      "authorName": "Keith Ferrazzi"
+    },
+    {
+      "authorName": "Kelly Leonard"
+    },
+    {
+      "authorName": "Kerry Leonard"
+    },
+    {
+      "authorName": "Kim Scott"
+    },
+    {
+      "authorName": "Lawrence Weinstein"
+    },
+    {
+      "authorName": "Leander Kahney"
+    },
+    {
+      "authorName": "Leil Lowndes"
+    },
+    {
+      "authorName": "Liz Wiseman"
+    },
+    {
+      "authorName": "Marcus Aurelius"
+    },
+    {
+      "authorName": "Mark Manson"
+    },
+    {
+      "authorName": "Martin Lindstrom"
+    },
+    {
+      "authorName": "Matt Dixon"
+    },
+    {
+      "authorName": "Matthew Dixon"
+    },
+    {
+      "authorName": "Matthew McConaughey"
+    },
+    {
+      "authorName": "Matthew Walker"
+    },
+    {
+      "authorName": "Mel Robbins"
+    },
+    {
+      "authorName": "Michael Bungay Stanier"
+    },
+    {
+      "authorName": "Michael Lewis"
+    },
+    {
+      "authorName": "Mike Michalowicz"
+    },
+    {
+      "authorName": "Mike Smerkle"
+    },
+    {
+      "authorName": "Morgan Housel"
+    },
+    {
+      "authorName": "Napoleon Hill"
+    },
+    {
+      "authorName": "Nassim Nicholas Taleb"
+    },
+    {
+      "authorName": "Naval Ravikant"
+    },
+    {
+      "authorName": "Neil Rackham"
+    },
+    {
+      "authorName": "Nir Eyal"
+    },
+    {
+      "authorName": "Nixaly Leonardo"
+    },
+    {
+      "authorName": "Noah Kagan"
+    },
+    {
+      "authorName": "Noel Tichy"
+    },
+    {
+      "authorName": "Patrick Lencioni"
+    },
+    {
+      "authorName": "Peter Hans Beck"
+    },
+    {
+      "authorName": "Peter Northhouse"
+    },
+    {
+      "authorName": "Peter Thiel"
+    },
+    {
+      "authorName": "Phil Knight"
+    },
+    {
+      "authorName": "Philipp Dettmer"
+    },
+    {
+      "authorName": "Ray Dalio"
+    },
+    {
+      "authorName": "Ray Kurzweil"
+    },
+    {
+      "authorName": "Reid Hoffman"
+    },
+    {
+      "authorName": "Rhea Orion"
+    },
+    {
+      "authorName": "Richard H Thaler"
+    },
+    {
+      "authorName": "Richard H. Thaler"
+    },
+    {
+      "authorName": "Richard Koch"
+    },
+    {
+      "authorName": "Rob Fitzpatrick"
+    },
+    {
+      "authorName": "Rob Walling"
+    },
+    {
+      "authorName": "Robert B Cialdini"
+    },
+    {
+      "authorName": "Robert B. Cialdini"
+    },
+    {
+      "authorName": "Robert Cialdini"
+    },
+    {
+      "authorName": "Robert Greene"
+    },
+    {
+      "authorName": "Robert M Grant"
+    },
+    {
+      "authorName": "Robin Sharma"
+    },
+    {
+      "authorName": "Ruben Rabago"
+    },
+    {
+      "authorName": "Ryan Holiday"
+    },
+    {
+      "authorName": "Sam Walton"
+    },
+    {
+      "authorName": "Sanjoy Mahajan"
+    },
+    {
+      "authorName": "Scott Adams"
+    },
+    {
+      "authorName": "Scott Brinker"
+    },
+    {
+      "authorName": "Scott Galloway"
+    },
+    {
+      "authorName": "Sean Ellis"
+    },
+    {
+      "authorName": "Seth Godin"
+    },
+    {
+      "authorName": "Shankar Vedantam"
+    },
+    {
+      "authorName": "Simon Sinek"
+    },
+    {
+      "authorName": "Spencer Johnson"
+    },
+    {
+      "authorName": "Stephen Covey"
+    },
+    {
+      "authorName": "Stephen Hawking"
+    },
+    {
+      "authorName": "Stephen R Poland"
+    },
+    {
+      "authorName": "Stephen R. Covey"
+    },
+    {
+      "authorName": "Steve Blank"
+    },
+    {
+      "authorName": "Steven Bartlett"
+    },
+    {
+      "authorName": "Steven Hawking"
+    },
+    {
+      "authorName": "Steven Pressfield"
+    },
+    {
+      "authorName": "Sue Hawkes"
+    },
+    {
+      "authorName": "Sun Tzu"
+    },
+    {
+      "authorName": "Sundar Pichai"
+    },
+    {
+      "authorName": "Susin Nielsen"
+    },
+    {
+      "authorName": "TEST Matthew Dixon"
+    },
+    {
+      "authorName": "Tali Sharot"
+    },
+    {
+      "authorName": "Ted McKenna"
+    },
+    {
+      "authorName": "Tim Ferriss"
+    },
+    {
+      "authorName": "Todd Herman"
+    },
+    {
+      "authorName": "Tom Yorton"
+    },
+    {
+      "authorName": "Tony Robbins"
+    },
+    {
+      "authorName": "Uri Levine"
+    },
+    {
+      "authorName": "Vanessa Van Edwards"
+    },
+    {
+      "authorName": "Walter Isaacson"
+    },
+    {
+      "authorName": "Will Guidara"
+    },
+    {
+      "authorName": "William Ury"
+    },
+    {
+      "authorName": "Your Next Five Moves"
+    },
+    {
+      "authorName": "Yuval Noah Harari"
+    },
+    {
+      "authorName": "Zig Ziglar"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\nAaron Ross\nAl Ries\nAlan Dib\nAlbert Rutherford\nAlex Hormozi\nAlison Wood Brooks\nAndrew Ross Sorkin\nAnne Morriss\nAnnie Duke\nApril Dunford\nArianna Huffington\nAsh Maurya\nAshvin Vaidyanathan\nBen Horowitz\nBenjamin Franklin\nBill Carr\nBo Burlingham\nBrad Stone\nBrent Adamson\nBrian Tracy\nCal Newport\nCarmine Gallo\nCharles Duhigg\nChip Heath\nChris Dixon\nChris Voss\nClayton Christensen\nColin Bryar\nColt Dodd\nDale Carnegie\nDan Harris\nDaniel J. Siegel\nDaniel Kahneman\nDaniel Larose\nDaniel Pink\nDarrell Huff\nDavid Brooks\nDavid Goggins\nDavid Meerman Scott\nDavid N. Schwartz\nDavid Nihill\nDerek Sivers\nDonald Miller\nEmma Leigh Weber\nEpictetus\nEric Ries\nEric Topol\nEsther Perel\nEzra Klein\nFounders Pocket Guide\nFrances Frei\nFrank Slootman\nFred Dust\nGary Vaynerchuk\nGeoffrey A. Moore\nGeoffrey Moore\nGeorge Friedman\nGino Wickman\nGuy Kawasaki\nHamilton Helmer\nHans Peter Bech\nHenry Louis Gates Jr\nHorst Schulze\nHouston Howard\nJack Stack\nJack Welch\nJames Clear\nJames Surowiecki\nJason Harris\nJason Lemkin\nJeb Blount\nJeff Shannon\nJeff Walker\nJefferson Fisher\nJim Camp\nJim Collins\nJim Kwik\nJohn David Mann\nJohn Doerr\nJohn Mullins\nJonathan Haidt\nJordan Belfort\nKaren Blumenthal\nKaren Eber\nKeith Ferrazzi\nKelly Leonard\nKerry Leonard\nKim Scott\nLawrence Weinstein\nLeander Kahney\nLeil Lowndes\nLiz Wiseman\nMarcus Aurelius\nMark Manson\nMartin Lindstrom\nMatt Dixon\nMatthew Dixon\nMatthew McConaughey\nMatthew Walker\nMel Robbins\nMichael Bungay Stanier\nMichael Lewis\nMike Michalowicz\nMike Smerkle\nMorgan Housel\nNapoleon Hill\nNassim Nicholas Taleb\nNaval Ravikant\nNeil Rackham\nNir Eyal\nNixaly Leonardo\nNoah Kagan\nNoel Tichy\nPatrick Lencioni\nPeter Hans Beck\nPeter Northhouse\nPeter Thiel\nPhil Knight\nPhilipp Dettmer\nRay Dalio\nRay Kurzweil\nReid Hoffman\nRhea Orion\nRichard H Thaler\nRichard H. Thaler\nRichard Koch\nRob Fitzpatrick\nRob Walling\nRobert B Cialdini\nRobert B. Cialdini\nRobert Cialdini\nRobert Greene\nRobert M Grant\nRobin Sharma\nRuben Rabago\nRyan Holiday\nSam Walton\nSanjoy Mahajan\nScott Adams\nScott Brinker\nScott Galloway\nSean Ellis\nSeth Godin\nShankar Vedantam\nSimon Sinek\nSpencer Johnson\nStephen Covey\nStephen Hawking\nStephen R Poland\nStephen R. Covey\nSteve Blank\nSteven Bartlett\nSteven Hawking\nSteven Pressfield\nSue Hawkes\nSun Tzu\nSundar Pichai\nSusin Nielsen\nTEST Matthew Dixon\nTali Sharot\nTed McKenna\nTim Ferriss\nTodd Herman\nTom Yorton\nTony Robbins\nUri Levine\nVanessa Van Edwards\nWalter Isaacson\nWill Guidara\nWilliam Ury\nYour Next Five Moves\nYuval Noah Harari\nZig Ziglar\n",
+  "stderr": "",
+  "execution_time_ms": 71
+}

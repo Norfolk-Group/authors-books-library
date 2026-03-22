@@ -1,0 +1,1 @@
+ALTER TABLE `author_profiles` ADD `bestReferencePhotoUrl` varchar(1024);
