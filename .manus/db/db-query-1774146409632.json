@@ -1,0 +1,16 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_authors,\n  SUM(CASE WHEN s3AvatarUrl IS NOT NULL AND s3AvatarUrl != '' THEN 1 ELSE 0 END) as with_s3_avatar,\n  SUM(CASE WHEN s3AvatarUrl LIKE '%drive-%' THEN 1 ELSE 0 END) as from_drive_reseed,\n  SUM(CASE WHEN s3AvatarUrl IS NULL OR s3AvatarUrl = '' THEN 1 ELSE 0 END) as missing_avatar\nFROM author_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT \n  COUNT(*) as total_authors,\n  SUM(CASE WHEN s3AvatarUrl IS NOT NULL AND s3AvatarUrl != '' THEN 1 ELSE 0 END) as with_s3_avatar,\n  SUM(CASE WHEN s3AvatarUrl LIKE '%drive-%' THEN 1 ELSE 0 END) as from_drive_reseed,\n  SUM(CASE WHEN s3AvatarUrl IS NULL OR s3AvatarUrl = '' THEN 1 ELSE 0 END) as missing_avatar\nFROM author_profiles;",
+  "rows": [
+    {
+      "total_authors": "176",
+      "with_s3_avatar": "128",
+      "from_drive_reseed": "89",
+      "missing_avatar": "48"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_authors\twith_s3_avatar\tfrom_drive_reseed\tmissing_avatar\n176\t128\t89\t48\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

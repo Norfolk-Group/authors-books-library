@@ -1009,3 +1009,11 @@
 - [x] Show generated test portrait inline in the AI tab with model/vendor label
 - [x] Write vitest tests for Google Imagen routing in generatePortrait
 - [x] Verify 0 TypeScript errors, run all tests, commit, push, save checkpoint
+
+## Session March 22, 2026 — Reseed Production Avatars from Google Drive
+
+- [x] List all images in Google Drive Author Pictures folder (90 files found, 1 group shot skipped: Roger Fisher and William Ury)
+- [x] Download each Drive image and upload to S3 CDN (89/89 uploaded, 0 failures)
+- [x] Update author_profiles DB rows with new s3AvatarUrl values (89 rows updated/inserted; 128/176 total authors now have s3AvatarUrl)
+- [x] Update authorAvatars.ts with new CDN URLs (98-line file with 89 entries, all pointing to CloudFront CDN)
+- [x] Run tests, save checkpoint (139/139 passing)
