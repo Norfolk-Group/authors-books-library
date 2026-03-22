@@ -7,6 +7,7 @@ import { authorProfiles } from "../../drizzle/schema";
 import { publicProcedure, router } from "../_core/trpc";
 import { processAuthorAvatarWaterfall } from "../lib/authorAvatars/waterfall";
 import { parallelBatch } from "../lib/parallelBatch";
+import { persistAvatarResult } from "../lib/authorAvatars/persistResult";
 
 import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
 
@@ -284,113 +285,6 @@ export const authorProfilesRouter = router({
     };
   }),
 
-  // -- Batch avatar generation via waterfall -----------------------------------
-  generateAvatarsBatch: publicProcedure
-    .input(
-      z.object({
-        names: z.array(z.string()).min(1).max(5),
-        skipValidation: z.boolean().optional().default(false),
-        maxTier: z.number().min(1).max(5).optional().default(5),
-        avatarGenVendor: z.string().optional().default("google"),
-        avatarGenModel: z.string().optional().default("nano-banana"),
-        avatarResearchVendor: z.string().optional().default("google"),
-        avatarResearchModel: z.string().optional().default("gemini-2.5-flash"),
-        avatarBgColor: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database unavailable");
-      const results: Array<{
-        name: string;
-        success: boolean;
-        source: string;
-        isAiGenerated: boolean;
-        tier: number;
-        avatarUrl: string | null;
-        error?: string;
-      }> = [];
-
-      for (const originalName of input.names) {
-        try {
-          const result = await processAuthorAvatarWaterfall(originalName, {
-            skipValidation: input.skipValidation,
-            maxTier: input.maxTier,
-            avatarGenVendor: input.avatarGenVendor,
-            avatarGenModel: input.avatarGenModel,
-            avatarResearchVendor: input.avatarResearchVendor,
-            avatarResearchModel: input.avatarResearchModel,
-            avatarBgColor: input.avatarBgColor,
-          });
-
-          // Save to DB
-          if (result.avatarUrl || result.s3AvatarUrl) {
-            // Map waterfall source to avatarSource enum
-            const avatarSourceVal =
-              result.source === "wikipedia" ? "wikipedia" as const
-              : result.source === "tavily" ? "tavily" as const
-              : result.source === "apify" ? "apify" as const
-              : result.source === "ai-generated" ? "google-imagen" as const
-              : undefined;
-            // Extract pipeline metadata if available (from meticulous Tier 5)
-            const pipelineMeta = (result as unknown as Record<string, unknown>).__pipelineResult as {
-              authorDescription?: object;
-              imagePrompt?: string;
-              driveFileId?: string;
-              vendor?: string;
-              model?: string;
-            } | undefined;
-            await db
-              .update(authorProfiles)
-              .set({
-                avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
-                s3AvatarUrl: result.s3AvatarUrl,
-                enrichedAt: new Date(),
-                ...(avatarSourceVal ? { avatarSource: avatarSourceVal } : {}),
-                ...(pipelineMeta?.authorDescription ? {
-                  authorDescriptionJson: JSON.stringify(pipelineMeta.authorDescription),
-                  authorDescriptionCachedAt: new Date(),
-                } : {}),
-                ...(pipelineMeta?.imagePrompt ? {
-                  lastAvatarPrompt: pipelineMeta.imagePrompt,
-                  lastAvatarPromptBuiltAt: new Date(),
-                } : {}),
-                ...(pipelineMeta?.driveFileId ? { driveAvatarFileId: pipelineMeta.driveFileId } : {}),
-                ...(pipelineMeta?.vendor ? { avatarGenVendor: pipelineMeta.vendor } : {}),
-                ...(pipelineMeta?.model ? { avatarGenModel: pipelineMeta.model } : {}),
-              })
-              .where(eq(authorProfiles.authorName, originalName));
-          }
-
-          results.push({
-            name: originalName,
-            success: result.source !== "failed" && result.source !== "skipped",
-            source: result.source,
-            isAiGenerated: result.isAiGenerated,
-            tier: result.tier,
-            avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
-          });
-        } catch (err) {
-          results.push({
-            name: originalName,
-            success: false,
-            source: "failed",
-            isAiGenerated: false,
-            tier: 0,
-            avatarUrl: null,
-            error: String(err),
-          });
-        }
-      }
-
-      return {
-        results,
-        total: results.length,
-        succeeded: results.filter((r) => r.success).length,
-        aiGenerated: results.filter((r) => r.isAiGenerated).length,
-      };
-    }),
-
   // -- Generate avatars for ALL authors missing avatars -------------------------
   generateAllMissingAvatars: publicProcedure
     .input(
@@ -432,41 +326,12 @@ export const authorProfilesRouter = router({
           avatarResearchModel: input.avatarResearchModel,
           avatarBgColor: input.avatarBgColor,
         });
-        if (result.avatarUrl || result.s3AvatarUrl) {
-          const avatarSourceVal2 =
-            result.source === "wikipedia" ? "wikipedia" as const
-            : result.source === "tavily" ? "tavily" as const
-            : result.source === "apify" ? "apify" as const
-            : result.source === "ai-generated" ? "google-imagen" as const
-            : undefined;
-          const pipelineMeta2 = (result as unknown as Record<string, unknown>).__pipelineResult as {
-            authorDescription?: object;
-            imagePrompt?: string;
-            driveFileId?: string;
-            vendor?: string;
-            model?: string;
-          } | undefined;
-          await db
-            .update(authorProfiles)
-            .set({
-              avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
-              s3AvatarUrl: result.s3AvatarUrl,
-              enrichedAt: new Date(),
-              ...(avatarSourceVal2 ? { avatarSource: avatarSourceVal2 } : {}),
-              ...(pipelineMeta2?.authorDescription ? {
-                authorDescriptionJson: JSON.stringify(pipelineMeta2.authorDescription),
-                authorDescriptionCachedAt: new Date(),
-              } : {}),
-              ...(pipelineMeta2?.imagePrompt ? {
-                lastAvatarPrompt: pipelineMeta2.imagePrompt,
-                lastAvatarPromptBuiltAt: new Date(),
-              } : {}),
-              ...(pipelineMeta2?.driveFileId ? { driveAvatarFileId: pipelineMeta2.driveFileId } : {}),
-              ...(pipelineMeta2?.vendor ? { avatarGenVendor: pipelineMeta2.vendor } : {}),
-              ...(pipelineMeta2?.model ? { avatarGenModel: pipelineMeta2.model } : {}),
-            })
-            .where(eq(authorProfiles.authorName, originalName));
-        }
+        await persistAvatarResult(db, originalName, result, {
+          vendor: input.avatarGenVendor,
+          model: input.avatarGenModel,
+          researchVendor: input.avatarResearchVendor,
+          researchModel: input.avatarResearchModel,
+        });
         return {
           name: originalName,
           success: result.source !== "failed" && result.source !== "skipped",
@@ -534,34 +399,15 @@ export const authorProfilesRouter = router({
 
       const finalUrl = result.s3AvatarUrl ?? result.avatarUrl ?? "";
       const finalKey = (result as unknown as Record<string, unknown>).s3AvatarKey as string ?? "";
-
-      // Persist to DB
-      const avatarSourceVal =
-        result.source === "wikipedia" ? "wikipedia" as const
-        : result.source === "tavily" ? "tavily" as const
-        : result.source === "apify" ? "apify" as const
-        : "ai" as const;
-
       const pipelineMeta = result.__pipelineResult;
 
-      await db
-        .update(authorProfiles)
-        .set({
-          avatarUrl: finalUrl,
-          s3AvatarUrl: finalUrl,
-          s3AvatarKey: finalKey,
-          enrichedAt: new Date(),
-          avatarSource: avatarSourceVal,
-          // isAiGenerated stored as tinyint in DB
-          ...(result.isAiGenerated !== undefined ? { isAiGenerated: result.isAiGenerated ? 1 : 0 } : {}),
-          avatarGenVendor: input.avatarGenVendor ?? "google",
-          avatarGenModel: input.avatarGenModel ?? "nano-banana",
-          avatarResearchVendor: input.avatarResearchVendor ?? "google",
-          avatarResearchModel: input.avatarResearchModel ?? "gemini-2.5-flash",
-          ...(pipelineMeta?.authorDescription ? { authorDescriptionJson: JSON.stringify(pipelineMeta.authorDescription) } : {}),
-          ...(pipelineMeta?.imagePrompt ? { lastAvatarPrompt: pipelineMeta.imagePrompt } : {}),
-        })
-        .where(eq(authorProfiles.authorName, input.authorName));
+      // Persist to DB via shared helper
+      await persistAvatarResult(db, input.authorName, result, {
+        vendor: input.avatarGenVendor ?? "google",
+        model: input.avatarGenModel ?? "nano-banana",
+        researchVendor: input.avatarResearchVendor ?? "google",
+        researchModel: input.avatarResearchModel ?? "gemini-2.5-flash",
+      });
 
       return {
         url: finalUrl,

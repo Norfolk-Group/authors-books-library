@@ -284,6 +284,7 @@ export default function Admin() {
   const enrichBiosMutation = trpc.authorProfiles.enrichBatch.useMutation();
   const enrichBooksMutation = trpc.bookProfiles.enrichBatch.useMutation();
   const generateAvatarMutation = trpc.authorProfiles.generateAvatar.useMutation();
+  const generateAllMissingAvatarsMutation = trpc.authorProfiles.generateAllMissingAvatars.useMutation();
   const scrapeNextMutation = trpc.apify.scrapeNextMissingCover.useMutation();
   const mirrorCoversMutation = trpc.bookProfiles.mirrorCovers.useMutation();
   const mirrorAvatarsMutation = trpc.authorProfiles.mirrorAvatars.useMutation();
@@ -517,81 +518,55 @@ export default function Admin() {
   }, [enrichBooksState.status, enrichBooksMutation, settings.geminiModel, utils, recordAction]);
 
   // -- 4. Generate All Avatars --
+  // Uses generateAllMissingAvatars which runs parallelBatch server-side (Claude Opus recommendation).
+  // This replaces the old sequential client-side loop (~102 min) with a single server call (~34 min at concurrency=3).
   const handleGeneratePortraits = useCallback(async () => {
     if (portraitState.status === "running") return;
-    const allNames = Array.from(
-      new Set(
-        AUTHORS.map((a) => {
-          const d = a.name.indexOf(" - ");
-          return d !== -1 ? a.name.slice(0, d) : a.name;
-        }),
-      ),
-    );
-    // Filter to only those without an avatar
-    const avatarMap = utils.authorProfiles.getAvatarMap.getData() ?? [];
-    const avatarSet = new Set(
-      (avatarMap as Array<{ authorName: string; avatarUrl?: string | null }>)
-        .filter((r) => r.avatarUrl)
-        .map((r) => r.authorName.toLowerCase()),
-    );
-    const missing = allNames.filter(
-      (n) => !avatarSet.has(n.toLowerCase()) && !getAuthorAvatar(canonicalName(n)),
-    );
-    if (missing.length === 0) {
-      toast.info("All authors already have avatars!");
-      return;
-    }
-    const total = missing.length;
+
     setPortraitState({
       status: "running",
       progress: 0,
-      message: `0/ avatars`,
+      message: "Starting batch generation...",
       done: 0,
-      total,
+      total: 0,
       failed: 0,
     });
+
     const start = Date.now();
-    let done = 0;
-    let failed = 0;
     try {
-      for (let i = 0; i < missing.length; i++) {
-        const authorName = missing[i];
-        try {
-          await generateAvatarMutation.mutateAsync({
-            authorName,
-            bgColor: settings.avatarBgColor,
-            avatarGenVendor: settings.avatarGenVendor,
-            avatarGenModel: settings.avatarGenModel,
-          });
-          done++;
-        } catch {
-          failed++;
-        }
-        const pct = Math.round(((i + 1) / total) * 100);
-        setPortraitState((s) => ({
-          ...s,
-          progress: pct,
-          done,
-          failed,
-          message: `${done}/${total} - ${authorName}`,
-        }));
-      }
-      setPortraitState((s) => ({
-        ...s,
+      const result = await generateAllMissingAvatarsMutation.mutateAsync({
+        concurrency: settings.batchConcurrency ?? 3,
+        maxTier: 5,
+        skipValidation: true,
+        avatarGenVendor: settings.avatarGenVendor,
+        avatarGenModel: settings.avatarGenModel,
+        avatarResearchVendor: settings.avatarResearchVendor,
+        avatarResearchModel: settings.avatarResearchModel,
+        avatarBgColor: settings.avatarBgColor,
+      });
+
+      const done = result.succeeded;
+      const failed = result.total - result.succeeded;
+
+      setPortraitState({
         status: "done",
         progress: 100,
         message: `${done} generated, ${failed} failed`,
-      }));
-      toast.success(`Generated  avatars${failed > 0 ? ` (${failed} failed)` : ""}.`);
+        done,
+        total: result.total,
+        failed,
+      });
+
+      toast.success(`Generated ${done} avatars${failed > 0 ? ` (${failed} failed)` : ""}.`);
       void utils.authorProfiles.getAvatarMap.invalidate();
       await recordAction("generate-avatars", "Generate Avatars", start, "success", done);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setPortraitState((s) => ({ ...s, status: "error", message: msg }));
       toast.error("Avatar generation failed: " + msg);
-      await recordAction("generate-avatars", "Generate Avatars", start, `error: ${msg}`, done);
+      await recordAction("generate-avatars", "Generate Avatars", start, `error: ${msg}`, 0);
     }
-  }, [portraitState.status, generateAvatarMutation, utils, recordAction]);
+  }, [portraitState.status, generateAllMissingAvatarsMutation, settings, utils, recordAction]);
 
   // -- 5. Scrape All Covers --
   const handleScrapeCovers = useCallback(async () => {

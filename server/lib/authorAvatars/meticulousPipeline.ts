@@ -160,16 +160,20 @@ export async function runMeticulousPipeline(
         const contentType = res.headers.get("content-type") ?? "";
         if (contentType.startsWith("image/")) {
           const buffer = Buffer.from(await res.arrayBuffer());
-          // Cap at 3 MB to stay within Gemini inline limits
-          if (buffer.length <= 3 * 1024 * 1024) {
+          const sizeKb = Math.round(buffer.length / 1024);
+          // Quality gate: reject photos that are too small (likely icons/thumbnails)
+          // or too large (exceeds Gemini inline limit)
+          if (buffer.length < 10 * 1024) {
+            console.warn(`[meticulousPipeline] Reference photo too small for ${authorName} (${sizeKb}KB < 10KB) — likely a thumbnail, using text-only`);
+          } else if (buffer.length > 3 * 1024 * 1024) {
+            console.warn(`[meticulousPipeline] Reference photo too large for ${authorName} (${sizeKb}KB > 3072KB) — using text-only`);
+          } else {
             referenceImageBase64 = buffer.toString("base64");
             referenceImageMimeType = contentType.split(";")[0].trim();
             console.log(
               `[meticulousPipeline] Reference photo fetched for ${authorName} ` +
-              `(${Math.round(buffer.length / 1024)}KB, ${referenceImageMimeType})`
+              `(${sizeKb}KB, ${referenceImageMimeType}) — quality gate passed`
             );
-          } else {
-            console.warn(`[meticulousPipeline] Reference photo too large for ${authorName} (${Math.round(buffer.length / 1024)}KB > 3072KB) — using text-only`);
           }
         }
       } else {

@@ -1246,3 +1246,30 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] BookModal: add framer-motion spring animation to cover image (currently static)
 - [ ] Consider adding a "Recently Added" or "Featured" section to the home/landing area
 - [ ] Add keyboard navigation: arrow keys to move between cards in grid view
+
+## Session March 22, 2026 — Wire parallelBatch into generateAllPortraits
+
+- [ ] Read generateAllPortraits procedure and understand current sequential loop
+- [ ] Add `concurrency` input param to generateAllPortraits (consistent with other batch procedures)
+- [ ] Replace sequential for loop with parallelBatch pool
+- [ ] Verify Admin Console passes batchConcurrency to generateAllPortraits mutation
+- [ ] Run tests, save checkpoint, push to GitHub
+
+## Session March 22, 2026 — Claude Opus Avatar Architecture Review + Implementation
+
+### Claude Opus Diagnosis
+- generateAvatarsBatch is dead code (orphaned, sequential loop, redundant with generateAllMissingAvatars)
+- handleGeneratePortraits does 102 sequential HTTP calls (~102 min) — should delegate to generateAllMissingAvatars (~34 min)
+- DB-write logic duplicated in 3 procedures
+- Tavily photo ranking biases toward recency instead of authoritative sources
+
+### Implementation Tasks
+- [x] CRITICAL: Delete generateAvatarsBatch procedure (dead code, orphaned) — removed 105 lines
+- [x] CRITICAL: Replace handleGeneratePortraits sequential loop with single generateAllMissingAvatars call — ~102 min → ~34 min
+- [x] HIGH: Extract persistAvatarResult() shared helper to server/lib/authorAvatars/persistResult.ts
+- [x] HIGH: Refactor generateAllMissingAvatars and generateAvatar to use persistAvatarResult
+- [x] MEDIUM: Add reference photo quality validation in meticulousPipeline.ts (reject <10KB thumbnails, >3MB oversized)
+- [x] MEDIUM: Improve Tavily photo ranking — Wikipedia+15, LinkedIn+12, publisher+10, TED+10; book covers-12, group/event-8
+- [ ] LOW: Add per-author loading state in author card UI during individual regeneration
+- [x] Run 171 tests — all passing (13 test files)
+- [ ] Save checkpoint, push to GitHub

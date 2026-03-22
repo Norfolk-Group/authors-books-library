@@ -60,9 +60,8 @@ async function fetchWikipediaBioAndPhoto(authorName: string): Promise<{
 async function fetchTavilyPhotos(authorName: string): Promise<string[]> {
   const apiKey = process.env.TAVILY_API_KEY;
   if (!apiKey) return [];
-  // Include current year to bias toward recent photos
-  const currentYear = new Date().getFullYear();
-  const query = `"${authorName}" author headshot professional photo ${currentYear} OR ${currentYear - 1} OR ${currentYear - 2}`;
+  // Query focuses on headshots and professional portraits — not book covers
+  const query = `"${authorName}" author headshot portrait professional photo`;
   try {
     const res = await fetch("https://api.tavily.com/search", {
       method: "POST",
@@ -74,33 +73,41 @@ async function fetchTavilyPhotos(authorName: string): Promise<string[]> {
         include_images: true,
         include_image_descriptions: false,
         max_results: 10,
-        days: 730,  // Prefer photos from the last 2 years
       }),
     });
     if (!res.ok) return [];
     const data = await res.json();
     const images: string[] = data.images ?? [];
-    // Prioritize trusted sources and recent photos
+    // Ranking strategy (Claude Opus, March 22 2026):
+    //   Prioritise authoritative sources (Wikipedia, publisher sites, LinkedIn, TED)
+    //   over recency signals — a 2019 Wikipedia headshot beats a 2025 event photo.
+    //   Penalise book covers, group photos, and event/conference images.
     const nameParts = authorName.toLowerCase().split(" ");
     const scored = images.map((url) => {
       const lower = url.toLowerCase();
       let score = 0;
-      if (lower.includes("linkedin")) score += 10;
-      if (lower.includes("wikipedia") || lower.includes("wikimedia")) score += 9;
-      if (lower.includes("ted.com")) score += 8;
-      if (lower.includes("penguin") || lower.includes("harpercollins")) score += 7;
-      if (lower.includes("author") || lower.includes("headshot")) score += 5;
-      if (lower.includes("speaker") || lower.includes("keynote")) score += 6;
-      if (lower.includes("official") || lower.includes("press")) score += 4;
-      if (nameParts.some((p) => p.length > 3 && lower.includes(p))) score += 3;
-      // Boost recent years
-      if (lower.includes("2024") || lower.includes("2025") || lower.includes("2026")) score += 5;
-      if (lower.includes("2023") || lower.includes("2022")) score += 2;
-      // Penalise old photos
-      if (lower.includes("2015") || lower.includes("2016") || lower.includes("2017")) score -= 3;
-      if (lower.includes("2010") || lower.includes("2011") || lower.includes("2012")) score -= 6;
-      if (lower.includes("book") || lower.includes("cover")) score -= 5;
-      if (lower.includes("amazon") && lower.includes("images")) score -= 2;
+      // Authoritative sources (high trust)
+      if (lower.includes("wikipedia") || lower.includes("wikimedia")) score += 15;
+      if (lower.includes("linkedin")) score += 12;
+      if (lower.includes("penguin") || lower.includes("harpercollins") || lower.includes("simonandschuster")) score += 10;
+      if (lower.includes("ted.com") || lower.includes("tedx")) score += 10;
+      if (lower.includes("official") || lower.includes("authorsite")) score += 8;
+      if (lower.includes("headshot") || lower.includes("portrait")) score += 6;
+      if (lower.includes("speaker") || lower.includes("keynote")) score += 5;
+      if (lower.includes("press") || lower.includes("media")) score += 4;
+      if (lower.includes("author") && !lower.includes("book")) score += 3;
+      // Author name in URL is a strong signal it's their headshot
+      if (nameParts.filter((p) => p.length > 3).every((p) => lower.includes(p))) score += 5;
+      else if (nameParts.some((p) => p.length > 3 && lower.includes(p))) score += 2;
+      // Slight recency bonus — not dominant
+      if (lower.includes("2024") || lower.includes("2025") || lower.includes("2026")) score += 2;
+      if (lower.includes("2023") || lower.includes("2022")) score += 1;
+      // Penalise likely non-headshots
+      if (lower.includes("book") && lower.includes("cover")) score -= 12;
+      if (lower.includes("cover") && !lower.includes("author")) score -= 8;
+      if (lower.includes("event") || lower.includes("conference") || lower.includes("panel")) score -= 5;
+      if (lower.includes("group") || lower.includes("team") || lower.includes("staff")) score -= 8;
+      if (lower.includes("amazon") && lower.includes("images")) score -= 3;
       return { url, score };
     });
     return scored
