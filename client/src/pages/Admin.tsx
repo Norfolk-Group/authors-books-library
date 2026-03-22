@@ -50,6 +50,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
+  BrainCircuit,
   type LucideIcon,
 } from "lucide-react";
 import { AUTHORS, BOOKS } from "@/lib/libraryData";
@@ -58,6 +59,7 @@ import { canonicalName } from "@/lib/authorAliases";
 import { CascadeTab } from "@/components/admin/CascadeTab";
 import { SettingsTab } from "@/components/admin/SettingsTab";
 import { AboutTab } from "@/components/admin/AboutTab";
+import { AiTab } from "@/components/admin/AiTab";
 
 // -- Types ------------------------------------------------------
 type ActionStatus = "idle" | "running" | "done" | "error";
@@ -395,8 +397,10 @@ export default function Admin() {
         const batch = names.slice(i, i + batchSize);
         const result = await enrichBiosMutation.mutateAsync({
           authorNames: batch,
-          model: settings.primaryModel ?? settings.geminiModel,
-          secondaryModel: settings.secondaryLlmEnabled ? settings.secondaryModel : undefined,
+          model: settings.authorResearchModel ?? settings.primaryModel ?? settings.geminiModel,
+          secondaryModel: settings.authorResearchSecondaryEnabled
+            ? settings.authorResearchSecondaryModel
+            : undefined,
         });
         done += result.succeeded;
         failed += result.total - result.succeeded;
@@ -458,8 +462,10 @@ export default function Admin() {
         const batch = books.slice(i, i + batchSize);
         const result = await enrichBooksMutation.mutateAsync({
           books: batch,
-          model: settings.primaryModel ?? settings.geminiModel,
-          secondaryModel: settings.secondaryLlmEnabled ? settings.secondaryModel : undefined,
+          model: settings.bookResearchModel ?? settings.primaryModel ?? settings.geminiModel,
+          secondaryModel: settings.bookResearchSecondaryEnabled
+            ? settings.bookResearchSecondaryModel
+            : undefined,
         });
         done += result.filter((r) => r.status === "enriched").length;
         failed += result.filter((r) => r.status === "error").length;
@@ -708,7 +714,7 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="pipeline" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5 h-auto">
+          <TabsList className="grid w-full grid-cols-6 h-auto">
             <TabsTrigger value="pipeline" className="text-xs py-2 gap-1.5">
               <Database className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Data Pipeline</span>
@@ -728,6 +734,11 @@ export default function Admin() {
               <Settings className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Settings</span>
               <span className="sm:hidden">Config</span>
+            </TabsTrigger>
+            <TabsTrigger value="ai" className="text-xs py-2 gap-1.5">
+              <BrainCircuit className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">AI</span>
+              <span className="sm:hidden">AI</span>
             </TabsTrigger>
             <TabsTrigger value="about" className="text-xs py-2 gap-1.5">
               <Info className="w-3.5 h-3.5" />
@@ -846,7 +857,12 @@ export default function Admin() {
             <SettingsTab settings={settings} updateSettings={updateSettings} />
           </TabsContent>
 
-          {/* -- Tab 5: About -- */}
+          {/* -- Tab 5: AI -- */}
+          <TabsContent value="ai">
+            <AiTab settings={settings} updateSettings={updateSettings} />
+          </TabsContent>
+
+          {/* -- Tab 6: About -- */}
           <TabsContent value="about">
             <AboutTab settings={settings} />
           </TabsContent>

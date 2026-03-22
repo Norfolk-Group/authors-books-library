@@ -55,8 +55,10 @@ export function BookDetailPanel({ book, onClose }: BookDetailPanelProps) {
       enrichMutation.mutate({
         bookTitle: displayTitle,
         authorName: bookAuthor,
-        model: settings.primaryModel || undefined,
-        secondaryModel: settings.secondaryLlmEnabled && settings.secondaryModel ? settings.secondaryModel : undefined,
+        model: settings.bookResearchModel || settings.primaryModel || undefined,
+        secondaryModel: settings.bookResearchSecondaryEnabled && settings.bookResearchSecondaryModel
+          ? settings.bookResearchSecondaryModel
+          : undefined,
       });
     }
   }, [isLoading, profile]);

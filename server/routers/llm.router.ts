@@ -29,7 +29,9 @@ export interface LLMModel {
   description: string;
   contextWindow: number; // input tokens (K)
   outputTokens: number;
-  tier: "flagship" | "balanced" | "fast" | "lite";
+  tier: "flagship" | "balanced" | "fast" | "lite" | "image-gen";
+  /** True if this model is an image generation model, not a text LLM */
+  imageGen?: boolean;
   speed: "fast" | "balanced" | "powerful";
   /** Populated by the recommendation engine — not stored in the raw catalogue */
   recommended?: UseCase;
@@ -110,6 +112,16 @@ const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
         outputTokens: 65536,
         tier: "fast",
         speed: "fast",
+      },
+      {
+        id: "nano-banana",
+        displayName: "Nano Banana (Image Gen)",
+        description: "Google Nano Banana — state-of-the-art image generation model for AI portraits and avatars.",
+        contextWindow: 0,
+        outputTokens: 0,
+        tier: "image-gen",
+        speed: "balanced",
+        imageGen: true,
       },
     ],
   },
@@ -476,7 +488,7 @@ const USE_CASE_CRITERIA: Record<UseCase, ScoringCriteria> = {
    */
   research: {
     contextWindowScore: (ctx) => Math.min(ctx / 100000, 10),
-    tierScore: (tier) => ({ flagship: 4, balanced: 8, fast: 6, lite: 2 }[tier] ?? 0),
+    tierScore: (tier) => ({ flagship: 4, balanced: 8, fast: 6, lite: 2, "image-gen": 0 }[tier] ?? 0),
     speedScore: (speed) => ({ fast: 7, balanced: 10, powerful: 6 }[speed] ?? 0),
     vendorBonus: (v) => ({ google: 5, openai: 3, anthropic: 3, meta: 2, mistral: 1 }[v] ?? 0),
     modelBonus: (id) => {
@@ -498,7 +510,7 @@ const USE_CASE_CRITERIA: Record<UseCase, ScoringCriteria> = {
    */
   refinement: {
     contextWindowScore: (ctx) => Math.min(ctx / 200000, 5),
-    tierScore: (tier) => ({ flagship: 10, balanced: 7, fast: 4, lite: 1 }[tier] ?? 0),
+    tierScore: (tier) => ({ flagship: 10, balanced: 7, fast: 4, lite: 1, "image-gen": 0 }[tier] ?? 0),
     speedScore: (speed) => ({ fast: 3, balanced: 7, powerful: 10 }[speed] ?? 0),
     vendorBonus: (v) => ({ anthropic: 5, google: 5, openai: 3, meta: 1 }[v] ?? 0),
     modelBonus: (id) => {

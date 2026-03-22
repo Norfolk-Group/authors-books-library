@@ -56,6 +56,42 @@ export interface AppSettings {
   viewMode: "cards" | "accordion";
   /** Background color injected into AI portrait generation prompt (hex string, e.g. "#0091ae") */
   avatarBgColor: string;
+
+  // ── Per-purpose AI model settings ──────────────────────────────────────────
+  /** Avatar Generation: vendor ID (default: google) */
+  avatarGenVendor: string;
+  /** Avatar Generation: model ID (default: nano-banana) */
+  avatarGenModel: string;
+  /** Author Research: primary vendor ID */
+  authorResearchVendor: string;
+  /** Author Research: primary model ID */
+  authorResearchModel: string;
+  /** Author Research: secondary LLM enabled */
+  authorResearchSecondaryEnabled: boolean;
+  /** Author Research: secondary vendor ID */
+  authorResearchSecondaryVendor: string;
+  /** Author Research: secondary model ID */
+  authorResearchSecondaryModel: string;
+  /** Book Research: primary vendor ID */
+  bookResearchVendor: string;
+  /** Book Research: primary model ID */
+  bookResearchModel: string;
+  /** Book Research: secondary LLM enabled */
+  bookResearchSecondaryEnabled: boolean;
+  /** Book Research: secondary vendor ID */
+  bookResearchSecondaryVendor: string;
+  /** Book Research: secondary model ID */
+  bookResearchSecondaryModel: string;
+  /** Other AI tasks: vendor ID */
+  otherAiVendor: string;
+  /** Other AI tasks: model ID */
+  otherAiModel: string;
+  /** Other AI tasks: secondary LLM enabled */
+  otherAiSecondaryEnabled: boolean;
+  /** Other AI tasks: secondary vendor ID */
+  otherAiSecondaryVendor: string;
+  /** Other AI tasks: secondary model ID */
+  otherAiSecondaryModel: string;
 }
 
 interface AppSettingsContextType {
@@ -79,6 +115,25 @@ const DEFAULT_SETTINGS: AppSettings = {
   secondaryModel: "gemini-2.5-pro",   // LLM 2: refinement pass — best prose quality
   viewMode: "cards",
   avatarBgColor: "#0091ae",
+
+  // Per-purpose AI model defaults
+  avatarGenVendor: "google",
+  avatarGenModel: "nano-banana",
+  authorResearchVendor: "google",
+  authorResearchModel: "gemini-2.5-flash",
+  authorResearchSecondaryEnabled: false,
+  authorResearchSecondaryVendor: "google",
+  authorResearchSecondaryModel: "gemini-2.5-pro",
+  bookResearchVendor: "google",
+  bookResearchModel: "gemini-2.5-flash",
+  bookResearchSecondaryEnabled: false,
+  bookResearchSecondaryVendor: "google",
+  bookResearchSecondaryModel: "gemini-2.5-pro",
+  otherAiVendor: "google",
+  otherAiModel: "gemini-2.5-flash",
+  otherAiSecondaryEnabled: false,
+  otherAiSecondaryVendor: "google",
+  otherAiSecondaryModel: "gemini-2.5-pro",
 };
 
 const STORAGE_KEY = "app-settings-v2";

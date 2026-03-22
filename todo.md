@@ -972,3 +972,19 @@
 - [x] Consolidate duplicated icon maps (CT_ICON_MAP, DISPLAY_NAME_MAP, normalizeContentTypes) into libraryConstants.ts — removed ~150 lines across 4 components
 - [x] Verify 0 TypeScript errors after cleanup (--noUnusedLocals --noUnusedParameters)
 - [x] Run 122 tests, commit, push, save checkpoint
+
+## Session March 21, 2026 — Admin Console AI Tab
+
+- [x] Add "AI" top-level tab to Admin Console (alongside Data Pipeline, Settings, About)
+- [x] Move existing AI Model content from SettingsTab into the new AI tab
+- [x] Build AI tab with 4 sub-tabs: Avatar Generation, Author Research, Book Research, Other
+- [x] Avatar Generation sub-tab: vendor/model selector defaulting to Google / Nano Banana
+- [x] Author Research sub-tab: vendor/model selector (primary + secondary LLM) for author bio enrichment
+- [x] Book Research sub-tab: vendor/model selector (primary + secondary LLM) for book enrichment
+- [x] Other sub-tab: vendor/model selector for miscellaneous LLM tasks
+- [x] Persist each sub-tab's model selection independently in AppSettings
+- [ ] Wire Avatar Generation model setting to generatePortrait tRPC procedure (nano-banana not yet integrated into portrait gen)
+- [x] Wire Author Research model settings to author enrichment procedures
+- [x] Wire Book Research model settings to book enrichment procedures
+- [x] Add nano-banana to VENDOR_CATALOGUE in llm.router.ts (Google vendor, Nano Banana model)
+- [x] Run tests, commit, push, save checkpoint

@@ -69,8 +69,10 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
       hasTriggered.current = true;
       enrichMutation.mutate({
         authorName: displayName,
-        model: settings.primaryModel || undefined,
-        secondaryModel: settings.secondaryLlmEnabled && settings.secondaryModel ? settings.secondaryModel : undefined,
+        model: settings.authorResearchModel || settings.primaryModel || undefined,
+        secondaryModel: settings.authorResearchSecondaryEnabled && settings.authorResearchSecondaryModel
+          ? settings.authorResearchSecondaryModel
+          : undefined,
       });
     }
   }, [jsonBio, isLoading, profile]);
