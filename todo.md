@@ -1339,3 +1339,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Normalize ratingCount from varchar to int (bookEnrichment.ts, bookSummary.ts, schema, migration 0016 applied)
 - [x] Add per-author loading spinner on avatar circle during individual regeneration (already implemented)
 - [x] Surface bestReferencePhotoUrl in Admin Console avatar stats table (AvatarDetailTable component with Ref Photo column)
+
+## Session March 22, 2026 — 3 Feature Tasks
+
+- [ ] Wire parallelBatch into generateAllPortraits procedure (replace sequential loop, add concurrency param, ~102 min → ~34 min)
+- [ ] Add Research Quality badge (high/medium/low) to author cards based on sourceConfidence.overallConfidence
+- [ ] Add framer-motion spring animation to book cover image in BookDetailPanel and BookModal (scale-in on open)
