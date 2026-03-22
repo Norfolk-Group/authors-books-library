@@ -2,6 +2,7 @@
 // Source: Google Drive "Author Avatars" folder → Manus S3 CDN
 // 89 individual author avatars
 export const AUTHOR_PHOTOS: Record<string, string> = {
+  "Aaron Ross": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/aaron-ross-real-photo_316c0056.jpeg",
   "Adam Grant": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-adam-grant-1774146396627.png",
   "Al Ries": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-al-ries-1774146395121.png",
   "Alan Dib": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-alan-dib-1774146393521.png",

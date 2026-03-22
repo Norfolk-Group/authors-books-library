@@ -329,6 +329,64 @@ These skills were created from patterns discovered in this project:
 
 ---
 
+## Avatar Generation Pipeline
+
+### Architecture — 5-Stage Meticulous Pipeline
+
+The pipeline lives in `server/lib/authorAvatars/` and runs sequentially:
+
+| Stage | File | What it does |
+|---|---|---|
+| 1 — Research | `authorResearcher.ts` | Wikipedia + Tavily + Apify in parallel → `AuthorResearchData` |
+| 2 — Vision Analysis | `authorResearcher.ts` | Gemini Vision (multimodal) or Claude → `AuthorDescription` JSON (cached in DB) |
+| 3 — Prompt Build | `promptBuilder.ts` | Converts `AuthorDescription` → vendor-specific `ImagePromptPackage` |
+| 4 — Image Gen | `imageGenerators/google.ts` or `replicate.ts` | Generates image bytes/URL |
+| 5 — Storage | `meticulousPipeline.ts` | Uploads to S3, updates DB `s3AvatarUrl` |
+
+If a real photo is found at Stage 1 and passes Gemini validation, the pipeline stops there. Only authors with no real photo reach Stage 4 (AI generation).
+
+### Research LLM (Stage 2)
+
+- **Default vendor:** Google (`gemini-2.5-flash`) — multimodal, inlines up to 4 reference photos as base64 image parts
+- **Alternative vendor:** Anthropic (`claude-sonnet-4-5-20250929`) — text-only (no image inlining), falls back to Gemini if `ANTHROPIC_API_KEY` is missing
+- The `AuthorDescription` JSON is cached in `author_profiles.authorDescriptionJson` — subsequent regenerations skip Stage 1–2 unless `forceRefresh: true`
+
+### Image Generation (Stage 4) — Vendor Capabilities
+
+| Vendor | Model | Controllable Params |
+|---|---|---|
+| Google | `nano-banana` (gemini image) | None — model-determined output (typically 1024×1024 PNG) |
+| Google | `imagen-3` | `aspectRatio` only: `1:1`, `3:4`, `4:3`, `9:16`, `16:9` |
+| Replicate | `flux-schnell` | `aspect_ratio`, `output_format`, `output_quality`, `num_inference_steps` (default 4) |
+| Replicate | `flux-dev` / `flux-pro` | All of the above + `guidance_scale`, `width`, `height` (custom) |
+
+**Default model:** `nano-banana` (Google Gemini image model) — fast, no cost per token, good quality for professional headshots.
+
+### Resolution System (Planned — see todo.md)
+
+The following resolution parameters are planned but not yet implemented:
+
+```typescript
+// To be added to ImageGenerationRequest (types.ts)
+aspectRatio?: "1:1" | "4:3" | "3:4" | "16:9" | "9:16" | "custom";
+width?: number;           // Replicate only, 256–1440 (multiples of 64)
+height?: number;          // Replicate only, 256–1440 (multiples of 64)
+outputFormat?: "webp" | "png" | "jpg";  // Replicate only
+outputQuality?: number;   // 1–100, Replicate only (not for PNG)
+guidanceScale?: number;   // 0–10, Replicate flux-dev/pro only
+numInferenceSteps?: number; // 1–50, Replicate only
+```
+
+Once implemented, these will be user-configurable in the Admin Console → AI tab → Avatar Generation sub-tab.
+
+### Key Rules
+
+- **Never pass `aspectRatio` to Gemini image models** — only `generateImages` (Imagen 3) supports it; `generateContent` (Gemini image) does not.
+- **`authorAvatars.ts` takes priority** over DB — if an author has an entry in this static map, the DB `s3AvatarUrl` is never queried for that author's card display.
+- **`authorDescriptionJson` caching** — always check `useCache` flag before re-running Stage 1–2. The cache is per-author in `author_profiles.authorDescriptionJson`.
+
+---
+
 ## Common Pitfalls
 
 **Stale TS watcher errors** — The incremental TypeScript watcher (`tsx watch`) can
@@ -376,4 +434,4 @@ All scripts use the `gws` CLI. Run with `python3.11 -u <script>.py`.
 
 ---
 
-*Last updated: March 17, 2026 — Ricardo Cidale's Library v2.1*
+*Last updated: March 22, 2026 — Ricardo Cidale's Library v2.2 — Avatar pipeline architecture documented; resolution system planned*

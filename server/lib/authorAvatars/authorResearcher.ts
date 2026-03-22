@@ -333,6 +333,31 @@ export async function buildAuthorDescription(
 
 // ── Gemini Vision implementation ───────────────────────────────────────────────
 
+/**
+ * Attempt to fetch an image URL and return it as a base64-encoded inline part.
+ * Returns null if the fetch fails, times out, or the content-type is not an image.
+ */
+async function fetchImageAsBase64(
+  url: string
+): Promise<{ inlineData: { data: string; mimeType: string } } | null> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(8_000),
+      headers: { "User-Agent": "NCGLibrary/1.0 (ncglibrary@norfolkgroup.io)" },
+    });
+    if (!res.ok) return null;
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.startsWith("image/")) return null;
+    // Cap at 3 MB to stay within Gemini inline limits
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length > 3 * 1024 * 1024) return null;
+    const mimeType = contentType.split(";")[0].trim() as string;
+    return { inlineData: { data: buffer.toString("base64"), mimeType } };
+  } catch {
+    return null;
+  }
+}
+
 async function buildAuthorDescriptionWithGemini(
   research: AuthorResearchData,
   userMessage: string,
@@ -345,15 +370,36 @@ async function buildAuthorDescriptionWithGemini(
   }
   try {
     const ai = new GoogleGenAI({ apiKey });
+
+    // ── Inline up to 4 reference photos as true multimodal image parts ─────────
+    // Fetch all photos in parallel; keep only the ones that succeed
+    const imagePartResults = await Promise.allSettled(
+      research.allPhotoUrls.slice(0, 4).map(fetchImageAsBase64)
+    );
+    const imageParts = imagePartResults
+      .filter(
+        (r): r is PromiseFulfilledResult<{ inlineData: { data: string; mimeType: string } }> =>
+          r.status === "fulfilled" && r.value !== null
+      )
+      .map((r) => r.value);
+
+    console.log(
+      `[authorResearcher] Gemini multimodal: ${imageParts.length}/${research.allPhotoUrls.length} photos inlined for ${research.authorName}`
+    );
+
+    // Build parts: system prompt + text context + inlined images
+    const parts: object[] = [
+      { text: RESEARCH_SYSTEM_PROMPT },
+      { text: userMessage },
+      ...imageParts,
+    ];
+
     const response = await ai.models.generateContent({
       model: researchModel,
       contents: [
         {
           role: "user",
-          parts: [
-            { text: RESEARCH_SYSTEM_PROMPT },
-            { text: userMessage },
-          ],
+          parts,
         },
       ],
       config: {
@@ -381,7 +427,7 @@ async function buildAuthorDescriptionWithGemini(
 async function buildAuthorDescriptionWithClaude(
   research: AuthorResearchData,
   userMessage: string,
-  researchModel = "claude-3-5-sonnet-20241022"
+  researchModel = "claude-sonnet-4-5-20250929"
 ): Promise<AuthorDescription | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {

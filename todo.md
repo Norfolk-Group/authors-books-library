@@ -1056,3 +1056,38 @@
 - [x] Add getToolStatus procedure to admin.router.ts (checks env vars for all external tools)
 - [x] Add apifyActor, replicateModel, perplexityModel fields to AppSettings + defaults
 - [x] All 141 tests passing
+
+## Session March 22, 2026 — Avatar Pipeline Fixes
+
+- [ ] Fix Claude default model ID in authorResearcher.ts (claude-3-5-sonnet-20241022 → claude-sonnet-4-5-20250929)
+- [ ] Upgrade Gemini research pass to inline reference photos as true multimodal base64 image parts
+- [ ] Set nano-banana as default avatarGenModel in AppSettings defaults and AI tab UI
+- [ ] Run tests, save checkpoint
+
+## Session March 22, 2026 — Avatar Resolution Pipeline (Claude Opus Plan)
+
+### Types & Interfaces
+- [ ] Add `AspectRatio` and `OutputFormat` types to `server/lib/authorAvatars/types.ts`
+- [ ] Extend `ImageGenerationRequest` with: `aspectRatio`, `width`, `height`, `outputFormat`, `outputQuality`, `guidanceScale`, `numInferenceSteps`
+- [ ] Extend `MeticulousPipelineOptions` with the same resolution fields
+- [ ] Add avatar resolution fields to `AppSettings`: `avatarAspectRatio`, `avatarWidth`, `avatarHeight`, `avatarOutputFormat`, `avatarOutputQuality`, `avatarGuidanceScale`, `avatarInferenceSteps`
+- [ ] Add default values for new resolution settings in `AppSettingsContext.tsx`
+
+### Backend Image Generators
+- [ ] Fix `imageGenerators/google.ts` — only pass `aspectRatio` to Imagen 3 (not Gemini image models); add `mapToImagen3AspectRatio` helper for unsupported ratio mapping
+- [ ] Update `imageGenerators/replicate.ts` — accept and use all resolution params (width, height, format, quality, steps, guidanceScale); add `validateDimension` helper for 64px alignment
+- [ ] Update `meticulousPipeline.ts` — pass resolution options through to generators (remove hardcoded `aspectRatio: "1:1"` and `guidanceScale: 7.5`)
+
+### API Routes
+- [ ] Update avatar regeneration tRPC procedure to read resolution params from input and fall back to AppSettings defaults
+- [ ] Add server-side validation for resolution params (dimension range, format enum, quality range)
+
+### Admin Console UI — Avatar Generation Sub-Tab
+- [ ] Create `components/admin/AspectRatioSelector.tsx` with visual ratio labels and descriptions
+- [ ] Create `components/admin/QualitySlider.tsx` with live value display
+- [ ] Create `components/admin/DimensionInput.tsx` with 64px step validation
+- [ ] Reorganize Avatar Generation sub-tab into 3 sections: Model Selection, Image Size & Format, Generation Parameters
+- [ ] Add conditional visibility: Replicate-only controls hidden when vendor=google; aspectRatio hidden for Gemini image models
+- [ ] Add vendor capability info alert (Gemini = no resolution control; Imagen 3 = aspectRatio only; Replicate = full control)
+- [ ] Add "Reset to Defaults" button for resolution settings
+- [ ] Update Test Portrait button to pass current resolution settings to the pipeline
