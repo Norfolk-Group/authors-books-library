@@ -988,3 +988,25 @@
 - [x] Wire Book Research model settings to book enrichment procedures
 - [x] Add nano-banana to VENDOR_CATALOGUE in llm.router.ts (Google vendor, Nano Banana model)
 - [x] Run tests, commit, push, save checkpoint
+
+## Session March 21, 2026 — Nano Banana Portrait Generation Integration
+
+- [x] Research nano-banana API (Google Imagen 3 / Gemini image gen endpoint and parameters)
+- [x] Extend imageGeneration.ts helper to support nano-banana model routing
+- [x] Update generatePortrait procedure to accept avatarGenModel + avatarGenVendor params
+- [x] Update client-side portrait generation calls (AuthorBioPanel, Admin batch) to pass selected avatar model from settings
+- [x] Write vitest tests for nano-banana routing in generatePortrait
+- [x] Verify 0 TypeScript errors, run 122 tests, commit, push, save checkpoint
+
+## Session March 21, 2026 — Portrait Gen + DB Indexes + AI Tab Test Button
+
+- [x] Wire nano-banana (Google Imagen 3) to generatePortrait procedure: create googleImagenGeneration.ts helper, route based on avatarGenVendor/avatarGenModel from AppSettings, pass model selection from client to mutation
+- [x] Update generatePortrait tRPC input to accept optional avatarGenModel + avatarGenVendor params
+- [x] Update AuthorBioPanel generatePortraitMutation call to pass settings.avatarGenModel + settings.avatarGenVendor
+- [x] Update Admin batch portrait generation to pass settings.avatarGenModel + settings.avatarGenVendor
+- [x] Add DB index on authorName column in author_profiles table (schema + migration)
+- [x] Add DB index on authorName column in book_profiles table (schema + migration)
+- [x] Add "Test Portrait" button to Avatar Generation sub-tab in AiTab.tsx — fires a quick portrait generation for a sample author to confirm the selected model works
+- [x] Show generated test portrait inline in the AI tab with model/vendor label
+- [x] Write vitest tests for Google Imagen routing in generatePortrait
+- [x] Verify 0 TypeScript errors, run all tests, commit, push, save checkpoint

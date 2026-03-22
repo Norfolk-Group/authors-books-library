@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -49,11 +49,16 @@ export const authorProfiles = mysqlTable("author_profiles", {
    * - apify: Apify web scrape (Tier 3)
    * - ai: Replicate AI-generated portrait (Tier 5 fallback)
    */
-  avatarSource: mysqlEnum("avatarSource", ["wikipedia", "tavily", "apify", "ai"]),
+  avatarSource: mysqlEnum("avatarSource", ["wikipedia", "tavily", "apify", "ai", "google-imagen"]),
   enrichedAt: timestamp("enrichedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  /** Index for fast lookups by author name (used in enrichment waterfall) */
+  authorNameIdx: index("author_profiles_authorName_idx").on(table.authorName),
+  /** Index for finding un-enriched rows quickly */
+  enrichedAtIdx: index("author_profiles_enrichedAt_idx").on(table.enrichedAt),
+}));
 
 export type AuthorProfile = typeof authorProfiles.$inferSelect;
 export type InsertAuthorProfile = typeof authorProfiles.$inferInsert;
@@ -96,7 +101,12 @@ export const bookProfiles = mysqlTable("book_profiles", {
   enrichedAt: timestamp("enrichedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (table) => ({
+  /** Index for fast lookups by author name (used in book enrichment joins) */
+  authorNameIdx: index("book_profiles_authorName_idx").on(table.authorName),
+  /** Index for finding un-enriched books quickly */
+  enrichedAtIdx: index("book_profiles_enrichedAt_idx").on(table.enrichedAt),
+}));
 
 export type BookProfile = typeof bookProfiles.$inferSelect;
 export type InsertBookProfile = typeof bookProfiles.$inferInsert;

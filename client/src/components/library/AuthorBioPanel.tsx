@@ -106,7 +106,12 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
             </AvatarUpload>
             {!effectivePhotoUrl && (
               <button
-                onClick={() => generatePortraitMutation.mutate({ authorName: displayName, bgColor: settings.avatarBgColor })}
+                onClick={() => generatePortraitMutation.mutate({
+                  authorName: displayName,
+                  bgColor: settings.avatarBgColor,
+                  avatarGenVendor: settings.avatarGenVendor,
+                  avatarGenModel: settings.avatarGenModel,
+                })}
                 disabled={generatePortraitMutation.isPending}
                 title="Generate AI portrait"
                 className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center shadow-md border border-border bg-background hover:bg-muted transition-colors disabled:opacity-50"

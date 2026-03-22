@@ -71,6 +71,13 @@
       "when": 1774140298812,
       "tag": "0009_flat_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1774142725977,
+      "tag": "0010_plain_king_cobra",
+      "breakpoints": true
     }
   ]
 }

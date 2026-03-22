@@ -487,28 +487,67 @@ export const authorProfilesRouter = router({
       };
     }),
 
-  // -- Generate an AI portrait via Replicate (last-resort fallback) --------
+  // -- Generate an AI portrait (routes to Google Imagen or Replicate based on vendor) --------
   generatePortrait: publicProcedure
-    .input(z.object({ authorName: z.string().min(1), bgColor: z.string().optional() }))
+    .input(z.object({
+      authorName: z.string().min(1),
+      bgColor: z.string().optional(),
+      /** Avatar Generation vendor from AI tab settings (e.g. "google", "replicate") */
+      avatarGenVendor: z.string().optional(),
+      /** Avatar Generation model ID from AI tab settings (e.g. "gemini-2.5-flash-image") */
+      avatarGenModel: z.string().optional(),
+    }))
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
 
-      // Generate via Replicate flux-schnell
-      const { generateAIPortrait } = await import("../lib/authorAvatars/replicateGeneration");
-      const generated = await generateAIPortrait(input.authorName, input.bgColor);
-      if (!generated) throw new Error("Portrait generation failed - please try again");
-
-      // Mirror to S3 immediately (Replicate URLs expire after ~1 hour)
-      const res = await fetch(generated.url, { signal: AbortSignal.timeout(20_000) });
-      if (!res.ok) throw new Error("Failed to download generated portrait");
-      const buffer = Buffer.from(await res.arrayBuffer());
       const slug = input.authorName
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
-      const key = `author-avatars/ai-${slug}-${Date.now()}.webp`;
-      const { url } = await storagePut(key, buffer, "image/webp");
+
+      const useGoogleImagen =
+        input.avatarGenVendor === "google" ||
+        (input.avatarGenModel && (
+          input.avatarGenModel.startsWith("gemini-") ||
+          input.avatarGenModel.startsWith("nano-banana")
+        ));
+
+      let buffer: Buffer;
+      let mimeType: string;
+
+      if (useGoogleImagen) {
+        // Route to Google Imagen / Nano Banana
+        const { generateGoogleImagenPortrait, NANO_BANANA_MODELS, DEFAULT_NANO_BANANA_MODEL } =
+          await import("../lib/authorAvatars/googleImagenGeneration");
+        // Resolve model: if caller passed a friendly key (e.g. "nano-banana"), map it; otherwise use as-is
+        const resolvedModel =
+          (input.avatarGenModel && NANO_BANANA_MODELS[input.avatarGenModel])
+            ? NANO_BANANA_MODELS[input.avatarGenModel]
+            : (input.avatarGenModel ?? DEFAULT_NANO_BANANA_MODEL);
+        const generated = await generateGoogleImagenPortrait(
+          input.authorName,
+          input.bgColor,
+          resolvedModel,
+        );
+        if (!generated) throw new Error("Google Imagen portrait generation failed - please try again");
+        buffer = generated.buffer;
+        mimeType = generated.mimeType;
+      } else {
+        // Default: Replicate flux-schnell
+        const { generateAIPortrait } = await import("../lib/authorAvatars/replicateGeneration");
+        const generated = await generateAIPortrait(input.authorName, input.bgColor);
+        if (!generated) throw new Error("Portrait generation failed - please try again");
+        // Mirror to S3 immediately (Replicate URLs expire after ~1 hour)
+        const res = await fetch(generated.url, { signal: AbortSignal.timeout(20_000) });
+        if (!res.ok) throw new Error("Failed to download generated portrait");
+        buffer = Buffer.from(await res.arrayBuffer());
+        mimeType = "image/webp";
+      }
+
+      const ext = mimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "webp";
+      const key = `author-avatars/ai-${slug}-${Date.now()}.${ext}`;
+      const { url } = await storagePut(key, buffer, mimeType);
 
       // Persist to DB - AI-generated portrait
       await db

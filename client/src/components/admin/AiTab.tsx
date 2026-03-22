@@ -128,7 +128,10 @@ function ModelSelector({ purpose, settings, updateSettings }: ModelSelectorProps
   const vendorsQuery = trpc.llm.listVendors.useQuery();
   const refreshVendorsMutation = trpc.llm.refreshVendors.useMutation();
   const testModelMutation = trpc.llm.testModel.useMutation();
+  const generatePortraitMutation = trpc.authorProfiles.generatePortrait.useMutation();
   const [testingModel, setTestingModel] = useState<string | null>(null);
+  const [testPortraitUrl, setTestPortraitUrl] = useState<string | null>(null);
+  const [testPortraitError, setTestPortraitError] = useState<string | null>(null);
 
   const vendors = vendorsQuery.data ?? [];
 
@@ -514,6 +517,69 @@ function ModelSelector({ purpose, settings, updateSettings }: ModelSelectorProps
               </>
             ) : (
               <p className="text-[11px] text-muted-foreground">Not configured</p>
+            )}
+          </div>
+        )}
+
+        {/* Test Portrait button — Avatar Generation only */}
+        {purpose.imageGenOnly && (
+          <div className="space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full h-8 text-xs gap-2"
+              onClick={() => {
+                setTestPortraitUrl(null);
+                setTestPortraitError(null);
+                generatePortraitMutation.mutate(
+                  {
+                    authorName: "Adam Grant",
+                    bgColor: settings.avatarBgColor,
+                    avatarGenVendor: settings.avatarGenVendor,
+                    avatarGenModel: settings.avatarGenModel,
+                  },
+                  {
+                    onSuccess: (data) => {
+                      setTestPortraitUrl(data.url);
+                      toast.success("Test portrait generated successfully!");
+                    },
+                    onError: (err) => {
+                      setTestPortraitError(err.message);
+                      toast.error(`Portrait test failed: ${err.message}`);
+                    },
+                  }
+                );
+              }}
+              disabled={generatePortraitMutation.isPending}
+            >
+              {generatePortraitMutation.isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <ImageIcon className="w-3 h-3" />
+              )}
+              {generatePortraitMutation.isPending ? "Generating…" : "Test Portrait"}
+            </Button>
+
+            {/* Inline test result */}
+            {testPortraitUrl && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <img
+                  src={testPortraitUrl}
+                  alt="Test portrait"
+                  className="w-full object-cover max-h-48"
+                />
+                <div className="px-2 py-1.5 bg-muted/50 flex items-center justify-between">
+                  <span className="text-[9px] text-muted-foreground">
+                    {settings.avatarGenVendor} / {settings.avatarGenModel}
+                  </span>
+                  <span className="text-[9px] text-green-600 font-medium">✓ Success</span>
+                </div>
+              </div>
+            )}
+            {testPortraitError && (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/5 px-2 py-1.5">
+                <p className="text-[9px] text-destructive">{testPortraitError}</p>
+              </div>
             )}
           </div>
         )}

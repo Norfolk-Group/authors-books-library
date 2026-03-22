@@ -537,7 +537,12 @@ export default function Admin() {
       for (let i = 0; i < missing.length; i++) {
         const authorName = missing[i];
         try {
-          await generatePortraitMutation.mutateAsync({ authorName, bgColor: settings.avatarBgColor });
+          await generatePortraitMutation.mutateAsync({
+            authorName,
+            bgColor: settings.avatarBgColor,
+            avatarGenVendor: settings.avatarGenVendor,
+            avatarGenModel: settings.avatarGenModel,
+          });
           done++;
         } catch {
           failed++;
