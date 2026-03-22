@@ -4,6 +4,7 @@
  */
 
 import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -93,25 +94,37 @@ export function BookDetailPanel({ book, onClose }: BookDetailPanelProps) {
       <DialogHeader>
         <div className="flex items-start gap-4 mb-1">
           <div className="flex-shrink-0 relative">
+            <AnimatePresence mode="wait">
             {effectiveCoverUrl ? (
-              <img
+              <motion.img
+                key={effectiveCoverUrl}
                 src={effectiveCoverUrl}
                 alt={displayTitle}
                 className="w-[101px] h-[144px] object-cover rounded-md shadow-md ring-1 ring-border book-cover-3d"
                 loading="lazy"
+                initial={{ opacity: 0, scale: 0.88, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ type: "spring", stiffness: 320, damping: 24, mass: 0.8 }}
               />
             ) : (
-              <div
+              <motion.div
+                key="placeholder"
                 className="w-[101px] h-[144px] rounded-md flex items-center justify-center shadow-md ring-1 ring-border"
                 style={{ backgroundColor: color + "18" }}
+                initial={{ opacity: 0, scale: 0.88 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: "spring", stiffness: 320, damping: 24 }}
               >
                 {isLoadingProfile || scrapeMutation.isPending ? (
                   <RefreshCw className="w-5 h-5 animate-spin" style={{ color }} />
                 ) : (
                   <Icon className="w-8 h-8" style={{ color, opacity: 0.5 }} />
                 )}
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
             {displayAsin && (
               <span className="absolute -bottom-1 -right-1 text-[9px] bg-background border border-border rounded px-1 py-0.5 font-mono opacity-70">
                 {displayAsin}

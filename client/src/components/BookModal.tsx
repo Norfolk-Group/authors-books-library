@@ -20,6 +20,7 @@ import { CONTENT_TYPE_ICONS } from "@/lib/libraryData";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CT_ICON_MAP,
   normalizeContentTypes,
@@ -122,18 +123,32 @@ export function BookModal({ book, onClose }: BookModalProps) {
               </button>
               {/* Cover + meta row */}
               <div className="flex items-start gap-4">
+                <AnimatePresence mode="wait">
                 {coverUrl ? (
-                  <img
+                  <motion.img
+                    key={coverUrl}
                     src={coverUrl}
                     alt={book.titleKey}
                     className="h-[169px] w-[113px] rounded object-cover shadow-sm flex-shrink-0 ring-1 ring-border"
                     loading="lazy"
+                    initial={{ opacity: 0, scale: 0.88, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.92 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 24, mass: 0.8 }}
                   />
                 ) : (
-                  <div className="h-[169px] w-[113px] rounded bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border">
+                  <motion.div
+                    key="placeholder"
+                    className="h-[169px] w-[113px] rounded bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border"
+                    initial={{ opacity: 0, scale: 0.88 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                  >
                     <BookOpen className="w-6 h-6 text-muted-foreground" />
-                  </div>
+                  </motion.div>
                 )}
+                </AnimatePresence>
                 <div className="flex flex-col gap-2 min-w-0 flex-1">
                   {/* Content-type pills */}
                   {Object.keys(normalised).length > 0 && (

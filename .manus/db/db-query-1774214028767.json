@@ -1,0 +1,17 @@
+{
+  "query": "\nSELECT \n  COUNT(*) as total,\n  SUM(CASE WHEN authorDescriptionJson IS NOT NULL THEN 1 ELSE 0 END) as has_description,\n  SUM(CASE WHEN authorDescriptionJson LIKE '%\"overallConfidence\":\"high\"%' THEN 1 ELSE 0 END) as high_confidence,\n  SUM(CASE WHEN authorDescriptionJson LIKE '%\"overallConfidence\":\"medium\"%' THEN 1 ELSE 0 END) as medium_confidence,\n  SUM(CASE WHEN authorDescriptionJson LIKE '%\"overallConfidence\":\"low\"%' THEN 1 ELSE 0 END) as low_confidence\nFROM author_profiles;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \nSELECT \n  COUNT(*) as total,\n  SUM(CASE WHEN authorDescriptionJson IS NOT NULL THEN 1 ELSE 0 END) as has_description,\n  SUM(CASE WHEN authorDescriptionJson LIKE '%\"overallConfidence\":\"high\"%' THEN 1 ELSE 0 END) as high_confidence,\n  SUM(CASE WHEN authorDescriptionJson LIKE '%\"overallConfidence\":\"medium\"%' THEN 1 ELSE 0 END) as medium_confidence,\n  SUM(CASE WHEN authorDescriptionJson LIKE '%\"overallConfidence\":\"low\"%' THEN 1 ELSE 0 END) as low_confidence\nFROM author_profiles;\n",
+  "rows": [
+    {
+      "total": "176",
+      "has_description": "48",
+      "high_confidence": "44",
+      "medium_confidence": "3",
+      "low_confidence": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\thas_description\thigh_confidence\tmedium_confidence\tlow_confidence\n176\t48\t44\t3\t1\n",
+  "stderr": "",
+  "execution_time_ms": 73
+}

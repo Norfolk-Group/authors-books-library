@@ -89,6 +89,8 @@ export interface FlowbiteAuthorCardProps {
   isHighlighted?: boolean;
   /** Ref callback for scroll-to support from parent */
   cardRef?: (el: HTMLDivElement | null) => void;
+  /** Map of lowercase author name -> research quality confidence level */
+  researchQualityMap?: Map<string, "high" | "medium" | "low">;
 }
 
 // -- Main component -------------------------------------------------------------
@@ -104,6 +106,7 @@ export function FlowbiteAuthorCard({
   onNavigateToBook,
   isHighlighted,
   cardRef,
+  researchQualityMap,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -306,6 +309,37 @@ export function FlowbiteAuthorCard({
                 )}
               </div>
             </div>
+
+            {/* Research Quality badge — shown only for authors processed by meticulous pipeline */}
+            {(() => {
+              const confidence = researchQualityMap?.get(displayName.toLowerCase());
+              if (!confidence) return null;
+              const badgeConfig = {
+                high: { label: "High Quality", className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", dot: "bg-emerald-500" },
+                medium: { label: "Medium Quality", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400", dot: "bg-amber-500" },
+                low: { label: "Low Quality", className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", dot: "bg-red-500" },
+              }[confidence];
+              return (
+                <div className="flex justify-center mt-1 mb-0.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider cursor-default ${badgeConfig.className}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${badgeConfig.dot}`} />
+                        {badgeConfig.label}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-[220px] p-2.5">
+                      <p className="text-xs font-semibold mb-0.5">Research Quality</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {confidence === "high" ? "Portrait generated from 5+ verified reference photos with consistent features." :
+                         confidence === "medium" ? "Portrait generated from 2–4 reference photos; some features may vary." :
+                         "Limited reference photos found; portrait accuracy may be lower."}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              );
+            })()}
 
             {/* Bio status - presentational (with tooltip on bio-ready label) */}
             <div className="text-[11px] flex justify-center">

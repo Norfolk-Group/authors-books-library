@@ -753,9 +753,34 @@ export const authorProfilesRouter = router({
   }),
 
   /**
-   * Trigger the batch-regen script as a background process.
-   * Returns immediately — poll getBatchRegenProgress for live updates.
+   * Returns a lightweight map of authorName -> overallConfidence for authors
+   * that have been processed by the meticulous pipeline (authorDescriptionJson populated).
+   * Used by the frontend to show Research Quality badges on author cards.
    */
+  getResearchQualityMap: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        authorName: authorProfiles.authorName,
+        authorDescriptionJson: authorProfiles.authorDescriptionJson,
+      })
+      .from(authorProfiles)
+      .where(sql`${authorProfiles.authorDescriptionJson} IS NOT NULL`);
+    return rows
+      .map((r) => {
+        try {
+          const desc = JSON.parse(r.authorDescriptionJson ?? "{}");
+          const confidence = desc?.sourceConfidence?.overallConfidence as "high" | "medium" | "low" | undefined;
+          if (!confidence) return null;
+          return { authorName: r.authorName, confidence };
+        } catch {
+          return null;
+        }
+      })
+      .filter((r): r is { authorName: string; confidence: "high" | "medium" | "low" } => r !== null);
+  }),
+
   triggerBatchRegen: adminProcedure
     .input(z.object({
       forceRegenerate: z.boolean().optional().default(false),

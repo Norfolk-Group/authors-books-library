@@ -1342,6 +1342,6 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 ## Session March 22, 2026 — 3 Feature Tasks
 
-- [ ] Wire parallelBatch into generateAllPortraits procedure (replace sequential loop, add concurrency param, ~102 min → ~34 min)
-- [ ] Add Research Quality badge (high/medium/low) to author cards based on sourceConfidence.overallConfidence
-- [ ] Add framer-motion spring animation to book cover image in BookDetailPanel and BookModal (scale-in on open)
+- [x] Wire parallelBatch into generateAllPortraits procedure (already implemented via generateAllMissingAvatars delegation — confirmed)
+- [x] Add Research Quality badge (high/medium/low) to author cards based on sourceConfidence.overallConfidence (getResearchQualityMap procedure + FlowbiteAuthorCard badge with tooltip)
+- [x] Add framer-motion spring animation to book cover image in BookDetailPanel and BookModal (scale-in spring, AnimatePresence, stiffness 320 damping 24)

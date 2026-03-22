@@ -202,6 +202,14 @@ export default function Home() {
   }, []);
 
   const authorAvatarMapQuery = trpc.authorProfiles.getAvatarMap.useQuery(undefined, { staleTime: 60_000 });
+  const researchQualityQuery = trpc.authorProfiles.getResearchQualityMap.useQuery(undefined, { staleTime: 300_000 });
+  const researchQualityMap = useMemo(() => {
+    const map = new Map<string, "high" | "medium" | "low">();
+    for (const r of researchQualityQuery.data ?? []) {
+      map.set(r.authorName.toLowerCase(), r.confidence);
+    }
+    return map;
+  }, [researchQualityQuery.data]);
   const dbAvatarMap = useMemo(() => {
     const map = new Map<string, string>();
     const splitSep = /\s+(?:and|&)\s+/i;
@@ -634,6 +642,7 @@ export default function Home() {
                           bio={(authorBios as Record<string, string>)[canonicalName(a.name)] ?? dbBioMap.get(canonicalName(a.name).toLowerCase()) ?? null}
                           coverMap={bookCoverMap}
                           dbAvatarMap={dbAvatarMap}
+                          researchQualityMap={researchQualityMap}
                           bookInfoMap={bookInfoMap}
                           onNavigateToBook={navigateToBook}
                           isHighlighted={highlightedAuthorName === canonicalName(a.name).toLowerCase()}
