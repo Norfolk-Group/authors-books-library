@@ -1182,4 +1182,21 @@
 - [ ] Clean and optimize code throughout (remove dead code, consolidate duplicate Tavily fetch logic)
 - [x] Write vitest tests for parallelBatch utility (concurrency cap, error isolation, progress callback) — 11 tests, all passing
 - [x] Run tests: 152 tests passing (12 test files)
+- [x] Save checkpoint (5ae4d37), push to GitHub
+
+## Session March 22, 2026 — Avatar Resemblance Overhaul (Claude Opus)
+
+- [x] Audit full avatar pipeline: promptBuilder, authorResearcher, google.ts generator, meticulousPipeline
+- [x] Use Claude Opus to analyze current system and design a comprehensive improvement strategy
+- [x] Extend `types.ts` — add `microFeatures`, `characteristicPose`, `bestReferencePhotoUrl`, extended eye/hair/personality/stylePresentation fields
+- [x] Rewrite `promptBuilder.ts` — 10-section structure: [SUBJECT][PHYSICAL STRUCTURE][FACIAL DETAILS][EXPRESSION][ATTIRE][LIGHTING][CAMERA][BACKGROUND][QUALITY][CONSTRAINTS]
+- [x] Identity anchoring in [SUBJECT] — "Portrait of {name}, author of {works}" activates model's latent knowledge of public figures
+- [x] Cinematographic lighting — academic (butterfly/Paramount), creative (loop), corporate (modified Rembrandt) based on roleType
+- [x] Micro-feature specificity — nose shape, lip description, forehead height, jaw angle, chin shape, cheekbones in [FACIAL DETAILS]
+- [x] Update `authorResearcher.ts` system prompt — forensic visual analyst instructions for micro-feature extraction and best photo selection
+- [x] Update `AUTHOR_DESCRIPTION_SCHEMA` — add microFeatures, characteristicPose, bestReferencePhotoUrl, extended eye/hair/personality fields
+- [x] Update `google.ts` generator — reference-image injection: instruction → reference photo → generation prompt (multimodal)
+- [x] Update `meticulousPipeline.ts` — fetch bestReferencePhotoUrl as base64, pass to generator; fallback to first reference photo
+- [x] Write 19 vitest tests for refined promptBuilder — all 171 tests pass (13 test files)
+- [ ] Test live generation on 2-3 authors to verify improved resemblance
 - [ ] Save checkpoint, push to GitHub

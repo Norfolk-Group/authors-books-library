@@ -141,13 +141,78 @@ export async function runMeticulousPipeline(
     }
   }
 
-  // ── Stage 3: Prompt Building ───────────────────────────────────────────────
+  // ── Stage 3: Prompt Building (with reference photo fetch) ────────────────────
+  // Fetch the best reference photo as base64 for reference-guided generation.
+  // This is done here (not in the generator) so we can log the outcome and
+  // gracefully fall back to text-only generation if the fetch fails.
+  let referenceImageBase64: string | undefined;
+  let referenceImageMimeType: string | undefined;
+
+  if (authorDescription?.bestReferencePhotoUrl) {
+    try {
+      const refUrl = authorDescription.bestReferencePhotoUrl;
+      console.log(`[meticulousPipeline] Fetching reference photo for ${authorName}: ${refUrl}`);
+      const res = await fetch(refUrl, {
+        signal: AbortSignal.timeout(10_000),
+        headers: { "User-Agent": "NCGLibrary/1.0 (ncglibrary@norfolkgroup.io)" },
+      });
+      if (res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        if (contentType.startsWith("image/")) {
+          const buffer = Buffer.from(await res.arrayBuffer());
+          // Cap at 3 MB to stay within Gemini inline limits
+          if (buffer.length <= 3 * 1024 * 1024) {
+            referenceImageBase64 = buffer.toString("base64");
+            referenceImageMimeType = contentType.split(";")[0].trim();
+            console.log(
+              `[meticulousPipeline] Reference photo fetched for ${authorName} ` +
+              `(${Math.round(buffer.length / 1024)}KB, ${referenceImageMimeType})`
+            );
+          } else {
+            console.warn(`[meticulousPipeline] Reference photo too large for ${authorName} (${Math.round(buffer.length / 1024)}KB > 3072KB) — using text-only`);
+          }
+        }
+      } else {
+        console.warn(`[meticulousPipeline] Reference photo fetch failed for ${authorName}: HTTP ${res.status}`);
+      }
+    } catch (err) {
+      console.warn(`[meticulousPipeline] Reference photo fetch error for ${authorName}:`, err);
+    }
+  } else if (authorDescription) {
+    // Fall back to first available photo from references
+    const fallbackUrl = authorDescription.references?.photoUrls?.[0];
+    if (fallbackUrl) {
+      try {
+        console.log(`[meticulousPipeline] No bestReferencePhotoUrl — trying first reference photo for ${authorName}`);
+        const res = await fetch(fallbackUrl, {
+          signal: AbortSignal.timeout(10_000),
+          headers: { "User-Agent": "NCGLibrary/1.0 (ncglibrary@norfolkgroup.io)" },
+        });
+        if (res.ok) {
+          const contentType = res.headers.get("content-type") ?? "";
+          if (contentType.startsWith("image/")) {
+            const buffer = Buffer.from(await res.arrayBuffer());
+            if (buffer.length <= 3 * 1024 * 1024) {
+              referenceImageBase64 = buffer.toString("base64");
+              referenceImageMimeType = contentType.split(";")[0].trim();
+              console.log(`[meticulousPipeline] Fallback reference photo fetched for ${authorName}`);
+            }
+          }
+        }
+      } catch {
+        // Silently skip — text-only generation will be used
+      }
+    }
+  }
+
   let promptPackage;
   if (authorDescription) {
     promptPackage = buildMeticulousPrompt(authorDescription, {
       bgColor: options.bgColor,
       vendor,
       model,
+      referenceImageBase64,
+      referenceImageMimeType,
     });
     stages.promptBuild = "executed";
   } else {
@@ -160,7 +225,8 @@ export async function runMeticulousPipeline(
   }
 
   console.log(
-    `[meticulousPipeline] Prompt built for ${authorName} (${promptPackage.prompt.length} chars)`
+    `[meticulousPipeline] Prompt built for ${authorName} ` +
+    `(${promptPackage.prompt.length} chars, reference: ${referenceImageBase64 ? "yes" : "no"})`
   );
 
   // ── Stage 4: Image Generation ──────────────────────────────────────────────
@@ -181,6 +247,8 @@ export async function runMeticulousPipeline(
     negativePrompt: promptPackage.negativePrompt,
     aspectRatio: "1:1",
     guidanceScale: 7.5,
+    referenceImageBase64: promptPackage.referenceImageBase64,
+    referenceImageMimeType: promptPackage.referenceImageMimeType,
   });
 
   if (imageResult.error) {

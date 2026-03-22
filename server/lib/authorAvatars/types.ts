@@ -37,6 +37,8 @@ export interface AuthorDescription {
       color: string;   // "salt-and-pepper", "dark brown", "silver-gray", "bald"
       style: string;   // "swept back", "close-cropped", "curly and full", "receding"
       length: string;  // "short", "medium", "long", "bald", "balding"
+      texture?: string; // "straight", "wavy", "curly", "coily", "fine", "thick"
+      hairline?: string; // "receding", "high", "normal", "widow's peak"
     };
     /** Facial hair if any */
     facialHair: {
@@ -51,8 +53,10 @@ export interface AuthorDescription {
     /** Eye description */
     eyes: {
       color: string;
-      shape?: string;  // "deep-set", "almond-shaped"
+      shape?: string;  // "deep-set", "almond-shaped", "hooded", "wide-set"
       notable?: string; // "crow's feet", "expressive", "warm"
+      browShape?: string; // "thick and straight", "arched", "thin", "bushy"
+      setting?: string; // "deep-set", "prominent", "average"
     };
     /** Skin tone for accurate rendering */
     skinTone: string;  // "fair", "medium", "olive", "tan", "dark brown"
@@ -65,6 +69,61 @@ export interface AuthorDescription {
     };
   };
 
+  /**
+   * Micro-facial features for maximum specificity.
+   * These are the details that distinguish one person from another.
+   * All fields are optional — only populate from clear photo evidence.
+   */
+  microFeatures?: {
+    /** Nose shape */
+    noseShape?: string; // "straight", "roman", "aquiline", "button", "wide", "narrow", "hooked"
+    /** Lip description */
+    lipDescription?: string; // "full lips with defined cupid's bow", "thin lips, straight line"
+    lipFullness?: string; // "thin", "medium", "full"
+    lipShape?: string; // "defined cupid's bow", "straight upper lip", "rounded"
+    /** Forehead characteristics */
+    foreheadHeight?: string; // "high", "medium", "low"
+    foreheadWidth?: string; // "wide", "narrow", "average"
+    /** Jaw and chin */
+    jawAngle?: string; // "sharp", "soft", "rounded", "square"
+    chinShape?: string; // "pointed", "rounded", "square", "cleft"
+    /** Cheekbones */
+    cheekboneProminence?: string; // "high and prominent", "average", "soft"
+    /** Ear shape (partially visible in headshots) */
+    earShape?: string; // "small and close to head", "prominent", "average"
+    /** Skin texture details */
+    skinTexture?: string; // "smooth", "fine lines", "wrinkles around eyes", "pores visible"
+    /** Characteristic head tilt */
+    characteristicHeadTilt?: string; // "slight right", "slight left", "straight"
+    /** Any distinctive marks */
+    distinctiveMarks?: string[]; // ["mole above right lip", "small scar on chin"]
+    /** Generation-specific notes for the image model */
+    generationNotes?: string; // "emphasize the warm eyes and characteristic slight smile"
+  };
+
+  /**
+   * Characteristic pose and expression patterns.
+   * Extracted from analyzing multiple reference photos.
+   */
+  characteristicPose?: {
+    /** Typical head angle in professional photos */
+    headAngle?: string; // "slightly tilted right", "straight on", "three-quarter view"
+    /** Shoulder position */
+    shoulderPosition?: string; // "squared to camera", "angled left", "relaxed"
+    /** Gaze direction */
+    gazeDirection?: string; // "direct to camera", "slightly off-camera left", "thoughtful upward"
+    /** Smile type */
+    smileType?: string; // "broad open smile", "subtle closed smile", "asymmetric right side higher"
+    /** Eye engagement */
+    eyeEngagement?: string; // "direct and intense", "warm and inviting", "thoughtful"
+  };
+
+  /**
+   * Best reference photo URL for use as generation reference.
+   * Selected by the research LLM as the highest quality, most representative photo.
+   */
+  bestReferencePhotoUrl?: string;
+
   /** Style & Presentation */
   stylePresentation: {
     /** Typical attire in professional contexts */
@@ -75,6 +134,8 @@ export interface AuthorDescription {
     };
     /** Overall aesthetic/vibe */
     aesthetic: string[]; // ["academic", "tech executive", "approachable", "authoritative"]
+    /** Visual signatures — recurring style elements */
+    visualSignatures?: string[]; // ["always open collar", "signature dark-rimmed glasses"]
   };
 
   /** Personality Expression — affects expression/pose */
@@ -85,6 +146,12 @@ export interface AuthorDescription {
     typicalExpression: string; // "genuine smile with slight head tilt"
     /** Energy level */
     energy: string; // "calm", "moderate", "energetic", "intense"
+    /** Dominant expression for generation */
+    dominantExpression?: string; // "warm", "confident", "thoughtful", "friendly"
+    /** Smile type */
+    smileType?: string; // "broad", "subtle", "asymmetric", "warm", "professional", "none"
+    /** Eye engagement quality */
+    eyeEngagement?: string; // "direct and intense", "warm and inviting"
   };
 
   /** Professional Context */
@@ -95,6 +162,8 @@ export interface AuthorDescription {
     roleType: string;        // "professor", "CEO", "consultant", "speaker"
     /** Institutions associated with (for styling hints) */
     institutions: string[];  // ["Wharton", "Google", "TED"]
+    /** Notable works for identity anchoring */
+    notableWorks?: string[]; // ["Think Again", "Give and Take"]
   };
 
   /** Source Confidence */
@@ -107,6 +176,8 @@ export interface AuthorDescription {
     overallConfidence: "high" | "medium" | "low";
     /** Notes on any uncertainty */
     uncertainties: string[];
+    /** Quality rating of the best reference photo */
+    bestPhotoQuality?: "excellent" | "good" | "fair" | "poor";
   };
 
   /** Raw references for debugging/auditing */
@@ -132,6 +203,13 @@ export interface ImagePromptPackage {
   targetVendor: string;
   /** Which model this prompt was optimized for */
   targetModel: string;
+  /**
+   * Best reference photo base64 for reference-guided generation.
+   * When present, the generator should pass this as a multimodal input
+   * alongside the text prompt to improve facial likeness.
+   */
+  referenceImageBase64?: string;
+  referenceImageMimeType?: string;
 }
 
 // ── Image Generator Interfaces ─────────────────────────────────────────────────
@@ -146,6 +224,13 @@ export interface ImageGenerationRequest {
   negativePrompt?: string;
   aspectRatio?: string;
   guidanceScale?: number;
+  /**
+   * Optional reference image for guided generation.
+   * When provided, the generator passes this as a multimodal input
+   * alongside the text prompt to improve facial likeness.
+   */
+  referenceImageBase64?: string;
+  referenceImageMimeType?: string;
 }
 
 export interface ImageGenerationResult {

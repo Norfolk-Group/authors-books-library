@@ -167,17 +167,58 @@ export async function researchAuthor(
 
 // ── Gemini Vision analysis ─────────────────────────────────────────────────────
 
-const RESEARCH_SYSTEM_PROMPT = `You are an expert at analyzing public figures for professional avatar generation.
-Given biographical text and reference photo URLs for an author, extract a precise physical description optimized for AI image generation.
+const RESEARCH_SYSTEM_PROMPT = `You are a forensic visual analyst specializing in extracting precise physical descriptions from photographs for professional AI portrait generation.
 
-CRITICAL RULES:
+Given biographical text and reference photo URLs for an author, extract the most detailed possible physical description optimized for AI image generation.
+
+CORE RULES:
 1. Only describe what you can observe from the reference materials or reliably infer from biographical data
 2. For uncertain features, use ranges (e.g., "late 40s to mid 50s")
 3. Flag low-confidence fields in sourceConfidence.uncertainties
 4. Never invent features not supported by evidence
 5. Focus on stable features (hair color may vary; face shape doesn't)
 6. Be specific and concrete — vague descriptions produce generic avatars
-7. Output ONLY valid JSON matching the AuthorDescription schema — no markdown, no explanation`;
+7. Output ONLY valid JSON matching the AuthorDescription schema — no markdown, no explanation
+
+MICRO-FEATURE EXTRACTION (critical for likeness):
+For the microFeatures object, analyze the photos with forensic precision:
+- NOSE: Is the bridge straight, curved, aquiline, or hooked? Is the tip rounded, pointed, or bulbous? Are the nostrils wide or narrow?
+- LIPS: Are they thin, medium, or full? Is the upper lip defined with a cupid's bow or straight? Is the lower lip fuller than the upper?
+- FOREHEAD: Is it high, medium, or low? Wide or narrow relative to cheekbones?
+- JAW: Is the angle sharp and angular, or soft and rounded? Is the jawline defined or soft?
+- CHIN: Is it pointed, rounded, square, or does it have a cleft?
+- CHEEKBONES: Are they high and prominent, average, or soft and low?
+- SKIN: Note any wrinkles, lines, texture, or distinctive marks visible in photos
+- CHARACTERISTIC TILT: Do they typically tilt their head in photos? Which direction?
+
+EYE DETAILS (most important for likeness):
+- Eyebrow shape: thick/thin, arched/straight/bushy, natural/groomed
+- Eye setting: deep-set, prominent, or average
+- Eye shape: almond, round, hooded, monolid, downturned, upturned
+
+HAIR DETAILS:
+- Texture: straight, wavy, curly, coily, fine, thick
+- Hairline: receding, high, normal, widow's peak
+
+BEST REFERENCE PHOTO SELECTION:
+From the provided photo URLs, identify which single photo would be best as a generation reference:
+- Prefer: clear face visibility, good lighting, recent photo, professional context
+- Avoid: group shots, extreme angles, poor lighting, very old photos
+Set bestReferencePhotoUrl to the URL of the best photo.
+
+CHARACTERISTIC POSE ANALYSIS:
+Analyze the photos to identify recurring patterns:
+- Head angle: does the person typically tilt their head?
+- Smile type: broad/subtle/asymmetric/closed/open
+- Eye engagement: direct/warm/thoughtful/intense
+- Shoulder position: squared/angled/relaxed
+
+VISUAL SIGNATURES:
+Note any recurring style elements that define their visual identity:
+- Always wears certain glasses
+- Signature color palette
+- Characteristic collar style
+- Recurring accessories`;
 
 const AUTHOR_DESCRIPTION_SCHEMA = {
   type: "object",
@@ -202,6 +243,8 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
             color: { type: "string" },
             style: { type: "string" },
             length: { type: "string" },
+            texture: { type: "string" },
+            hairline: { type: "string" },
           },
           required: ["color", "style", "length"],
           additionalProperties: false,
@@ -224,6 +267,8 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
             color: { type: "string" },
             shape: { type: "string" },
             notable: { type: "string" },
+            browShape: { type: "string" },
+            setting: { type: "string" },
           },
           required: ["color"],
           additionalProperties: false,
@@ -243,6 +288,40 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
       required: ["hair", "facialHair", "faceShape", "distinctiveFeatures", "eyes", "skinTone", "build", "glasses"],
       additionalProperties: false,
     },
+    microFeatures: {
+      type: "object",
+      properties: {
+        noseShape: { type: "string" },
+        lipDescription: { type: "string" },
+        lipFullness: { type: "string" },
+        lipShape: { type: "string" },
+        foreheadHeight: { type: "string" },
+        foreheadWidth: { type: "string" },
+        jawAngle: { type: "string" },
+        chinShape: { type: "string" },
+        cheekboneProminence: { type: "string" },
+        earShape: { type: "string" },
+        skinTexture: { type: "string" },
+        characteristicHeadTilt: { type: "string" },
+        distinctiveMarks: { type: "array", items: { type: "string" } },
+        generationNotes: { type: "string" },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+    characteristicPose: {
+      type: "object",
+      properties: {
+        headAngle: { type: "string" },
+        shoulderPosition: { type: "string" },
+        gazeDirection: { type: "string" },
+        smileType: { type: "string" },
+        eyeEngagement: { type: "string" },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+    bestReferencePhotoUrl: { type: "string" },
     stylePresentation: {
       type: "object",
       properties: {
@@ -257,6 +336,7 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
           additionalProperties: false,
         },
         aesthetic: { type: "array", items: { type: "string" } },
+        visualSignatures: { type: "array", items: { type: "string" } },
       },
       required: ["typicalAttire", "aesthetic"],
       additionalProperties: false,
@@ -267,6 +347,9 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
         dominantTraits: { type: "array", items: { type: "string" } },
         typicalExpression: { type: "string" },
         energy: { type: "string" },
+        dominantExpression: { type: "string" },
+        smileType: { type: "string" },
+        eyeEngagement: { type: "string" },
       },
       required: ["dominantTraits", "typicalExpression", "energy"],
       additionalProperties: false,
@@ -277,6 +360,7 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
         primaryField: { type: "string" },
         roleType: { type: "string" },
         institutions: { type: "array", items: { type: "string" } },
+        notableWorks: { type: "array", items: { type: "string" } },
       },
       required: ["primaryField", "roleType", "institutions"],
       additionalProperties: false,
@@ -288,6 +372,7 @@ const AUTHOR_DESCRIPTION_SCHEMA = {
         photoConsistency: { type: "string", enum: ["high", "medium", "low"] },
         overallConfidence: { type: "string", enum: ["high", "medium", "low"] },
         uncertainties: { type: "array", items: { type: "string" } },
+        bestPhotoQuality: { type: "string", enum: ["excellent", "good", "fair", "poor"] },
       },
       required: ["photoSourceCount", "photoConsistency", "overallConfidence", "uncertainties"],
       additionalProperties: false,
