@@ -1,0 +1,25 @@
+{
+  "query": "\n-- Check book_profiles authorNames that have no matching author_profiles row\nSELECT DISTINCT bp.authorName\nFROM book_profiles bp\nLEFT JOIN author_profiles ap ON bp.authorName = ap.authorName\nWHERE ap.authorName IS NULL\n  AND bp.authorName IS NOT NULL\n  AND bp.authorName != ''\nORDER BY bp.authorName\nLIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Check book_profiles authorNames that have no matching author_profiles row\nSELECT DISTINCT bp.authorName\nFROM book_profiles bp\nLEFT JOIN author_profiles ap ON bp.authorName = ap.authorName\nWHERE ap.authorName IS NULL\n  AND bp.authorName IS NOT NULL\n  AND bp.authorName != ''\nORDER BY bp.authorName\nLIMIT 30;\n",
+  "rows": [
+    {
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "authorName": "Colin Bryar"
+    },
+    {
+      "authorName": "Frances Frei"
+    },
+    {
+      "authorName": "Jack Stack"
+    },
+    {
+      "authorName": "The Only Negotiating System You Need by Jim Camp"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\nAshvin Vaidyanathan\nColin Bryar\nFrances Frei\nJack Stack\nThe Only Negotiating System You Need by Jim Camp\n",
+  "stderr": "",
+  "execution_time_ms": 53
+}

@@ -1,0 +1,38 @@
+{
+  "query": "\n-- Check book_profiles rows with orphaned authorNames\nSELECT bookTitle, authorName\nFROM book_profiles\nWHERE authorName IN (\n  'Ashvin Vaidyanathan',\n  'Colin Bryar',\n  'Frances Frei',\n  'Jack Stack',\n  'The Only Negotiating System You Need by Jim Camp'\n)\nORDER BY authorName, bookTitle;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Check book_profiles rows with orphaned authorNames\nSELECT bookTitle, authorName\nFROM book_profiles\nWHERE authorName IN (\n  'Ashvin Vaidyanathan',\n  'Colin Bryar',\n  'Frances Frei',\n  'Jack Stack',\n  'The Only Negotiating System You Need by Jim Camp'\n)\nORDER BY authorName, bookTitle;\n",
+  "rows": [
+    {
+      "bookTitle": "The Customer Success Professional",
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "bookTitle": "The Customer Success Professional's Handbook",
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "bookTitle": "Working Backwards",
+      "authorName": "Colin Bryar"
+    },
+    {
+      "bookTitle": "Move Fast and Fix Things",
+      "authorName": "Frances Frei"
+    },
+    {
+      "bookTitle": "Great Game Business",
+      "authorName": "Jack Stack"
+    },
+    {
+      "bookTitle": "The Great Game of Business",
+      "authorName": "Jack Stack"
+    },
+    {
+      "bookTitle": "No",
+      "authorName": "The Only Negotiating System You Need by Jim Camp"
+    }
+  ],
+  "messages": [],
+  "stdout": "bookTitle\tauthorName\nThe Customer Success Professional\tAshvin Vaidyanathan\nThe Customer Success Professional's Handbook\tAshvin Vaidyanathan\nWorking Backwards\tColin Bryar\nMove Fast and Fix Things\tFrances Frei\nGreat Game Business\tJack Stack\nThe Great Game of Business\tJack Stack\nNo\tThe Only Negotiating System You Need by Jim Camp\n",
+  "stderr": "",
+  "execution_time_ms": 179
+}

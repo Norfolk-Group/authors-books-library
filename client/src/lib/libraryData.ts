@@ -85,12 +85,20 @@ export const LIBRARY_STATS = {
 };
 export const AUTHORS: AuthorEntry[] = [
   {
-    name: "Aaron Ross and Jason Lemkin - sales strategy, B2B growth, and predictable revenue generation",
+    name: "Aaron Ross - B2B sales strategy, predictable revenue, and outbound growth",
     id: "1Hzusx2DCXs2EaxMTk2K8t_gJMLM0kuA_",
     category: "Sales & Negotiation",
     books: [
     { name: "From Impossible to Inevitable - Aaron Ross & Jason Lemkin", id: "1WDz-1Qrhhtpsc8x2u3JUhbE3demLbjI8", contentTypes: {"PDF": 1, "Transcript": 7, "Notes": 8, "Binder": 2} },
     { name: "Predictable Revenue - Aaron Ross & Marylou Tyler", id: "1qyLwgET3NNyyg5_KCYodRyQfPCXjpRSH", contentTypes: {"Transcript": 7, "Binder": 1, "Knowledge Base": 4} }
+  ]
+  },
+  {
+    name: "Jason Lemkin - SaaS growth, B2B sales strategy, and venture capital",
+    id: "1Hzusx2DCXs2EaxMTk2K8t_gJMLM0kuA_-jl",
+    category: "Sales & Negotiation",
+    books: [
+    { name: "From Impossible to Inevitable - Aaron Ross & Jason Lemkin", id: "1WDz-1Qrhhtpsc8x2u3JUhbE3demLbjI8", contentTypes: {"PDF": 1, "Transcript": 7, "Notes": 8, "Binder": 2} }
   ]
   },
   {
@@ -190,19 +198,20 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Ashvin Vaidyanathan and Ruben Rabago - Customer success",
+    name: "Ashvin Vaidyanathan - Customer success strategy and growth enablement",
     id: "1uItjZsccrYZeNTP3-THhJhVx6GsrHQXg",
     category: "Business & Entrepreneurship",
     books: [
-    { name: "The Customer Success Professional's Handbook - Ashvin Vaidyanathan & Ruben Rabago", id: "1v6qQfLinISHr7tDPsFOuVHJ1aRZL69Vq", contentTypes: {"Transcript": 2, "Additional DOC": 1} }
+    { name: "The Customer Success Professional's Handbook - Ashvin Vaidyanathan & Ruben Rabago", id: "1v6qQfLinISHr7tDPsFOuVHJ1aRZL69Vq", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
+    { name: "The Customer Success Professional Handbook", id: "1SymnayKM0HtfSwcEKpNGdetFXz_02XqM", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 1} }
   ]
   },
   {
-    name: "Ashvin Vaidyanathan & Ruben Rabago - Customer success and growth enablement",
+    name: "Ruben Rabago - Customer success operations and revenue growth",
     id: "1vAt_DoD6vK3a11MiagI-sYNK-SqHeKHG",
     category: "Business & Entrepreneurship",
     books: [
-    { name: "Running Lean - Ash Maurya", id: "1ez4A8ic2gbOYyG7wg6oK--jHSSRmjJ3V", contentTypes: {"PDF": 1, "Binder": 1, "Transcript": 5, "Running Lean (3rd Edition)_ Iterate from Plan A to a Plan That Works": 1, "temp": 1} },
+    { name: "The Customer Success Professional's Handbook - Ashvin Vaidyanathan & Ruben Rabago", id: "1v6qQfLinISHr7tDPsFOuVHJ1aRZL69Vq", contentTypes: {"Transcript": 2, "Additional DOC": 1} },
     { name: "The Customer Success Professional Handbook", id: "1SymnayKM0HtfSwcEKpNGdetFXz_02XqM", contentTypes: {"Transcript": 2, "Binder": 1, "PDF": 1} }
   ]
   },
@@ -268,8 +277,16 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Colin Bryar & Bill Carr - Working Backwards (Amazon)",
+    name: "Colin Bryar - Amazon leadership principles and operational excellence",
     id: "1Su4M5QfDxXOnmh2DETBBjFrE3Uz02MG7",
+    category: "Business & Entrepreneurship",
+    books: [
+    { name: "Working Backwards", id: "1bHXpoAU0e3yjzbJZKKMfG5-IMg5xccml", contentTypes: {"PDF": 1} }
+  ]
+  },
+  {
+    name: "Bill Carr - Amazon product development and innovation culture",
+    id: "1Su4M5QfDxXOnmh2DETBBjFrE3Uz02MG7-bc",
     category: "Business & Entrepreneurship",
     books: [
     { name: "Working Backwards", id: "1bHXpoAU0e3yjzbJZKKMfG5-IMg5xccml", contentTypes: {"PDF": 1} }
@@ -410,8 +427,16 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Frances Frei & Anne Morriss - Leadership transformation and organizational trust",
+    name: "Frances Frei - Leadership transformation and organizational trust",
     id: "1d4q1cnj_sSsLAFL41FRSynLnnSgnW-3Y",
+    category: "Leadership & Management",
+    books: [
+    { name: "Move Fast and Fix Things", id: "1vh2kC9-FvtiD-z9ELteFx_ZeVkpgABta", contentTypes: {"PDF": 1} }
+  ]
+  },
+  {
+    name: "Anne Morriss - Leadership strategy and organizational change",
+    id: "1d4q1cnj_sSsLAFL41FRSynLnnSgnW-3Y-am",
     category: "Leadership & Management",
     books: [
     { name: "Move Fast and Fix Things", id: "1vh2kC9-FvtiD-z9ELteFx_ZeVkpgABta", contentTypes: {"PDF": 1} }
@@ -482,8 +507,17 @@ export const AUTHORS: AuthorEntry[] = [
     books: []
   },
   {
-    name: "Jack Stack and Bo Burlingham - Open-book management and employee ownership",
+    name: "Jack Stack - Open-book management and employee ownership",
     id: "1z-7rqUvZru3MI1-ygrqrRGMS4h1qYugT",
+    category: "Business & Entrepreneurship",
+    books: [
+    { name: "The Great Game of Business - Jack Stack & Bo Burlingham", id: "19WqPA4b6zA_s4Zbq6YH4Pw5LasiHhWTJ", contentTypes: {"Transcript": 4} },
+    { name: "Great Game Business", id: "1BLQrYn9EGcbk7GdGkbEr7NEtrk3wvGDX", contentTypes: {"Transcript": 4} }
+  ]
+  },
+  {
+    name: "Bo Burlingham - Entrepreneurship, small business excellence, and ownership culture",
+    id: "1z-7rqUvZru3MI1-ygrqrRGMS4h1qYugT-bb",
     category: "Business & Entrepreneurship",
     books: [
     { name: "The Great Game of Business - Jack Stack & Bo Burlingham", id: "19WqPA4b6zA_s4Zbq6YH4Pw5LasiHhWTJ", contentTypes: {"Transcript": 4} },
@@ -597,18 +631,11 @@ export const AUTHORS: AuthorEntry[] = [
   ]
   },
   {
-    name: "Kelly Leonard and Tom Yorton - Improv and business communication",
+    name: "Kelly Leonard - Improv-based leadership and business communication",
     id: "1qgMsRsTN2UfdAMXFJ5Qx-LJTrEuy9ayN",
     category: "Communication & Storytelling",
     books: [
-    { name: "Yes, And - Kelly Leonard & Tom Yorton", id: "1fB1i5bKbwTWJAT1HiR5h8TKTK0zAuFrv", contentTypes: {"Transcript": 4} }
-  ]
-  },
-  {
-    name: "Kelly Leonard - Educational architecture and learning innovation",
-    id: "1jJKds7l-QMpJzuLCvgEmBmgC8CDQASuC",
-    category: "Leadership & Management",
-    books: [
+    { name: "Yes, And - Kelly Leonard & Tom Yorton", id: "1fB1i5bKbwTWJAT1HiR5h8TKTK0zAuFrv", contentTypes: {"Transcript": 4} },
     { name: "Yes, And", id: "1EM5j9FcD85BEZQ8r8gxXWndtpipsTptU", contentTypes: {"PDF": 1} }
   ]
   },

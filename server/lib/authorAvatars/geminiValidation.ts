@@ -64,9 +64,10 @@ Criteria:
     if (!jsonMatch) return { isValidHeadshot: false, confidence: 0.5, reason: "Could not parse response" };
 
     const analysis = JSON.parse(jsonMatch[0]);
+    // Enforce one-author-per-card rule: reject group photos
     const isValid =
       analysis.isHeadshot &&
-      analysis.showsOneFace &&
+      analysis.showsOneFace === true &&  // must show exactly one person
       analysis.isProfessional &&
       !analysis.isBookCover;
 

@@ -1,0 +1,18 @@
+{
+  "query": "\n-- Check total counts and recent entries\nSELECT \n  (SELECT COUNT(*) FROM author_profiles) as total_author_profiles,\n  (SELECT COUNT(*) FROM book_profiles) as total_book_profiles,\n  (SELECT COUNT(*) FROM author_profiles WHERE enrichedAt IS NOT NULL) as enriched_authors,\n  (SELECT COUNT(*) FROM book_profiles WHERE enrichedAt IS NOT NULL) as enriched_books,\n  (SELECT COUNT(*) FROM author_profiles WHERE avatarUrl IS NOT NULL AND avatarUrl != '') as authors_with_avatar,\n  (SELECT COUNT(*) FROM book_profiles WHERE coverImageUrl IS NOT NULL AND coverImageUrl != '') as books_with_cover;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Check total counts and recent entries\nSELECT \n  (SELECT COUNT(*) FROM author_profiles) as total_author_profiles,\n  (SELECT COUNT(*) FROM book_profiles) as total_book_profiles,\n  (SELECT COUNT(*) FROM author_profiles WHERE enrichedAt IS NOT NULL) as enriched_authors,\n  (SELECT COUNT(*) FROM book_profiles WHERE enrichedAt IS NOT NULL) as enriched_books,\n  (SELECT COUNT(*) FROM author_profiles WHERE avatarUrl IS NOT NULL AND avatarUrl != '') as authors_with_avatar,\n  (SELECT COUNT(*) FROM book_profiles WHERE coverImageUrl IS NOT NULL AND coverImageUrl != '') as books_with_cover;\n",
+  "rows": [
+    {
+      "total_author_profiles": "121",
+      "total_book_profiles": "146",
+      "enriched_authors": "111",
+      "enriched_books": "146",
+      "authors_with_avatar": "68",
+      "books_with_cover": "135"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_author_profiles\ttotal_book_profiles\tenriched_authors\tenriched_books\tauthors_with_avatar\tbooks_with_cover\n121\t146\t111\t146\t68\t135\n",
+  "stderr": "",
+  "execution_time_ms": 70
+}

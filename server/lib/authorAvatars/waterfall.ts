@@ -16,10 +16,12 @@ import { fetchTavilyAuthorPhoto } from "./tavily";
 import { scrapeAuthorPhoto } from "../../apify";
 import { validateHeadshotWithGemini } from "./geminiValidation";
 import { generateAIPortrait } from "./replicateGeneration";
+import { generateGoogleImagenPortrait, NANO_BANANA_MODELS, DEFAULT_NANO_BANANA_MODEL } from "./googleImagenGeneration";
 import { storagePut } from "../../storage";
 
 // -- Multi-author mapping ------------------------------------------------------
 const MULTI_AUTHOR_MAP: Record<string, string> = {
+  // Legacy combined entries — kept for backward compat with old DB rows
   "Aaron Ross and Jason Lemkin": "Aaron Ross",
   "Colin Bryar & Bill Carr": "Colin Bryar",
   "Frances Frei & Anne Morriss": "Frances Frei",
@@ -28,7 +30,20 @@ const MULTI_AUTHOR_MAP: Record<string, string> = {
   "Ashwin Vaidyanathan and Ruben Rubago": "Ashvin Vaidyanathan",
   "Jack Stack and Bo Burlingham": "Jack Stack",
   "Kelly Leonard and Tom Yorton": "Kelly Leonard",
+  "Kelly Leonard and Tom Yorton - Improv and business communication": "Kelly Leonard",
   "Kerry Leonard": "Kelly Leonard",
+  // New individual entries from split (strip specialty suffix for avatar search)
+  "Aaron Ross - B2B sales strategy, predictable revenue, and outbound growth": "Aaron Ross",
+  "Jason Lemkin - SaaS growth, B2B sales strategy, and venture capital": "Jason Lemkin",
+  "Ashvin Vaidyanathan - Customer success strategy and growth enablement": "Ashvin Vaidyanathan",
+  "Ruben Rabago - Customer success operations and revenue growth": "Ruben Rabago",
+  "Colin Bryar - Amazon leadership principles and operational excellence": "Colin Bryar",
+  "Bill Carr - Amazon product development and innovation culture": "Bill Carr",
+  "Frances Frei - Leadership transformation and organizational trust": "Frances Frei",
+  "Anne Morriss - Leadership strategy and organizational change": "Anne Morriss",
+  "Jack Stack - Open-book management and employee ownership": "Jack Stack",
+  "Bo Burlingham - Entrepreneurship, small business excellence, and ownership culture": "Bo Burlingham",
+  "Kelly Leonard - Improv-based leadership and business communication": "Kelly Leonard",
 };
 
 // -- Skip list -----------------------------------------------------------------
@@ -77,6 +92,12 @@ export interface WaterfallOptions {
   existingS3AvatarUrl?: string | null;
   /** Per-tier timeout overrides in ms */
   tierTimeouts?: Partial<Record<1 | 2 | 3 | 5, number>>;
+  /** Avatar generation model vendor (e.g. 'google', 'replicate'). Default: 'google' */
+  avatarGenVendor?: string;
+  /** Avatar generation model ID (e.g. 'nano-banana', 'gemini-2.5-flash-image'). Default: nano-banana */
+  avatarGenModel?: string;
+  /** Avatar background color hex or sentinel key (e.g. 'bokeh-gold') */
+  avatarBgColor?: string;
 }
 
 /** Default per-tier timeouts (ms) */
@@ -139,6 +160,9 @@ export async function processAuthorAvatarWaterfall(
     skipAlreadyEnriched = false,
     existingS3AvatarUrl = null,
     tierTimeouts = {},
+    avatarGenVendor = "google",
+    avatarGenModel = "nano-banana",
+    avatarBgColor,
   } = options;
 
   const timeouts = { ...DEFAULT_TIER_TIMEOUTS, ...tierTimeouts };
@@ -249,23 +273,52 @@ export async function processAuthorAvatarWaterfall(
     }
   }
 
-  // -- TIER 5: Replicate AI ---------------------------------------------------
+  // -- TIER 5: AI Portrait Generation (Google Imagen primary, Replicate fallback) ------
   if (!avatarUrl && maxTier >= 5) {
     tier = 5;
     const t5Start = Date.now();
-    console.log(`[Avatar T5] Replicate AI -> ${primaryName}`);
+    const useGoogle = avatarGenVendor === "google" || avatarGenVendor === "gemini";
+    console.log(`[Avatar T5] AI Portrait (${useGoogle ? "Google Imagen" : "Replicate"}) -> ${primaryName}`);
     try {
-      const generated = await Promise.race([
-        generateAIPortrait(primaryName),
-        new Promise<null>((_, reject) =>
-          setTimeout(() => reject(new Error(`T5 timeout after ${timeouts[5]}ms`)), timeouts[5])
-        ),
-      ]);
-      if (generated) {
-        avatarUrl = generated.url;
-        source = "ai-generated";
-        isAiGenerated = true;
-        console.log(`[Avatar T5] AI portrait generated for ${primaryName} (${Date.now() - t5Start}ms)`);
+      if (useGoogle) {
+        // Resolve model ID: accept either the friendly key (nano-banana) or a raw model ID
+        const resolvedModel = NANO_BANANA_MODELS[avatarGenModel] ?? avatarGenModel ?? DEFAULT_NANO_BANANA_MODEL;
+        const generated = await Promise.race([
+          generateGoogleImagenPortrait(primaryName, avatarBgColor, resolvedModel),
+          new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error(`T5 timeout after ${timeouts[5]}ms`)), timeouts[5])
+          ),
+        ]);
+        if (generated && !dryRun) {
+          // Upload buffer directly to S3
+          const ext = generated.mimeType.includes("png") ? "png" : "jpg";
+          const sanitized = primaryName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+          const key = `author-avatars/ai-${sanitized}-${Date.now()}.${ext}`;
+          const { url } = await (await import("../../storage")).storagePut(key, generated.buffer, generated.mimeType);
+          avatarUrl = url;
+          source = "ai-generated";
+          isAiGenerated = true;
+          console.log(`[Avatar T5] Google Imagen portrait generated for ${primaryName} (${Date.now() - t5Start}ms)`);
+        } else if (generated && dryRun) {
+          // In dry-run mode, use a placeholder URL
+          avatarUrl = `data:${generated.mimeType};base64,${generated.buffer.toString("base64").slice(0, 20)}...`;
+          source = "ai-generated";
+          isAiGenerated = true;
+        }
+      } else {
+        // Replicate fallback
+        const generated = await Promise.race([
+          generateAIPortrait(primaryName),
+          new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error(`T5 timeout after ${timeouts[5]}ms`)), timeouts[5])
+          ),
+        ]);
+        if (generated) {
+          avatarUrl = generated.url;
+          source = "ai-generated";
+          isAiGenerated = true;
+          console.log(`[Avatar T5] Replicate portrait generated for ${primaryName} (${Date.now() - t5Start}ms)`);
+        }
       }
     } catch (e) {
       console.warn(`[Avatar T5] Error for ${primaryName}: ${e}`);

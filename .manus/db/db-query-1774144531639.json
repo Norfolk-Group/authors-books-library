@@ -1,0 +1,34 @@
+{
+  "query": "\n-- Final verification: no more combined names in author_profiles\nSELECT COUNT(*) as combined_author_profiles\nFROM author_profiles\nWHERE authorName LIKE '% and %' OR authorName LIKE '% & %';\n\n-- Final verification: no more combined names in book_profiles  \nSELECT COUNT(*) as combined_book_profiles\nFROM book_profiles\nWHERE authorName LIKE '% and %' OR authorName LIKE '% & %';\n\n-- Verify the 4 new author_profiles rows were inserted\nSELECT authorName, enrichedAt IS NOT NULL as enriched\nFROM author_profiles\nWHERE authorName IN ('Ashvin Vaidyanathan', 'Colin Bryar', 'Frances Frei', 'Jack Stack')\nORDER BY authorName;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Final verification: no more combined names in author_profiles\nSELECT COUNT(*) as combined_author_profiles\nFROM author_profiles\nWHERE authorName LIKE '% and %' OR authorName LIKE '% & %';\n\n-- Final verification: no more combined names in book_profiles  \nSELECT COUNT(*) as combined_book_profiles\nFROM book_profiles\nWHERE authorName LIKE '% and %' OR authorName LIKE '% & %';\n\n-- Verify the 4 new author_profiles rows were inserted\nSELECT authorName, enrichedAt IS NOT NULL as enriched\nFROM author_profiles\nWHERE authorName IN ('Ashvin Vaidyanathan', 'Colin Bryar', 'Frances Frei', 'Jack Stack')\nORDER BY authorName;\n",
+  "rows": [
+    {
+      "combined_author_profiles": "0"
+    },
+    {
+      "combined_author_profiles": "combined_book_profiles"
+    },
+    {
+      "combined_author_profiles": "0"
+    },
+    {
+      "combined_author_profiles": "authorName\tenriched"
+    },
+    {
+      "combined_author_profiles": "Ashvin Vaidyanathan\t0"
+    },
+    {
+      "combined_author_profiles": "Colin Bryar\t0"
+    },
+    {
+      "combined_author_profiles": "Frances Frei\t0"
+    },
+    {
+      "combined_author_profiles": "Jack Stack\t0"
+    }
+  ],
+  "messages": [],
+  "stdout": "combined_author_profiles\n0\ncombined_book_profiles\n0\nauthorName\tenriched\nAshvin Vaidyanathan\t0\nColin Bryar\t0\nFrances Frei\t0\nJack Stack\t0\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

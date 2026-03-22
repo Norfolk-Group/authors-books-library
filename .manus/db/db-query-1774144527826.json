@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Fix corrupted authorName for \"No\" by Jim Camp\nUPDATE book_profiles\nSET authorName = 'Jim Camp'\nWHERE bookTitle = 'No'\n  AND authorName = 'The Only Negotiating System You Need by Jim Camp';\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Fix corrupted authorName for \"No\" by Jim Camp\nUPDATE book_profiles\nSET authorName = 'Jim Camp'\nWHERE bookTitle = 'No'\n  AND authorName = 'The Only Negotiating System You Need by Jim Camp';\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 68
+}

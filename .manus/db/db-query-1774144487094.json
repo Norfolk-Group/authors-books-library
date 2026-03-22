@@ -1,0 +1,58 @@
+{
+  "query": "\n-- Look for any remaining combined-name entries (names with \"and\" or \"&\")\nSELECT id, authorName, enrichedAt, avatarUrl IS NOT NULL as has_avatar\nFROM author_profiles\nWHERE authorName LIKE '% and %' \n   OR authorName LIKE '% & %'\n   OR authorName LIKE '%/%'\nORDER BY authorName;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Look for any remaining combined-name entries (names with \"and\" or \"&\")\nSELECT id, authorName, enrichedAt, avatarUrl IS NOT NULL as has_avatar\nFROM author_profiles\nWHERE authorName LIKE '% and %' \n   OR authorName LIKE '% & %'\n   OR authorName LIKE '%/%'\nORDER BY authorName;\n",
+  "rows": [
+    {
+      "id": "30003",
+      "authorName": "Aaron Ross and Jason Lemkin",
+      "enrichedAt": "2026-03-16 23:04:55",
+      "has_avatar": "1"
+    },
+    {
+      "id": "60001",
+      "authorName": "Ashvin Vaidyanathan & Ruben Rabago",
+      "enrichedAt": "2026-03-18 12:40:54",
+      "has_avatar": "1"
+    },
+    {
+      "id": "30012",
+      "authorName": "Ashvin Vaidyanathan and Ruben Rabago",
+      "enrichedAt": "2026-03-16 23:08:21",
+      "has_avatar": "1"
+    },
+    {
+      "id": "30013",
+      "authorName": "Ashwin Vaidyanathan and Ruben Rubago",
+      "enrichedAt": "2026-03-16 23:08:59",
+      "has_avatar": "1"
+    },
+    {
+      "id": "30019",
+      "authorName": "Colin Bryar & Bill Carr",
+      "enrichedAt": "2026-03-21 22:29:26",
+      "has_avatar": "1"
+    },
+    {
+      "id": "30035",
+      "authorName": "Frances Frei & Anne Morriss",
+      "enrichedAt": "2026-03-17 05:17:32",
+      "has_avatar": "1"
+    },
+    {
+      "id": "30044",
+      "authorName": "Jack Stack and Bo Burlingham",
+      "enrichedAt": "2026-03-18 12:41:15",
+      "has_avatar": "1"
+    },
+    {
+      "id": "30056",
+      "authorName": "Kelly Leonard and Tom Yorton",
+      "enrichedAt": "2026-03-17 05:23:50",
+      "has_avatar": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tauthorName\tenrichedAt\thas_avatar\n30003\tAaron Ross and Jason Lemkin\t2026-03-16 23:04:55\t1\n60001\tAshvin Vaidyanathan & Ruben Rabago\t2026-03-18 12:40:54\t1\n30012\tAshvin Vaidyanathan and Ruben Rabago\t2026-03-16 23:08:21\t1\n30013\tAshwin Vaidyanathan and Ruben Rubago\t2026-03-16 23:08:59\t1\n30019\tColin Bryar & Bill Carr\t2026-03-21 22:29:26\t1\n30035\tFrances Frei & Anne Morriss\t2026-03-17 05:17:32\t1\n30044\tJack Stack and Bo Burlingham\t2026-03-18 12:41:15\t1\n30056\tKelly Leonard and Tom Yorton\t2026-03-17 05:23:50\t1\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

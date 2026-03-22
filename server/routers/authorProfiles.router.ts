@@ -326,6 +326,9 @@ export const authorProfilesRouter = router({
         names: z.array(z.string()).min(1).max(5),
         skipValidation: z.boolean().optional().default(false),
         maxTier: z.number().min(1).max(5).optional().default(5),
+        avatarGenVendor: z.string().optional().default("google"),
+        avatarGenModel: z.string().optional().default("nano-banana"),
+        avatarBgColor: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -346,6 +349,9 @@ export const authorProfilesRouter = router({
           const result = await processAuthorAvatarWaterfall(originalName, {
             skipValidation: input.skipValidation,
             maxTier: input.maxTier,
+            avatarGenVendor: input.avatarGenVendor,
+            avatarGenModel: input.avatarGenModel,
+            avatarBgColor: input.avatarBgColor,
           });
 
           // Save to DB
@@ -404,6 +410,9 @@ export const authorProfilesRouter = router({
         batchSize: z.number().min(1).max(10).optional().default(5),
         maxTier: z.number().min(1).max(5).optional().default(5),
         skipValidation: z.boolean().optional().default(false),
+        avatarGenVendor: z.string().optional().default("google"),
+        avatarGenModel: z.string().optional().default("nano-banana"),
+        avatarBgColor: z.string().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -439,6 +448,9 @@ export const authorProfilesRouter = router({
             const result = await processAuthorAvatarWaterfall(originalName, {
               skipValidation: input.skipValidation,
               maxTier: input.maxTier,
+              avatarGenVendor: input.avatarGenVendor,
+              avatarGenModel: input.avatarGenModel,
+              avatarBgColor: input.avatarBgColor,
             });
             if (result.avatarUrl || result.s3AvatarUrl) {
               const avatarSourceVal2 =

@@ -1,0 +1,16 @@
+{
+  "query": "\n-- Look for book_profiles with combined author names\nSELECT id, bookTitle, authorName, enrichedAt IS NOT NULL as enriched\nFROM book_profiles\nWHERE authorName LIKE '% and %' \n   OR authorName LIKE '% & %'\nORDER BY authorName\nLIMIT 30;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Look for book_profiles with combined author names\nSELECT id, bookTitle, authorName, enrichedAt IS NOT NULL as enriched\nFROM book_profiles\nWHERE authorName LIKE '% and %' \n   OR authorName LIKE '% & %'\nORDER BY authorName\nLIMIT 30;\n",
+  "rows": [
+    {
+      "id": "120010",
+      "bookTitle": "The Effortless Experience",
+      "authorName": "Matthew Dixon, Nick Toman & Rick DeLisi",
+      "enriched": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\tenriched\n120010\tThe Effortless Experience\tMatthew Dixon, Nick Toman & Rick DeLisi\t1\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

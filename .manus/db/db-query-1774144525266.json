@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Insert missing primary author rows (co-authors that were skipped during the split)\nINSERT IGNORE INTO author_profiles (authorName)\nVALUES \n  ('Ashvin Vaidyanathan'),\n  ('Colin Bryar'),\n  ('Frances Frei'),\n  ('Jack Stack');\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Insert missing primary author rows (co-authors that were skipped during the split)\nINSERT IGNORE INTO author_profiles (authorName)\nVALUES \n  ('Ashvin Vaidyanathan'),\n  ('Colin Bryar'),\n  ('Frances Frei'),\n  ('Jack Stack');\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 86
+}

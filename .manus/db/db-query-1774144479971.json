@@ -1,0 +1,9 @@
+{
+  "query": "\n-- Duplicate book titles in book_profiles\nSELECT bookTitle, COUNT(*) as cnt\nFROM book_profiles\nGROUP BY bookTitle\nHAVING cnt > 1\nORDER BY cnt DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Duplicate book titles in book_profiles\nSELECT bookTitle, COUNT(*) as cnt\nFROM book_profiles\nGROUP BY bookTitle\nHAVING cnt > 1\nORDER BY cnt DESC\nLIMIT 20;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 61
+}

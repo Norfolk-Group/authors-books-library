@@ -1,0 +1,30 @@
+{
+  "query": "\n-- Check which individual author_profiles rows exist for the co-authors\nSELECT authorName, enrichedAt IS NOT NULL as enriched, avatarUrl IS NOT NULL as has_avatar\nFROM author_profiles\nWHERE authorName IN (\n  'Ashvin Vaidyanathan', 'Ruben Rabago',\n  'Colin Bryar', 'Bill Carr',\n  'Frances Frei', 'Anne Morriss',\n  'Jack Stack', 'Bo Burlingham'\n)\nORDER BY authorName;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Check which individual author_profiles rows exist for the co-authors\nSELECT authorName, enrichedAt IS NOT NULL as enriched, avatarUrl IS NOT NULL as has_avatar\nFROM author_profiles\nWHERE authorName IN (\n  'Ashvin Vaidyanathan', 'Ruben Rabago',\n  'Colin Bryar', 'Bill Carr',\n  'Frances Frei', 'Anne Morriss',\n  'Jack Stack', 'Bo Burlingham'\n)\nORDER BY authorName;\n",
+  "rows": [
+    {
+      "authorName": "Anne Morriss",
+      "enriched": "0",
+      "has_avatar": "0"
+    },
+    {
+      "authorName": "Bill Carr",
+      "enriched": "0",
+      "has_avatar": "0"
+    },
+    {
+      "authorName": "Bo Burlingham",
+      "enriched": "0",
+      "has_avatar": "0"
+    },
+    {
+      "authorName": "Ruben Rabago",
+      "enriched": "0",
+      "has_avatar": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\tenriched\thas_avatar\nAnne Morriss\t0\t0\nBill Carr\t0\t0\nBo Burlingham\t0\t0\nRuben Rabago\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}
