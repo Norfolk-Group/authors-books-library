@@ -96,6 +96,43 @@ export const STATS = {
   lastUpdated: "March 2026",
 };
 
+// -- Book enrichment level scoring -------------------------
+export type BookEnrichmentLevel = 'none' | 'basic' | 'enriched' | 'complete';
+
+/**
+ * Score a book profile's data completeness into four tiers.
+ * Mirrors the Author Research Quality badge system.
+ *   complete  (5-6 fields) → gold/amber
+ *   enriched  (3-4 fields) → emerald
+ *   basic     (1-2 fields) → sky blue
+ *   none      (0 fields)   → gray (badge hidden)
+ */
+export function getBookEnrichmentLevel(
+  profile: {
+    summary?: string | null;
+    rating?: string | null;
+    s3CoverUrl?: string | null;
+    coverImageUrl?: string | null;
+    keyThemes?: string | null;
+    amazonUrl?: string | null;
+    publishedDate?: string | null;
+  } | null
+): BookEnrichmentLevel {
+  if (!profile) return 'none';
+  const score = [
+    profile.summary,
+    profile.rating,
+    profile.s3CoverUrl ?? profile.coverImageUrl,
+    profile.keyThemes,
+    profile.amazonUrl,
+    profile.publishedDate,
+  ].filter(Boolean).length;
+  if (score >= 5) return 'complete';
+  if (score >= 3) return 'enriched';
+  if (score >= 1) return 'basic';
+  return 'none';
+}
+
 export function normalizeContentTypes(raw: Record<string, number>): Record<string, number> {
   const result: Record<string, number> = {};
   for (const [type, count] of Object.entries(raw)) {

@@ -32,7 +32,8 @@ import { CATEGORY_ICONS, CONTENT_TYPE_ICONS, type AuthorEntry } from "@/lib/libr
 import { canonicalName } from "@/lib/authorAliases";
 import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { AuthorModal } from "@/components/AuthorModal";
-import { BookModal, type BookModalBook } from "@/components/BookModal";
+import { BookDetailPanel } from "@/components/library/BookDetailPanel";
+import type { BookRecord } from "@/lib/libraryData";
 import {
   ICON_MAP,
   CT_ICON_MAP,
@@ -104,9 +105,9 @@ export function AuthorAccordionRow({
   }, []);
 
   // -- HOTSPOT 2: Book modal --
-  const [activeBook, setActiveBook] = useState<BookModalBook | null>(null);
+  const [activeBook, setActiveBook] = useState<BookRecord | null>(null);
   const handleBookCoverClick = useCallback(
-    (e: React.MouseEvent, book: BookModalBook) => {
+    (e: React.MouseEvent, book: BookRecord) => {
       e.stopPropagation();
       setActiveBook(book);
     },
@@ -270,12 +271,14 @@ export function AuthorAccordionRow({
                         : book.name;
                       const titleKey = rawTitle.trim().toLowerCase();
                       const coverUrl = coverMap.get(titleKey);
-                      const bookMini: BookModalBook = {
+                      // Build a BookRecord-compatible shape for BookDetailPanel
+                      const bookMini: BookRecord = {
                         id: book.id,
-                        titleKey,
-                        coverUrl,
+                        name: rawTitle.trim() + (displayName ? " - " + displayName : ""),
+                        category: author.category,
                         contentTypes: book.contentTypes ?? {},
                       };
+                      void coverUrl; // cover resolved inside BookDetailPanel via profile query
                       return (
                         <div
                           key={book.id}
@@ -359,11 +362,16 @@ export function AuthorAccordionRow({
         onClose={() => setAuthorModalOpen(false)}
       />
 
-      {/* -- HOTSPOT 2 modal: Book detail -- */}
-      <BookModal
-        book={activeBook}
-        onClose={() => setActiveBook(null)}
-      />
+      {/* -- HOTSPOT 2 modal: Book detail (unified BookDetailPanel, compact variant) -- */}
+      {activeBook && (
+        <BookDetailPanel
+          book={activeBook}
+          variant="compact"
+          asDialog
+          open={!!activeBook}
+          onClose={() => setActiveBook(null)}
+        />
+      )}
     </>
   );
 }

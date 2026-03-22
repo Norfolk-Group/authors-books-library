@@ -1350,3 +1350,13 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 - [x] Add framer-motion whileHover scale animation to author card avatar circles (FlowbiteAuthorCard + AuthorCard)
 - [x] Add "Sort by Research Quality" option to Authors tab sort dropdown
+
+## Session March 22, 2026 — Enhanced Research Quality Badge
+
+- [ ] Enhance Research Quality badge on author cards: more prominent visual design with icon, color-coded pill, tooltip with explanation, and wire into library/AuthorCard (currently missing)
+
+## Session March 22, 2026 — BookCard High-Impact Features (Claude Opus Audit)
+
+- [x] Add star rating + publication year to BookCard grid (thread from bookInfoMap)
+- [x] Add Book Enrichment Level Badge to BookCard (scoring function + badge component)
+- [x] Unify BookModal and BookDetailPanel into single component with variant prop

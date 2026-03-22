@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
+  Dialog,
+  DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -19,21 +21,36 @@ import {
   ShoppingCart,
   Star,
   File,
+  BookOpen,
   BookMarked as BookMarkedIcon,
+  X,
 } from "lucide-react";
 import { BOOKS, CATEGORY_COLORS, CATEGORY_ICONS, CONTENT_TYPE_ICONS, CONTENT_TYPE_COLORS } from "@/lib/libraryData";
-import { ICON_MAP, CT_ICON_MAP } from "./libraryConstants";
+import { ICON_MAP, CT_ICON_MAP, normalizeContentTypes } from "./libraryConstants";
 import { fireConfetti } from "@/hooks/useConfetti";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
 
 type BookRecord = typeof BOOKS[number];
 
+/**
+ * compact: Matches the old BookModal layout — smaller cover, no "In Your Library" section,
+ *          used from AuthorAccordionRow and FlowbiteAuthorCard mini book covers.
+ * full:    Full detail panel with all sections, used from the Books tab.
+ */
+export type BookDetailVariant = 'full' | 'compact';
+
 interface BookDetailPanelProps {
   book: BookRecord;
   onClose: () => void;
+  /** Rendering variant. Defaults to 'full'. */
+  variant?: BookDetailVariant;
+  /** When variant='compact', wrap in a Dialog. Defaults to false. */
+  asDialog?: boolean;
+  /** Whether the dialog is open (only used when asDialog=true). */
+  open?: boolean;
 }
 
-export function BookDetailPanel({ book, onClose }: BookDetailPanelProps) {
+export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = false, open }: BookDetailPanelProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarkedIcon;
@@ -85,9 +102,162 @@ export function BookDetailPanel({ book, onClose }: BookDetailPanelProps) {
     onError: (e) => toast.error("Amazon scrape failed: " + e.message),
   });
 
-  const effectiveCoverUrl = scrapedCoverUrl ?? profile?.coverImageUrl ?? null;
+  const effectiveCoverUrl = scrapedCoverUrl ?? profile?.s3CoverUrl ?? profile?.coverImageUrl ?? null;
   const displayAsin = scrapedAsin;
 
+  // Normalised content types for compact variant
+  const normalisedTypes = normalizeContentTypes(book.contentTypes);
+  const amazonUrl = profile?.amazonUrl ?? `https://www.amazon.com/s?k=${encodeURIComponent(displayTitle)}`;
+
+  // ── COMPACT VARIANT (replaces BookModal) ─────────────────────────────────────
+  const compactContent = (
+    <div className="flex flex-col gap-4 text-sm">
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 z-10 w-9 h-9 rounded-lg bg-muted/80 hover:bg-muted flex items-center justify-center shadow-sm border border-border transition-all hover:scale-105 active:scale-95"
+        aria-label="Close"
+      >
+        <X className="w-5 h-5 text-foreground" />
+      </button>
+
+      {/* Cover + meta row */}
+      <div className="flex items-start gap-4">
+        <AnimatePresence mode="wait">
+          {effectiveCoverUrl ? (
+            <motion.img
+              key={effectiveCoverUrl}
+              src={effectiveCoverUrl}
+              alt={displayTitle}
+              className="h-[169px] w-[113px] rounded object-cover shadow-sm flex-shrink-0 ring-1 ring-border"
+              loading="lazy"
+              initial={{ opacity: 0, scale: 0.88, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24, mass: 0.8 }}
+            />
+          ) : (
+            <motion.div
+              key="placeholder"
+              className="h-[169px] w-[113px] rounded bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border"
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            >
+              {isLoadingProfile ? (
+                <RefreshCw className="w-5 h-5 animate-spin text-muted-foreground" />
+              ) : (
+                <BookOpen className="w-6 h-6 text-muted-foreground" />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex flex-col gap-2 min-w-0 flex-1">
+          {/* Rating */}
+          {profile?.rating && (
+            <div className="flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-sm font-semibold">{profile.rating}</span>
+              {profile.ratingCount && (
+                <span className="text-xs text-muted-foreground">({profile.ratingCount})</span>
+              )}
+            </div>
+          )}
+          {/* Content-type pills */}
+          {Object.keys(normalisedTypes).length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {Object.entries(normalisedTypes).map(([type, count]) => (
+                <span key={type} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  {type}{count > 1 && <span className="opacity-60 ml-0.5">{count}</span>}
+                </span>
+              ))}
+            </div>
+          )}
+          {/* Action links */}
+          <div className="flex flex-col gap-1.5 mt-1">
+            <a href={driveUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+              Open in Google Drive
+            </a>
+            <a href={amazonUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+              <ShoppingCart className="w-3 h-3 flex-shrink-0" />
+              {profile?.amazonUrl ? "View on Amazon" : "Search on Amazon"}
+            </a>
+            {profile?.goodreadsUrl && (
+              <a href={profile.goodreadsUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+                <BookOpen className="w-3 h-3 flex-shrink-0" />
+                View on Goodreads
+              </a>
+            )}
+            <button
+              onClick={() => scrapeMutation.mutate({ title: displayTitle, author: bookAuthor })}
+              disabled={scrapeMutation.isPending}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {scrapeMutation.isPending ? (
+                <RefreshCw className="w-3 h-3 flex-shrink-0 animate-spin" />
+              ) : (
+                <ShoppingCart className="w-3 h-3 flex-shrink-0" />
+              )}
+              {scrapeMutation.isPending ? "Scraping…" : "Scrape Cover from Amazon"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Summary */}
+      {(isLoadingProfile || profile?.summary) && (
+        <>
+          <div className="h-px bg-border" />
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Summary</p>
+            {isLoadingProfile ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span className="text-xs">Loading…</span>
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed text-card-foreground">{profile?.summary}</p>
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="h-px bg-border" />
+      <button
+        onClick={onClose}
+        className="w-full py-2.5 rounded-lg bg-muted hover:bg-muted/80 text-sm font-medium text-foreground transition-all shadow-sm border border-border hover:shadow-md active:scale-[0.98]"
+      >
+        Close
+      </button>
+    </div>
+  );
+
+  if (asDialog) {
+    return (
+      <Dialog open={open ?? true} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent className="sm:max-w-md bg-card text-card-foreground border-border">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold text-card-foreground capitalize pr-10">
+              {displayTitle}
+            </DialogTitle>
+          </DialogHeader>
+          {compactContent}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (variant === 'compact') {
+    return compactContent;
+  }
+
+  // ── FULL VARIANT (default) ────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-5 pt-2">
       {/* Header */}

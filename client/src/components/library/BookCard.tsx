@@ -24,11 +24,14 @@ import {
   BookOpen,
   ExternalLink,
   BookMarked as BookMarkedIcon,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 import { CATEGORY_COLORS, CATEGORY_ICONS, type BookRecord } from "@/lib/libraryData";
-import { ICON_MAP } from "./libraryConstants";
+import { ICON_MAP, getBookEnrichmentLevel } from "./libraryConstants";
 import { ContentTypeBadge } from "./LibraryPrimitives";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
 
 interface BookCardProps {
   book: BookRecord;
@@ -42,6 +45,16 @@ interface BookCardProps {
   onAuthorClick?: (authorName: string) => void;
   /** Used for scroll-to highlight — set to true when this card is the navigation target */
   isHighlighted?: boolean;
+  /** Star rating string, e.g. "4.6" */
+  rating?: string;
+  /** Number of ratings/reviews */
+  ratingCount?: number;
+  /** Published date string, e.g. "2023-04-18" */
+  publishedDate?: string;
+  /** Comma-separated key themes */
+  keyThemes?: string;
+  /** Short summary for hover tooltip */
+  summary?: string;
 }
 
 export function BookCard({
@@ -54,6 +67,11 @@ export function BookCard({
   onCoverClick,
   onAuthorClick,
   isHighlighted,
+  rating,
+  ratingCount,
+  publishedDate,
+  keyThemes,
+  summary,
 }: BookCardProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
@@ -63,6 +81,20 @@ export function BookCard({
   const displayTitle = dashIdx !== -1 ? book.name.slice(0, dashIdx) : book.name;
   const bookAuthor = dashIdx !== -1 ? book.name.slice(dashIdx + 3) : "";
   const hasContent = Object.keys(book.contentTypes).length > 0;
+
+  // Compute enrichment level from available props
+  const enrichmentLevel = getBookEnrichmentLevel(
+    isEnriched
+      ? {
+          summary: summary ?? null,
+          rating: rating ?? null,
+          s3CoverUrl: coverImageUrl ?? null,
+          keyThemes: keyThemes ?? null,
+          amazonUrl: amazonUrl ?? null,
+          publishedDate: publishedDate ?? null,
+        }
+      : null
+  );
 
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
@@ -172,10 +204,24 @@ export function BookCard({
 
           {/* Title + author name */}
           <div className="min-w-0 w-full text-center">
-            <h3 className="text-sm font-bold text-card-foreground leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]">
-              {highlight(displayTitle)}
-            </h3>
-            {/* HOTSPOT 2: author name navigates to author card */}
+            {/* Title — hover shows summary tooltip if available */}
+            <Tooltip delayDuration={400}>
+              <TooltipTrigger asChild>
+                <h3 className="text-sm font-bold text-card-foreground leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)] cursor-default">
+                  {highlight(displayTitle)}
+                </h3>
+              </TooltipTrigger>
+              {summary && (
+                <TooltipContent side="top" className="max-w-xs p-3 z-50">
+                  <p className="font-semibold text-xs mb-1">{displayTitle}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {summary.length > 160 ? summary.slice(0, 160) + "…" : summary}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+
+            {/* HOTSPOT 2: author name + publication year */}
             {bookAuthor && (
               <button
                 type="button"
@@ -190,25 +236,54 @@ export function BookCard({
                 "
               >
                 <span className="font-medium">by</span> {highlight(bookAuthor)}
+                {publishedDate && (
+                  <span className="text-muted-foreground not-italic"> · {publishedDate.slice(0, 4)}</span>
+                )}
               </button>
             )}
           </div>
 
-          {/* Enrichment status */}
-          <div className="text-[11px] flex justify-center">
-            {isEnriched ? (
-              <span className="flex items-center gap-1.5 text-muted-foreground cursor-default">
-                <BookMarkedIcon className="w-3 h-3 text-chart-5" />
-                <span className="font-medium">Cover ready</span>
-                <span className="opacity-60">· click for details</span>
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-muted-foreground">
-                <BookOpen className="w-3 h-3" />
-                <span>Click for details</span>
-              </span>
-            )}
-          </div>
+          {/* Star rating row — replaces the old "Cover ready" status line */}
+          {rating ? (
+            <div className="flex items-center justify-center gap-1 mt-0.5">
+              <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
+              <span className="text-[11px] font-semibold text-foreground">{rating}</span>
+              {ratingCount && (
+                <span className="text-[10px] text-muted-foreground">({ratingCount.toLocaleString()})</span>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+              <BookOpen className="w-3 h-3" />
+              <span>Click for details</span>
+            </div>
+          )}
+
+          {/* Book enrichment level badge */}
+          {enrichmentLevel !== 'none' && (
+            <div className="flex justify-center mt-1" onClick={(e) => e.stopPropagation()}>
+              <BookEnrichmentBadge level={enrichmentLevel} size="sm" />
+            </div>
+          )}
+
+          {/* Key themes pills — shown when enriched */}
+          {keyThemes && (
+            <div className="flex flex-wrap justify-center gap-1 px-2 mt-1">
+              {keyThemes.split(",").slice(0, 2).map((t) => t.trim()).filter(Boolean).map((theme) => (
+                <span
+                  key={theme}
+                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground"
+                >
+                  {theme}
+                </span>
+              ))}
+              {keyThemes.split(",").length > 2 && (
+                <span className="text-[9px] text-muted-foreground self-center">
+                  +{keyThemes.split(",").length - 2}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── Divider ─────────────────────────────────────────────────────── */}

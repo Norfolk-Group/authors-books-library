@@ -181,16 +181,16 @@ export default function Home() {
   }, [bookCoversQuery.data]);
 
   const bookInfoMap = useMemo(() => {
-    const map = new Map<string, { summary?: string; rating?: string; ratingCount?: number }>();
+    const map = new Map<string, { summary?: string; rating?: string; ratingCount?: number; publishedDate?: string; keyThemes?: string }>();
     for (const p of bookCoversQuery.data ?? []) {
       const hasRating = p.rating && String(p.rating).trim() !== '' && parseFloat(String(p.rating)) > 0;
-      if (p.summary || hasRating) {
-        map.set(p.bookTitle.toLowerCase(), {
-          summary: p.summary ?? undefined,
-          rating: hasRating ? String(p.rating) : undefined,
-          ratingCount: hasRating && p.ratingCount ? Number(p.ratingCount) : undefined,
-        });
-      }
+      map.set(p.bookTitle.toLowerCase(), {
+        summary: p.summary ?? undefined,
+        rating: hasRating ? String(p.rating) : undefined,
+        ratingCount: hasRating && p.ratingCount ? Number(p.ratingCount) : undefined,
+        publishedDate: p.publishedDate ?? undefined,
+        keyThemes: p.keyThemes ?? undefined,
+      });
     }
     return map;
   }, [bookCoversQuery.data]);
@@ -691,6 +691,11 @@ export default function Home() {
                             onCoverClick={(url, title, color) => setLightboxCover({ url, title, color })}
                             onAuthorClick={navigateToAuthor}
                             isHighlighted={highlightedBookTitle === tk}
+                            rating={bookInfoMap.get(tk)?.rating}
+                            ratingCount={bookInfoMap.get(tk)?.ratingCount}
+                            publishedDate={bookInfoMap.get(tk)?.publishedDate}
+                            keyThemes={bookInfoMap.get(tk)?.keyThemes}
+                            summary={bookInfoMap.get(tk)?.summary}
                           />
                         </div>
                       );
