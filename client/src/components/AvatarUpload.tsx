@@ -3,12 +3,12 @@
  * -----------
  * Wraps any author avatar with a hover overlay that lets the user
  * click to pick a local image file. After selection, a crop modal
- * opens so the user can frame and zoom the photo before it is
- * uploaded to S3 via the `authorProfiles.uploadPhoto` tRPC mutation.
+ * opens so the user can frame and zoom the avatar before it is
+ * uploaded to S3 via the `authorProfiles.uploadAvatar` tRPC mutation.
  *
  * Flow:
  *   click → file picker → AvatarCropModal → Crop & Save
- *   → canvas blob → base64 → uploadPhoto mutation → S3 CDN URL
+ *   → canvas blob → base64 → uploadAvatar mutation → S3 CDN URL
  *
  * Usage:
  *   <AvatarUpload authorName="Adam Grant" currentPhotoUrl={photoUrl} size={64}>
@@ -52,7 +52,7 @@ export function AvatarUpload({
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
 
-  const uploadMutation = trpc.authorProfiles.uploadPhoto.useMutation();
+  const uploadMutation = trpc.authorProfiles.uploadAvatar.useMutation();
   const utils = trpc.useUtils();
 
   const displayUrl = optimisticUrl ?? currentPhotoUrl;
@@ -151,9 +151,9 @@ export function AvatarUpload({
         className={`relative inline-block cursor-pointer group ${className ?? ""}`}
         style={{ width: size, height: size }}
         onClick={() => !uploading && fileInputRef.current?.click()}
-        title="Click to upload a custom photo"
+        title="Click to upload a custom avatar"
         role="button"
-        aria-label={`Upload photo for ${authorName}`}
+        aria-label={`Upload avatar for ${authorName}`}
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {

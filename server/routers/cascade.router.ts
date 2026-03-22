@@ -10,27 +10,26 @@ import { authorProfiles, bookProfiles } from "../../drizzle/schema";
 
 export const cascadeRouter = router({
   /**
-   * Returns live counts for the author photo enrichment waterfall:
+   * Returns live counts for the author avatar enrichment waterfall:
    * - total: unique author names in the DB
-   * - withPhoto: authors that have any photoUrl
-   * - withS3Photo: authors whose photo is mirrored to S3
+   * - withAvatar: authors that have any avatarUrl
+   * - withS3Avatar: authors whose avatar is mirrored to S3
    * - withBio: authors that have a non-empty bio
-   * - withWikiBio: authors enriched via Wikipedia (proxy: enrichedAt is set)
-   * - withLlmBio: authors with bio but no photoUrl (LLM fallback proxy)
+   * - withEnrichedAt: authors enriched (enrichedAt is set)
    * - withSocialLinks: authors with websiteUrl or twitterUrl or linkedinUrl
-   * - noPhoto: authors with no photoUrl at all
+   * - noAvatar: authors with no avatarUrl at all
    * - noBio: authors with no bio
    */
   authorStats: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { total: 0, withPhoto: 0, withS3Photo: 0, withBio: 0, withEnrichedAt: 0, withSocialLinks: 0, noPhoto: 0, noBio: 0, fromWikipedia: 0, fromTavily: 0, fromApify: 0, fromAI: 0, sourceUnknown: 0 };
+    if (!db) return { total: 0, withPhoto: 0, withAvatar: 0, withS3Photo: 0, withS3Avatar: 0, withBio: 0, withEnrichedAt: 0, withSocialLinks: 0, noPhoto: 0, noAvatar: 0, noBio: 0, fromWikipedia: 0, fromTavily: 0, fromApify: 0, fromAI: 0, sourceUnknown: 0 };
     const rows = await db
       .select({
         authorName: authorProfiles.authorName,
         bio: authorProfiles.bio,
-        photoUrl: authorProfiles.photoUrl,
-        s3PhotoUrl: authorProfiles.s3PhotoUrl,
-        photoSource: authorProfiles.photoSource,
+        avatarUrl: authorProfiles.avatarUrl,
+        s3AvatarUrl: authorProfiles.s3AvatarUrl,
+        avatarSource: authorProfiles.avatarSource,
         websiteUrl: authorProfiles.websiteUrl,
         twitterUrl: authorProfiles.twitterUrl,
         linkedinUrl: authorProfiles.linkedinUrl,
@@ -40,8 +39,8 @@ export const cascadeRouter = router({
 
     type AuthorRow = typeof rows[number];
     const total = rows.length;
-    const withPhoto = rows.filter((r: AuthorRow) => r.photoUrl && r.photoUrl.length > 0).length;
-    const withS3Photo = rows.filter((r: AuthorRow) => r.s3PhotoUrl && r.s3PhotoUrl.length > 0).length;
+    const withAvatar = rows.filter((r: AuthorRow) => r.avatarUrl && r.avatarUrl.length > 0).length;
+    const withS3Avatar = rows.filter((r: AuthorRow) => r.s3AvatarUrl && r.s3AvatarUrl.length > 0).length;
     const withBio = rows.filter((r: AuthorRow) => r.bio && r.bio.length > 0).length;
     const withEnrichedAt = rows.filter((r: AuthorRow) => r.enrichedAt != null).length;
     const withSocialLinks = rows.filter(
@@ -50,24 +49,29 @@ export const cascadeRouter = router({
         (r.twitterUrl && r.twitterUrl.length > 0) ||
         (r.linkedinUrl && r.linkedinUrl.length > 0)
     ).length;
-    const noPhoto = rows.filter((r: AuthorRow) => !r.photoUrl || r.photoUrl.length === 0).length;
+    const noAvatar = rows.filter((r: AuthorRow) => !r.avatarUrl || r.avatarUrl.length === 0).length;
     const noBio = rows.filter((r: AuthorRow) => !r.bio || r.bio.length === 0).length;
 
-    // Per-tier photo source counts (now that photoSource column exists)
-    const fromWikipedia = rows.filter((r: AuthorRow) => r.photoSource === "wikipedia").length;
-    const fromTavily = rows.filter((r: AuthorRow) => r.photoSource === "tavily").length;
-    const fromApify = rows.filter((r: AuthorRow) => r.photoSource === "apify").length;
-    const fromAI = rows.filter((r: AuthorRow) => r.photoSource === "ai").length;
-    const sourceUnknown = rows.filter((r: AuthorRow) => r.photoUrl && r.photoUrl.length > 0 && !r.photoSource).length;
+    // Per-tier avatar source counts
+    const fromWikipedia = rows.filter((r: AuthorRow) => r.avatarSource === "wikipedia").length;
+    const fromTavily = rows.filter((r: AuthorRow) => r.avatarSource === "tavily").length;
+    const fromApify = rows.filter((r: AuthorRow) => r.avatarSource === "apify").length;
+    const fromAI = rows.filter((r: AuthorRow) => r.avatarSource === "ai").length;
+    const sourceUnknown = rows.filter((r: AuthorRow) => r.avatarUrl && r.avatarUrl.length > 0 && !r.avatarSource).length;
 
     return {
       total,
-      withPhoto,
-      withS3Photo,
+      // New names
+      withAvatar,
+      withS3Avatar,
+      noAvatar,
+      // Legacy aliases for backward compat with ResearchCascade UI
+      withPhoto: withAvatar,
+      withS3Photo: withS3Avatar,
+      noPhoto: noAvatar,
       withBio,
       withEnrichedAt,
       withSocialLinks,
-      noPhoto,
       noBio,
       // Per-tier breakdown
       fromWikipedia,

@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // -- Mocks ----------------------------------------------------------------------
 
 const mockGenerateAIPortrait = vi.fn();
-vi.mock("../server/lib/authorPhotos/replicateGeneration", () => ({
+vi.mock("../server/lib/authorAvatars/replicateGeneration", () => ({
   generateAIPortrait: mockGenerateAIPortrait,
 }));
 

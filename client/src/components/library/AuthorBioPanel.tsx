@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { AUTHORS, CATEGORY_COLORS } from "@/lib/libraryData";
 import { canonicalName } from "@/lib/authorAliases";
-import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { fireConfetti } from "@/hooks/useConfetti";
 import authorBios from "@/lib/authorBios.json";
@@ -38,7 +38,7 @@ interface AuthorBioPanelProps {
 export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
   const displayName = canonicalName(author.name);
   const specialty = author.name.includes(" - ") ? author.name.slice(author.name.indexOf(" - ") + 3) : "";
-  const photoUrl = getAuthorPhoto(displayName);
+  const avatarUrl = getAuthorAvatar(displayName);
   const color = CATEGORY_COLORS[author.category] ?? "hsl(var(--muted-foreground))";
   const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
 
@@ -48,11 +48,11 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
     { authorName: displayName },
     { enabled: !jsonBio }
   );
+  const { settings } = useAppSettings();
   const enrichMutation = trpc.authorProfiles.enrich.useMutation({
     onError: (e) => toast.error("Failed to load bio: " + e.message),
   });
 
-  const { settings } = useAppSettings();
   const [generatedPhotoUrl, setGeneratedPhotoUrl] = useState<string | null>(null);
   const generatePortraitMutation = trpc.authorProfiles.generatePortrait.useMutation({
     onSuccess: (data) => {
@@ -67,11 +67,15 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
   useEffect(() => {
     if (!jsonBio && !isLoading && !profile && !hasTriggered.current) {
       hasTriggered.current = true;
-      enrichMutation.mutate({ authorName: displayName });
+      enrichMutation.mutate({
+        authorName: displayName,
+        model: settings.primaryModel || undefined,
+        secondaryModel: settings.secondaryLlmEnabled && settings.secondaryModel ? settings.secondaryModel : undefined,
+      });
     }
   }, [jsonBio, isLoading, profile]);
 
-  const effectivePhotoUrl = generatedPhotoUrl ?? photoUrl;
+  const effectivePhotoUrl = generatedPhotoUrl ?? avatarUrl;
 
   return (
     <div className="flex flex-col gap-5 pt-2">

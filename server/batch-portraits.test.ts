@@ -5,14 +5,14 @@
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// -- Mock getAuthorPhoto --------------------------------------------------------
+// -- Mock getAuthorAvatar --------------------------------------------------------
 const MOCK_PHOTOS: Record<string, string> = {
   "Adam Grant": "https://cdn.example.com/adam-grant.png",
   "James Clear": "https://cdn.example.com/james-clear.png",
 };
 
-vi.mock("../client/src/lib/authorPhotos", () => ({
-  getAuthorPhoto: (name: string) => MOCK_PHOTOS[name] ?? undefined,
+vi.mock("../client/src/lib/authorAvatars", () => ({
+  getAuthorAvatar: (name: string) => MOCK_PHOTOS[name] ?? undefined,
 }));
 
 // -- Helpers --------------------------------------------------------------------
@@ -23,8 +23,8 @@ async function runBatchPortraits(
   generatePortrait: (name: string) => Promise<void>,
   delayMs = 0
 ): Promise<{ done: number; failed: number; processed: string[] }> {
-  const { getAuthorPhoto } = await import("../client/src/lib/authorPhotos");
-  const missing = authorNames.filter((n) => !getAuthorPhoto(n));
+  const { getAuthorAvatar } = await import("../client/src/lib/authorAvatars");
+  const missing = authorNames.filter((n) => !getAuthorAvatar(n));
 
   let done = 0;
   let failed = 0;
@@ -54,7 +54,7 @@ describe("batch portrait generation logic", () => {
     vi.clearAllMocks();
   });
 
-  it("skips authors who already have a photo in the static map", async () => {
+  it("skips authors who already have an avatar in the static map", async () => {
     const generate = vi.fn().mockResolvedValue(undefined);
     const authors = ["Adam Grant", "James Clear", "Unknown Author"];
 

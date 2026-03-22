@@ -49,7 +49,7 @@ import {
 } from "lucide-react";
 import { CATEGORY_ICONS, CONTENT_TYPE_ICONS, type AuthorEntry } from "@/lib/libraryData";
 import { canonicalName } from "@/lib/authorAliases";
-import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { AuthorModal } from "@/components/AuthorModal";
 import { BookModal, type BookModalBook } from "@/components/BookModal";
 
@@ -147,7 +147,7 @@ export interface AuthorAccordionRowProps {
   query: string;
   isEnriched: boolean;
   coverMap?: Map<string, string>;
-  dbPhotoMap?: Map<string, string>;
+  dbAvatarMap?: Map<string, string>;
   /** Called when user clicks "View bio & links" in the expanded panel */
   onBioClick: (author: AuthorEntry) => void;
 }
@@ -158,7 +158,7 @@ export function AuthorAccordionRow({
   query,
   isEnriched,
   coverMap,
-  dbPhotoMap,
+  dbAvatarMap,
   onBioClick,
 }: AuthorAccordionRowProps) {
   const [open, setOpen] = useState(false);
@@ -191,13 +191,13 @@ export function AuthorAccordionRow({
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
 
-  const photoUrl = useMemo(() => {
+  const avatarUrl = useMemo(() => {
     return (
-      dbPhotoMap?.get(displayName.toLowerCase()) ??
-      getAuthorPhoto(displayName) ??
+      dbAvatarMap?.get(displayName.toLowerCase()) ??
+      getAuthorAvatar(displayName) ??
       null
     );
-  }, [displayName, dbPhotoMap]);
+  }, [displayName, dbAvatarMap]);
 
   // Deduplicated books
   const dedupedBooks = useMemo(() => {
@@ -250,9 +250,9 @@ export function AuthorAccordionRow({
             className="relative h-[84px] w-[84px] flex-shrink-0 cursor-pointer"
             onClick={handleAvatarClick}
           >
-            {photoUrl ? (
+            {avatarUrl ? (
               <img
-                src={photoUrl}
+                src={avatarUrl}
                 alt={displayName}
                 className="
                   h-[84px] w-[84px] rounded-full object-cover ring-2 ring-border ring-offset-1
@@ -273,15 +273,20 @@ export function AuthorAccordionRow({
             )}
           </div>
 
-          {/* HOTSPOT 1: Name - click opens AuthorModal */}
+          {/* HOTSPOT 1: Name + specialty - click opens AuthorModal */}
           <button
             type="button"
             onClick={handleAvatarClick}
             className="flex-1 min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
           >
-            <span className="text-sm font-medium text-card-foreground truncate block">
+            <span className="text-base font-bold text-card-foreground leading-snug tracking-tight block">
               <Highlight text={displayName} query={query} />
             </span>
+            {specialty && (
+              <span className="text-xs text-muted-foreground leading-relaxed line-clamp-1 block mt-0.5">
+                <Highlight text={specialty} query={query} />
+              </span>
+            )}
           </button>
 
           {/* Category icon - presentational */}
@@ -341,7 +346,7 @@ export function AuthorAccordionRow({
                       return (
                         <div
                           key={book.id}
-                          className="relative h-10 w-7 flex-shrink-0 cursor-pointer"
+                          className="relative h-20 w-14 flex-shrink-0 cursor-pointer"
                           title={rawTitle.trim()}
                           onClick={(e) => handleBookCoverClick(e, bookMini)}
                         >
@@ -350,7 +355,7 @@ export function AuthorAccordionRow({
                               src={coverUrl}
                               alt={rawTitle.trim()}
                               className="
-                                h-full w-full rounded-sm object-cover shadow-sm
+                                h-full w-full rounded object-cover shadow-sm
                                 ring-1 ring-border
                                 transition-transform duration-300 ease-out
                                 hover:scale-[1.2]
@@ -360,13 +365,13 @@ export function AuthorAccordionRow({
                             />
                           ) : (
                             <div className="
-                              h-full w-full rounded-sm bg-muted ring-1 ring-border
+                              h-full w-full rounded bg-muted ring-1 ring-border
                               flex items-center justify-center
                               transition-transform duration-300 ease-out
                               hover:scale-[1.2]
                               origin-center
                             ">
-                              <BookOpen className="w-3 h-3 text-muted-foreground" />
+                              <BookOpen className="w-5 h-5 text-muted-foreground" />
                             </div>
                           )}
                         </div>
@@ -417,7 +422,7 @@ export function AuthorAccordionRow({
       {/* -- HOTSPOT 1 modal: Author bio -- */}
       <AuthorModal
         author={authorModalOpen ? author : null}
-        photoUrl={photoUrl}
+        avatarUrl={avatarUrl}
         onClose={() => setAuthorModalOpen(false)}
       />
 

@@ -6,7 +6,7 @@
  *   1. Canonical name = the most widely recognised form (full name, no middle initials unless
  *      needed to disambiguate, ampersand "&" for co-authors).
  *   2. Variants include: Drive folder suffixes, initials, alternate spellings, co-author order.
- *   3. Photo and bio lookups MUST call `canonicalName(raw)` before hitting their maps.
+ *   3. Avatar and bio lookups MUST call `canonicalName(raw)` before hitting their maps.
  *
  * To add a new alias: append an entry to AUTHOR_ALIASES.
  * To rename a canonical: change the value AND the AUTHOR_PHOTOS / authorBios.json key together.
@@ -94,7 +94,7 @@ export const AUTHOR_ALIASES: Record<string, string> = {
   "Tom Yorton": "Tom Yorton",
 
   // -- Suffix-only entries (Drive folders named after books, not authors) -------
-  // Map to the author name so bio/photo lookups still work
+  // Map to the author name so bio/avatar lookups still work
   "Aaron Ross and Jason Lemkin - sales strategy, B2B growth, and predictable revenue generation":
     "Aaron Ross",
   "Adam Grant - organizational psychology, workplace culture, and leadership": "Adam Grant",
@@ -216,7 +216,7 @@ export const AUTHOR_ALIASES: Record<string, string> = {
  *
  * Usage:
  *   const display = canonicalName(author.name);   // "Matthew Dixon"
- *   const photo   = getAuthorPhoto(display);
+ *   const photo   = getAuthorAvatar(display);
  *   const bio     = (authorBios as Record<string,string>)[display];
  */
 export function canonicalName(raw: string): string {

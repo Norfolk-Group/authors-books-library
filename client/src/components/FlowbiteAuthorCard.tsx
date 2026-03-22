@@ -30,7 +30,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
-import { Card } from "flowbite-react";
+// Card replaced with plain div — Flowbite removed
 import {
   BookOpen,
   Briefcase,
@@ -59,7 +59,7 @@ import {
   File,
 } from "lucide-react";
 import { AvatarUpload } from "@/components/AvatarUpload";
-import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
 import {
   CATEGORY_ICONS,
@@ -227,7 +227,7 @@ export interface FlowbiteAuthorCardProps {
   coverMap?: Map<string, string>;
   /** Kept for API compatibility - not used for navigation */
   onBookClick?: (bookId: string, titleKey: string) => void;
-  dbPhotoMap?: Map<string, string>;
+  dbAvatarMap?: Map<string, string>;
   /** Short bio text to show in hover tooltip (first ~200 chars). Only shown when isEnriched is true. */
   bio?: string | null;
   /** Map of lowercase book title → { summary, rating, ratingCount } for cover thumbnail tooltips. */
@@ -241,7 +241,7 @@ export function FlowbiteAuthorCard({
   onBioClick,
   isEnriched,
   coverMap,
-  dbPhotoMap,
+  dbAvatarMap,
   bio,
   bookInfoMap,
 }: FlowbiteAuthorCardProps) {
@@ -251,8 +251,8 @@ export function FlowbiteAuthorCard({
   const specialty = author.name.includes(" - ")
     ? author.name.slice(author.name.indexOf(" - ") + 3)
     : "";
-  const photoUrl =
-    dbPhotoMap?.get(displayName.toLowerCase()) ?? getAuthorPhoto(displayName) ?? null;
+  const avatarUrl =
+    dbAvatarMap?.get(displayName.toLowerCase()) ?? getAuthorAvatar(displayName) ?? null;
   const hasBooks = author.books && author.books.length > 0;
 
   // -- HOTSPOT 1: Author modal --
@@ -319,10 +319,10 @@ export function FlowbiteAuthorCard({
          * Child interactive elements stop propagation so they don't
          * accidentally trigger this handler.
          */}
-        <Card
+        <div
           onClick={() => onBioClick(author)}
           className="
-            h-full overflow-hidden relative !p-0
+            h-full overflow-hidden relative p-0
             bg-card text-card-foreground
             border border-border rounded-2xl
             shadow-sm hover:shadow-md
@@ -383,7 +383,7 @@ export function FlowbiteAuthorCard({
             >
               {/* Avatar - tripled to 108px, expand-on-hover */}
               <div className="relative h-28 w-28 flex-shrink-0">
-                <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={112}>
+                <AvatarUpload authorName={displayName} currentPhotoUrl={avatarUrl} size={112}>
                   {(url) => {
                     const avatarEl = url ? (
                       <img
@@ -443,11 +443,11 @@ export function FlowbiteAuthorCard({
                 className="min-w-0 w-full cursor-pointer"
                 onClick={handleAvatarClick}
               >
-                <h3 className="text-sm font-semibold text-card-foreground leading-snug tracking-tight text-center">
+                <h3 className="text-base font-bold text-card-foreground leading-snug tracking-tight text-center drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]">
                   <Highlight text={displayName} query={query} />
                 </h3>
                 {specialty && (
-                  <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-2 leading-relaxed text-center">
+                  <p className="mt-1 text-xs text-muted-foreground line-clamp-2 leading-relaxed text-center">
                     <Highlight text={specialty} query={query} />
                   </p>
                 )}
@@ -543,7 +543,7 @@ export function FlowbiteAuthorCard({
                     const coverEl = (
                       <div
                         key={book.id}
-                        className="relative h-11 w-8 flex-shrink-0 cursor-pointer"
+                        className="relative h-[88px] w-16 flex-shrink-0 cursor-pointer"
                         onClick={(e) => { e.stopPropagation(); handleBookClick(bookMini); }}
                       >
                         {coverUrl ? (
@@ -551,7 +551,7 @@ export function FlowbiteAuthorCard({
                             src={coverUrl}
                             alt={rawTitle.trim()}
                             className="
-                              h-full w-full rounded-sm object-cover shadow-sm
+                              h-full w-full rounded object-cover shadow-sm
                               ring-1 ring-border
                               transition-transform duration-300 ease-out
                               hover:scale-[1.2]
@@ -563,7 +563,7 @@ export function FlowbiteAuthorCard({
                         ) : (
                           <div
                             className="
-                              h-full w-full rounded-sm bg-muted shadow-sm
+                              h-full w-full rounded bg-muted shadow-sm
                               ring-1 ring-border
                               flex items-center justify-center
                               transition-transform duration-300 ease-out
@@ -572,7 +572,7 @@ export function FlowbiteAuthorCard({
                               relative z-20
                             "
                           >
-                            <BookOpen className="w-3 h-3 text-muted-foreground" />
+                            <BookOpen className="w-5 h-5 text-muted-foreground" />
                           </div>
                         )}
                       </div>
@@ -616,13 +616,13 @@ export function FlowbiteAuthorCard({
               </div>
             </div>
           )}
-        </Card>
+        </div>
       </motion.div>
 
       {/* -- HOTSPOT 1 modal: Author bio -- */}
       <AuthorModal
         author={authorModalOpen ? author : null}
-        photoUrl={photoUrl}
+        avatarUrl={avatarUrl}
         onClose={() => setAuthorModalOpen(false)}
       />
 

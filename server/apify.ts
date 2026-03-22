@@ -41,7 +41,7 @@ export interface AmazonBookResult {
 }
 
 export interface AuthorPhotoResult {
-  photoUrl: string;
+  avatarUrl: string;
   sourceUrl: string;
   sourceName: string;
 }
@@ -184,11 +184,11 @@ async function pageFunction(context) {
   return sorted[0] ?? null;
 }
 
-// -- Author photo scraper ------------------------------------------------------
+// -- Author avatar scraper ------------------------------------------------------
 
 /**
  * Search for a real author headshot from Wikipedia and publisher pages.
- * Returns the best photo URL found.
+ * Returns the best avatar URL found.
  */
 export async function scrapeAuthorPhoto(
   authorName: string
@@ -201,13 +201,13 @@ async function pageFunction(context) {
   const { $, request, log } = context;
   const results = [];
 
-  // Wikipedia infobox photo (most reliable)
+  // Wikipedia infobox avatar (most reliable)
   const infoboxImg = $('.infobox img, .infobox-image img').first();
   if (infoboxImg.length) {
     const src = infoboxImg.attr('src');
     if (src) {
       const fullSrc = src.startsWith('//') ? 'https:' + src : src;
-      results.push({ photoUrl: fullSrc, sourceUrl: request.url, sourceName: 'Wikipedia' });
+      results.push({ avatarUrl: fullSrc, sourceUrl: request.url, sourceName: 'Wikipedia' });
     }
   }
 
@@ -218,13 +218,13 @@ async function pageFunction(context) {
       const alt = $(el).attr('alt') || '';
       if (src && !src.includes('icon') && !src.includes('logo') && !src.includes('flag')) {
         const fullSrc = src.startsWith('//') ? 'https:' + src : src;
-        results.push({ photoUrl: fullSrc, sourceUrl: request.url, sourceName: 'Wikipedia' });
+        results.push({ avatarUrl: fullSrc, sourceUrl: request.url, sourceName: 'Wikipedia' });
         return false; // break
       }
     });
   }
 
-  log.info('Found ' + results.length + ' photo candidates');
+  log.info('Found ' + results.length + ' avatar candidates');
   return results.slice(0, 1);
 }
 `;
@@ -232,7 +232,7 @@ async function pageFunction(context) {
   const result = await runActorWithRetry<AuthorPhotoResult>(
     [{ url: wikiUrl }],
     pageFunction,
-    { label: `Wikipedia photo: ${authorName}` }
+    { label: `Wikipedia avatar: ${authorName}` }
   );
 
   if (!result || result.items.length === 0) return null;

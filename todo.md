@@ -833,7 +833,7 @@
 - [x] Add color picker to SettingsTab.tsx (Avatar Background Color section)
 - [x] Pass avatarBgColor to generatePortrait tRPC mutation input
 - [x] Update replicateGeneration.ts buildPrompt() to accept and inject bgColor into prompt
-- [ ] Test, update claude.md and memory.md, commit, push, save checkpoint
+- [x] Test, update claude.md and memory.md, commit, push, save checkpoint
 
 ## Session March 21, 2026 — AI Model Settings Redesign
 
@@ -849,7 +849,7 @@
 ### Norfolk AI Palette (Norfolk AI theme only — Manus theme unchanged)
 - [x] Update .theme-norfolk-ai CSS variables in index.css with official palette colors
 - [x] Update avatar background swatches in SettingsTab to use Norfolk AI colors (seed: #0091AE darker teal)
-- [ ] Verify Norfolk AI theme renders correctly with new palette
+- [x] Verify Norfolk AI theme renders correctly with new palette
 
 ### AI Model Settings Redesign (continued)
 - [ ] Build VENDOR_CATALOGUE in llm.router.ts with all major LLM vendors and models (done — needs SettingsTab wiring)
@@ -880,7 +880,7 @@
 
 ## Session March 21, 2026 — Two-Level LLM Research + Nano-Banana Avatar Generation
 
-- [ ] Wire two-level LLM to ALL research procedures (not just batch): enrich single author, enrich single book, AuthorBioPanel generate bio button, BookDetailPanel
+- [x] Wire two-level LLM to ALL research procedures (not just batch): enrich single author, enrich single book, AuthorBioPanel generate bio button, BookDetailPanel
 - [ ] Integrate nano-banana latest image generation model for avatar generation (replace Replicate tier 5 in waterfall)
 - [ ] Add Avatar Generation LLM card to Admin Console Settings: model selector for image gen (nano-banana)
 - [ ] Add avatarGenModel to AppSettings (default: nano-banana latest)
@@ -895,3 +895,63 @@
 ## Session March 21, 2026 — Golden Bokeh Swatch
 - [x] Add "Golden Bokeh" as named swatch in avatar color picker (warm golden bokeh style from Drive avatars)
 - [x] Update portrait generation prompt to reproduce golden bokeh background when selected
+
+## Session March 21, 2026 — Author Card Redesign
+- [x] Redesign FlowbiteAuthorCard: author name prominently displayed below avatar, always visible on card face
+- [x] Redesign AuthorCard (accordion/list view): author name clearly visible, consistent with card grid view
+- [x] Ensure author name is legible against card background in all three themes (Manus, Norfolk AI, Noir Dark)
+
+## Session March 21, 2026 — Comprehensive Audit & Cleanup
+
+### Codebase Audit
+- [ ] Identify and remove dead/unused imports across all .ts/.tsx files
+- [ ] Identify and remove unused functions, variables, and exports
+- [ ] Identify and remove duplicate logic across server routers and lib files
+- [ ] Audit component files for unused props, stale state, and dead JSX branches
+- [ ] Check for console.log/console.error statements that should be removed or replaced with structured logging
+- [ ] Verify all TypeScript strict-mode compliance (no any types, no ts-ignore)
+- [ ] Audit package.json for unused dependencies and remove them
+
+### Database Audit
+- [ ] Audit DB tables for orphaned rows (author_profiles/book_profiles with no matching Drive data)
+- [ ] Audit DB for duplicate entries across author_profiles and book_profiles
+- [ ] Verify all foreign key relationships and data integrity constraints
+- [ ] Check for stale/null columns that are never populated
+- [ ] Audit DB indexes for query performance (verify existing indexes are used)
+
+### Infrastructure & SDK Contracts
+- [ ] Audit all external API integrations (Apify, Replicate, Tavily, Perplexity, Google Books) for error handling consistency
+- [ ] Verify all SDK versions are current and not deprecated
+- [ ] Audit environment variable usage: ensure all referenced env vars are documented and set
+- [ ] Check for hardcoded URLs, API keys, or secrets in source code
+- [ ] Verify tRPC router input/output schemas are complete and consistent (Zod validation)
+- [ ] Audit S3 storage usage: check for orphaned files, verify key naming conventions
+
+### Skills Audit
+- [ ] List all skills in /home/ubuntu/skills/ and verify each has a valid SKILL.md
+- [ ] Verify skills reference current file paths and architecture (not stale)
+- [ ] Remove or update skills that reference deleted or renamed files
+- [ ] Ensure llm-recommendation-engine skill matches current implementation
+
+### Large Files Audit
+- [ ] Identify files > 500 lines and evaluate if they should be split
+- [ ] Identify static assets stored in the project directory that should be on CDN
+- [ ] Check libraryData.ts and audioData.ts for size optimization opportunities
+- [ ] Audit authorPhotos.ts and authorAliases.ts for stale entries
+- [ ] Verify no binary files or large media are committed to git
+
+## Session March 21, 2026 — Rename Author Photos → Author Avatars
+- [x] Rename server/lib/authorPhotos/ folder to server/lib/authorAvatars/
+- [x] Rename client/src/lib/authorPhotos.ts to client/src/lib/authorAvatars.ts
+- [x] Update all import paths referencing authorPhotos to authorAvatars
+- [x] Rename variables, functions, and types: authorPhoto → authorAvatar, photoUrl → avatarUrl, etc.
+- [x] Update all UI text, labels, and comments from "photo(s)" to "avatar(s)" in author context
+- [x] Update DB column names if any reference "photo" (check schema)
+- [x] Update claude.md, memory.md, and skills to reflect the rename
+
+## Session March 21, 2026 — Book Cover Enlargement
+- [x] Double book cover thumbnail sizes on all author card views
+- [x] Update AuthorCard (grid view) book cover dimensions 2x
+- [x] Update AuthorModal book list cover dimensions 2x (N/A - modal has no book cover list)
+- [x] Update any other card components showing book covers within author context
+- [x] Verify covers render correctly across all 3 themes

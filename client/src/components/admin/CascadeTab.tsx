@@ -75,13 +75,13 @@ export function CascadeTab({ aStats, bStats, scrapeStats }: CascadeTabProps) {
             {aStats ? (
               <div className="space-y-2">
                 <StatRow label="Total Profiles" value={aStats.total} />
-                <StatRow label="With Photo" value={aStats.withPhoto} total={aStats.total} />
-                <StatRow label="With S3 Photo" value={aStats.withS3Photo} total={aStats.total} />
+                <StatRow label="With Avatar" value={aStats.withPhoto} total={aStats.total} />
+                <StatRow label="With S3 Avatar" value={aStats.withS3Photo} total={aStats.total} />
                 <StatRow label="With Bio" value={aStats.withBio} total={aStats.total} />
                 <StatRow label="With Social Links" value={aStats.withSocialLinks} total={aStats.total} />
                 <StatRow label="Enriched" value={aStats.withEnrichedAt} total={aStats.total} />
                 <div className="pt-2 mt-2 border-t border-border/50">
-                  <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Photo Sources</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Avatar Sources</p>
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       { label: "Wikipedia", value: aStats.fromWikipedia },

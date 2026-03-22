@@ -216,7 +216,7 @@ describe("book name display", () => {
   });
 });
 
-// -- Author Photo Lookup Tests ---------------------------------
+// -- Author Avatar Lookup Tests ---------------------------------
 const SAMPLE_PHOTOS: Record<string, string> = {
   "Adam Grant": "https://cdn.example.com/Adam Grant_abc123.png",
   "Simon Sinek": "https://cdn.example.com/Simon Sinek_def456.png",
@@ -231,7 +231,7 @@ function getAuthorPhotoTest(name: string): string | undefined {
 }
 
 describe("getAuthorPhoto", () => {
-  it("returns exact match photo URL", () => {
+  it("returns exact match avatar URL", () => {
     expect(getAuthorPhotoTest("Adam Grant")).toBe("https://cdn.example.com/Adam Grant_abc123.png");
   });
 

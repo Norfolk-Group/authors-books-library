@@ -140,7 +140,7 @@ describe("scrapeAuthorPhoto - with mocked Apify client", () => {
     delete process.env.APIFY_API_TOKEN;
   });
 
-  it("returns null when no photo items found", async () => {
+  it("returns null when no avatar items found", async () => {
     const result = await scrapeAuthorPhoto("Adam Grant");
     expect(result).toBeNull();
   });

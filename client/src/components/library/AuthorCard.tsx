@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { BookSubfolderRow } from "@/components/library/LibraryPrimitives";
-import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
 import {
   CATEGORY_COLORS,
@@ -51,7 +51,7 @@ interface AuthorCardProps {
   isEnriched?: boolean;
   coverMap?: Map<string, string>;
   onBookClick?: (bookId: string, titleKey: string) => void;
-  dbPhotoMap?: Map<string, string>;
+  dbAvatarMap?: Map<string, string>;
 }
 
 function highlight(text: string, query: string) {
@@ -67,14 +67,14 @@ function highlight(text: string, query: string) {
   );
 }
 
-export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookClick, dbPhotoMap }: AuthorCardProps) {
+export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, onBookClick, dbAvatarMap }: AuthorCardProps) {
   const color = CATEGORY_COLORS[author.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = ICON_MAP[iconName] ?? Briefcase;
   const driveUrl = `https://drive.google.com/drive/folders/${author.id}?view=grid`;
   const displayName = canonicalName(author.name);
   const specialty = author.name.includes(" - ") ? author.name.slice(author.name.indexOf(" - ") + 3) : "";
-  const photoUrl = dbPhotoMap?.get(displayName.toLowerCase()) ?? getAuthorPhoto(displayName);
+  const avatarUrl = dbAvatarMap?.get(displayName.toLowerCase()) ?? getAuthorAvatar(displayName);
   const hasBooks = author.books && author.books.length > 0;
 
   return (
@@ -121,7 +121,7 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
 
           {/* Avatar + name */}
           <div className="flex flex-col items-center gap-2 mb-1">
-            <AvatarUpload authorName={displayName} currentPhotoUrl={photoUrl} size={120}>
+            <AvatarUpload authorName={displayName} currentPhotoUrl={avatarUrl} size={120}>
               {(url) =>
                 url ? (
                   <img
@@ -142,11 +142,11 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
               }
             </AvatarUpload>
             <div className="w-full text-center">
-              <h3 className="text-sm font-semibold leading-snug tracking-tight">
+              <h3 className="text-base font-bold leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]">
                 {highlight(displayName, query)}
               </h3>
               {specialty && (
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-0.5">
                   {highlight(specialty, query)}
                 </p>
               )}
@@ -197,16 +197,16 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
                             <img
                               src={coverUrl}
                               alt={titleKey}
-                              className="w-8 h-11 object-cover rounded shadow-sm ring-1 ring-border group-hover/cover:ring-2 transition-all duration-150"
+                              className="w-16 h-[88px] object-cover rounded shadow-sm ring-1 ring-border group-hover/cover:ring-2 transition-all duration-150"
                               style={{ "--tw-ring-color": color + "55" } as React.CSSProperties}
                               loading="lazy"
                             />
                           ) : (
                             <div
-                              className="w-8 h-11 rounded shadow-sm ring-1 ring-border flex items-center justify-center group-hover/cover:ring-2 transition-all duration-150"
+                              className="w-16 h-[88px] rounded shadow-sm ring-1 ring-border flex items-center justify-center group-hover/cover:ring-2 transition-all duration-150"
                               style={{ backgroundColor: color + "18", "--tw-ring-color": color + "55" } as React.CSSProperties}
                             >
-                              <BookOpen className="w-3.5 h-3.5" style={{ color, opacity: 0.7 }} />
+                              <BookOpen className="w-5 h-5" style={{ color, opacity: 0.7 }} />
                             </div>
                           )}
                         </button>

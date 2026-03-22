@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 import { AUTHORS, BOOKS } from "@/lib/libraryData";
 import { AUDIO_BOOKS } from "@/lib/audioData";
-import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
 import { CascadeTab } from "@/components/admin/CascadeTab";
 import { SettingsTab } from "@/components/admin/SettingsTab";
@@ -288,7 +288,7 @@ export default function Admin() {
   const [portraitState, setPortraitState] = useState<ActionState>(INITIAL_STATE);
   const [scrapeState, setScrapeState] = useState<ActionState>(INITIAL_STATE);
   const [mirrorCoversState, setMirrorCoversState] = useState<ActionState>(INITIAL_STATE);
-  const [mirrorPhotosState, setMirrorPhotosState] = useState<ActionState>(INITIAL_STATE);
+  const [mirrorAvatarsState, setMirrorAvatarsState] = useState<ActionState>(INITIAL_STATE);
 
   // -- Research Cascade stats --
   const authorStats = trpc.cascade.authorStats.useQuery(undefined, { staleTime: 60_000 });
@@ -305,7 +305,7 @@ export default function Admin() {
     portraitState,
     scrapeState,
     mirrorCoversState,
-    mirrorPhotosState,
+    mirrorAvatarsState,
   ].some((s) => s.status === "running");
 
   const recordAction = useCallback(
@@ -502,18 +502,18 @@ export default function Admin() {
         }),
       ),
     );
-    // Filter to only those without a photo
-    const photoMap = utils.authorProfiles.getPhotoMap.getData() ?? [];
-    const photoSet = new Set(
-      (photoMap as Array<{ authorName: string; photoUrl?: string | null }>)
-        .filter((r) => r.photoUrl)
+    // Filter to only those without an avatar
+    const avatarMap = utils.authorProfiles.getAvatarMap.getData() ?? [];
+    const avatarSet = new Set(
+      (avatarMap as Array<{ authorName: string; avatarUrl?: string | null }>)
+        .filter((r) => r.avatarUrl)
         .map((r) => r.authorName.toLowerCase()),
     );
     const missing = allNames.filter(
-      (n) => !photoSet.has(n.toLowerCase()) && !getAuthorPhoto(canonicalName(n)),
+      (n) => !avatarSet.has(n.toLowerCase()) && !getAuthorAvatar(canonicalName(n)),
     );
     if (missing.length === 0) {
-      toast.info("All authors already have photos!");
+      toast.info("All authors already have avatars!");
       return;
     }
     const total = missing.length;
@@ -553,7 +553,7 @@ export default function Admin() {
         message: `${done} generated, ${failed} failed`,
       }));
       toast.success(`Generated ${done} portraits${failed > 0 ? ` (${failed} failed)` : ""}.`);
-      void utils.authorProfiles.getPhotoMap.invalidate();
+      void utils.authorProfiles.getAvatarMap.invalidate();
       await recordAction("generate-portraits", "Generate Portraits", start, "success", done);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -649,40 +649,40 @@ export default function Admin() {
     }
   }, [mirrorCoversState.status, mirrorCoversMutation, recordAction]);
 
-  // -- 7. Mirror Photos to S3 --
+  // -- 7. Mirror Avatars to S3 --
   const handleMirrorPhotos = useCallback(async () => {
-    if (mirrorPhotosState.status === "running") return;
-    setMirrorPhotosState({ ...INITIAL_STATE, status: "running", message: "Mirroring photos..." });
+    if (mirrorAvatarsState.status === "running") return;
+    setMirrorAvatarsState({ ...INITIAL_STATE, status: "running", message: "Mirroring avatars..." });
     const start = Date.now();
     let totalMirrored = 0;
     try {
       for (let round = 0; round < 20; round++) {
         const result = await mirrorPhotosMutation.mutateAsync({ batchSize: 10 });
         totalMirrored += result.mirrored;
-        setMirrorPhotosState((s) => ({
+        setMirrorAvatarsState((s) => ({
           ...s,
           done: totalMirrored,
-          message: `${totalMirrored} photos mirrored...`,
+          message: `${totalMirrored} avatars mirrored...`,
         }));
         if (result.mirrored === 0) break;
       }
-      setMirrorPhotosState({
+      setMirrorAvatarsState({
         status: "done",
         progress: 100,
-        message: `${totalMirrored} photos mirrored to S3`,
+        message: `${totalMirrored} avatars mirrored to S3`,
         done: totalMirrored,
         total: totalMirrored,
         failed: 0,
       });
-      toast.success(`Mirrored ${totalMirrored} photos to S3.`);
-      await recordAction("mirror-photos", "Mirror Photos to S3", start, "success", totalMirrored);
+      toast.success(`Mirrored ${totalMirrored} avatars to S3.`);
+      await recordAction("mirror-avatars", "Mirror Avatars to S3", start, "success", totalMirrored);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      setMirrorPhotosState((s) => ({ ...s, status: "error", message: msg }));
-      toast.error("Mirror photos failed: " + msg);
-      await recordAction("mirror-photos", "Mirror Photos to S3", start, `error: ${msg}`, totalMirrored);
+      setMirrorAvatarsState((s) => ({ ...s, status: "error", message: msg }));
+      toast.error("Mirror avatars failed: " + msg);
+      await recordAction("mirror-avatars", "Mirror Avatars to S3", start, `error: ${msg}`, totalMirrored);
     }
-  }, [mirrorPhotosState.status, mirrorPhotosMutation, recordAction]);
+  }, [mirrorAvatarsState.status, mirrorPhotosMutation, recordAction]);
 
   // -- Stats for Research Cascade --
   const aStats = authorStats.data;
@@ -787,14 +787,14 @@ export default function Admin() {
           <TabsContent value="media" className="space-y-3">
             <ActionCard
               title="Generate Missing Portraits"
-              description="Use AI (Replicate Flux) to generate headshots for authors who don't have a photo."
+              description="Use AI (Replicate Flux) to generate headshots for authors who don't have an avatar."
               icon={Camera}
               actionKey="generate-portraits"
               state={portraitState}
               lastRun={getLastRun("generate-portraits")}
               destructive
               confirmTitle="Generate AI portraits?"
-              confirmDescription="This will generate AI portraits for all authors missing a photo. Each portrait takes 5-15 seconds. This may take a while for many authors."
+              confirmDescription="This will generate AI portraits for all authors missing an avatar. Each portrait takes 5-15 seconds. This may take a while for many authors."
               onRun={handleGeneratePortraits}
               buttonLabel="Generate"
               disabled={anyRunning}
@@ -825,12 +825,12 @@ export default function Admin() {
               disabled={anyRunning}
             />
             <ActionCard
-              title="Mirror Photos to S3"
-              description="Copy external author photo URLs to the S3 CDN for stable hosting."
+              title="Mirror Avatars to S3"
+              description="Copy external author avatar URLs to the S3 CDN for stable hosting."
               icon={Upload}
-              actionKey="mirror-photos"
-              state={mirrorPhotosState}
-              lastRun={getLastRun("mirror-photos")}
+              actionKey="mirror-avatars"
+              state={mirrorAvatarsState}
+              lastRun={getLastRun("mirror-avatars")}
               onRun={handleMirrorPhotos}
               buttonLabel="Mirror"
               disabled={anyRunning}

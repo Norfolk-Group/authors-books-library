@@ -257,7 +257,7 @@ export const apifyRouter = router({
 
   /**
    * Scrape Wikipedia for a real author headshot.
-   * Persists photoUrl to the author_profiles table.
+   * Persists avatarUrl to the author_profiles table.
    */
   scrapeAuthorPhoto: publicProcedure
     .input(
@@ -268,7 +268,7 @@ export const apifyRouter = router({
     .mutation(async ({ input }) => {
       const result = await scrapeAuthorPhoto(input.authorName);
       if (!result) {
-        return { success: false as const, message: "No photo found on Wikipedia" };
+        return { success: false as const, message: "No avatar found on Wikipedia" };
       }
 
       // Persist to DB - upsert into author_profiles
@@ -285,16 +285,16 @@ export const apifyRouter = router({
           await db
             .update(authorProfiles)
             .set({
-              photoUrl: result.photoUrl,
-              photoSourceUrl: result.sourceUrl,
+              avatarUrl: result.avatarUrl,
+              avatarSourceUrl: result.sourceUrl,
               enrichedAt: now,
             })
             .where(eq(authorProfiles.authorName, input.authorName));
         } else {
           await db.insert(authorProfiles).values({
             authorName: input.authorName,
-            photoUrl: result.photoUrl,
-            photoSourceUrl: result.sourceUrl,
+            avatarUrl: result.avatarUrl,
+            avatarSourceUrl: result.sourceUrl,
             enrichedAt: now,
           });
         }
@@ -302,7 +302,7 @@ export const apifyRouter = router({
 
       return {
         success: true as const,
-        photoUrl: result.photoUrl,
+        avatarUrl: result.avatarUrl,
         sourceUrl: result.sourceUrl,
         sourceName: result.sourceName,
       };

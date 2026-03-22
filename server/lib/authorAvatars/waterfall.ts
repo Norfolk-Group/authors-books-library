@@ -1,5 +1,5 @@
 /**
- * Author Photo Waterfall Orchestrator
+ * Author Avatar Waterfall Orchestrator
  *
  * Priority order (Opus-designed):
  *   Tier 1: Wikipedia REST API (free, ~200ms)
@@ -49,17 +49,20 @@ const CANONICAL_MAP: Record<string, string> = {
 };
 
 // -- Result type ---------------------------------------------------------------
-export interface AuthorPhotoWaterfallResult {
+export interface AuthorAvatarWaterfallResult {
   originalName: string;
   primaryName: string;
-  photoUrl: string | null;
-  s3PhotoUrl: string | null;
+  avatarUrl: string | null;
+  s3AvatarUrl: string | null;
   source: "wikipedia" | "tavily" | "apify" | "ai-generated" | "skipped" | "failed";
   isAiGenerated: boolean;
   tier: number;
   processingTimeMs: number;
   error?: string;
 }
+
+/** @deprecated Use AuthorAvatarWaterfallResult */
+export type AuthorPhotoWaterfallResult = AuthorAvatarWaterfallResult;
 
 export interface WaterfallOptions {
   /** Skip Gemini validation (faster, less accurate) */
@@ -68,10 +71,10 @@ export interface WaterfallOptions {
   maxTier?: number;
   /** Don't write to DB or S3 */
   dryRun?: boolean;
-  /** If true and existingS3PhotoUrl is set, skip processing entirely */
+  /** If true and existingS3AvatarUrl is set, skip processing entirely */
   skipAlreadyEnriched?: boolean;
-  /** Existing s3PhotoUrl from DB — used with skipAlreadyEnriched */
-  existingS3PhotoUrl?: string | null;
+  /** Existing s3AvatarUrl from DB — used with skipAlreadyEnriched */
+  existingS3AvatarUrl?: string | null;
   /** Per-tier timeout overrides in ms */
   tierTimeouts?: Partial<Record<1 | 2 | 3 | 5, number>>;
 }
@@ -85,7 +88,7 @@ const DEFAULT_TIER_TIMEOUTS: Record<1 | 2 | 3 | 5, number> = {
 };
 
 // -- Upload helper -------------------------------------------------------------
-async function uploadPhotoToS3(
+async function uploadAvatarToS3(
   imageUrl: string,
   authorName: string,
   isAiGenerated: boolean
@@ -98,7 +101,7 @@ async function uploadPhotoToS3(
     const ext = contentType.includes("webp") ? "webp" : contentType.includes("png") ? "png" : "jpg";
     const sanitized = authorName.toLowerCase().replace(/[^a-z0-9]/g, "-");
     const prefix = isAiGenerated ? "ai-" : "";
-    const key = `author-photos/${prefix}${sanitized}-${Date.now()}.${ext}`;
+    const key = `author-avatars/${prefix}${sanitized}-${Date.now()}.${ext}`;
     const { url } = await storagePut(key, buffer, contentType);
     return url;
   } catch (err) {
@@ -124,30 +127,30 @@ async function tryValidate(
 }
 
 // -- Main waterfall ------------------------------------------------------------
-export async function processAuthorPhotoWaterfall(
+export async function processAuthorAvatarWaterfall(
   originalAuthorName: string,
   options: WaterfallOptions = {}
-): Promise<AuthorPhotoWaterfallResult> {
+): Promise<AuthorAvatarWaterfallResult> {
   const start = Date.now();
   const {
     skipValidation = false,
     maxTier = 5,
     dryRun = false,
     skipAlreadyEnriched = false,
-    existingS3PhotoUrl = null,
+    existingS3AvatarUrl = null,
     tierTimeouts = {},
   } = options;
 
   const timeouts = { ...DEFAULT_TIER_TIMEOUTS, ...tierTimeouts };
 
   // Skip if already enriched
-  if (skipAlreadyEnriched && existingS3PhotoUrl) {
+  if (skipAlreadyEnriched && existingS3AvatarUrl) {
     console.log(`[Avatar] Skipping ${originalAuthorName} — already enriched`);
     return {
       originalName: originalAuthorName,
       primaryName: originalAuthorName,
-      photoUrl: existingS3PhotoUrl,
-      s3PhotoUrl: existingS3PhotoUrl,
+      avatarUrl: existingS3AvatarUrl,
+      s3AvatarUrl: existingS3AvatarUrl,
       source: "skipped",
       isAiGenerated: false,
       tier: 0,
@@ -160,8 +163,8 @@ export async function processAuthorPhotoWaterfall(
     return {
       originalName: originalAuthorName,
       primaryName: originalAuthorName,
-      photoUrl: null,
-      s3PhotoUrl: null,
+      avatarUrl: null,
+      s3AvatarUrl: null,
       source: "skipped",
       isAiGenerated: false,
       tier: 0,
@@ -169,22 +172,22 @@ export async function processAuthorPhotoWaterfall(
     };
   }
 
-  // Resolve primary name (multi-author → first author, canonical dedup)
+  // Resolve primary name (multi-author -> first author, canonical dedup)
   let primaryName =
     MULTI_AUTHOR_MAP[originalAuthorName] ||
     CANONICAL_MAP[originalAuthorName] ||
     originalAuthorName;
 
-  let photoUrl: string | null = null;
-  let source: AuthorPhotoWaterfallResult["source"] = "failed";
+  let avatarUrl: string | null = null;
+  let source: AuthorAvatarWaterfallResult["source"] = "failed";
   let isAiGenerated = false;
   let tier = 0;
 
   // -- TIER 1: Wikipedia ------------------------------------------------------
-  if (!photoUrl && maxTier >= 1) {
+  if (!avatarUrl && maxTier >= 1) {
     tier = 1;
     const t1Start = Date.now();
-    console.log(`[Avatar T1] Wikipedia → ${primaryName}`);
+    console.log(`[Avatar T1] Wikipedia -> ${primaryName}`);
     try {
       const url = await Promise.race([
         fetchWikipediaPhoto(primaryName),
@@ -193,9 +196,9 @@ export async function processAuthorPhotoWaterfall(
         ),
       ]);
       if (url && (await tryValidate(url, primaryName, skipValidation, 0.6))) {
-        photoUrl = url;
+        avatarUrl = url;
         source = "wikipedia";
-        console.log(`[Avatar T1] ✓ Wikipedia found for ${primaryName} (${Date.now() - t1Start}ms)`);
+        console.log(`[Avatar T1] Wikipedia found for ${primaryName} (${Date.now() - t1Start}ms)`);
       }
     } catch (e) {
       console.warn(`[Avatar T1] Error for ${primaryName}: ${e}`);
@@ -203,10 +206,10 @@ export async function processAuthorPhotoWaterfall(
   }
 
   // -- TIER 2: Tavily ---------------------------------------------------------
-  if (!photoUrl && maxTier >= 2) {
+  if (!avatarUrl && maxTier >= 2) {
     tier = 2;
     const t2Start = Date.now();
-    console.log(`[Avatar T2] Tavily → ${primaryName}`);
+    console.log(`[Avatar T2] Tavily -> ${primaryName}`);
     try {
       const url = await Promise.race([
         fetchTavilyAuthorPhoto(primaryName),
@@ -215,9 +218,9 @@ export async function processAuthorPhotoWaterfall(
         ),
       ]);
       if (url && (await tryValidate(url, primaryName, skipValidation, 0.5))) {
-        photoUrl = url;
+        avatarUrl = url;
         source = "tavily";
-        console.log(`[Avatar T2] ✓ Tavily found for ${primaryName} (${Date.now() - t2Start}ms)`);
+        console.log(`[Avatar T2] Tavily found for ${primaryName} (${Date.now() - t2Start}ms)`);
       }
     } catch (e) {
       console.warn(`[Avatar T2] Error for ${primaryName}: ${e}`);
@@ -225,10 +228,10 @@ export async function processAuthorPhotoWaterfall(
   }
 
   // -- TIER 3: Apify ----------------------------------------------------------
-  if (!photoUrl && maxTier >= 3) {
+  if (!avatarUrl && maxTier >= 3) {
     tier = 3;
     const t3Start = Date.now();
-    console.log(`[Avatar T3] Apify → ${primaryName}`);
+    console.log(`[Avatar T3] Apify -> ${primaryName}`);
     try {
       const result = await Promise.race([
         scrapeAuthorPhoto(primaryName),
@@ -236,10 +239,10 @@ export async function processAuthorPhotoWaterfall(
           setTimeout(() => reject(new Error(`T3 timeout after ${timeouts[3]}ms`)), timeouts[3])
         ),
       ]);
-      if (result?.photoUrl && (await tryValidate(result.photoUrl, primaryName, skipValidation, 0.4))) {
-        photoUrl = result.photoUrl;
+      if (result?.avatarUrl && (await tryValidate(result.avatarUrl, primaryName, skipValidation, 0.4))) {
+        avatarUrl = result.avatarUrl;
         source = "apify";
-        console.log(`[Avatar T3] ✓ Apify found for ${primaryName} (${Date.now() - t3Start}ms)`);
+        console.log(`[Avatar T3] Apify found for ${primaryName} (${Date.now() - t3Start}ms)`);
       }
     } catch (e) {
       console.warn(`[Avatar T3] Error for ${primaryName}: ${e}`);
@@ -247,10 +250,10 @@ export async function processAuthorPhotoWaterfall(
   }
 
   // -- TIER 5: Replicate AI ---------------------------------------------------
-  if (!photoUrl && maxTier >= 5) {
+  if (!avatarUrl && maxTier >= 5) {
     tier = 5;
     const t5Start = Date.now();
-    console.log(`[Avatar T5] Replicate AI → ${primaryName}`);
+    console.log(`[Avatar T5] Replicate AI -> ${primaryName}`);
     try {
       const generated = await Promise.race([
         generateAIPortrait(primaryName),
@@ -259,10 +262,10 @@ export async function processAuthorPhotoWaterfall(
         ),
       ]);
       if (generated) {
-        photoUrl = generated.url;
+        avatarUrl = generated.url;
         source = "ai-generated";
         isAiGenerated = true;
-        console.log(`[Avatar T5] ✓ AI portrait generated for ${primaryName} (${Date.now() - t5Start}ms)`);
+        console.log(`[Avatar T5] AI portrait generated for ${primaryName} (${Date.now() - t5Start}ms)`);
       }
     } catch (e) {
       console.warn(`[Avatar T5] Error for ${primaryName}: ${e}`);
@@ -270,16 +273,16 @@ export async function processAuthorPhotoWaterfall(
   }
 
   // -- Upload to S3 -----------------------------------------------------------
-  let s3PhotoUrl: string | null = null;
-  if (photoUrl && !dryRun) {
-    s3PhotoUrl = await uploadPhotoToS3(photoUrl, primaryName, isAiGenerated);
+  let s3AvatarUrl: string | null = null;
+  if (avatarUrl && !dryRun) {
+    s3AvatarUrl = await uploadAvatarToS3(avatarUrl, primaryName, isAiGenerated);
   }
 
   return {
     originalName: originalAuthorName,
     primaryName,
-    photoUrl: s3PhotoUrl ?? photoUrl,
-    s3PhotoUrl,
+    avatarUrl: s3AvatarUrl ?? avatarUrl,
+    s3AvatarUrl,
     source,
     isAiGenerated,
     tier,

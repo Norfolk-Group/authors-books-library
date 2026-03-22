@@ -1,7 +1,7 @@
 /**
  * mirrorToS3 - Image Mirror Service
  *
- * Fetches an external image URL (e.g. Amazon cover, Wikipedia photo) and
+ * Fetches an external image URL (e.g. Amazon cover, Wikipedia avatar) and
  * uploads it to Manus S3, returning a stable CDN URL.
  *
  * Why: Third-party image hosts (Amazon, Wikipedia, publisher CDNs) can:

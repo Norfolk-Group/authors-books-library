@@ -24,6 +24,7 @@ import {
 import { BOOKS, CATEGORY_COLORS, CATEGORY_ICONS, CONTENT_TYPE_ICONS, CONTENT_TYPE_COLORS } from "@/lib/libraryData";
 import { ICON_MAP, CT_ICON_MAP } from "./libraryConstants";
 import { fireConfetti } from "@/hooks/useConfetti";
+import { useAppSettings } from "@/contexts/AppSettingsContext";
 
 type BookRecord = typeof BOOKS[number];
 
@@ -42,6 +43,7 @@ export function BookDetailPanel({ book, onClose }: BookDetailPanelProps) {
   const bookAuthor = dashIdx !== -1 ? book.name.slice(dashIdx + 3) : "";
   const totalItems = Object.values(book.contentTypes).reduce((s, n) => s + n, 0);
 
+  const { settings } = useAppSettings();
   const { data: profile, isLoading, refetch: refetchProfile } = trpc.bookProfiles.get.useQuery({ bookTitle: displayTitle });
   const enrichMutation = trpc.bookProfiles.enrich.useMutation({
     onError: (e) => toast.error("Failed to load book info: " + e.message),
@@ -51,7 +53,12 @@ export function BookDetailPanel({ book, onClose }: BookDetailPanelProps) {
   useEffect(() => {
     if (!isLoading && !profile && !hasTriggered.current) {
       hasTriggered.current = true;
-      enrichMutation.mutate({ bookTitle: displayTitle, authorName: bookAuthor });
+      enrichMutation.mutate({
+        bookTitle: displayTitle,
+        authorName: bookAuthor,
+        model: settings.primaryModel || undefined,
+        secondaryModel: settings.secondaryLlmEnabled && settings.secondaryModel ? settings.secondaryModel : undefined,
+      });
     }
   }, [isLoading, profile]);
 

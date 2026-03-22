@@ -167,7 +167,7 @@ export const AUTHOR_PHOTOS: Record<string, string> = {
   "Steven Bartlett": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Steven Bartlett_c8b4d1fe.png",
 };
 
-export function getAuthorPhoto(name: string): string | undefined {
+export function getAuthorAvatar(name: string): string | undefined {
   // Try exact match first
   if (AUTHOR_PHOTOS[name]) return AUTHOR_PHOTOS[name];
   // Try case-insensitive match

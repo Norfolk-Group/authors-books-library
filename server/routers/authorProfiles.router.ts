@@ -5,7 +5,7 @@ import { storagePut } from "../storage";
 import { getDb } from "../db";
 import { authorProfiles } from "../../drizzle/schema";
 import { publicProcedure, router } from "../_core/trpc";
-import { processAuthorPhotoWaterfall } from "../lib/authorPhotos/waterfall";
+import { processAuthorAvatarWaterfall } from "../lib/authorAvatars/waterfall";
 
 import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
 
@@ -112,10 +112,10 @@ export const authorProfilesRouter = router({
   }),
 
   /**
-   * Mirror author photos to Manus S3 for stable CDN serving.
-   * Processes authors that have a photoUrl but no s3PhotoUrl yet.
+   * Mirror author avatars to Manus S3 for stable CDN serving.
+   * Processes authors that have an avatarUrl but no s3AvatarUrl yet.
    */
-  mirrorPhotos: publicProcedure
+  mirrorAvatars: publicProcedure
     .input(z.object({ batchSize: z.number().min(1).max(20).default(10) }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -123,26 +123,26 @@ export const authorProfilesRouter = router({
       const pending = await db
         .select({
           id: authorProfiles.id,
-          photoUrl: authorProfiles.photoUrl,
-          s3PhotoKey: authorProfiles.s3PhotoKey,
+          avatarUrl: authorProfiles.avatarUrl,
+          s3AvatarKey: authorProfiles.s3AvatarKey,
         })
         .from(authorProfiles)
-        .where(or(isNull(authorProfiles.s3PhotoUrl), eq(authorProfiles.s3PhotoUrl, "")))
+        .where(or(isNull(authorProfiles.s3AvatarUrl), eq(authorProfiles.s3AvatarUrl, "")))
         .limit(input.batchSize);
-      const toMirror = pending.filter((a) => a.photoUrl?.startsWith("http"));
+      const toMirror = pending.filter((a) => a.avatarUrl?.startsWith("http"));
       if (toMirror.length === 0) {
         return { mirrored: 0, skipped: pending.length, failed: 0, total: pending.length };
       }
       const results = await mirrorBatchToS3(
-        toMirror.map((a) => ({ id: a.id, sourceUrl: a.photoUrl!, existingKey: a.s3PhotoKey })),
-        "author-photos"
+        toMirror.map((a) => ({ id: a.id, sourceUrl: a.avatarUrl!, existingKey: a.s3AvatarKey })),
+        "author-avatars"
       );
       let mirrored = 0;
       let failed = 0;
       for (const result of results) {
         if (result.url && result.key) {
           await db.update(authorProfiles)
-            .set({ s3PhotoUrl: result.url, s3PhotoKey: result.key })
+            .set({ s3AvatarUrl: result.url, s3AvatarKey: result.key })
             .where(eq(authorProfiles.id, result.id));
           mirrored++;
         } else {
@@ -152,15 +152,65 @@ export const authorProfilesRouter = router({
       return { mirrored, skipped: pending.length - toMirror.length, failed, total: pending.length };
     }),
 
-  /** Count how many author photos still need S3 mirroring */
+  /** @deprecated Use mirrorAvatars */
+  mirrorPhotos: publicProcedure
+    .input(z.object({ batchSize: z.number().min(1).max(20).default(10) }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const pending = await db
+        .select({
+          id: authorProfiles.id,
+          avatarUrl: authorProfiles.avatarUrl,
+          s3AvatarKey: authorProfiles.s3AvatarKey,
+        })
+        .from(authorProfiles)
+        .where(or(isNull(authorProfiles.s3AvatarUrl), eq(authorProfiles.s3AvatarUrl, "")))
+        .limit(input.batchSize);
+      const toMirror = pending.filter((a) => a.avatarUrl?.startsWith("http"));
+      if (toMirror.length === 0) {
+        return { mirrored: 0, skipped: pending.length, failed: 0, total: pending.length };
+      }
+      const results = await mirrorBatchToS3(
+        toMirror.map((a) => ({ id: a.id, sourceUrl: a.avatarUrl!, existingKey: a.s3AvatarKey })),
+        "author-avatars"
+      );
+      let mirrored = 0;
+      let failed = 0;
+      for (const result of results) {
+        if (result.url && result.key) {
+          await db.update(authorProfiles)
+            .set({ s3AvatarUrl: result.url, s3AvatarKey: result.key })
+            .where(eq(authorProfiles.id, result.id));
+          mirrored++;
+        } else {
+          failed++;
+        }
+      }
+      return { mirrored, skipped: pending.length - toMirror.length, failed, total: pending.length };
+    }),
+
+  /** Count how many author avatars still need S3 mirroring */
+  getMirrorAvatarStats: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return { withAvatar: 0, mirrored: 0, pending: 0 };
+    const all = await db
+      .select({ avatarUrl: authorProfiles.avatarUrl, s3AvatarUrl: authorProfiles.s3AvatarUrl })
+      .from(authorProfiles);
+    const withAvatar = all.filter((a) => a.avatarUrl?.startsWith("http")).length;
+    const mirrored = all.filter((a) => a.s3AvatarUrl?.startsWith("http")).length;
+    return { withAvatar, mirrored, pending: withAvatar - mirrored };
+  }),
+
+  /** @deprecated Use getMirrorAvatarStats */
   getMirrorPhotoStats: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) return { withPhoto: 0, mirrored: 0, pending: 0 };
     const all = await db
-      .select({ photoUrl: authorProfiles.photoUrl, s3PhotoUrl: authorProfiles.s3PhotoUrl })
+      .select({ avatarUrl: authorProfiles.avatarUrl, s3AvatarUrl: authorProfiles.s3AvatarUrl })
       .from(authorProfiles);
-    const withPhoto = all.filter((a) => a.photoUrl?.startsWith("http")).length;
-    const mirrored = all.filter((a) => a.s3PhotoUrl?.startsWith("http")).length;
+    const withPhoto = all.filter((a) => a.avatarUrl?.startsWith("http")).length;
+    const mirrored = all.filter((a) => a.s3AvatarUrl?.startsWith("http")).length;
     return { withPhoto, mirrored, pending: withPhoto - mirrored };
   }),
 
@@ -212,33 +262,33 @@ export const authorProfilesRouter = router({
         }
       }
 
-      // Auto-mirror newly enriched author photos to S3 in the background (fire-and-forget)
+      // Auto-mirror newly enriched author avatars to S3 in the background (fire-and-forget)
       const succeededCount = results.filter((r) => r.success).length;
       if (succeededCount > 0) {
         void (async () => {
           try {
             const pending = await db
-              .select({ id: authorProfiles.id, photoUrl: authorProfiles.photoUrl, s3PhotoKey: authorProfiles.s3PhotoKey })
+              .select({ id: authorProfiles.id, avatarUrl: authorProfiles.avatarUrl, s3AvatarKey: authorProfiles.s3AvatarKey })
               .from(authorProfiles)
-              .where(or(isNull(authorProfiles.s3PhotoUrl), eq(authorProfiles.s3PhotoUrl, "")))
+              .where(or(isNull(authorProfiles.s3AvatarUrl), eq(authorProfiles.s3AvatarUrl, "")))
               .limit(succeededCount);
-            const toMirror = pending.filter((a) => a.photoUrl?.startsWith("http"));
+            const toMirror = pending.filter((a) => a.avatarUrl?.startsWith("http"));
             if (toMirror.length > 0) {
               const mirrorResults = await mirrorBatchToS3(
-                toMirror.map((a) => ({ id: a.id, sourceUrl: a.photoUrl!, existingKey: a.s3PhotoKey })),
-                "author-photos"
+                toMirror.map((a) => ({ id: a.id, sourceUrl: a.avatarUrl!, existingKey: a.s3AvatarKey })),
+                "author-avatars"
               );
               for (const r of mirrorResults) {
                 if (r.url && r.key) {
                   await db.update(authorProfiles)
-                    .set({ s3PhotoUrl: r.url, s3PhotoKey: r.key })
+                    .set({ s3AvatarUrl: r.url, s3AvatarKey: r.key })
                     .where(eq(authorProfiles.id, r.id));
                 }
               }
-              console.log(`[auto-mirror] Mirrored ${mirrorResults.filter((r) => r.url).length} author photos to S3`);
+              console.log(`[auto-mirror] Mirrored ${mirrorResults.filter((r) => r.url).length} author avatars to S3`);
             }
           } catch (err) {
-            console.error("[auto-mirror] Author photo mirror failed:", err);
+            console.error("[auto-mirror] Author avatar mirror failed:", err);
           }
         })();
       }
@@ -253,19 +303,19 @@ export const authorProfilesRouter = router({
   // -- Avatar generation stats -------------------------------------------------
   getAvatarStats: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { total: 0, hasPhoto: 0, inS3: 0, missing: 0 };
+    if (!db) return { total: 0, hasAvatar: 0, inS3: 0, missing: 0 };
     const all = await db
       .select({
         authorName: authorProfiles.authorName,
-        photoUrl: authorProfiles.photoUrl,
-        s3PhotoUrl: authorProfiles.s3PhotoUrl,
+        avatarUrl: authorProfiles.avatarUrl,
+        s3AvatarUrl: authorProfiles.s3AvatarUrl,
       })
       .from(authorProfiles);
     return {
       total: all.length,
-      hasPhoto: all.filter((a: { photoUrl: string | null }) => a.photoUrl).length,
-      inS3: all.filter((a: { s3PhotoUrl: string | null }) => a.s3PhotoUrl).length,
-      missing: all.filter((a: { photoUrl: string | null }) => !a.photoUrl).length,
+      hasAvatar: all.filter((a: { avatarUrl: string | null }) => a.avatarUrl).length,
+      inS3: all.filter((a: { s3AvatarUrl: string | null }) => a.s3AvatarUrl).length,
+      missing: all.filter((a: { avatarUrl: string | null }) => !a.avatarUrl).length,
     };
   }),
 
@@ -287,21 +337,21 @@ export const authorProfilesRouter = router({
         source: string;
         isAiGenerated: boolean;
         tier: number;
-        photoUrl: string | null;
+        avatarUrl: string | null;
         error?: string;
       }> = [];
 
       for (const originalName of input.names) {
         try {
-          const result = await processAuthorPhotoWaterfall(originalName, {
+          const result = await processAuthorAvatarWaterfall(originalName, {
             skipValidation: input.skipValidation,
             maxTier: input.maxTier,
           });
 
           // Save to DB
-          if (result.photoUrl || result.s3PhotoUrl) {
-            // Map waterfall source to photoSource enum
-            const photoSourceVal =
+          if (result.avatarUrl || result.s3AvatarUrl) {
+            // Map waterfall source to avatarSource enum
+            const avatarSourceVal =
               result.source === "wikipedia" ? "wikipedia" as const
               : result.source === "tavily" ? "tavily" as const
               : result.source === "apify" ? "apify" as const
@@ -310,10 +360,10 @@ export const authorProfilesRouter = router({
             await db
               .update(authorProfiles)
               .set({
-                photoUrl: result.s3PhotoUrl ?? result.photoUrl,
-                s3PhotoUrl: result.s3PhotoUrl,
+                avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
+                s3AvatarUrl: result.s3AvatarUrl,
                 enrichedAt: new Date(),
-                ...(photoSourceVal ? { photoSource: photoSourceVal } : {}),
+                ...(avatarSourceVal ? { avatarSource: avatarSourceVal } : {}),
               })
               .where(eq(authorProfiles.authorName, originalName));
           }
@@ -324,7 +374,7 @@ export const authorProfilesRouter = router({
             source: result.source,
             isAiGenerated: result.isAiGenerated,
             tier: result.tier,
-            photoUrl: result.s3PhotoUrl ?? result.photoUrl,
+            avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
           });
         } catch (err) {
           results.push({
@@ -333,7 +383,7 @@ export const authorProfilesRouter = router({
             source: "failed",
             isAiGenerated: false,
             tier: 0,
-            photoUrl: null,
+            avatarUrl: null,
             error: String(err),
           });
         }
@@ -347,7 +397,7 @@ export const authorProfilesRouter = router({
       };
     }),
 
-  // -- Generate avatars for ALL authors missing photos -------------------------
+  // -- Generate avatars for ALL authors missing avatars -------------------------
   generateAllMissingAvatars: publicProcedure
     .input(
       z.object({
@@ -360,11 +410,11 @@ export const authorProfilesRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
 
-      // Fetch all authors that have no photo
+      // Fetch all authors that have no avatar
       const missing = await db
         .select({ authorName: authorProfiles.authorName })
         .from(authorProfiles)
-        .where(sql`${authorProfiles.photoUrl} IS NULL OR ${authorProfiles.photoUrl} = ''`);
+        .where(sql`${authorProfiles.avatarUrl} IS NULL OR ${authorProfiles.avatarUrl} = ''`);
 
       if (missing.length === 0) {
         return { total: 0, succeeded: 0, aiGenerated: 0, results: [] };
@@ -377,7 +427,7 @@ export const authorProfilesRouter = router({
         source: string;
         isAiGenerated: boolean;
         tier: number;
-        photoUrl: string | null;
+        avatarUrl: string | null;
         error?: string;
       }> = [];
 
@@ -386,12 +436,12 @@ export const authorProfilesRouter = router({
         const batch = names.slice(i, i + input.batchSize);
         for (const originalName of batch) {
           try {
-            const result = await processAuthorPhotoWaterfall(originalName, {
+            const result = await processAuthorAvatarWaterfall(originalName, {
               skipValidation: input.skipValidation,
               maxTier: input.maxTier,
             });
-            if (result.photoUrl || result.s3PhotoUrl) {
-              const photoSourceVal2 =
+            if (result.avatarUrl || result.s3AvatarUrl) {
+              const avatarSourceVal2 =
                 result.source === "wikipedia" ? "wikipedia" as const
                 : result.source === "tavily" ? "tavily" as const
                 : result.source === "apify" ? "apify" as const
@@ -400,10 +450,10 @@ export const authorProfilesRouter = router({
               await db
                 .update(authorProfiles)
                 .set({
-                  photoUrl: result.s3PhotoUrl ?? result.photoUrl,
-                  s3PhotoUrl: result.s3PhotoUrl,
+                  avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
+                  s3AvatarUrl: result.s3AvatarUrl,
                   enrichedAt: new Date(),
-                  ...(photoSourceVal2 ? { photoSource: photoSourceVal2 } : {}),
+                  ...(avatarSourceVal2 ? { avatarSource: avatarSourceVal2 } : {}),
                 })
                 .where(eq(authorProfiles.authorName, originalName));
             }
@@ -413,7 +463,7 @@ export const authorProfilesRouter = router({
               source: result.source,
               isAiGenerated: result.isAiGenerated,
               tier: result.tier,
-              photoUrl: result.s3PhotoUrl ?? result.photoUrl,
+              avatarUrl: result.s3AvatarUrl ?? result.avatarUrl,
             });
           } catch (err) {
             results.push({
@@ -422,7 +472,7 @@ export const authorProfilesRouter = router({
               source: "failed",
               isAiGenerated: false,
               tier: 0,
-              photoUrl: null,
+              avatarUrl: null,
               error: String(err),
             });
           }
@@ -445,7 +495,7 @@ export const authorProfilesRouter = router({
       if (!db) throw new Error("Database unavailable");
 
       // Generate via Replicate flux-schnell
-      const { generateAIPortrait } = await import("../lib/authorPhotos/replicateGeneration");
+      const { generateAIPortrait } = await import("../lib/authorAvatars/replicateGeneration");
       const generated = await generateAIPortrait(input.authorName, input.bgColor);
       if (!generated) throw new Error("Portrait generation failed - please try again");
 
@@ -457,20 +507,20 @@ export const authorProfilesRouter = router({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
-      const key = `author-photos/ai-${slug}-${Date.now()}.webp`;
+      const key = `author-avatars/ai-${slug}-${Date.now()}.webp`;
       const { url } = await storagePut(key, buffer, "image/webp");
 
       // Persist to DB - AI-generated portrait
       await db
         .update(authorProfiles)
-        .set({ photoUrl: url, s3PhotoUrl: url, s3PhotoKey: key, enrichedAt: new Date(), photoSource: "ai" })
+        .set({ avatarUrl: url, s3AvatarUrl: url, s3AvatarKey: key, enrichedAt: new Date(), avatarSource: "ai" })
         .where(eq(authorProfiles.authorName, input.authorName));
 
       return { url, key, isAiGenerated: true };
     }),
 
-  // -- Upload a custom author photo (base64) -----------------------------
-  uploadPhoto: publicProcedure
+  // -- Upload a custom author avatar (base64) -----------------------------
+  uploadAvatar: publicProcedure
     .input(
       z.object({
         authorName: z.string().min(1),
@@ -484,7 +534,7 @@ export const authorProfilesRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
 
-      // Decode base64 → Buffer
+      // Decode base64 -> Buffer
       const buffer = Buffer.from(input.imageBase64, "base64");
 
       // Enforce 5 MB size limit
@@ -498,7 +548,7 @@ export const authorProfilesRouter = router({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
-      const key = `author-photos/custom/${slug}-${Date.now()}.${ext}`;
+      const key = `author-avatars/custom/${slug}-${Date.now()}.${ext}`;
 
       // Upload to S3
       const { url } = await storagePut(key, buffer, input.mimeType);
@@ -507,9 +557,9 @@ export const authorProfilesRouter = router({
       await db
         .update(authorProfiles)
         .set({
-          photoUrl: url,
-          s3PhotoUrl: url,
-          s3PhotoKey: key,
+          avatarUrl: url,
+          s3AvatarUrl: url,
+          s3AvatarKey: key,
           enrichedAt: new Date(),
         })
         .where(eq(authorProfiles.authorName, input.authorName));
@@ -518,25 +568,25 @@ export const authorProfilesRouter = router({
     }),
 
   /**
-   * Returns a lightweight map of authorName → best photo URL for all profiles
-   * that have a photo stored in S3. Used by the frontend as a DB-first fallback
-   * over the static AUTHOR_PHOTOS map, so AI-generated portraits appear on cards.
+   * Returns a lightweight map of authorName -> best avatar URL for all profiles
+   * that have an avatar stored in S3. Used by the frontend as a DB-first fallback
+   * over the static AUTHOR_AVATARS map, so AI-generated portraits appear on cards.
    */
-  getPhotoMap: publicProcedure.query(async () => {
+  getAvatarMap: publicProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     const rows = await db
       .select({
         authorName: authorProfiles.authorName,
-        s3PhotoUrl: authorProfiles.s3PhotoUrl,
-        photoUrl: authorProfiles.photoUrl,
+        s3AvatarUrl: authorProfiles.s3AvatarUrl,
+        avatarUrl: authorProfiles.avatarUrl,
       })
       .from(authorProfiles);
     return rows
-      .filter((r) => r.s3PhotoUrl || r.photoUrl)
+      .filter((r) => r.s3AvatarUrl || r.avatarUrl)
       .map((r) => ({
         authorName: r.authorName,
-        photoUrl: r.s3PhotoUrl ?? r.photoUrl ?? "",
+        avatarUrl: r.s3AvatarUrl ?? r.avatarUrl ?? "",
       }));
   }),
 });

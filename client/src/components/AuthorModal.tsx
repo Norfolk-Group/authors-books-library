@@ -7,12 +7,17 @@
  * THEME RULES: zero hardcoded colours - CSS tokens only.
  */
 import { useRef, useEffect, useState } from "react";
-import { Modal, ModalBody, ModalHeader } from "flowbite-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Briefcase, Brain, Handshake, Users2, Zap, MessageCircle,
   Cpu, TrendingUp, BookMarked, Globe, Twitter, Linkedin, RefreshCw, Search, X,
 } from "lucide-react";
-import { getAuthorPhoto } from "@/lib/authorPhotos";
+import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
 import { CATEGORY_ICONS, type AuthorEntry } from "@/lib/libraryData";
 import { trpc } from "@/lib/trpc";
@@ -37,13 +42,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
 export interface AuthorModalProps {
   /** The author whose bio to show. Pass null to hide the modal. */
   author: AuthorEntry | null;
-  /** Override photo URL (e.g. from DB map). Falls back to static map. */
-  photoUrl?: string | null;
+  /** Override avatar URL (e.g. from DB map). Falls back to static map. */
+  avatarUrl?: string | null;
   onClose: () => void;
 }
 
 // -- Component -----------------------------------------------------------------
-export function AuthorModal({ author, photoUrl: photoOverride, onClose }: AuthorModalProps) {
+export function AuthorModal({ author, avatarUrl: photoOverride, onClose }: AuthorModalProps) {
   const open = !!author;
   const displayName = author ? canonicalName(author.name) : "";
   const specialty = author?.name.includes(" - ")
@@ -53,15 +58,15 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
   const iconName = CATEGORY_ICONS[category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
 
-  // Photo: scraped live > override > static map
+  // Avatar: scraped live > override > static map
   const [scrapedPhotoUrl, setScrapedPhotoUrl] = useState<string | null>(null);
   const resolvedPhoto =
     scrapedPhotoUrl ??
     photoOverride ??
-    (displayName ? getAuthorPhoto(displayName) : null) ??
+    (displayName ? getAuthorAvatar(displayName) : null) ??
     null;
 
-  // Reset scraped photo when author changes
+  // Reset scraped avatar when author changes
   useEffect(() => {
     if (!open) setScrapedPhotoUrl(null);
   }, [open, displayName]);
@@ -87,30 +92,31 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
     }
   }, [open, jsonBio, isLoading, profile, displayName]);
 
-  // Find Real Photo - Apify Wikipedia scrape
+  // Find Real Avatar - Apify Wikipedia scrape
   const scrapePhotoMutation = trpc.apify.scrapeAuthorPhoto.useMutation({
     onSuccess: (data) => {
-      if (data.success && data.photoUrl) {
-        setScrapedPhotoUrl(data.photoUrl);
-        toast.success(`Photo found from ${data.sourceName ?? "Wikipedia"}`);
+      if (data.success && data.avatarUrl) {
+        setScrapedPhotoUrl(data.avatarUrl);
+        toast.success(`Avatar found from ${data.sourceName ?? "Wikipedia"}`);
       } else {
-        toast.error("No photo found on Wikipedia for this author.");
+        toast.error("No avatar found on Wikipedia for this author.");
       }
     },
-    onError: (e) => toast.error("Photo search failed: " + e.message),
+    onError: (e) => toast.error("Avatar search failed: " + e.message),
   });
 
   const bioText = jsonBio ?? profile?.bio ?? null;
   const isBioLoading = !jsonBio && (isLoading || enrichMutation.isPending);
 
   return (
-    <Modal show={open} size="md" onClose={onClose} popup>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md bg-card text-card-foreground border-border">
       {author && (
         <>
-          <ModalHeader>
-            <span className="text-sm font-semibold text-card-foreground">{displayName}</span>
-          </ModalHeader>
-          <ModalBody>
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold text-card-foreground">{displayName}</DialogTitle>
+          </DialogHeader>
+          <div>
             <div className="flex flex-col gap-4 text-sm">
               {/* Prominent close button - top right */}
               <button
@@ -121,7 +127,7 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
               >
                 <X className="w-5 h-5 text-foreground" />
               </button>
-              {/* Author header: photo + category + specialty */}
+              {/* Author header: avatar + category + specialty */}
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0">
                   {resolvedPhoto ? (
@@ -136,13 +142,13 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
                       {displayName.charAt(0)}
                     </div>
                   )}
-                  {/* Find Real Photo button - small overlay on avatar */}
+                  {/* Find Real Avatar button - small overlay on avatar */}
                   <button
                     onClick={() => scrapePhotoMutation.mutate({ authorName: displayName })}
                     disabled={scrapePhotoMutation.isPending}
-                    title="Find real photo from Wikipedia"
+                    title="Find real avatar from Wikipedia"
                     className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-card border border-border flex items-center justify-center shadow-sm hover:bg-muted transition-colors disabled:opacity-50"
-                    aria-label="Find real photo"
+                    aria-label="Find real avatar"
                   >
                     {scrapePhotoMutation.isPending ? (
                       <RefreshCw className="w-2.5 h-2.5 animate-spin text-muted-foreground" />
@@ -241,9 +247,10 @@ export function AuthorModal({ author, photoUrl: photoOverride, onClose }: Author
                 Close
               </button>
             </div>
-          </ModalBody>
+          </div>
         </>
       )}
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 }

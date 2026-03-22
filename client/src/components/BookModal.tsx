@@ -6,7 +6,12 @@
  *
  * THEME RULES: zero hardcoded colours - CSS tokens only.
  */
-import { Modal, ModalBody, ModalHeader } from "flowbite-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   BookOpen, FileText, AlignLeft, Book, File, Video, Image,
   Package, Scroll, Newspaper, Link, List, Folder, ExternalLink,
@@ -131,15 +136,16 @@ export function BookModal({ book, onClose }: BookModalProps) {
   const normalised = book ? normalizeContentTypes(book.contentTypes) : {};
 
   return (
-    <Modal show={!!book} size="md" onClose={onClose} popup>
+    <Dialog open={!!book} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md bg-card text-card-foreground border-border">
       {book && (
         <>
-          <ModalHeader>
-            <span className="text-sm font-semibold text-card-foreground capitalize">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold text-card-foreground capitalize">
               {book.titleKey}
-            </span>
-          </ModalHeader>
-          <ModalBody>
+            </DialogTitle>
+          </DialogHeader>
+          <div>
             <div className="flex flex-col gap-4 text-sm">
               {/* Prominent close button - top right */}
               <button
@@ -258,9 +264,10 @@ export function BookModal({ book, onClose }: BookModalProps) {
                 Close
               </button>
             </div>
-          </ModalBody>
+          </div>
         </>
       )}
-    </Modal>
+      </DialogContent>
+    </Dialog>
   );
 }

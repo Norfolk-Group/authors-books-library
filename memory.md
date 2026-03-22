@@ -15,13 +15,13 @@
 - Implemented mobile-responsive layout with collapsible sidebar.
 
 ### Enrichment Pipeline — Author Photos (Sessions 4–6)
-- Built 5-tier author photo waterfall in `server/lib/authorPhotos/waterfall.ts`:
+- Built 5-tier author avatar waterfall in `server/lib/authorAvatars/waterfall.ts`:
   1. Amazon author page scrape (Apify)
   2. Wikipedia API photo
   3. Tavily image search
   4. Gemini vision validation
   5. Replicate AI portrait generation (fallback)
-- Created `authorPhotos.ts` static map and `authorAliases.ts` for name normalisation.
+- Created `authorAvatars.ts` static map and `authorAliases.ts` for name normalisation.
 - Added `AvatarUpload` component with `AvatarCropModal` (react-image-crop, 256×256 JPEG output).
 - Stored uploaded avatars in Manus S3 CDN; saved URL to `author_profiles` DB table.
 
@@ -65,14 +65,14 @@
 ### Admin Console (Sessions 13–18)
 - Built `Admin.tsx` (1187 lines) with 3 tabs:
   - **Data Pipeline**: Batch enrich authors/books, regenerate library data, scrape covers.
-  - **Media**: Browse and manage author photos and book covers stored in S3.
+  - **Media**: Browse and manage author avatars and book covers stored in S3.
   - **Research Cascade**: Stats on enrichment sources (Wikipedia hits, Amazon hits, LLM fallbacks, etc.).
 - Added nightly cron job for cover scraping.
 - Added LLM model selector (13 Gemini models) in Preferences.
 
 ### Data & Infrastructure (Sessions 15–20)
 - Database schema: `author_profiles`, `book_profiles`, `users` tables in MySQL/TiDB.
-- All media (author photos, book covers) mirrored to Manus S3 CDN via `storagePut()`.
+- All media (author avatars, book covers) mirrored to Manus S3 CDN via `storagePut()`.
 - Google Drive as source of truth for book/author folder structure; DB/S3 for app-speed access.
 - 122 vitest tests across 9 test files.
 - GitHub repo: `ricardocidale/authors-books-library` (branch: `main`).
@@ -164,7 +164,7 @@ All 122 tests still passing. claude.md architecture overview updated with new fi
 
 ### One-Author-Per-Card Rule (Item 1)
 - **authorAliases.ts**: All combined-name entries (e.g. "Aaron Ross and Jason Lemkin") now resolve to the first author's canonical name. Added individual canonical entries for 14 co-authors: Jason Lemkin, Bill Carr, Anne Morriss, Bo Burlingham, Ruben Rabago, Ted McKenna, Brent Adamson, Nick Toman, Rick DeLisi, William Ury, Chip Heath, John David Mann, Kelly Leonard, Tom Yorton.
-- **authorPhotos.ts**: Removed all combined-name photo entries (group shots). Each primary co-author now has their own individual entry pointing to the same CDN URL. Secondary co-authors (Jason Lemkin, William Ury, Chip Heath, etc.) will use the DB waterfall for individual portraits.
+- **authorAvatars.ts**: Removed all combined-name photo entries (group shots). Each primary co-author now has their own individual entry pointing to the same CDN URL. Secondary co-authors (Jason Lemkin, William Ury, Chip Heath, etc.) will use the DB waterfall for individual portraits.
 - **DB author_profiles**: Added individual rows for 11 co-authors who had no DB row.
 - **DB book_profiles**: Split multi-author book rows — each co-author now has their own book_profiles row with the same cover/metadata.
 
@@ -214,7 +214,7 @@ All 122 tests still passing. claude.md architecture overview updated with new fi
 **One-Author-Per-Card Enforcement:**
 - Confirmed split logic in `filteredAuthors` (Home.tsx) correctly handles co-author names at render time
 - `canonicalName()` called in all card components before any photo/bio lookup
-- `authorAliases.ts` and `authorPhotos.ts` updated to map individual co-authors
+- `authorAliases.ts` and `authorAvatars.ts` updated to map individual co-authors
 
 **TypeScript Fixes:**
 - Fixed TS2554 in `SettingsTab.tsx` (listModels.useQuery now requires vendorId)
@@ -252,3 +252,35 @@ All 122 tests still passing. claude.md architecture overview updated with new fi
 - **waterfall.ts optimized**: per-tier timeouts, skipAlreadyEnriched option, structured timing logs
 - **claude.md updated**: LLM Configuration section, Performance Optimizations section, Last Updated date
 - **122 tests passing, 0 TypeScript errors**
+
+## Session March 21, 2026 — Rename authorPhotos → authorAvatars + Book Cover 2x + LLM Wiring
+
+### authorPhotos → authorAvatars Rename (Complete)
+- Renamed all TypeScript variables, function names, and types: authorPhoto → authorAvatar, photoUrl → avatarUrl, s3PhotoUrl → s3AvatarUrl, s3PhotoKey → s3AvatarKey, photoSource → avatarSource, photoSourceUrl → avatarSourceUrl
+- Updated server/apify.ts: AuthorPhotoResult.photoUrl → AuthorPhotoResult.avatarUrl
+- Updated server/lib/authorAvatars/waterfall.ts: result.photoUrl → result.avatarUrl
+- Updated server/routers/apify.router.ts: all result.photoUrl → result.avatarUrl
+- Updated drizzle/schema.ts: physical MySQL column names renamed from photoUrl/photoSourceUrl/s3PhotoUrl/s3PhotoKey/photoSource to avatarUrl/avatarSourceUrl/s3AvatarUrl/s3AvatarKey/avatarSource
+- Ran pnpm db:push — migration 0009_flat_wallflower.sql applied successfully (5 RENAME COLUMN statements)
+- Updated all UI text/labels: "photo" → "avatar" in Admin.tsx, Home.tsx sidebar footer
+- Updated claude.md and memory.md to reflect the rename
+
+### Book Cover Thumbnail 2x Enlargement
+- FlowbiteAuthorCard.tsx: cover strip h-11 w-8 → h-[88px] w-16 (2x)
+- AuthorAccordionRow.tsx: expanded panel covers h-10 w-7 → h-20 w-14 (2x)
+- library/AuthorCard.tsx: grid card covers w-8 h-11 → w-16 h-[88px] (2x)
+
+### AuthorAccordionRow Redesign
+- Author name upgraded from text-sm font-medium → text-base font-bold tracking-tight — now matches card grid view prominence
+- Specialty subtitle now shown below name in list/accordion view (was missing)
+- Legible against all three themes (Manus, Norfolk AI, Noir Dark) — uses text-card-foreground semantic token
+
+### Two-Level LLM Wiring (Complete)
+- AuthorBioPanel.tsx: auto-enrich now passes model: settings.primaryModel and secondaryModel: settings.secondaryModel (when secondaryLlmEnabled)
+- BookDetailPanel.tsx: same two-level LLM wiring applied to book auto-enrich
+- Previously only batch enrichment (Admin cascade) used the two-level model; now all single-item enrichment paths use it too
+
+### Norfolk AI Theme Verification
+- Confirmed AppSettingsContext applies theme-norfolk-ai class to html element
+- All CSS variables in .theme-norfolk-ai block use official NCG palette: Navy #112548, Yellow #FDB817, Teal #0091AE, Orange #F4795B, Green #21B9A3, Light Gray #F5F8FA
+- Theme verified as correct — no changes needed

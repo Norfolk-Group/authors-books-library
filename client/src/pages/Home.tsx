@@ -12,7 +12,6 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { CoverLightbox } from "@/components/CoverLightbox";
-import CardGridSparkles from "@/components/CardGridSparkles";
 import { BackToTop } from "@/components/BackToTop";
 import authorBios from "@/lib/authorBios.json";
 import {
@@ -164,23 +163,23 @@ export default function Home() {
     return map;
   }, []);
 
-  const authorPhotoMapQuery = trpc.authorProfiles.getPhotoMap.useQuery(undefined, { staleTime: 60_000 });
-  const dbPhotoMap = useMemo(() => {
+  const authorAvatarMapQuery = trpc.authorProfiles.getAvatarMap.useQuery(undefined, { staleTime: 60_000 });
+  const dbAvatarMap = useMemo(() => {
     const map = new Map<string, string>();
     const splitSep = /\s+(?:and|&)\s+/i;
-    for (const r of authorPhotoMapQuery.data ?? []) {
-      if (!r.photoUrl) continue;
-      map.set(r.authorName.toLowerCase(), r.photoUrl);
+    for (const r of authorAvatarMapQuery.data ?? []) {
+      if (!r.avatarUrl) continue;
+      map.set(r.authorName.toLowerCase(), r.avatarUrl);
       const parts = r.authorName.split(splitSep).map((p: string) => p.trim()).filter(Boolean);
       if (parts.length > 1) {
         for (const part of parts) {
           const key = part.toLowerCase();
-          if (!map.has(key)) map.set(key, r.photoUrl);
+          if (!map.has(key)) map.set(key, r.avatarUrl);
         }
       }
     }
     return map;
-  }, [authorPhotoMapQuery.data]);
+  }, [authorAvatarMapQuery.data]);
 
   // --- Callbacks ---
   const toggleCategory = useCallback((cat: string) => {
@@ -427,16 +426,16 @@ export default function Home() {
 
           <SidebarFooter className="px-4 py-3 border-t border-sidebar-border group-data-[collapsible=icon]:hidden">
             <p className="text-[10px] text-muted-foreground mb-1">{`Data as of ${STATS.lastUpdated}`}</p>
-            {authorPhotoMapQuery.data && (() => {
-              const withPhoto = (authorPhotoMapQuery.data as { photoUrl?: string | null }[]).filter(r => r.photoUrl).length;
+            {authorAvatarMapQuery.data && (() => {
+              const withAvatar = (authorAvatarMapQuery.data as { avatarUrl?: string | null }[]).filter(r => r.avatarUrl).length;
               const total = STATS.totalAuthors;
-              const pct = Math.round((withPhoto / total) * 100);
+              const pct = Math.round((withAvatar / total) * 100);
               return (
-                <div className="flex items-center gap-1.5 mb-2" title={`${withPhoto} of ${total} authors have headshots`}>
+                <div className="flex items-center gap-1.5 mb-2" title={`${withAvatar} of ${total} authors have avatars`}>
                   <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full bg-chart-5" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-[10px] text-muted-foreground flex-shrink-0">{withPhoto}/{total} photos</span>
+                  <span className="text-[10px] text-muted-foreground flex-shrink-0">{withAvatar}/{total} avatars</span>
                 </div>
               );
             })()}
@@ -582,7 +581,6 @@ export default function Home() {
 
             {/* Card grid */}
             <div className="relative">
-              <CardGridSparkles />
               {activeTab === "authors" ? (
                 filteredAuthors.length === 0 ? (
                   <EmptyState query={query} />
@@ -597,7 +595,7 @@ export default function Home() {
                           isEnriched={enrichedSet.has(a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name)}
                           bio={(authorBios as Record<string, string>)[canonicalName(a.name)] ?? dbBioMap.get(canonicalName(a.name).toLowerCase()) ?? null}
                           coverMap={bookCoverMap}
-                          dbPhotoMap={dbPhotoMap}
+                          dbAvatarMap={dbAvatarMap}
                           bookInfoMap={bookInfoMap}
                           onBookClick={(bookId, titleKey) => {
                             const found = booksByIdMap.get(bookId) ?? BOOKS.find((b) => b.name.split(" - ")[0].trim().toLowerCase() === titleKey.toLowerCase());
