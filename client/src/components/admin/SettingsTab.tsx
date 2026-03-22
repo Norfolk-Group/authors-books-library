@@ -51,7 +51,10 @@ const THEMES = [
 
 // ── Norfolk AI palette swatches for avatar backgrounds ────────────────────────
 // Seeded with darker Teal #0091AE as default
+// Special photographic styles use a sentinel key (not a hex) to trigger
+// a full photographic background description in the portrait prompt.
 const AVATAR_BG_SWATCHES = [
+  { hex: "bokeh-gold", label: "Golden Bokeh", preview: "#C4A46B", isSpecial: true }, // Drive avatar style
   { hex: "#0091AE", label: "Teal (Norfolk AI)" },       // Teal 1 — seed/default
   { hex: "#00A9B8", label: "Teal 2 (Norfolk AI)" },     // Teal 2
   { hex: "#112548", label: "Navy (Norfolk AI)" },        // Blue/Navy
@@ -219,50 +222,91 @@ export function SettingsTab({ settings, updateSettings }: SettingsTabProps) {
           <div className="space-y-3">
             {/* Norfolk AI palette swatches */}
             <div className="flex flex-wrap gap-2">
-              {AVATAR_BG_SWATCHES.map(({ hex, label }) => (
-                <button
-                  key={hex}
-                  title={label}
-                  onClick={() => updateSettings({ avatarBgColor: hex })}
-                  className={`w-9 h-9 rounded-md border-2 transition-all relative ${
-                    settings.avatarBgColor === hex
-                      ? "border-primary scale-110 shadow-md"
-                      : "border-border hover:border-primary/60"
-                  }`}
-                  style={{ backgroundColor: hex }}
-                >
-                  {settings.avatarBgColor === hex && (
-                    <CheckCircle2
-                      className="w-3.5 h-3.5 absolute top-0.5 right-0.5"
-                      style={{ color: needsLightText(hex) ? "#fff" : "#111" }}
+              {AVATAR_BG_SWATCHES.map((swatch) => {
+                const displayColor = (swatch as { preview?: string }).preview ?? swatch.hex;
+                const isSelected = settings.avatarBgColor === swatch.hex;
+                return (
+                  <button
+                    key={swatch.hex}
+                    title={swatch.label}
+                    onClick={() => updateSettings({ avatarBgColor: swatch.hex })}
+                    className={`w-9 h-9 rounded-md border-2 transition-all relative overflow-hidden ${
+                      isSelected
+                        ? "border-primary scale-110 shadow-md"
+                        : "border-border hover:border-primary/60"
+                    }`}
+                    style={{ backgroundColor: displayColor }}
+                  >
+                    {/* Golden Bokeh: show a subtle gradient overlay to hint at bokeh style */}
+                    {(swatch as { isSpecial?: boolean }).isSpecial && (
+                      <div
+                        className="absolute inset-0 opacity-60"
+                        style={{
+                          background:
+                            "radial-gradient(circle at 30% 30%, #FDEFC5 0%, transparent 40%), " +
+                            "radial-gradient(circle at 70% 60%, #FDB817 0%, transparent 35%), " +
+                            "radial-gradient(circle at 50% 80%, #C4A46B 0%, transparent 50%)",
+                        }}
+                      />
+                    )}
+                    {isSelected && (
+                      <CheckCircle2
+                        className="w-3.5 h-3.5 absolute top-0.5 right-0.5 z-10"
+                        style={{ color: needsLightText(displayColor) ? "#fff" : "#111" }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Custom color picker — disabled for special styles */}
+            {(() => {
+              const currentSwatch = AVATAR_BG_SWATCHES.find((s) => s.hex === settings.avatarBgColor);
+              const isSpecial = (currentSwatch as { isSpecial?: boolean } | undefined)?.isSpecial;
+              const previewColor =
+                (currentSwatch as { preview?: string } | undefined)?.preview ?? settings.avatarBgColor;
+              return (
+                <div className="flex items-center gap-3">
+                  <label className="text-xs text-muted-foreground">Custom:</label>
+                  {isSpecial ? (
+                    <div className="w-10 h-8 rounded border border-border flex items-center justify-center text-[10px] text-muted-foreground italic">
+                      n/a
+                    </div>
+                  ) : (
+                    <input
+                      type="color"
+                      value={settings.avatarBgColor}
+                      onChange={(e) => updateSettings({ avatarBgColor: e.target.value })}
+                      className="w-10 h-8 rounded border border-border cursor-pointer bg-transparent"
                     />
                   )}
-                </button>
-              ))}
-            </div>
-            {/* Custom color picker */}
-            <div className="flex items-center gap-3">
-              <label className="text-xs text-muted-foreground">Custom:</label>
-              <input
-                type="color"
-                value={settings.avatarBgColor}
-                onChange={(e) => updateSettings({ avatarBgColor: e.target.value })}
-                className="w-10 h-8 rounded border border-border cursor-pointer bg-transparent"
-              />
-              <span className="text-xs font-mono text-muted-foreground uppercase">
-                {settings.avatarBgColor}
-              </span>
-              {/* Live preview swatch */}
-              <div
-                className="w-9 h-9 rounded-md border border-border flex items-center justify-center text-[10px] font-bold"
-                style={{
-                  backgroundColor: settings.avatarBgColor,
-                  color: needsLightText(settings.avatarBgColor) ? "#fff" : "#111",
-                }}
-              >
-                Aa
-              </div>
-            </div>
+                  <span className="text-xs font-mono text-muted-foreground uppercase">
+                    {isSpecial ? currentSwatch?.label : settings.avatarBgColor}
+                  </span>
+                  {/* Live preview swatch */}
+                  <div
+                    className="w-9 h-9 rounded-md border border-border flex items-center justify-center text-[10px] font-bold overflow-hidden relative"
+                    style={{
+                      backgroundColor: previewColor,
+                      color: needsLightText(previewColor) ? "#fff" : "#111",
+                    }}
+                  >
+                    {isSpecial && (
+                      <div
+                        className="absolute inset-0 opacity-60"
+                        style={{
+                          background:
+                            "radial-gradient(circle at 30% 30%, #FDEFC5 0%, transparent 40%), " +
+                            "radial-gradient(circle at 70% 60%, #FDB817 0%, transparent 35%), " +
+                            "radial-gradient(circle at 50% 80%, #C4A46B 0%, transparent 50%)",
+                        }}
+                      />
+                    )}
+                    <span className="relative z-10">Aa</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </CardContent>
       </Card>

@@ -891,3 +891,7 @@
 - [ ] Update Admin.tsx batch portrait generation to pass avatarGenModel
 - [ ] Update AuthorBioPanel generate portrait button to pass avatarGenModel
 - [ ] Update claude.md and memory.md with changes
+
+## Session March 21, 2026 — Golden Bokeh Swatch
+- [x] Add "Golden Bokeh" as named swatch in avatar color picker (warm golden bokeh style from Drive avatars)
+- [x] Update portrait generation prompt to reproduce golden bokeh background when selected

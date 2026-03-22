@@ -47,6 +47,18 @@ function describeColor(hex: string): string {
   return "neutral dark";
 }
 
+/**
+ * Special photographic background styles identified by a sentinel key (not a hex).
+ * When the bgColor matches one of these keys, the full description replaces the
+ * default "solid {color} background" phrase in the prompt.
+ */
+const SPECIAL_BACKGROUNDS: Record<string, string> = {
+  "bokeh-gold":
+    "warm golden bokeh background with soft amber and cream circular light orbs, " +
+    "professional studio portrait photography with warm backlighting, " +
+    "shallow depth of field, elegant and inviting atmosphere",
+};
+
 function buildPrompt(authorName: string, bgColor?: string): string {
   const firstName = authorName.split(" ")[0].toLowerCase();
   const gender = FEMALE_NAMES.has(firstName)
@@ -54,9 +66,14 @@ function buildPrompt(authorName: string, bgColor?: string): string {
     : MALE_NAMES.has(firstName)
     ? "man"
     : "person";
-  const bgDesc = bgColor ? describeColor(bgColor) : "neutral gray";
 
-  return `Professional corporate headshot photograph of a professional ${gender} business author and thought leader. Warm approachable expression with a slight confident smile. Smart business attire suitable for a book author photo. Clean studio lighting, soft shadows, solid ${bgDesc} background. High-end corporate portrait photography. Sharp focus on face, shallow depth of field. 85mm portrait lens, f/2.8, professional studio lighting, photorealistic. The portrait looks like it could appear on the back cover of a bestselling business book. No text, watermarks, or logos.`;
+  // Check for special photographic background styles first
+  const specialBg = bgColor ? SPECIAL_BACKGROUNDS[bgColor.toLowerCase()] : undefined;
+  const bgPhrase = specialBg
+    ? specialBg + " background"
+    : `solid ${bgColor ? describeColor(bgColor) : "neutral gray"} background`;
+
+  return `Professional corporate headshot photograph of a professional ${gender} business author and thought leader. Warm approachable expression with a slight confident smile. Smart business attire suitable for a book author photo. Clean studio lighting, soft shadows, ${bgPhrase}. High-end corporate portrait photography. Sharp focus on face, shallow depth of field. 85mm portrait lens, f/2.8, professional studio lighting, photorealistic. The portrait looks like it could appear on the back cover of a bestselling business book. No text, watermarks, or logos.`;
 }
 
 export interface GeneratedPortrait {
