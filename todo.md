@@ -1662,11 +1662,11 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] #24 Add live per-item progress stream (tRPC subscription or SSE) — DEFER: HIGH risk
 
 ### Block 4: Infrastructure & Scheduling (11 items)
-- [ ] #25 Create enrichmentSchedules table (migration)
-- [ ] #26 Create enrichmentJobs table (migration)
-- [ ] #27 Create server/lib/staleness.ts (calculateStalenessScore, getStalenessIndicator)
-- [ ] #28 Create FreshnessDot component
-- [ ] #29 Wire FreshnessDot into FlowbiteAuthorCard and BookCard
+- [x] #25 Create enrichmentSchedules table (migration)
+- [x] #26 Create enrichmentJobs table (migration)
+- [x] #27 Create server/lib/staleness.ts (computeFreshness, buildAuthorDimensions, buildBookDimensions, computeOverallFreshness)
+- [x] #28 Create FreshnessDot component (green/amber/red dot with tooltip per-dimension breakdown)
+- [x] #29 Wire FreshnessDot into FlowbiteAuthorCard and BookCard (via getAllFreshness tRPC queries + freshnessDimensions maps)
 - [ ] #30 Create SchedulingTab in Admin Console
 - [ ] #31 Create FavoritesTab in Admin Console (favorites router already exists)
 - [ ] #33 Create TED talk scraper (server/enrichment/ted.ts)

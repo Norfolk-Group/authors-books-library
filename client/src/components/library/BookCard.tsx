@@ -33,6 +33,7 @@ import { ICON_MAP, getBookEnrichmentLevel } from "./libraryConstants";
 import { ContentTypeBadge } from "./LibraryPrimitives";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
+import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "@/components/library/FreshnessDot";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { Link } from "wouter";
 
@@ -73,6 +74,8 @@ interface BookCardProps {
   isFavorite?: boolean;
   /** Whether this book has a full double-pass LLM rich summary available */
   hasRichSummary?: boolean;
+  /** Freshness dimensions for this book (from getAllFreshness query) */
+  freshnessDimensions?: FreshnessDimension[];
 }
 
 export function BookCard({
@@ -94,6 +97,7 @@ export function BookCard({
   summary,
   isFavorite,
   hasRichSummary,
+  freshnessDimensions,
 }: BookCardProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
@@ -180,6 +184,13 @@ export function BookCard({
               initialIsFavorite={isFavorite ?? false}
               size="sm"
             />
+            {freshnessDimensions && (
+              <FreshnessDot
+                overall={computeOverallFreshness(freshnessDimensions)}
+                dimensions={freshnessDimensions}
+                size="sm"
+              />
+            )}
             <a
               href={driveUrl}
               target="_blank"

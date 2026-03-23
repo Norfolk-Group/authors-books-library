@@ -56,6 +56,38 @@ export const bookProfilesRouter = router({
     return rows.map((r: { bookTitle: string }) => r.bookTitle);
   }),
 
+  /**
+   * Return freshness timestamps for all books.
+   * Used by FreshnessDot to show how stale each book's enrichment data is.
+   */
+  getAllFreshness: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        bookTitle: bookProfiles.bookTitle,
+        enrichedAt: bookProfiles.enrichedAt,
+        lastSummaryEnrichedAt: bookProfiles.lastSummaryEnrichedAt,
+        richSummaryJson: bookProfiles.richSummaryJson,
+      })
+      .from(bookProfiles);
+    return rows.map((r) => {
+      let richSummaryEnrichedAt: string | null = null;
+      if (r.richSummaryJson) {
+        try {
+          const parsed = JSON.parse(r.richSummaryJson);
+          richSummaryEnrichedAt = parsed.enrichedAt || null;
+        } catch { /* ignore */ }
+      }
+      return {
+        bookTitle: r.bookTitle,
+        enrichedAt: r.enrichedAt,
+        lastSummaryEnrichedAt: r.lastSummaryEnrichedAt,
+        richSummaryEnrichedAt,
+      };
+    });
+  }),
+
   /** Enrich a single book - auto-skips if enriched within 30 days */
   enrich: adminProcedure
     .input(z.object({ bookTitle: z.string(), authorName: z.string().optional(), model: z.string().optional(), secondaryModel: z.string().optional() }))

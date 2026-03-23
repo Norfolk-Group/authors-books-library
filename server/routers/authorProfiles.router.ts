@@ -116,6 +116,44 @@ export const authorProfilesRouter = router({
       .from(authorProfiles)
       .where(isNotNull(authorProfiles.richBioJson));
     return rows.map((r) => r.authorName);
+   }),
+
+  /**
+   * Return freshness timestamps for all authors.
+   * Used by FreshnessDot to show how stale each author's enrichment data is.
+   * Returns only the timestamp columns needed for staleness calculation — lightweight.
+   */
+  getAllFreshness: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        authorName: authorProfiles.authorName,
+        enrichedAt: authorProfiles.enrichedAt,
+        socialStatsEnrichedAt: authorProfiles.socialStatsEnrichedAt,
+        lastLinksEnrichedAt: authorProfiles.lastLinksEnrichedAt,
+        authorDescriptionCachedAt: authorProfiles.authorDescriptionCachedAt,
+        richBioJson: authorProfiles.richBioJson,
+      })
+      .from(authorProfiles);
+    return rows.map((r) => {
+      // Extract richBio enrichedAt from the JSON blob
+      let richBioEnrichedAt: string | null = null;
+      if (r.richBioJson) {
+        try {
+          const parsed = JSON.parse(r.richBioJson);
+          richBioEnrichedAt = parsed.enrichedAt || null;
+        } catch { /* ignore */ }
+      }
+      return {
+        authorName: r.authorName,
+        enrichedAt: r.enrichedAt,
+        socialStatsEnrichedAt: r.socialStatsEnrichedAt,
+        lastLinksEnrichedAt: r.lastLinksEnrichedAt,
+        authorDescriptionCachedAt: r.authorDescriptionCachedAt,
+        richBioEnrichedAt,
+      };
+    });
   }),
 
   /**

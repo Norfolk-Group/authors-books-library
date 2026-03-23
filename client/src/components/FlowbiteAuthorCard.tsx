@@ -40,6 +40,7 @@ import { AuthorModal } from "@/components/AuthorModal";
 import { AuthorCardActions } from "@/components/AuthorCardActions";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { PlatformPills } from "@/components/library/PlatformPills";
+import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "@/components/library/FreshnessDot";
 import {
   ICON_MAP,
 } from "@/components/library/libraryConstants";
@@ -98,6 +99,8 @@ export interface FlowbiteAuthorCardProps {
   isFavorite?: boolean;
   /** When true, renders a teal "Rich Bio" badge indicating double-pass LLM bio is available */
   hasRichBio?: boolean;
+  /** Freshness dimensions for this author (from getAllFreshness query) */
+  freshnessDimensions?: FreshnessDimension[];
   /** Platform presence links for this author (from getAllPlatformLinks query) */
   platformLinks?: {
     websiteUrl?: string | null;
@@ -134,6 +137,7 @@ export function FlowbiteAuthorCard({
   isFavorite,
   platformLinks,
   hasRichBio,
+  freshnessDimensions,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -247,7 +251,13 @@ export function FlowbiteAuthorCard({
                   initialIsFavorite={isFavorite ?? false}
                   size="sm"
                 />
-                {isEnriched ? (
+                {freshnessDimensions ? (
+                  <FreshnessDot
+                    overall={computeOverallFreshness(freshnessDimensions)}
+                    dimensions={freshnessDimensions}
+                    size="sm"
+                  />
+                ) : isEnriched ? (
                   <span
                     title="Bio ready"
                     className="w-2 h-2 rounded-full bg-chart-5 flex-shrink-0"

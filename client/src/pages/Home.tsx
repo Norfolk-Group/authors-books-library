@@ -64,6 +64,7 @@ import { AudioCard } from "@/components/library/AudioCard";
 import { AuthorBioPanel } from "@/components/library/AuthorBioPanel";
 import { BookDetailPanel } from "@/components/library/BookDetailPanel";
 import { StatCard, EmptyState } from "@/components/library/LibraryPrimitives";
+import { buildAuthorDimensions, buildBookDimensions, type FreshnessDimension } from "@/components/library/FreshnessDot";
 import { ICON_MAP, FORMAT_CLASSES, FORMAT_LABEL, STATS, getBookEnrichmentLevel, type BookEnrichmentLevel } from "@/components/library/libraryConstants";
 
 import {
@@ -245,6 +246,26 @@ export default function Home() {
     () => new Set((richBioNamesQuery.data ?? []).map((n) => n.toLowerCase())),
     [richBioNamesQuery.data]
   );
+
+  // Freshness data for author and book cards
+  const authorFreshnessQuery = trpc.authorProfiles.getAllFreshness.useQuery(undefined, { staleTime: 5 * 60_000 });
+  const bookFreshnessQuery = trpc.bookProfiles.getAllFreshness.useQuery(undefined, { staleTime: 5 * 60_000 });
+
+  const authorFreshnessMap = useMemo(() => {
+    const map = new Map<string, FreshnessDimension[]>();
+    for (const row of authorFreshnessQuery.data ?? []) {
+      map.set(row.authorName.toLowerCase(), buildAuthorDimensions(row));
+    }
+    return map;
+  }, [authorFreshnessQuery.data]);
+
+  const bookFreshnessMap = useMemo(() => {
+    const map = new Map<string, FreshnessDimension[]>();
+    for (const row of bookFreshnessQuery.data ?? []) {
+      map.set(row.bookTitle.replace(/[?!.,;:]+$/, "").toLowerCase(), buildBookDimensions(row));
+    }
+    return map;
+  }, [bookFreshnessQuery.data]);
 
   const bookInfoMap = useMemo(() => {
     const map = new Map<string, { summary?: string; rating?: string; ratingCount?: number; publishedDate?: string; keyThemes?: string }>();
@@ -885,6 +906,7 @@ export default function Home() {
                           isFavorite={(authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()] ?? false}
                           hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
                           platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
+                          freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
                           cardRef={(el) => {
                             const key = canonicalName(a.name).toLowerCase();
                             if (el) authorCardRefs.current.set(key, el);
@@ -931,6 +953,7 @@ export default function Home() {
                             summary={bookInfoMap.get(tk)?.summary}
                             isFavorite={(bookFavoritesQuery.data ?? {})[tk] ?? false}
                             hasRichSummary={richSummarySet.has(titleKey)}
+                            freshnessDimensions={bookFreshnessMap.get(tk)}
                           />
                         </div>
                       );
@@ -988,6 +1011,7 @@ export default function Home() {
                                   isFavorite={true}
                                   hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
                                   platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
+                                  freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
                                 />
                               </div>
                             ))}  
@@ -1033,6 +1057,7 @@ export default function Home() {
                                     summary={bookInfoMap.get(tk)?.summary}
                                     isFavorite={true}
                                     hasRichSummary={richSummarySet.has(titleKey)}
+                                    freshnessDimensions={bookFreshnessMap.get(tk)}
                                   />
                                 </div>
                               );
