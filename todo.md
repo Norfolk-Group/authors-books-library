@@ -1509,3 +1509,18 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] PlatformPills: new icons for Wikipedia, YC, CNBC, CNN, Bloomberg, Yahoo Finance
 - [x] Admin Console: Enrich Social Stats ActionCard in pipeline tab
 - [x] Vitest: 15 tests for GitHub/Substack parsing + Wikipedia/YC/orchestrator live calls (all passing)
+
+## Execute All Suggestions (March 23, 2026)
+- [ ] Run Discover Platforms pipeline server-side for all authors
+- [ ] Run Enrich Social Stats pipeline server-side for all authors
+- [ ] Request RAPIDAPI_KEY and validate Phase B enrichment
+- [ ] Build Author Detail modal with bio, platform pills, social stats, Wikipedia summary, and books
+
+## Execute All Suggestions (March 23, 2026)
+- [x] Run Discover Platforms pipeline on all 176 authors (server-side CLI script)
+- [x] Run Enrich Social Stats pipeline on all 176 authors (Phase A: GitHub, Wikipedia, Substack, YC, CNN)
+- [x] Request RAPIDAPI_KEY for Phase B enrichment (Yahoo Finance, CNBC, LinkedIn, Bloomberg)
+- [x] Build comprehensive Author Detail modal with Wikipedia summary card, social stats badges, PlatformPills, books, reference photo
+- [x] Wikipedia thumbnail + description + extract + monthly views in modal
+- [x] Social stats badges (GitHub followers, Substack posts, Wikipedia views, LinkedIn followers)
+- [x] PlatformPills with size="md" in modal (all platforms, max 20 visible)
