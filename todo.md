@@ -1610,3 +1610,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Add "Rich Summary ready" indicator to book cards (teal badge when richSummaryJson populated)
 - [x] Run Wikipedia URL backfill for all 147 books via Wikipedia API — 132/147 matched (15 skipped: generic/short titles)
 - [x] Retry failed enrichments: Dale Carnegie bio, Mark Manson bio, "How to Win Friends" summary, "7 Habits" summary — all 4 succeeded via Anthropic SDK fallback
+
+## Session March 23, 2026 — Book Detail Enrichment + Wikipedia Backfill
+
+- [x] Backfill Wikipedia URLs for books missing them — 105/147 matched (42 niche books have no Wikipedia article)
+- [x] Add Rich Summary section to Book Detail Dialog (executiveSummary, collapsible fullSummary, rich keyThemes with descriptions, keyQuotes)
+- [x] Add Similar Books recommendation strip to Book Detail Dialog (from richSummaryJson.similarBooks)

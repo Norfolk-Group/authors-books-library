@@ -24,12 +24,30 @@ import {
   BookOpen,
   BookMarked as BookMarkedIcon,
   X,
+  Quote,
+  Lightbulb,
+  BookCopy,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { BOOKS, CATEGORY_COLORS, CATEGORY_ICONS, CONTENT_TYPE_ICONS, CONTENT_TYPE_COLORS } from "@/lib/libraryData";
 import { ICON_MAP, CT_ICON_MAP, normalizeContentTypes, getBookEnrichmentLevel } from "./libraryConstants";
 import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
 import { fireConfetti } from "@/hooks/useConfetti";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
+import { useState as useStateLocal } from "react";
+
+// ── Rich Summary types ────────────────────────────────────────────────────────
+interface RichTheme { theme: string; description: string; }
+interface RichQuote { quote: string; context?: string; }
+interface SimilarBook { title: string; author: string; reason?: string; }
+interface RichSummary {
+  fullSummary?: string;
+  executiveSummary?: string;
+  keyThemes?: RichTheme[];
+  keyQuotes?: RichQuote[];
+  similarBooks?: SimilarBook[];
+}
 
 type BookRecord = typeof BOOKS[number];
 
@@ -83,6 +101,14 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
   }, [isLoading, profile]);
 
   const isLoadingProfile = isLoading || enrichMutation.isPending;
+
+  // Parse richSummaryJson once
+  const richSummary: RichSummary | null = (() => {
+    if (!profile?.richSummaryJson) return null;
+    try { return JSON.parse(profile.richSummaryJson as string) as RichSummary; } catch { return null; }
+  })();
+
+  const [showFullSummary, setShowFullSummary] = useStateLocal(false);
 
   const [scrapedCoverUrl, setScrapedCoverUrl] = useState<string | null>(null);
   const [scrapedAsin, setScrapedAsin] = useState<string | null>(null);
@@ -330,7 +356,7 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
         </div>
       </DialogHeader>
 
-      {/* Summary */}
+      {/* About / Executive Summary */}
       <div>
         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">About</h4>
         {isLoadingProfile ? (
@@ -338,6 +364,8 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
             <RefreshCw className="w-3.5 h-3.5 animate-spin" />
             Loading book info...
           </div>
+        ) : richSummary?.executiveSummary ? (
+          <p className="text-sm leading-relaxed text-foreground/80">{richSummary.executiveSummary}</p>
         ) : profile?.summary ? (
           <p className="text-sm leading-relaxed text-foreground/80">{profile.summary}</p>
         ) : (
@@ -345,8 +373,49 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
         )}
       </div>
 
-      {/* Key themes */}
-      {profile?.keyThemes && (
+      {/* Rich Full Summary (collapsible) */}
+      {richSummary?.fullSummary && (
+        <div className="rounded-lg border border-border bg-muted/30 overflow-hidden">
+          <button
+            onClick={() => setShowFullSummary((v) => !v)}
+            className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-muted/50 transition-colors"
+          >
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Full Summary</span>
+            {showFullSummary ? (
+              <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+            )}
+          </button>
+          {showFullSummary && (
+            <div className="px-3 pb-3">
+              <p className="text-sm leading-relaxed text-foreground/80 whitespace-pre-line">{richSummary.fullSummary}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Rich Key Themes (with descriptions) */}
+      {richSummary?.keyThemes && richSummary.keyThemes.length > 0 ? (
+        <div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Lightbulb className="w-3.5 h-3.5" style={{ color }} />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Key Themes</h4>
+          </div>
+          <div className="flex flex-col gap-2">
+            {richSummary.keyThemes.map((t) => (
+              <div key={t.theme} className="flex items-start gap-2">
+                <span className="mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0" style={{ backgroundColor: color + "18", color }}>
+                  {t.theme}
+                </span>
+                {t.description && (
+                  <p className="text-xs text-muted-foreground leading-relaxed">{t.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : profile?.keyThemes ? (
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Key Themes</h4>
           <div className="flex flex-wrap gap-1.5">
@@ -354,6 +423,26 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
               <span key={theme} className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: color + "18", color }}>
                 {theme}
               </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Key Quotes */}
+      {richSummary?.keyQuotes && richSummary.keyQuotes.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <Quote className="w-3.5 h-3.5" style={{ color }} />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Notable Quotes</h4>
+          </div>
+          <div className="flex flex-col gap-3">
+            {richSummary.keyQuotes.map((q, i) => (
+              <div key={i} className="pl-3 border-l-2" style={{ borderColor: color + "60" }}>
+                <p className="text-sm italic text-foreground/80 leading-relaxed">"{q.quote}"</p>
+                {q.context && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{q.context}</p>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -438,6 +527,30 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
           })}
         </div>
       </div>
+
+      {/* Similar Books */}
+      {richSummary?.similarBooks && richSummary.similarBooks.length > 0 && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-2">
+            <BookCopy className="w-3.5 h-3.5" style={{ color }} />
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Readers Also Enjoy</h4>
+          </div>
+          <div className="flex flex-col gap-2">
+            {richSummary.similarBooks.map((sb) => (
+              <div key={sb.title} className="flex items-start gap-2.5 px-3 py-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+                <BookOpen className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium leading-snug">{sb.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{sb.author}</p>
+                  {sb.reason && (
+                    <p className="text-[10px] text-muted-foreground/70 mt-0.5 leading-relaxed">{sb.reason}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Open in Drive */}
       <a

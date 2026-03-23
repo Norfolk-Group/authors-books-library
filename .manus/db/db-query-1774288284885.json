@@ -1,0 +1,194 @@
+{
+  "query": "SELECT bookTitle, authorName FROM book_profiles WHERE (wikipediaUrl IS NULL OR wikipediaUrl = '') ORDER BY bookTitle;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT bookTitle, authorName FROM book_profiles WHERE (wikipediaUrl IS NULL OR wikipediaUrl = '') ORDER BY bookTitle;",
+  "rows": [
+    {
+      "bookTitle": "10% Happier 10th Anniversary",
+      "authorName": "Dan Harris"
+    },
+    {
+      "bookTitle": "100M Leads",
+      "authorName": "Alex Hormozi"
+    },
+    {
+      "bookTitle": "7 Powers_ The Foundations of Business Strategy",
+      "authorName": "Hamilton Helmer"
+    },
+    {
+      "bookTitle": "A Therapist\\u2019s Guide to Consensual Nonmonogamy",
+      "authorName": "Rhea Orion"
+    },
+    {
+      "bookTitle": "Active Listening",
+      "authorName": "Nixaly Leonardo"
+    },
+    {
+      "bookTitle": "Active Listening Techniques",
+      "authorName": "Nixaly Leonardo"
+    },
+    {
+      "bookTitle": "Active Listening [3-in-1]",
+      "authorName": "Emma Leigh Weber"
+    },
+    {
+      "bookTitle": "Discovering Statistics",
+      "authorName": "Daniel Larose"
+    },
+    {
+      "bookTitle": "Do You Talk Funny",
+      "authorName": "David Nihill"
+    },
+    {
+      "bookTitle": "Do You Talk Funny?",
+      "authorName": "David Nihill"
+    },
+    {
+      "bookTitle": "Founder\\u2019s Pocket Guide",
+      "authorName": "Founders Pocket Guide"
+    },
+    {
+      "bookTitle": "From Impossible to Inevitable",
+      "authorName": "Aaron Ross"
+    },
+    {
+      "bookTitle": "Going Global on a Shoestring",
+      "authorName": "Hans Peter Bech"
+    },
+    {
+      "bookTitle": "How to Decide",
+      "authorName": "Annie Duke"
+    },
+    {
+      "bookTitle": "How to Know a Person",
+      "authorName": "David Brooks"
+    },
+    {
+      "bookTitle": "Lean Marketing",
+      "authorName": "Alan Dib"
+    },
+    {
+      "bookTitle": "Making Conversation",
+      "authorName": "Fred Dust"
+    },
+    {
+      "bookTitle": "Mating in Captivity",
+      "authorName": "Esther Perel"
+    },
+    {
+      "bookTitle": "Move Fast and Fix Things",
+      "authorName": "Frances Frei"
+    },
+    {
+      "bookTitle": "Mr. Monkey and Me",
+      "authorName": "Mike Smerkle"
+    },
+    {
+      "bookTitle": "Never Split the Difference",
+      "authorName": "Chris Voss"
+    },
+    {
+      "bookTitle": "Obviously Awesome",
+      "authorName": "April Dunford"
+    },
+    {
+      "bookTitle": "Positioning",
+      "authorName": "Al Ries"
+    },
+    {
+      "bookTitle": "Predictable Revenue",
+      "authorName": "Aaron Ross"
+    },
+    {
+      "bookTitle": "Quit",
+      "authorName": "Annie Duke"
+    },
+    {
+      "bookTitle": "Read Write Own",
+      "authorName": "Chris Dixon"
+    },
+    {
+      "bookTitle": "Sales Pitch",
+      "authorName": "April Dunford"
+    },
+    {
+      "bookTitle": "Slow Productivity",
+      "authorName": "Cal Newport"
+    },
+    {
+      "bookTitle": "Statistics for the Rest of Us",
+      "authorName": "Albert Rutherford"
+    },
+    {
+      "bookTitle": "Super Agers",
+      "authorName": "Eric Topol"
+    },
+    {
+      "bookTitle": "Supercommunicators",
+      "authorName": "Charles Duhigg"
+    },
+    {
+      "bookTitle": "Talk",
+      "authorName": "Alison Wood Brooks"
+    },
+    {
+      "bookTitle": "The Customer Success Professional",
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "bookTitle": "The Customer Success Professional Handbook",
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "bookTitle": "The Customer Success Professional's Handbook",
+      "authorName": "Ashvin Vaidyanathan"
+    },
+    {
+      "bookTitle": "The Last Man Who Knew Everything",
+      "authorName": "David N. Schwartz"
+    },
+    {
+      "bookTitle": "The Leader",
+      "authorName": "Eric Ries"
+    },
+    {
+      "bookTitle": "The Leaders Guide",
+      "authorName": "Eric Ries"
+    },
+    {
+      "bookTitle": "The Neurology of We",
+      "authorName": "Daniel J. Siegel"
+    },
+    {
+      "bookTitle": "The Sales EQ",
+      "authorName": "Jeb Blount"
+    },
+    {
+      "bookTitle": "The State of Affairs",
+      "authorName": "Esther Perel"
+    },
+    {
+      "bookTitle": "The Whole-Brain Child",
+      "authorName": "Daniel J. Siegel"
+    },
+    {
+      "bookTitle": "Traction",
+      "authorName": "Gino Wickman"
+    },
+    {
+      "bookTitle": "What You Do Is Who You Are",
+      "authorName": "Ben Horowitz"
+    },
+    {
+      "bookTitle": "Working Backwards",
+      "authorName": "Colin Bryar"
+    },
+    {
+      "bookTitle": "bk_rand_011854",
+      "authorName": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "bookTitle\tauthorName\n10% Happier 10th Anniversary\tDan Harris\n100M Leads\tAlex Hormozi\n7 Powers_ The Foundations of Business Strategy\tHamilton Helmer\nA Therapist\\u2019s Guide to Consensual Nonmonogamy\tRhea Orion\nActive Listening\tNixaly Leonardo\nActive Listening Techniques\tNixaly Leonardo\nActive Listening [3-in-1]\tEmma Leigh Weber\nDiscovering Statistics\tDaniel Larose\nDo You Talk Funny\tDavid Nihill\nDo You Talk Funny?\tDavid Nihill\nFounder\\u2019s Pocket Guide\tFounders Pocket Guide\nFrom Impossible to Inevitable\tAaron Ross\nGoing Global on a Shoestring\tHans Peter Bech\nHow to Decide\tAnnie Duke\nHow to Know a Person\tDavid Brooks\nLean Marketing\tAlan Dib\nMaking Conversation\tFred Dust\nMating in Captivity\tEsther Perel\nMove Fast and Fix Things\tFrances Frei\nMr. Monkey and Me\tMike Smerkle\nNever Split the Difference\tChris Voss\nObviously Awesome\tApril Dunford\nPositioning\tAl Ries\nPredictable Revenue\tAaron Ross\nQuit\tAnnie Duke\nRead Write Own\tChris Dixon\nSales Pitch\tApril Dunford\nSlow Productivity\tCal Newport\nStatistics for the Rest of Us\tAlbert Rutherford\nSuper Agers\tEric Topol\nSupercommunicators\tCharles Duhigg\nTalk\tAlison Wood Brooks\nThe Customer Success Professional\tAshvin Vaidyanathan\nThe Customer Success Professional Handbook\tAshvin Vaidyanathan\nThe Customer Success Professional's Handbook\tAshvin Vaidyanathan\nThe Last Man Who Knew Everything\tDavid N. Schwartz\nThe Leader\tEric Ries\nThe Leaders Guide\tEric Ries\nThe Neurology of We\tDaniel J. Siegel\nThe Sales EQ\tJeb Blount\nThe State of Affairs\tEsther Perel\nThe Whole-Brain Child\tDaniel J. Siegel\nTraction\tGino Wickman\nWhat You Do Is Who You Are\tBen Horowitz\nWorking Backwards\tColin Bryar\nbk_rand_011854\t\n",
+  "stderr": "",
+  "execution_time_ms": 145
+}

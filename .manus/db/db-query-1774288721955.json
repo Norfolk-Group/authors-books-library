@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \n  COUNT(*) as total_books,\n  SUM(CASE WHEN wikipediaUrl IS NOT NULL AND wikipediaUrl != '' THEN 1 ELSE 0 END) as with_wikipedia,\n  SUM(CASE WHEN wikipediaUrl IS NULL OR wikipediaUrl = '' THEN 1 ELSE 0 END) as without_wikipedia\nFROM book_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT \n  COUNT(*) as total_books,\n  SUM(CASE WHEN wikipediaUrl IS NOT NULL AND wikipediaUrl != '' THEN 1 ELSE 0 END) as with_wikipedia,\n  SUM(CASE WHEN wikipediaUrl IS NULL OR wikipediaUrl = '' THEN 1 ELSE 0 END) as without_wikipedia\nFROM book_profiles;",
+  "rows": [
+    {
+      "total_books": "147",
+      "with_wikipedia": "105",
+      "without_wikipedia": "42"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_books\twith_wikipedia\twithout_wikipedia\n147\t105\t42\n",
+  "stderr": "",
+  "execution_time_ms": 75
+}
