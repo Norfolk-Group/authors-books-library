@@ -1550,3 +1550,39 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Sidebar navigation links for Leaderboard and Compare Authors
 - [x] Google Drive reorganization: PARA-based structure with 5 top-level folders
 - [x] DB schema: driveFolderId added to author_profiles and book_profiles
+
+## Rich Cards + Detail Pages (Mar 23, 2026)
+- [ ] Fix bio dark-on-dark contrast issue in AuthorBioPanel
+- [ ] PlatformPills: show branded business name (not generic "Website"/"Business Website")
+- [ ] Author cards: show all social links (Twitter, Instagram, LinkedIn, Substack, etc.) as pills
+- [ ] Author cards: add hover CTA button "View Full Profile" with mouseover effects
+- [ ] Author Detail page: full bio + resume-style professional entries + all platform links
+- [ ] Author Detail page: LLM double-pass enrichment for complete professional bio
+- [ ] Book cards: add resource links (Amazon, Goodreads, Wikipedia, similar books)
+- [ ] Book cards: add hover CTA button "View Book Details" with mouseover effects
+- [ ] Book Detail page: rich summary, key themes, quotes, similar books (LLM)
+- [ ] Book Detail page: all resource links (Amazon, Goodreads, YouTube reviews, etc.)
+- [ ] Admin Console: double-pass LLM enrichment for author bios and book summaries
+- [ ] Similar books feature: LLM-powered recommendations on book detail page
+- [ ] Schema: add websitesJson (array of {label, url}) to author_profiles for multiple named websites
+- [ ] Platform discovery: extract multiple named websites per author (personal, company, speaking, podcast, course, etc.)
+- [ ] PlatformPills: render each named website as its own branded pill
+
+## Session March 23, 2026 — Card & Detail Page Upgrades
+
+- [x] Fix bio tooltip dark-on-dark contrast (explicit bg-white text-gray-900)
+- [x] Upgrade PlatformPills to show branded business names (not generic "Website")
+- [x] Support multiple named websites per author (websitesJson schema column)
+- [x] Add all social platform pills to author cards (Twitter, Instagram, LinkedIn, etc.)
+- [x] Add 3D hover CTA "View Full Profile" button to author cards
+- [x] Add hover CTA "View Book" button to book cards
+- [x] Schema: add professionalEntriesJson, richBioJson to author_profiles
+- [x] Schema: add resourceLinksJson, richSummaryJson to book_profiles
+- [x] Update platform discovery LLM prompt to extract multiple named websites
+- [x] Server enrichment helper: richBio.ts (double-pass LLM for author bio + career entries)
+- [x] Server enrichment helper: richSummary.ts (double-pass LLM for book summary + similar books)
+- [x] tRPC procedures: enrichRichBio, enrichRichBioBatch, enrichRichSummary, enrichRichSummaryBatch
+- [x] Rich Author Detail page (/author/:slug): full bio, resume entries, all websites, social stats, books grid
+- [x] Rich Book Detail page (/book/:slug): full summary, key themes, quotes, similar books, resource links
+- [x] Admin Console: Enrich Rich Author Bios ActionCard (double-pass LLM)
+- [x] Admin Console: Enrich Rich Book Summaries ActionCard (double-pass LLM)

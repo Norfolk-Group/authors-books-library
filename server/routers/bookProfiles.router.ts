@@ -12,6 +12,7 @@ import { eq, inArray, isNotNull, isNull, or } from "drizzle-orm";
 import { mirrorBatchToS3 } from "../mirrorToS3";
 
 import { enrichBookViaGoogleBooks } from "../lib/bookEnrichment";
+import { enrichRichSummary } from "../enrichment/richSummary";
 import { parallelBatch } from "../lib/parallelBatch";
 
 // -- Router -----------------------------------------------------------------
@@ -564,5 +565,93 @@ export const bookProfilesRouter = router({
         mirrored,
         mirrorFailed,
       };
+    }),
+
+  /** Enrich a single book with rich summary (double-pass LLM) */
+  enrichRichSummary: adminProcedure
+    .input(z.object({
+      bookTitle: z.string(),
+      authorName: z.string().optional(),
+      force: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+      const existing = await db.select().from(bookProfiles)
+        .where(eq(bookProfiles.bookTitle, input.bookTitle)).limit(1);
+      if (!input.force && existing[0]?.richSummaryJson) {
+        return { status: "skipped" as const, bookTitle: input.bookTitle };
+      }
+      const profile = existing[0];
+      const result = await enrichRichSummary(
+        input.bookTitle,
+        input.authorName ?? profile?.authorName ?? "",
+        profile?.summary,
+        null
+      );
+      if (!result) return { status: "failed" as const, bookTitle: input.bookTitle };
+      if (profile) {
+        await db.update(bookProfiles)
+          .set({ richSummaryJson: JSON.stringify(result), resourceLinksJson: JSON.stringify(result.resourceLinks) })
+          .where(eq(bookProfiles.bookTitle, input.bookTitle));
+      } else {
+        await db.insert(bookProfiles).values({
+          bookTitle: input.bookTitle,
+          authorName: input.authorName ?? "",
+          richSummaryJson: JSON.stringify(result),
+          resourceLinksJson: JSON.stringify(result.resourceLinks),
+        });
+      }
+      return { status: "enriched" as const, bookTitle: input.bookTitle };
+    }),
+
+  /** Batch enrich all books with rich summaries (double-pass LLM) */
+  enrichRichSummaryBatch: adminProcedure
+    .input(z.object({
+      limit: z.number().min(1).max(500).optional().default(50),
+      force: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+      const allBooks = await db.select({
+        bookTitle: bookProfiles.bookTitle,
+        authorName: bookProfiles.authorName,
+        summary: bookProfiles.summary,
+        richSummaryJson: bookProfiles.richSummaryJson,
+      }).from(bookProfiles);
+      const toEnrich = input.force
+        ? allBooks.slice(0, input.limit)
+        : allBooks.filter(b => !b.richSummaryJson).slice(0, input.limit);
+      let enriched = 0, skipped = 0, failed = 0;
+      for (const book of toEnrich) {
+        const result = await enrichRichSummary(
+          book.bookTitle,
+          book.authorName ?? "",
+          book.summary,
+          null
+        );
+        if (!result) { failed++; continue; }
+        await db.update(bookProfiles)
+          .set({ richSummaryJson: JSON.stringify(result), resourceLinksJson: JSON.stringify(result.resourceLinks) })
+          .where(eq(bookProfiles.bookTitle, book.bookTitle));
+        enriched++;
+      }
+      skipped = allBooks.length - toEnrich.length;
+      return { enriched, skipped, failed, total: allBooks.length };
+    }),
+
+  /** Get rich summary for a book */
+  getRichSummary: publicProcedure
+    .input(z.object({ bookTitle: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const rows = await db.select({
+        richSummaryJson: bookProfiles.richSummaryJson,
+        resourceLinksJson: bookProfiles.resourceLinksJson,
+      }).from(bookProfiles)
+        .where(eq(bookProfiles.bookTitle, input.bookTitle)).limit(1);
+      return rows[0] ?? null;
     }),
 });

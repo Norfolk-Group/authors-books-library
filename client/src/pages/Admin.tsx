@@ -297,6 +297,8 @@ export default function Admin() {
   const normalizeAvatarBackgroundsMutation = trpc.authorProfiles.normalizeAvatarBackgrounds.useMutation();
   const discoverPlatformsMutation = trpc.authorProfiles.discoverPlatformsBatch.useMutation();
   const enrichSocialStatsMutation = trpc.authorProfiles.enrichSocialStatsBatch.useMutation();
+  const enrichRichBioMutation = trpc.authorProfiles.enrichRichBioBatch.useMutation();
+  const enrichRichSummaryMutation = trpc.bookProfiles.enrichRichSummaryBatch.useMutation();
 
   // -- Action states --
   const [regenerateState, setRegenerateState] = useState<ActionState>(INITIAL_STATE);
@@ -314,6 +316,8 @@ export default function Admin() {
   const [rebuildCoversState, setRebuildCoversState] = useState<ActionState>(INITIAL_STATE);
   const [discoverPlatformsState, setDiscoverPlatformsState] = useState<ActionState>(INITIAL_STATE);
   const [enrichSocialStatsState, setEnrichSocialStatsState] = useState<ActionState>(INITIAL_STATE);
+  const [enrichRichBioState, setEnrichRichBioState] = useState<ActionState>(INITIAL_STATE);
+  const [enrichRichSummaryState, setEnrichRichSummaryState] = useState<ActionState>(INITIAL_STATE);
 
   // -- Research Cascade stats --
   const authorStats = trpc.cascade.authorStats.useQuery(undefined, { staleTime: 60_000 });
@@ -337,6 +341,8 @@ export default function Admin() {
     normalizeBgState,
     discoverPlatformsState,
     enrichSocialStatsState,
+    enrichRichBioState,
+    enrichRichSummaryState,
   ].some((s) => s.status === "running");
 
   const recordAction = useCallback(
@@ -915,6 +921,42 @@ export default function Admin() {
     }
   }, [enrichSocialStatsState.status, enrichSocialStatsMutation, recordAction]);
 
+  // -- Enrich Rich Bio (double-pass LLM) --
+  const handleEnrichRichBio = useCallback(async () => {
+    if (enrichRichBioState.status === "running") return;
+    const start = Date.now();
+    setEnrichRichBioState({ status: "running", progress: 0, message: "Running double-pass LLM bio enrichment…", done: 0, total: 0, failed: 0 });
+    try {
+      const result = await enrichRichBioMutation.mutateAsync({ limit: 10, forceAll: false });
+      setEnrichRichBioState({ status: "done", progress: 100, message: `Enriched ${result.succeeded} author bios`, done: result.succeeded, total: result.succeeded + result.failed, failed: result.failed });
+      toast.success(`Rich bio enrichment complete: ${result.succeeded} authors`);
+      await recordAction("enrich-rich-bio", "Enrich Rich Bios", start, "success", result.succeeded);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setEnrichRichBioState((s) => ({ ...s, status: "error", message: msg }));
+      toast.error("Rich bio enrichment failed: " + msg);
+      await recordAction("enrich-rich-bio", "Enrich Rich Bios", start, `error: ${msg}`);
+    }
+  }, [enrichRichBioState.status, enrichRichBioMutation, recordAction]);
+
+  // -- Enrich Rich Summary (double-pass LLM for books) --
+  const handleEnrichRichSummary = useCallback(async () => {
+    if (enrichRichSummaryState.status === "running") return;
+    const start = Date.now();
+    setEnrichRichSummaryState({ status: "running", progress: 0, message: "Running double-pass book summary enrichment…", done: 0, total: 0, failed: 0 });
+    try {
+      const result = await enrichRichSummaryMutation.mutateAsync({ limit: 10, force: false });
+      setEnrichRichSummaryState({ status: "done", progress: 100, message: `Enriched ${result.enriched} book summaries`, done: result.enriched, total: result.total, failed: result.failed });
+      toast.success(`Rich summary enrichment complete: ${result.enriched} books`);
+      await recordAction("enrich-rich-summary", "Enrich Rich Summaries", start, "success", result.enriched);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setEnrichRichSummaryState((s) => ({ ...s, status: "error", message: msg }));
+      toast.error("Rich summary enrichment failed: " + msg);
+      await recordAction("enrich-rich-summary", "Enrich Rich Summaries", start, `error: ${msg}`);
+    }
+  }, [enrichRichSummaryState.status, enrichRichSummaryMutation, recordAction]);
+
   // -- Stats for Research Cascade --
   const aStats = authorStats.data;
   const bStats = bookStats.data;
@@ -1225,6 +1267,32 @@ export default function Admin() {
               confirmDescription="This will call up to 10 external APIs per author. Authors already enriched will be skipped. Processes 30 authors per run. May take several minutes."
               onRun={handleEnrichSocialStats}
               buttonLabel="Enrich Social Stats"
+              disabled={anyRunning}
+            />
+            <ActionCard
+              title="Enrich Rich Author Bios"
+              description="Double-pass LLM enrichment: first pass researches the author's full professional history, second pass writes a structured bio with resume-style career entries, notable achievements, and personal background. Processes 10 authors per run."
+              icon={BrainCircuit}
+              actionKey="enrich-rich-bio"
+              state={enrichRichBioState}
+              lastRun={getLastRun("enrich-rich-bio")}
+              confirmTitle="Enrich rich author bios?"
+              confirmDescription="This runs two LLM calls per author (research pass + write pass). Authors with existing rich bios will be skipped. Processes 10 authors per run."
+              onRun={handleEnrichRichBio}
+              buttonLabel="Enrich Rich Bios"
+              disabled={anyRunning}
+            />
+            <ActionCard
+              title="Enrich Rich Book Summaries"
+              description="Double-pass LLM enrichment: first pass researches the book's themes, reception, and related works, second pass writes a structured summary with key themes, notable quotes, similar books, and resource links. Processes 10 books per run."
+              icon={BookUser}
+              actionKey="enrich-rich-summary"
+              state={enrichRichSummaryState}
+              lastRun={getLastRun("enrich-rich-summary")}
+              confirmTitle="Enrich rich book summaries?"
+              confirmDescription="This runs two LLM calls per book (research pass + write pass). Books with existing rich summaries will be skipped. Processes 10 books per run."
+              onRun={handleEnrichRichSummary}
+              buttonLabel="Enrich Rich Summaries"
               disabled={anyRunning}
             />
           </TabsContent>

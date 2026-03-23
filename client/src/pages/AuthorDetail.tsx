@@ -6,18 +6,16 @@
  *   1. PageHeader breadcrumb (← Home › Authors › [Name])
  *   2. Hero: large avatar, name, category pill, specialty, Drive link
  *   3. Wikipedia summary card (thumbnail + description + monthly views)
- *   4. Bio
- *   5. Social Stats badges row
- *   6. Platform Presence (PlatformPills)
- *   7. Books grid with covers, ratings, summaries
- *   8. Footer with Drive link
- *
- * Deep-link: /author/Adam%20Grant
- * Share: copy URL from address bar
+ *   4. Rich Bio (from richBioJson or fallback to bio)
+ *   5. Professional Entries (resume-style, from richBioJson)
+ *   6. Social Stats badges row
+ *   7. Platform Presence (PlatformPills — all links including multiple websites)
+ *   8. Books grid with covers, ratings, summaries + "View Book" deep-link
+ *   9. Footer with Drive link
  */
 
 import { useMemo, useRef, useEffect, useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import PageHeader from "@/components/PageHeader";
@@ -34,6 +32,11 @@ import {
   Star,
   Calendar,
   Building2,
+  Briefcase,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  ArrowRight,
 } from "lucide-react";
 import { AUTHORS, CATEGORY_COLORS } from "@/lib/libraryData";
 import { canonicalName } from "@/lib/authorAliases";
@@ -43,6 +46,7 @@ import { fireConfetti } from "@/hooks/useConfetti";
 import authorBios from "@/lib/authorBios.json";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
 import type { SocialStatsResult } from "../../../server/enrichment/socialStats";
+import type { RichBioResult, ProfessionalEntry } from "../../../server/enrichment/richBio";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -71,6 +75,28 @@ function StatBadge({ icon, label, value }: StatBadgeProps) {
   );
 }
 
+// ── Professional Entry card ───────────────────────────────────────────────────
+
+function ProfessionalEntryCard({ entry }: { entry: ProfessionalEntry }) {
+  return (
+    <div className="flex gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/30 transition-colors">
+      <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+        <Briefcase className="w-4 h-4 text-primary" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-foreground leading-snug">{entry.title}</p>
+          <span className="text-[10px] text-muted-foreground whitespace-nowrap font-mono bg-muted px-1.5 py-0.5 rounded">{entry.period}</span>
+        </div>
+        <p className="text-xs font-medium text-primary mt-0.5">{entry.org}</p>
+        {entry.description && (
+          <p className="text-xs text-muted-foreground leading-relaxed mt-1">{entry.description}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Book card ─────────────────────────────────────────────────────────────────
 
 interface BookCardProps {
@@ -82,6 +108,7 @@ interface BookCardProps {
 function BookCard({ bookName, bookId, authorName }: BookCardProps) {
   const cleanTitle = bookName.split(" - ")[0];
   const driveUrl = `https://drive.google.com/drive/folders/${bookId}?view=grid`;
+  const bookSlug = encodeURIComponent(cleanTitle);
 
   const { data: profile } = trpc.bookProfiles.get.useQuery(
     { bookTitle: cleanTitle },
@@ -93,60 +120,83 @@ function BookCard({ bookName, bookId, authorName }: BookCardProps) {
   const publishedYear = profile?.publishedDate ? profile.publishedDate.substring(0, 4) : null;
 
   return (
-    <a
-      href={driveUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200"
-    >
-      {/* Cover */}
-      <div className="flex-shrink-0 w-14 h-20 rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
-        {coverUrl ? (
-          <img
-            src={coverUrl}
-            alt={cleanTitle}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <BookOpen className="w-6 h-6 text-muted-foreground/40" />
-        )}
-      </div>
+    <div className="group flex flex-col rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200 overflow-hidden">
+      {/* Cover + Info row */}
+      <a
+        href={driveUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex gap-3 p-3"
+      >
+        {/* Cover */}
+        <div className="flex-shrink-0 w-14 h-20 rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
+          {coverUrl ? (
+            <img
+              src={coverUrl}
+              alt={cleanTitle}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <BookOpen className="w-6 h-6 text-muted-foreground/40" />
+          )}
+        </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-        <div>
-          <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-            {cleanTitle}
-          </p>
-          {profile?.summary && (
-            <p className="text-xs text-muted-foreground leading-relaxed mt-1 line-clamp-2">
-              {profile.summary}
+        {/* Info */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          <div>
+            <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+              {cleanTitle}
             </p>
-          )}
+            {profile?.summary && (
+              <p className="text-xs text-muted-foreground leading-relaxed mt-1 line-clamp-2">
+                {profile.summary}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            {rating && (
+              <span className="flex items-center gap-0.5 text-[10px] text-amber-500 font-semibold">
+                <Star className="w-2.5 h-2.5 fill-amber-500" />
+                {rating.toFixed(1)}
+              </span>
+            )}
+            {publishedYear && (
+              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <Calendar className="w-2.5 h-2.5" />
+                {publishedYear}
+              </span>
+            )}
+            {profile?.publisher && (
+              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <Building2 className="w-2.5 h-2.5" />
+                <span className="truncate max-w-[80px]">{profile.publisher}</span>
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          {rating && (
-            <span className="flex items-center gap-0.5 text-[10px] text-amber-500 font-semibold">
-              <Star className="w-2.5 h-2.5 fill-amber-500" />
-              {rating.toFixed(1)}
-            </span>
-          )}
-          {publishedYear && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <Calendar className="w-2.5 h-2.5" />
-              {publishedYear}
-            </span>
-          )}
-          {profile?.publisher && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              <Building2 className="w-2.5 h-2.5" />
-              <span className="truncate max-w-[80px]">{profile.publisher}</span>
-            </span>
-          )}
-          <ExternalLink className="w-2.5 h-2.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-60 transition-opacity" />
-        </div>
+      </a>
+
+      {/* CTA row */}
+      <div className="flex border-t border-border/50">
+        <Link
+          href={`/book/${bookSlug}`}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-semibold text-primary hover:bg-primary/5 transition-colors"
+        >
+          <BookOpen className="w-3 h-3" />
+          View Book Profile
+          <ArrowRight className="w-3 h-3" />
+        </Link>
+        <a
+          href={driveUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1 px-3 py-2 text-[11px] font-medium text-muted-foreground hover:bg-muted transition-colors border-l border-border/50"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Drive
+        </a>
       </div>
-    </a>
+    </div>
   );
 }
 
@@ -221,6 +271,24 @@ export default function AuthorDetail() {
     }
   }, [profile?.socialStatsJson]);
 
+  // Parse rich bio
+  const richBio: RichBioResult | null = useMemo(() => {
+    try {
+      return profile?.richBioJson ? JSON.parse(profile.richBioJson) : null;
+    } catch {
+      return null;
+    }
+  }, [profile?.richBioJson]);
+
+  // Parse multiple websites
+  const namedWebsites: { label: string; url: string }[] = useMemo(() => {
+    try {
+      return profile?.websitesJson ? JSON.parse(profile.websitesJson) : [];
+    } catch {
+      return [];
+    }
+  }, [profile?.websitesJson]);
+
   const wiki = socialStats?.wikipedia;
   const wikiViews = formatCount(wiki?.avgMonthlyViews);
 
@@ -240,6 +308,7 @@ export default function AuthorDetail() {
         newsletterUrl: profile.newsletterUrl,
         speakingUrl: profile.speakingUrl,
         blogUrl: profile.blogUrl,
+        websitesJson: profile.websitesJson,
       }
     : null;
 
@@ -265,8 +334,16 @@ export default function AuthorDetail() {
     return badges;
   }, [socialStats, wikiViews]);
 
-  const bioText = jsonBio ?? profile?.bio ?? null;
+  // Bio text: prefer rich bio fullBio, then jsonBio, then profile.bio
+  const bioText = richBio?.fullBio ?? jsonBio ?? profile?.bio ?? null;
+  const professionalSummary = richBio?.professionalSummary ?? null;
+  const personalNote = richBio?.personalNote ?? null;
+  const professionalEntries: ProfessionalEntry[] = richBio?.professionalEntries ?? [];
+
   const isBioLoading = !jsonBio && (isLoading || enrichMutation.isPending);
+
+  const [showAllEntries, setShowAllEntries] = useState(false);
+  const visibleEntries = showAllEntries ? professionalEntries : professionalEntries.slice(0, 4);
 
   // 404 guard
   if (!author && !isLoading) {
@@ -274,7 +351,7 @@ export default function AuthorDetail() {
       <div className="min-h-screen bg-background">
         <PageHeader crumbs={[{ label: "Authors", href: "/" }, { label: "Not Found" }]} />
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-2">Author not found</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-3">Author Not Found</h1>
           <p className="text-muted-foreground mb-6">No author named "{decodedName}" exists in the library.</p>
           <button
             onClick={() => setLocation("/")}
@@ -359,9 +436,11 @@ export default function AuthorDetail() {
               )}
             </div>
             <h1 className="text-2xl font-bold font-display leading-tight text-foreground">{displayName}</h1>
-            {specialty && (
+            {professionalSummary ? (
+              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{professionalSummary}</p>
+            ) : specialty ? (
               <p className="text-sm text-muted-foreground mt-1">{specialty}</p>
-            )}
+            ) : null}
             {author && (
               <p className="text-xs text-muted-foreground mt-2">
                 {author.books.length} book{author.books.length !== 1 ? "s" : ""} in library
@@ -441,11 +520,69 @@ export default function AuthorDetail() {
               Loading bio…
             </div>
           ) : bioText ? (
-            <p className="text-sm leading-relaxed text-foreground/80">{bioText}</p>
+            <div className="space-y-3">
+              {bioText.split("\n\n").filter(Boolean).map((para, i) => (
+                <p key={i} className="text-sm leading-relaxed text-foreground/85">{para}</p>
+              ))}
+              {personalNote && (
+                <div className="mt-3 p-3 rounded-xl bg-muted/60 border border-border/50">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Personal Note</p>
+                  <p className="text-sm text-foreground/80 italic leading-relaxed">{personalNote}</p>
+                </div>
+              )}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">No bio available yet.</p>
           )}
         </section>
+
+        {/* ── Professional Entries (Resume) ── */}
+        {professionalEntries.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              Professional Background
+            </h2>
+            <div className="space-y-2">
+              {visibleEntries.map((entry, i) => (
+                <ProfessionalEntryCard key={i} entry={entry} />
+              ))}
+            </div>
+            {professionalEntries.length > 4 && (
+              <button
+                onClick={() => setShowAllEntries(!showAllEntries)}
+                className="mt-3 flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                {showAllEntries ? (
+                  <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                ) : (
+                  <><ChevronDown className="w-3.5 h-3.5" /> Show {professionalEntries.length - 4} more entries</>
+                )}
+              </button>
+            )}
+          </section>
+        )}
+
+        {/* ── Named Websites ── */}
+        {namedWebsites.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Websites</h2>
+            <div className="flex flex-wrap gap-2">
+              {namedWebsites.map((site, i) => (
+                <a
+                  key={i}
+                  href={site.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all text-xs font-medium text-foreground group"
+                >
+                  <Globe className="w-3 h-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                  {site.label}
+                  <ExternalLink className="w-2.5 h-2.5 text-muted-foreground/50 group-hover:text-primary/70 transition-colors" />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ── Social Stats Badges ── */}
         {statBadges.length > 0 && (
@@ -467,7 +604,7 @@ export default function AuthorDetail() {
               <PlatformPills
                 links={platformLinks!}
                 socialStats={socialStats}
-                maxVisible={20}
+                maxVisible={30}
                 size="md"
               />
             </div>

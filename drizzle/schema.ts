@@ -144,6 +144,21 @@ export const authorProfiles = mysqlTable("author_profiles", {
    * Null means not yet checked; empty object means checked but no presence found.
    */
   platformEnrichmentStatus: text("platformEnrichmentStatus"),
+  /**
+   * JSON array of all named websites for this author (supersedes individual websiteUrl/businessWebsiteUrl/speakingUrl/blogUrl/podcastUrl/newsletterUrl).
+   * Shape: [{label: string, url: string, type: 'personal'|'company'|'speaking'|'podcast'|'course'|'blog'|'newsletter'|'ted'|'masterclass'|'other'}]
+   */
+  websitesJson: text("websitesJson"),
+  /**
+   * JSON array of professional/career entries (resume-style).
+   * Shape: [{title: string, org: string, period: string, description: string, url?: string}]
+   */
+  professionalEntriesJson: text("professionalEntriesJson"),
+  /**
+   * JSON object with enriched full bio (double-pass LLM).
+   * Shape: {fullBio: string, professionalSummary: string, personalNote?: string, enrichedAt: string, model: string}
+   */
+  richBioJson: text("richBioJson"),
   /** Confidence level for research quality: high | medium | low */
   researchQuality: mysqlEnum("researchQuality", ["high", "medium", "low"]),
   enrichedAt: timestamp("enrichedAt"),
@@ -206,6 +221,16 @@ export const bookProfiles = mysqlTable("book_profiles", {
   summaryEnrichmentSource: varchar("summaryEnrichmentSource", { length: 50 }),
   /** Where the cover image came from ('amazon', 'google_books', 'manual') */
   coverImageSource: varchar("coverImageSource", { length: 50 }),
+  /**
+   * JSON array of all resource links for this book.
+   * Shape: [{label: string, url: string, type: 'amazon'|'goodreads'|'wikipedia'|'youtube'|'podcast'|'summary'|'publisher'|'author_site'|'other'}]
+   */
+  resourceLinksJson: text("resourceLinksJson"),
+  /**
+   * JSON object with enriched full book summary (double-pass LLM).
+   * Shape: {fullSummary: string, keyInsights: string[], quotes: string[], similarBooks: [{title, author, reason}], enrichedAt: string, model: string}
+   */
+  richSummaryJson: text("richSummaryJson"),
   enrichedAt: timestamp("enrichedAt"),
   /** Google Drive folder ID for this book's folder in 02 — Knowledge Library / 02 — Books by Category */
   driveFolderId: varchar("driveFolderId", { length: 128 }),

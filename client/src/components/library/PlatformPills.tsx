@@ -3,18 +3,26 @@
  *
  * Each pill shows:
  *   - A service-specific SVG logo (inline, no external CDN dependency)
- *   - A short label (e.g. "YouTube", "LinkedIn")
+ *   - A branded label (e.g. "Wharton School", "TED", "MasterClass" — not just "Website")
  *   - An optional stat badge (e.g. "42.1K followers", "127 posts")
  *   - Opens the URL in a new tab on click
  *
  * Platforms supported:
- *   Social: website, businessWebsite, youtube, twitter/X, linkedin, substack,
- *           facebook, instagram, tiktok, github, podcast, newsletter, speaking, blog
+ *   Websites: multiple named entries from websitesJson (personal, company, speaking, course, etc.)
+ *   Social: youtube, twitter/X, linkedin, substack, facebook, instagram, tiktok, github, podcast, newsletter, blog
  *   Media:  wikipedia, ycombinator, cnbc, cnn, bloomberg/seekingAlpha, yahooFinance
  */
 
-import { ExternalLink, Globe, Mic, Mail, Presentation } from "lucide-react";
+import { ExternalLink, Globe, Mic, Mail, Presentation, BookOpen } from "lucide-react";
 import type { SocialStatsResult } from "../../../../server/enrichment/socialStats";
+
+// ── Named website entry (from websitesJson column) ────────────────────────────
+
+export interface NamedWebsite {
+  label: string;
+  url: string;
+  type: "personal" | "company" | "speaking" | "podcast" | "course" | "blog" | "newsletter" | "ted" | "masterclass" | "other";
+}
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
 
@@ -74,15 +82,13 @@ const WikipediaIcon = () => (
 
 const YCIcon = () => (
   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0" aria-hidden="true">
-    <path d="M0 0h24v24H0z" fill="none"/>
     <path d="M11.1 0L6.6 8.4 0 9.3l4.8 4.7-1.1 6.6L10 17.4l6.3 3.2-1.1-6.6L20 9.3l-6.6-.9L11.1 0z"/>
   </svg>
 );
 
 const CNBCIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0" aria-hidden="true">
-    <rect width="24" height="24" rx="2" fill="none"/>
-    <text x="2" y="17" fontSize="9" fontWeight="bold" fontFamily="Arial,sans-serif">CNBC</text>
+  <svg viewBox="0 0 36 14" className="w-6 h-3.5 fill-current shrink-0" aria-hidden="true">
+    <text x="0" y="12" fontSize="11" fontWeight="bold" fontFamily="Arial,sans-serif">CNBC</text>
   </svg>
 );
 
@@ -104,6 +110,46 @@ const YahooFinanceIcon = () => (
   </svg>
 );
 
+const TEDIcon = () => (
+  <svg viewBox="0 0 36 14" className="w-6 h-3.5 fill-current shrink-0" aria-hidden="true">
+    <text x="0" y="12" fontSize="13" fontWeight="bold" fontFamily="Arial,sans-serif">TED</text>
+  </svg>
+);
+
+const MasterClassIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0" aria-hidden="true">
+    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+  </svg>
+);
+
+// ── Icon by website type ──────────────────────────────────────────────────────
+
+function getWebsiteIcon(type: NamedWebsite["type"], label: string): React.ReactNode {
+  const lowerLabel = label.toLowerCase();
+  if (type === "ted" || lowerLabel.includes("ted")) return <TEDIcon />;
+  if (type === "masterclass" || lowerLabel.includes("masterclass")) return <MasterClassIcon />;
+  if (type === "podcast" || lowerLabel.includes("podcast") || lowerLabel.includes("spotify") || lowerLabel.includes("apple")) return <Mic className="w-3.5 h-3.5 shrink-0" />;
+  if (type === "newsletter" || lowerLabel.includes("newsletter") || lowerLabel.includes("substack") || lowerLabel.includes("beehiiv")) return <Mail className="w-3.5 h-3.5 shrink-0" />;
+  if (type === "speaking" || lowerLabel.includes("speak") || lowerLabel.includes("bureau") || lowerLabel.includes("booking")) return <Presentation className="w-3.5 h-3.5 shrink-0" />;
+  if (type === "blog" || lowerLabel.includes("blog")) return <BookOpen className="w-3.5 h-3.5 shrink-0" />;
+  return <Globe className="w-3.5 h-3.5 shrink-0" />;
+}
+
+function getWebsiteColors(type: NamedWebsite["type"]): { color: string; textColor: string } {
+  switch (type) {
+    case "personal":    return { color: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600", textColor: "text-slate-800 dark:text-slate-100" };
+    case "company":     return { color: "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50", textColor: "text-indigo-800 dark:text-indigo-200" };
+    case "speaking":    return { color: "bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-900/50", textColor: "text-teal-800 dark:text-teal-200" };
+    case "podcast":     return { color: "bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50", textColor: "text-purple-800 dark:text-purple-200" };
+    case "course":      return { color: "bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50", textColor: "text-amber-800 dark:text-amber-200" };
+    case "blog":        return { color: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50", textColor: "text-emerald-800 dark:text-emerald-200" };
+    case "newsletter":  return { color: "bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50", textColor: "text-amber-800 dark:text-amber-200" };
+    case "ted":         return { color: "bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600", textColor: "text-white" };
+    case "masterclass": return { color: "bg-gray-900 hover:bg-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700", textColor: "text-white" };
+    default:            return { color: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600", textColor: "text-slate-800 dark:text-slate-100" };
+  }
+}
+
 // ── Stat formatter ─────────────────────────────────────────────────────────────
 
 function formatCount(n: number | null | undefined): string | null {
@@ -113,7 +159,7 @@ function formatCount(n: number | null | undefined): string | null {
   return String(n);
 }
 
-// ── Platform definitions ──────────────────────────────────────────────────────
+// ── Social platform definitions ───────────────────────────────────────────────
 
 interface PlatformDef {
   key: string;
@@ -121,48 +167,29 @@ interface PlatformDef {
   color: string;
   textColor: string;
   icon: React.ReactNode;
-  /** Extract a stat string from socialStats if available */
   getStat?: (stats: SocialStatsResult | null) => string | null;
 }
 
 const PLATFORM_DEFS: PlatformDef[] = [
   {
-    key: "websiteUrl",
-    label: "Website",
-    color: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600",
-    textColor: "text-slate-700 dark:text-slate-200",
-    icon: <Globe className="w-3.5 h-3.5 shrink-0" />,
-  },
-  {
-    key: "businessWebsiteUrl",
-    label: "Company",
-    color: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600",
-    textColor: "text-slate-700 dark:text-slate-200",
-    icon: <Globe className="w-3.5 h-3.5 shrink-0" />,
-  },
-  {
     key: "youtubeUrl",
     label: "YouTube",
     color: "bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50",
-    textColor: "text-red-700 dark:text-red-300",
+    textColor: "text-red-800 dark:text-red-200",
     icon: <YouTubeIcon />,
-    getStat: (s) => {
-      const count = s?.github?.followers; // placeholder; YouTube stats come from platformEnrichmentStatus
-      return null; // YouTube stats are in platformEnrichmentStatus, not socialStats
-    },
   },
   {
     key: "twitterUrl",
     label: "X / Twitter",
     color: "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600",
-    textColor: "text-gray-800 dark:text-gray-100",
+    textColor: "text-gray-900 dark:text-gray-100",
     icon: <TwitterIcon />,
   },
   {
     key: "linkedinUrl",
     label: "LinkedIn",
     color: "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50",
-    textColor: "text-blue-700 dark:text-blue-300",
+    textColor: "text-blue-800 dark:text-blue-200",
     icon: <LinkedInIcon />,
     getStat: (s) => {
       const count = s?.linkedin?.followerCount;
@@ -174,13 +201,12 @@ const PLATFORM_DEFS: PlatformDef[] = [
     key: "substackUrl",
     label: "Substack",
     color: "bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50",
-    textColor: "text-orange-700 dark:text-orange-300",
+    textColor: "text-orange-800 dark:text-orange-200",
     icon: <SubstackIcon />,
     getStat: (s) => {
       if (!s?.substack) return null;
-      const { postCount, subscriberRange, followerCount } = s.substack;
+      const { postCount, subscriberRange } = s.substack;
       if (subscriberRange) return subscriberRange;
-      if (followerCount) return `${formatCount(followerCount)} followers`;
       if (postCount) return `${postCount} posts`;
       return null;
     },
@@ -189,28 +215,28 @@ const PLATFORM_DEFS: PlatformDef[] = [
     key: "facebookUrl",
     label: "Facebook",
     color: "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50",
-    textColor: "text-blue-700 dark:text-blue-300",
+    textColor: "text-blue-800 dark:text-blue-200",
     icon: <FacebookIcon />,
   },
   {
     key: "instagramUrl",
     label: "Instagram",
     color: "bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/30 dark:hover:bg-pink-900/50",
-    textColor: "text-pink-700 dark:text-pink-300",
+    textColor: "text-pink-800 dark:text-pink-200",
     icon: <InstagramIcon />,
   },
   {
     key: "tiktokUrl",
     label: "TikTok",
     color: "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600",
-    textColor: "text-gray-800 dark:text-gray-100",
+    textColor: "text-gray-900 dark:text-gray-100",
     icon: <TikTokIcon />,
   },
   {
     key: "githubUrl",
     label: "GitHub",
     color: "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600",
-    textColor: "text-gray-800 dark:text-gray-100",
+    textColor: "text-gray-900 dark:text-gray-100",
     icon: <GitHubIcon />,
     getStat: (s) => {
       const count = s?.github?.followers;
@@ -218,37 +244,52 @@ const PLATFORM_DEFS: PlatformDef[] = [
       return fmt ? `${fmt} followers` : null;
     },
   },
+  // Legacy fallback fields — shown only if websitesJson is empty
+  {
+    key: "websiteUrl",
+    label: "Personal Site",
+    color: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600",
+    textColor: "text-slate-800 dark:text-slate-100",
+    icon: <Globe className="w-3.5 h-3.5 shrink-0" />,
+  },
+  {
+    key: "businessWebsiteUrl",
+    label: "Company Site",
+    color: "bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50",
+    textColor: "text-indigo-800 dark:text-indigo-200",
+    icon: <Globe className="w-3.5 h-3.5 shrink-0" />,
+  },
   {
     key: "podcastUrl",
     label: "Podcast",
     color: "bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50",
-    textColor: "text-purple-700 dark:text-purple-300",
+    textColor: "text-purple-800 dark:text-purple-200",
     icon: <Mic className="w-3.5 h-3.5 shrink-0" />,
   },
   {
     key: "newsletterUrl",
     label: "Newsletter",
     color: "bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50",
-    textColor: "text-amber-700 dark:text-amber-300",
+    textColor: "text-amber-800 dark:text-amber-200",
     icon: <Mail className="w-3.5 h-3.5 shrink-0" />,
   },
   {
     key: "speakingUrl",
     label: "Speaking",
     color: "bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-900/50",
-    textColor: "text-teal-700 dark:text-teal-300",
+    textColor: "text-teal-800 dark:text-teal-200",
     icon: <Presentation className="w-3.5 h-3.5 shrink-0" />,
   },
   {
     key: "blogUrl",
     label: "Blog",
-    color: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600",
-    textColor: "text-slate-700 dark:text-slate-200",
-    icon: <ExternalLink className="w-3.5 h-3.5 shrink-0" />,
+    color: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50",
+    textColor: "text-emerald-800 dark:text-emerald-200",
+    icon: <BookOpen className="w-3.5 h-3.5 shrink-0" />,
   },
 ];
 
-// ── Media presence pills (Wikipedia, YC, CNBC, CNN, Bloomberg, Yahoo Finance) ──
+// ── Media presence pills ──────────────────────────────────────────────────────
 
 interface MediaPresenceDef {
   key: keyof SocialStatsResult;
@@ -265,7 +306,7 @@ const MEDIA_PRESENCE_DEFS: MediaPresenceDef[] = [
     key: "wikipedia",
     label: "Wikipedia",
     color: "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600",
-    textColor: "text-gray-800 dark:text-gray-100",
+    textColor: "text-gray-900 dark:text-gray-100",
     icon: <WikipediaIcon />,
     getUrl: (s) => s.wikipedia?.pageUrl || null,
     getStat: (s) => {
@@ -278,7 +319,7 @@ const MEDIA_PRESENCE_DEFS: MediaPresenceDef[] = [
     key: "ycombinator",
     label: "Y Combinator",
     color: "bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50",
-    textColor: "text-orange-700 dark:text-orange-300",
+    textColor: "text-orange-800 dark:text-orange-200",
     icon: <YCIcon />,
     getUrl: (s) => s.ycombinator?.ycPageUrl || null,
     getStat: (s) => {
@@ -290,7 +331,7 @@ const MEDIA_PRESENCE_DEFS: MediaPresenceDef[] = [
     key: "cnbc",
     label: "CNBC",
     color: "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50",
-    textColor: "text-blue-700 dark:text-blue-300",
+    textColor: "text-blue-800 dark:text-blue-200",
     icon: <CNBCIcon />,
     getUrl: (s) => {
       const articles = (s as any).cnbc?.recentArticles;
@@ -305,7 +346,7 @@ const MEDIA_PRESENCE_DEFS: MediaPresenceDef[] = [
     key: "cnn",
     label: "CNN",
     color: "bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50",
-    textColor: "text-red-700 dark:text-red-300",
+    textColor: "text-red-800 dark:text-red-200",
     icon: <CNNIcon />,
     getUrl: (s) => {
       const articles = (s as any).cnn?.recentArticles;
@@ -335,7 +376,7 @@ const MEDIA_PRESENCE_DEFS: MediaPresenceDef[] = [
     key: "yahooFinance",
     label: "Yahoo Finance",
     color: "bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50",
-    textColor: "text-purple-700 dark:text-purple-300",
+    textColor: "text-purple-800 dark:text-purple-200",
     icon: <YahooFinanceIcon />,
     getUrl: (s) => {
       const ticker = s.yahooFinance?.ticker;
@@ -353,6 +394,8 @@ const MEDIA_PRESENCE_DEFS: MediaPresenceDef[] = [
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface PlatformLinks {
+  /** Parsed websitesJson — multiple named websites */
+  websites?: NamedWebsite[] | null;
   websiteUrl?: string | null;
   businessWebsiteUrl?: string | null;
   youtubeUrl?: string | null;
@@ -373,7 +416,7 @@ interface PlatformPillsProps {
   links: PlatformLinks;
   /** Parsed social stats from socialStatsJson column */
   socialStats?: SocialStatsResult | null;
-  /** Maximum number of pills to display before collapsing. Default: 8 */
+  /** Maximum number of pills to display before collapsing. Default: 10 */
   maxVisible?: number;
   /** Size variant: 'sm' for compact cards, 'md' for detail panels */
   size?: "sm" | "md";
@@ -385,111 +428,145 @@ interface PlatformPillsProps {
 export function PlatformPills({
   links,
   socialStats,
-  maxVisible = 8,
+  maxVisible = 10,
   size = "sm",
   className = "",
 }: PlatformPillsProps) {
-  // Collect active social platform pills
-  const activePlatforms = PLATFORM_DEFS.filter(
-    (def) => links[def.key as keyof PlatformLinks]
-  );
-
-  // Collect active media presence pills (from socialStats)
-  const activeMedia = socialStats
-    ? MEDIA_PRESENCE_DEFS.filter((def) => {
-        const url = def.getUrl(socialStats);
-        const stat = def.getStat(socialStats);
-        return url || stat;
-      })
-    : [];
-
-  const allPills = [...activePlatforms.map(d => ({ type: "platform" as const, def: d })),
-                    ...activeMedia.map(d => ({ type: "media" as const, def: d }))];
-
-  if (allPills.length === 0) return null;
-
-  const visible = allPills.slice(0, maxVisible);
-  const overflow = allPills.length - visible.length;
-
   const pillBase =
     size === "sm"
       ? "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer select-none"
       : "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer select-none";
 
+  // 1. Named websites from websitesJson (preferred — branded labels)
+  const websitePills: React.ReactNode[] = [];
+  if (links.websites && links.websites.length > 0) {
+    for (const site of links.websites) {
+      const { color, textColor } = getWebsiteColors(site.type);
+      const icon = getWebsiteIcon(site.type, site.label);
+      websitePills.push(
+        <a
+          key={`ws-${site.url}`}
+          href={site.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          role="listitem"
+          aria-label={`${site.label} website`}
+          className={`${pillBase} ${color} ${textColor} no-underline`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {icon}
+          <span>{site.label}</span>
+        </a>
+      );
+    }
+  } else {
+    // Legacy fallback: show websiteUrl / businessWebsiteUrl / speakingUrl / podcastUrl / newsletterUrl / blogUrl
+    const legacyWebsiteKeys = ["websiteUrl", "businessWebsiteUrl", "speakingUrl", "podcastUrl", "newsletterUrl", "blogUrl"] as const;
+    for (const key of legacyWebsiteKeys) {
+      const url = links[key];
+      if (!url) continue;
+      const def = PLATFORM_DEFS.find(d => d.key === key);
+      if (!def) continue;
+      websitePills.push(
+        <a
+          key={key}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          role="listitem"
+          aria-label={`${def.label}`}
+          className={`${pillBase} ${def.color} ${def.textColor} no-underline`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {def.icon}
+          <span>{def.label}</span>
+        </a>
+      );
+    }
+  }
+
+  // 2. Social platform pills (YouTube, Twitter, LinkedIn, Substack, etc.)
+  const socialPills: React.ReactNode[] = [];
+  const socialKeys = ["youtubeUrl", "twitterUrl", "linkedinUrl", "substackUrl", "facebookUrl", "instagramUrl", "tiktokUrl", "githubUrl"] as const;
+  for (const key of socialKeys) {
+    const url = links[key];
+    if (!url) continue;
+    const def = PLATFORM_DEFS.find(d => d.key === key);
+    if (!def) continue;
+    const stat = def.getStat ? def.getStat(socialStats || null) : null;
+    socialPills.push(
+      <a
+        key={key}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        role="listitem"
+        aria-label={`${def.label} profile`}
+        className={`${pillBase} ${def.color} ${def.textColor} no-underline`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {def.icon}
+        <span>{def.label}</span>
+        {stat && <span className="opacity-70 font-normal">· {stat}</span>}
+      </a>
+    );
+  }
+
+  // 3. Media presence pills (Wikipedia, YC, CNBC, CNN, Bloomberg, Yahoo Finance)
+  const mediaPills: React.ReactNode[] = [];
+  if (socialStats) {
+    for (const def of MEDIA_PRESENCE_DEFS) {
+      const url = def.getUrl(socialStats);
+      const stat = def.getStat(socialStats);
+      if (!url && !stat) continue;
+      const content = (
+        <>
+          {def.icon}
+          <span>{def.label}</span>
+          {stat && <span className="opacity-70 font-normal">· {stat}</span>}
+        </>
+      );
+      if (url) {
+        mediaPills.push(
+          <a
+            key={def.key as string}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            role="listitem"
+            aria-label={`${def.label} presence`}
+            className={`${pillBase} ${def.color} ${def.textColor} no-underline`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {content}
+          </a>
+        );
+      } else {
+        mediaPills.push(
+          <span
+            key={def.key as string}
+            role="listitem"
+            className={`${pillBase} ${def.color} ${def.textColor} cursor-default`}
+          >
+            {content}
+          </span>
+        );
+      }
+    }
+  }
+
+  const allPills = [...websitePills, ...socialPills, ...mediaPills];
+  if (allPills.length === 0) return null;
+
+  const visible = allPills.slice(0, maxVisible);
+  const overflow = allPills.length - visible.length;
+
   return (
     <div className={`flex flex-wrap gap-1 ${className}`} role="list" aria-label="Platform presence">
-      {visible.map((item) => {
-        if (item.type === "platform") {
-          const def = item.def as PlatformDef;
-          const url = links[def.key as keyof PlatformLinks];
-          if (!url) return null;
-          const stat = def.getStat ? def.getStat(socialStats || null) : null;
-          return (
-            <a
-              key={def.key}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              role="listitem"
-              aria-label={`${def.label} profile`}
-              className={`${pillBase} ${def.color} ${def.textColor} no-underline`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {def.icon}
-              <span>{def.label}</span>
-              {stat && (
-                <span className="opacity-70 font-normal">· {stat}</span>
-              )}
-            </a>
-          );
-        } else {
-          const def = item.def as MediaPresenceDef;
-          const url = def.getUrl(socialStats!);
-          const stat = def.getStat(socialStats!);
-          if (!url && !stat) return null;
-          const content = (
-            <>
-              {def.icon}
-              <span>{def.label}</span>
-              {stat && (
-                <span className="opacity-70 font-normal">· {stat}</span>
-              )}
-            </>
-          );
-          if (url) {
-            return (
-              <a
-                key={def.key as string}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                role="listitem"
-                aria-label={`${def.label} presence`}
-                className={`${pillBase} ${def.color} ${def.textColor} no-underline`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {content}
-              </a>
-            );
-          }
-          return (
-            <span
-              key={def.key as string}
-              role="listitem"
-              className={`${pillBase} ${def.color} ${def.textColor} cursor-default`}
-            >
-              {content}
-            </span>
-          );
-        }
-      })}
+      {visible}
       {overflow > 0 && (
         <span
-          className={`${pillBase} bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-default`}
-          title={allPills
-            .slice(maxVisible)
-            .map((p) => p.def.label)
-            .join(", ")}
+          className={`${pillBase} bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-default`}
         >
           +{overflow} more
         </span>
@@ -499,8 +576,16 @@ export function PlatformPills({
 }
 
 /**
- * Count how many platform links are present.
+ * Count how many platform links are present (websites + social + media).
  */
 export function countPlatformLinks(links: PlatformLinks): number {
-  return PLATFORM_DEFS.filter((def) => links[def.key as keyof PlatformLinks]).length;
+  const websiteCount = links.websites?.length ?? PLATFORM_DEFS
+    .filter(d => ["websiteUrl", "businessWebsiteUrl", "speakingUrl", "podcastUrl", "newsletterUrl", "blogUrl"].includes(d.key))
+    .filter(d => links[d.key as keyof PlatformLinks])
+    .length;
+  const socialCount = PLATFORM_DEFS
+    .filter(d => ["youtubeUrl", "twitterUrl", "linkedinUrl", "substackUrl", "facebookUrl", "instagramUrl", "tiktokUrl", "githubUrl"].includes(d.key))
+    .filter(d => links[d.key as keyof PlatformLinks])
+    .length;
+  return (websiteCount ?? 0) + socialCount;
 }

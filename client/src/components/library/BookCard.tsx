@@ -33,6 +33,14 @@ import { ContentTypeBadge } from "./LibraryPrimitives";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
+import { Link } from "wouter";
+
+function slugifyBook(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 interface BookCardProps {
   book: BookRecord;
@@ -317,6 +325,22 @@ export function BookCard({
           </div>
         )}
 
+        {/* View full book page button */}
+        <div className="px-4 pb-3 pt-1 relative z-10" onClick={(e) => e.stopPropagation()}>
+          <Link
+            href={`/book/${slugifyBook(book.name)}`}
+            className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+            style={{
+              background: `linear-gradient(135deg, ${color}22, ${color}11)`,
+              border: `1px solid ${color}44`,
+              color,
+            }}
+          >
+            <BookOpen size={12} />
+            View Full Book Profile
+            <ExternalLink size={10} className="opacity-60" />
+          </Link>
+        </div>
         {/* Amazon badge */}
         {amazonUrl && (
           <a

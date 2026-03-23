@@ -14,6 +14,9 @@ import { persistAvatarResult } from "../lib/authorAvatars/persistResult";
 
 import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
 import { discoverAuthorPlatforms } from "../enrichment/platforms";
+import { enrichRichBio } from "../enrichment/richBio";
+import { enrichRichSummary } from "../enrichment/richSummary";
+import { bookProfiles } from "../../drizzle/schema";
 
 // -- Router --------------------------------------------------------------------
 export const authorProfilesRouter = router({
@@ -869,6 +872,7 @@ export const authorProfilesRouter = router({
       if (links.speakingUrl) updatePayload.speakingUrl = links.speakingUrl;
       if (links.podcastUrl) updatePayload.podcastUrl = links.podcastUrl;
       if (links.blogUrl) updatePayload.blogUrl = links.blogUrl;
+      if (links.websites && links.websites.length > 0) updatePayload.websitesJson = JSON.stringify(links.websites);
 
       const platformStatus = {
         enrichedAt: result.enrichedAt,
@@ -946,6 +950,7 @@ export const authorProfilesRouter = router({
           if (links.speakingUrl) updatePayload.speakingUrl = links.speakingUrl;
           if (links.podcastUrl) updatePayload.podcastUrl = links.podcastUrl;
           if (links.blogUrl) updatePayload.blogUrl = links.blogUrl;
+          if (links.websites && links.websites.length > 0) updatePayload.websitesJson = JSON.stringify(links.websites);
 
           const platformStatus = {
             enrichedAt: result.enrichedAt,
@@ -1190,6 +1195,171 @@ export const authorProfilesRouter = router({
         processed: results.length,
         succeeded: results.filter((r) => !r.error).length,
         failed: results.filter((r) => !!r.error).length,
+        results,
+      };
+    }),
+
+  /** Enrich a single author's rich bio + professional entries via double-pass LLM */
+  enrichRichBio: adminProcedure
+    .input(z.object({ authorName: z.string() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const [profile] = await db
+        .select()
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!profile) throw new Error(`Author not found: ${input.authorName}`);
+
+      const result = await enrichRichBio(
+        input.authorName,
+        profile.bio ?? undefined,
+        undefined
+      );
+      if (!result) throw new Error(`Enrichment returned no data for: ${input.authorName}`);
+
+      await db
+        .update(authorProfiles)
+        .set({
+          richBioJson: JSON.stringify(result),
+          professionalEntriesJson: JSON.stringify(result.professionalEntries),
+        })
+        .where(eq(authorProfiles.authorName, input.authorName));
+
+      return { success: true, authorName: input.authorName };
+    }),
+
+  /** Batch enrich rich bios for all authors (or those missing richBioJson) */
+  enrichRichBioBatch: adminProcedure
+    .input(z.object({ limit: z.number().optional(), forceAll: z.boolean().optional() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const allAuthors = await db
+        .select({ authorName: authorProfiles.authorName, bio: authorProfiles.bio, richBioJson: authorProfiles.richBioJson })
+        .from(authorProfiles);
+
+      const toProcess = input.forceAll
+        ? allAuthors
+        : allAuthors.filter((a) => !a.richBioJson);
+
+      const batch = input.limit ? toProcess.slice(0, input.limit) : toProcess;
+      const results: { authorName: string; success: boolean; error?: string }[] = [];
+
+      for (const author of batch) {
+        try {
+          const result = await enrichRichBio(
+            author.authorName,
+            author.bio ?? undefined,
+            undefined
+          );
+          if (result) {
+            await db
+              .update(authorProfiles)
+              .set({
+                richBioJson: JSON.stringify(result),
+                professionalEntriesJson: JSON.stringify(result.professionalEntries),
+              })
+              .where(eq(authorProfiles.authorName, author.authorName));
+            results.push({ authorName: author.authorName, success: true });
+          } else {
+            results.push({ authorName: author.authorName, success: false, error: "No data returned" });
+          }
+        } catch (err) {
+          results.push({ authorName: author.authorName, success: false, error: String(err) });
+        }
+        await new Promise((r) => setTimeout(r, 1200));
+      }
+
+      return {
+        processed: results.length,
+        succeeded: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
+        results,
+      };
+    }),
+
+  /** Enrich a single book's rich summary + similar books + resource links via double-pass LLM */
+  enrichRichSummary: adminProcedure
+    .input(z.object({ bookTitle: z.string(), authorName: z.string() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const [book] = await db
+        .select()
+        .from(bookProfiles)
+        .where(eq(bookProfiles.bookTitle, input.bookTitle))
+        .limit(1);
+
+      const result = await enrichRichSummary(
+        input.bookTitle,
+        input.authorName,
+        book?.summary ?? undefined,
+        undefined
+      );
+      if (!result) throw new Error(`Enrichment returned no data for: ${input.bookTitle}`);
+
+      if (book) {
+        await db
+          .update(bookProfiles)
+          .set({
+            richSummaryJson: JSON.stringify(result),
+            resourceLinksJson: JSON.stringify(result.resourceLinks),
+          })
+          .where(eq(bookProfiles.bookTitle, input.bookTitle));
+      }
+
+      return { success: true, bookTitle: input.bookTitle };
+    }),
+
+  /** Batch enrich rich summaries for all books (or those missing richSummaryJson) */
+  enrichRichSummaryBatch: adminProcedure
+    .input(z.object({ limit: z.number().optional(), forceAll: z.boolean().optional() }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const allBooks = await db
+        .select({ bookTitle: bookProfiles.bookTitle, authorName: bookProfiles.authorName, summary: bookProfiles.summary, richSummaryJson: bookProfiles.richSummaryJson })
+        .from(bookProfiles);
+
+      const toProcess = input.forceAll
+        ? allBooks
+        : allBooks.filter((b) => !b.richSummaryJson);
+
+      const batch = input.limit ? toProcess.slice(0, input.limit) : toProcess;
+      const results: { bookTitle: string; success: boolean; error?: string }[] = [];
+
+      for (const book of batch) {
+        try {
+          const result = await enrichRichSummary(
+            book.bookTitle,
+            book.authorName ?? "",
+            book.summary ?? undefined,
+            undefined
+          );
+          if (result) {
+            await db
+              .update(bookProfiles)
+              .set({
+                richSummaryJson: JSON.stringify(result),
+                resourceLinksJson: JSON.stringify(result.resourceLinks),
+              })
+              .where(eq(bookProfiles.bookTitle, book.bookTitle));
+            results.push({ bookTitle: book.bookTitle, success: true });
+          } else {
+            results.push({ bookTitle: book.bookTitle, success: false, error: "No data returned" });
+          }
+        } catch (err) {
+          results.push({ bookTitle: book.bookTitle, success: false, error: String(err) });
+        }
+        await new Promise((r) => setTimeout(r, 1200));
+      }
+
+      return {
+        processed: results.length,
+        succeeded: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
         results,
       };
     }),

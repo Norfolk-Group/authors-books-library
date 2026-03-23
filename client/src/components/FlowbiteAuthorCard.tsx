@@ -387,11 +387,12 @@ export function FlowbiteAuthorCard({
                     </TooltipTrigger>
                     <TooltipContent
                       side="bottom"
-                      className="max-w-[260px] p-3 z-50"
+                      className="max-w-[280px] p-3 z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <p className="font-semibold text-xs mb-1">{displayName}</p>
-                      <p className="text-xs leading-relaxed text-muted-foreground">{bioSnippet}</p>
+                      <p className="font-semibold text-xs mb-1.5 text-gray-900 dark:text-gray-100">{displayName}</p>
+                      <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">{bioSnippet}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-2 italic">Click the card to view full profile →</p>
                     </TooltipContent>
                   </Tooltip>
                 ) : (
@@ -412,20 +413,32 @@ export function FlowbiteAuthorCard({
             {/* Platform pills — shown when platform links have been discovered */}
             {platformLinks && (
               <div
-                className="flex justify-center"
+                className="flex justify-center px-1"
                 onClick={(e) => e.stopPropagation()}
               >
-                <PlatformPills links={platformLinks} maxVisible={5} size="sm" />
+                <PlatformPills links={platformLinks} maxVisible={8} size="sm" />
               </div>
             )}
-            {/* Deep-link to author detail page */}
-            <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+            {/* 3D CTA button — View Full Profile */}
+            <div className="flex justify-center mt-1" onClick={(e) => e.stopPropagation()}>
               <Link
                 href={`/author/${encodeURIComponent(displayName)}`}
-                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors font-medium"
+                className="
+                  group/cta inline-flex items-center gap-1.5
+                  px-3 py-1.5 rounded-lg
+                  text-[11px] font-semibold
+                  bg-gradient-to-b from-primary/90 to-primary
+                  text-primary-foreground
+                  shadow-[0_2px_0_0_hsl(var(--primary)/0.5),0_4px_8px_rgba(0,0,0,0.15)]
+                  hover:shadow-[0_1px_0_0_hsl(var(--primary)/0.5),0_2px_4px_rgba(0,0,0,0.15)]
+                  hover:translate-y-[1px]
+                  active:shadow-none active:translate-y-[2px]
+                  transition-all duration-150
+                  no-underline
+                "
               >
-                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                View full profile
+                <svg className="w-3 h-3 transition-transform duration-150 group-hover/cta:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                View Full Profile
               </Link>
             </div>
           </div>
@@ -520,23 +533,23 @@ export function FlowbiteAuthorCard({
                       </TooltipTrigger>
                       <TooltipContent
                         side="top"
-                        className="max-w-[220px] p-2.5 z-50"
+                        className="max-w-[240px] p-2.5 z-50 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-lg"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <p className="font-semibold text-xs mb-1 leading-snug">{rawTitle.trim()}</p>
+                        <p className="font-semibold text-xs mb-1 leading-snug text-gray-900 dark:text-gray-100">{rawTitle.trim()}</p>
                         {rating !== null && (
                           <div className="flex items-center gap-1 mb-1">
                             <span className="text-amber-400 text-xs">{"★".repeat(Math.round(rating))}{"☆".repeat(Math.max(0, 5 - Math.round(rating)))}</span>
-                            <span className="text-xs font-medium text-foreground">{rating.toFixed(1)}</span>
+                            <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{rating.toFixed(1)}</span>
                             {ratingCount !== null && ratingCount > 0 && (
-                              <span className="text-xs text-muted-foreground">({ratingCount.toLocaleString()})</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">({ratingCount.toLocaleString()})</span>
                             )}
                           </div>
                         )}
                         {summarySnippet && (
-                          <p className="text-xs leading-relaxed text-muted-foreground">{summarySnippet}</p>
+                          <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">{summarySnippet}</p>
                         )}
-                        <p className="text-[10px] text-muted-foreground mt-1 italic">Click to view in Books tab</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 italic">Click to view in Books tab →</p>
                       </TooltipContent>
                     </Tooltip>
                   );
