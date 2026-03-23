@@ -25,6 +25,7 @@ import {
   ExternalLink,
   BookMarked as BookMarkedIcon,
   Star,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { CATEGORY_COLORS, CATEGORY_ICONS, type BookRecord } from "@/lib/libraryData";
@@ -70,6 +71,8 @@ interface BookCardProps {
   summary?: string;
   /** Whether this book is currently favorited by the logged-in user */
   isFavorite?: boolean;
+  /** Whether this book has a full double-pass LLM rich summary available */
+  hasRichSummary?: boolean;
 }
 
 export function BookCard({
@@ -90,6 +93,7 @@ export function BookCard({
   keyThemes,
   summary,
   isFavorite,
+  hasRichSummary,
 }: BookCardProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
@@ -287,12 +291,22 @@ export function BookCard({
             </div>
           )}
 
-          {/* Book enrichment level badge */}
-          {enrichmentLevel !== 'none' && (
-            <div className="flex justify-center mt-1" onClick={(e) => e.stopPropagation()}>
+          {/* Book enrichment level badge + Rich Summary indicator */}
+          <div className="flex items-center justify-center gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
+            {enrichmentLevel !== 'none' && (
               <BookEnrichmentBadge level={enrichmentLevel} size="sm" />
-            </div>
-          )}
+            )}
+            {hasRichSummary && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full font-semibold cursor-default select-none px-1.5 py-0.5 text-[9px] bg-teal-500/15 text-teal-700 border border-teal-500/30 dark:bg-teal-500/20 dark:text-teal-300 dark:border-teal-500/40"
+                title="Full AI-generated rich summary available on the book detail page"
+                aria-label="Rich summary available"
+              >
+                <FileText className="w-2.5 h-2.5 flex-shrink-0 text-teal-600 dark:text-teal-400" />
+                <span className="uppercase tracking-wider leading-none">Rich</span>
+              </span>
+            )}
+          </div>
 
           {/* Key themes pills — shown when enriched */}
           {keyThemes && (

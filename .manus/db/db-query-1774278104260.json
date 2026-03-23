@@ -1,0 +1,46 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles' AND ORDINAL_POSITION > 40 ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles' AND ORDINAL_POSITION > 40 ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "speakingUrl"
+    },
+    {
+      "COLUMN_NAME": "substackPostCount"
+    },
+    {
+      "COLUMN_NAME": "substackSubscriberRange"
+    },
+    {
+      "COLUMN_NAME": "substackStatsEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "socialStatsJson"
+    },
+    {
+      "COLUMN_NAME": "socialStatsEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "stockTicker"
+    },
+    {
+      "COLUMN_NAME": "wikipediaUrl"
+    },
+    {
+      "COLUMN_NAME": "driveFolderId"
+    },
+    {
+      "COLUMN_NAME": "websitesJson"
+    },
+    {
+      "COLUMN_NAME": "professionalEntriesJson"
+    },
+    {
+      "COLUMN_NAME": "richBioJson"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nspeakingUrl\nsubstackPostCount\nsubstackSubscriberRange\nsubstackStatsEnrichedAt\nsocialStatsJson\nsocialStatsEnrichedAt\nstockTicker\nwikipediaUrl\ndriveFolderId\nwebsitesJson\nprofessionalEntriesJson\nrichBioJson\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

@@ -1,0 +1,8 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CASE WHEN richSummary IS NOT NULL AND richSummary != '' THEN 1 ELSE 0 END) as with_rich_summary FROM book_profiles; SELECT COUNT(*) as total, SUM(CASE WHEN richBio IS NOT NULL AND richBio != '' THEN 1 ELSE 0 END) as with_rich_bio FROM author_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COUNT(*) as total, SUM(CASE WHEN richSummary IS NOT NULL AND richSummary != '' THEN 1 ELSE 0 END) as with_rich_summary FROM book_profiles; SELECT COUNT(*) as total, SUM(CASE WHEN richBio IS NOT NULL AND richBio != '' THEN 1 ELSE 0 END) as with_rich_bio FROM author_profiles;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'richsummary' in ''"
+  ]
+}

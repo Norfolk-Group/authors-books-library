@@ -1,0 +1,106 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles' AND ORDINAL_POSITION > 20 ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles' AND ORDINAL_POSITION > 20 ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "avatarGenModel"
+    },
+    {
+      "COLUMN_NAME": "avatarResearchVendor"
+    },
+    {
+      "COLUMN_NAME": "avatarResearchModel"
+    },
+    {
+      "COLUMN_NAME": "podcastUrl"
+    },
+    {
+      "COLUMN_NAME": "blogUrl"
+    },
+    {
+      "COLUMN_NAME": "substackUrl"
+    },
+    {
+      "COLUMN_NAME": "newspaperArticlesJson"
+    },
+    {
+      "COLUMN_NAME": "otherLinksJson"
+    },
+    {
+      "COLUMN_NAME": "lastLinksEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "linksEnrichmentSource"
+    },
+    {
+      "COLUMN_NAME": "bestReferencePhotoUrl"
+    },
+    {
+      "COLUMN_NAME": "platformEnrichmentStatus"
+    },
+    {
+      "COLUMN_NAME": "researchQuality"
+    },
+    {
+      "COLUMN_NAME": "youtubeUrl"
+    },
+    {
+      "COLUMN_NAME": "facebookUrl"
+    },
+    {
+      "COLUMN_NAME": "instagramUrl"
+    },
+    {
+      "COLUMN_NAME": "tiktokUrl"
+    },
+    {
+      "COLUMN_NAME": "githubUrl"
+    },
+    {
+      "COLUMN_NAME": "businessWebsiteUrl"
+    },
+    {
+      "COLUMN_NAME": "newsletterUrl"
+    },
+    {
+      "COLUMN_NAME": "speakingUrl"
+    },
+    {
+      "COLUMN_NAME": "substackPostCount"
+    },
+    {
+      "COLUMN_NAME": "substackSubscriberRange"
+    },
+    {
+      "COLUMN_NAME": "substackStatsEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "socialStatsJson"
+    },
+    {
+      "COLUMN_NAME": "socialStatsEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "stockTicker"
+    },
+    {
+      "COLUMN_NAME": "wikipediaUrl"
+    },
+    {
+      "COLUMN_NAME": "driveFolderId"
+    },
+    {
+      "COLUMN_NAME": "websitesJson"
+    },
+    {
+      "COLUMN_NAME": "professionalEntriesJson"
+    },
+    {
+      "COLUMN_NAME": "richBioJson"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\navatarGenModel\navatarResearchVendor\navatarResearchModel\npodcastUrl\nblogUrl\nsubstackUrl\nnewspaperArticlesJson\notherLinksJson\nlastLinksEnrichedAt\nlinksEnrichmentSource\nbestReferencePhotoUrl\nplatformEnrichmentStatus\nresearchQuality\nyoutubeUrl\nfacebookUrl\ninstagramUrl\ntiktokUrl\ngithubUrl\nbusinessWebsiteUrl\nnewsletterUrl\nspeakingUrl\nsubstackPostCount\nsubstackSubscriberRange\nsubstackStatsEnrichedAt\nsocialStatsJson\nsocialStatsEnrichedAt\nstockTicker\nwikipediaUrl\ndriveFolderId\nwebsitesJson\nprofessionalEntriesJson\nrichBioJson\n",
+  "stderr": "",
+  "execution_time_ms": 55
+}

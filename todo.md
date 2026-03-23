@@ -1604,3 +1604,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Run Enrich Rich Author Bios pipeline (batch all 176 authors, double-pass LLM) — 174/176 succeeded
 - [x] Run Enrich Rich Book Summaries pipeline (batch all 147 books, double-pass LLM) — 145/147 succeeded
 - [x] Re-run Discover Author Platforms pipeline (updated multi-website prompt, all 176 authors) — 176/176 succeeded
+
+## Session March 23, 2026 — Wikipedia Backfill, Retry Failures, Rich Summary Indicator
+
+- [x] Add "Rich Summary ready" indicator to book cards (teal badge when richSummaryJson populated)
+- [x] Run Wikipedia URL backfill for all 147 books via Wikipedia API — 132/147 matched (15 skipped: generic/short titles)
+- [x] Retry failed enrichments: Dale Carnegie bio, Mark Manson bio, "How to Win Friends" summary, "7 Habits" summary — all 4 succeeded via Anthropic SDK fallback

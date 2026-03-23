@@ -1,0 +1,34 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'book_profiles' AND ORDINAL_POSITION > 20 ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'book_profiles' AND ORDINAL_POSITION > 20 ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "publisherUrl"
+    },
+    {
+      "COLUMN_NAME": "lastSummaryEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "summaryEnrichmentSource"
+    },
+    {
+      "COLUMN_NAME": "coverImageSource"
+    },
+    {
+      "COLUMN_NAME": "driveFolderId"
+    },
+    {
+      "COLUMN_NAME": "resourceLinksJson"
+    },
+    {
+      "COLUMN_NAME": "richSummaryJson"
+    },
+    {
+      "COLUMN_NAME": "wikipediaUrl"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\npublisherUrl\nlastSummaryEnrichedAt\nsummaryEnrichmentSource\ncoverImageSource\ndriveFolderId\nresourceLinksJson\nrichSummaryJson\nwikipediaUrl\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

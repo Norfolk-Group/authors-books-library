@@ -230,6 +230,15 @@ export default function Home() {
     return map;
   }, [bookCoversQuery.data]);
 
+  const richSummarySet = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of bookCoversQuery.data ?? []) {
+      if ((p as { richSummaryJson?: string | null }).richSummaryJson)
+        set.add(p.bookTitle);
+    }
+    return set;
+  }, [bookCoversQuery.data]);
+
   const bookInfoMap = useMemo(() => {
     const map = new Map<string, { summary?: string; rating?: string; ratingCount?: number; publishedDate?: string; keyThemes?: string }>();
     for (const p of bookCoversQuery.data ?? []) {
@@ -913,6 +922,7 @@ export default function Home() {
                             keyThemes={bookInfoMap.get(tk)?.keyThemes}
                             summary={bookInfoMap.get(tk)?.summary}
                             isFavorite={(bookFavoritesQuery.data ?? {})[tk] ?? false}
+                            hasRichSummary={richSummarySet.has(titleKey)}
                           />
                         </div>
                       );
@@ -1013,6 +1023,7 @@ export default function Home() {
                                     keyThemes={bookInfoMap.get(tk)?.keyThemes}
                                     summary={bookInfoMap.get(tk)?.summary}
                                     isFavorite={true}
+                                    hasRichSummary={richSummarySet.has(titleKey)}
                                   />
                                 </div>
                               );

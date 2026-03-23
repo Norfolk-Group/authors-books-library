@@ -1,0 +1,15 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CASE WHEN richSummaryJson IS NOT NULL AND richSummaryJson != '' THEN 1 ELSE 0 END) as with_rich_summary, SUM(CASE WHEN wikipediaUrl IS NOT NULL AND wikipediaUrl != '' THEN 1 ELSE 0 END) as with_wikipedia FROM book_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COUNT(*) as total, SUM(CASE WHEN richSummaryJson IS NOT NULL AND richSummaryJson != '' THEN 1 ELSE 0 END) as with_rich_summary, SUM(CASE WHEN wikipediaUrl IS NOT NULL AND wikipediaUrl != '' THEN 1 ELSE 0 END) as with_wikipedia FROM book_profiles;",
+  "rows": [
+    {
+      "total": "147",
+      "with_rich_summary": "145",
+      "with_wikipedia": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\twith_rich_summary\twith_wikipedia\n147\t145\t0\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

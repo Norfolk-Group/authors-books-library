@@ -1,0 +1,94 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'book_profiles' ORDER BY ORDINAL_POSITION;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'book_profiles' ORDER BY ORDINAL_POSITION;",
+  "rows": [
+    {
+      "COLUMN_NAME": "id"
+    },
+    {
+      "COLUMN_NAME": "bookTitle"
+    },
+    {
+      "COLUMN_NAME": "authorName"
+    },
+    {
+      "COLUMN_NAME": "summary"
+    },
+    {
+      "COLUMN_NAME": "keyThemes"
+    },
+    {
+      "COLUMN_NAME": "rating"
+    },
+    {
+      "COLUMN_NAME": "ratingCount"
+    },
+    {
+      "COLUMN_NAME": "amazonUrl"
+    },
+    {
+      "COLUMN_NAME": "goodreadsUrl"
+    },
+    {
+      "COLUMN_NAME": "resourceUrl"
+    },
+    {
+      "COLUMN_NAME": "resourceLabel"
+    },
+    {
+      "COLUMN_NAME": "enrichedAt"
+    },
+    {
+      "COLUMN_NAME": "createdAt"
+    },
+    {
+      "COLUMN_NAME": "updatedAt"
+    },
+    {
+      "COLUMN_NAME": "coverImageUrl"
+    },
+    {
+      "COLUMN_NAME": "publishedDate"
+    },
+    {
+      "COLUMN_NAME": "isbn"
+    },
+    {
+      "COLUMN_NAME": "publisher"
+    },
+    {
+      "COLUMN_NAME": "s3CoverUrl"
+    },
+    {
+      "COLUMN_NAME": "s3CoverKey"
+    },
+    {
+      "COLUMN_NAME": "publisherUrl"
+    },
+    {
+      "COLUMN_NAME": "lastSummaryEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "summaryEnrichmentSource"
+    },
+    {
+      "COLUMN_NAME": "coverImageSource"
+    },
+    {
+      "COLUMN_NAME": "driveFolderId"
+    },
+    {
+      "COLUMN_NAME": "resourceLinksJson"
+    },
+    {
+      "COLUMN_NAME": "richSummaryJson"
+    },
+    {
+      "COLUMN_NAME": "wikipediaUrl"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\nid\nbookTitle\nauthorName\nsummary\nkeyThemes\nrating\nratingCount\namazonUrl\ngoodreadsUrl\nresourceUrl\nresourceLabel\nenrichedAt\ncreatedAt\nupdatedAt\ncoverImageUrl\npublishedDate\nisbn\npublisher\ns3CoverUrl\ns3CoverKey\npublisherUrl\nlastSummaryEnrichedAt\nsummaryEnrichmentSource\ncoverImageSource\ndriveFolderId\nresourceLinksJson\nrichSummaryJson\nwikipediaUrl\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

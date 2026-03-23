@@ -1,0 +1,16 @@
+{
+  "query": "SELECT bookTitle FROM book_profiles WHERE richSummaryJson IS NULL OR richSummaryJson = '' ORDER BY bookTitle;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT bookTitle FROM book_profiles WHERE richSummaryJson IS NULL OR richSummaryJson = '' ORDER BY bookTitle;",
+  "rows": [
+    {
+      "bookTitle": "How to Win Friends and Influence People"
+    },
+    {
+      "bookTitle": "The 7 Habits of Highly Effective People"
+    }
+  ],
+  "messages": [],
+  "stdout": "bookTitle\nHow to Win Friends and Influence People\nThe 7 Habits of Highly Effective People\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}
