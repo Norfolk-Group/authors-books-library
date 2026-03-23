@@ -1601,6 +1601,6 @@ Live URL: https://authlib-ehsrgokn.manus.space
 ## Session March 23, 2026 — Enrichment Pipeline Runs + Wikipedia Pill
 
 - [x] Add Wikipedia resource pill to book cards (wire wikipediaUrl from book_profiles)
-- [ ] Run Enrich Rich Author Bios pipeline (batch all 176 authors, double-pass LLM)
-- [ ] Run Enrich Rich Book Summaries pipeline (batch all 140 books, double-pass LLM)
-- [ ] Re-run Discover Author Platforms pipeline (updated multi-website prompt, all 176 authors)
+- [x] Run Enrich Rich Author Bios pipeline (batch all 176 authors, double-pass LLM) — 174/176 succeeded
+- [x] Run Enrich Rich Book Summaries pipeline (batch all 147 books, double-pass LLM) — 145/147 succeeded
+- [x] Re-run Discover Author Platforms pipeline (updated multi-website prompt, all 176 authors) — 176/176 succeeded
