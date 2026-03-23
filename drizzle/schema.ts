@@ -1,4 +1,4 @@
-import { index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { decimal, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -96,6 +96,14 @@ export const authorProfiles = mysqlTable("author_profiles", {
   lastLinksEnrichedAt: timestamp("lastLinksEnrichedAt"),
   /** Which tool enriched the links ('perplexity', 'tavily', 'manual') */
   linksEnrichmentSource: varchar("linksEnrichmentSource", { length: 50 }),
+  /**
+   * JSON object tracking enrichment status per platform.
+   * Shape: { youtube?: { channelId, subscriberCount, enrichedAt }, ted?: { talkUrl, viewCount, enrichedAt }, substack?: { url, enrichedAt }, ... }
+   * Null means not yet checked; empty object means checked but no presence found.
+   */
+  platformEnrichmentStatus: text("platformEnrichmentStatus"),
+  /** Confidence level for research quality: high | medium | low */
+  researchQuality: mysqlEnum("researchQuality", ["high", "medium", "low"]),
   enrichedAt: timestamp("enrichedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -122,8 +130,8 @@ export const bookProfiles = mysqlTable("book_profiles", {
   summary: text("summary"),
   /** Comma-separated key themes, e.g. "habits,productivity,neuroscience" */
   keyThemes: text("keyThemes"),
-  /** Average rating out of 5, e.g. "4.6" */
-  rating: varchar("rating", { length: 8 }),
+  /** Average rating out of 5, e.g. 4.6 — stored as DECIMAL(3,1) for proper numeric sorting */
+  rating: decimal("rating", { precision: 3, scale: 1 }),
   /** Number of ratings/reviews as an integer, e.g. 120000 */
   ratingCount: int("ratingCount"),
   /** Amazon product page URL */
@@ -172,6 +180,8 @@ export const syncStatus = mysqlTable("sync_status", {
   id: varchar("id", { length: 36 }).primaryKey(), // UUID
   /** Job type: 'drive-scan' | 'mirror-covers' | 'mirror-avatars' */
   jobType: varchar("jobType", { length: 64 }).notNull().default("drive-scan"),
+  /** Enrichment type for enrichment jobs: 'youtube' | 'ted' | 'substack' | 'bios' | 'covers' | etc. */
+  enrichmentType: varchar("enrichmentType", { length: 64 }),
   status: mysqlEnum("status", ["pending", "running", "completed", "failed"]).notNull().default("pending"),
   /** 0-100 progress percentage */
   progress: int("progress").notNull().default(0),
@@ -209,3 +219,27 @@ export const adminActionLog = mysqlTable("admin_action_log", {
 
 export type AdminActionLog = typeof adminActionLog.$inferSelect;
 export type InsertAdminActionLog = typeof adminActionLog.$inferInsert;
+
+// Favorites — tracks user-favorited authors and books for priority refresh scheduling
+export const favorites = mysqlTable("favorites", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Owner's Manus openId — favorites are per-user */
+  userId: varchar("userId", { length: 64 }).notNull(),
+  /** 'author' | 'book' */
+  entityType: mysqlEnum("entityType", ["author", "book"]).notNull(),
+  /** The author name (for authors) or book title (for books) — matches the key used in enrichment */
+  entityKey: varchar("entityKey", { length: 512 }).notNull(),
+  /** Optional display name for the entity */
+  displayName: varchar("displayName", { length: 512 }),
+  /** Optional cover/avatar URL for display in Favorites panel */
+  imageUrl: varchar("imageUrl", { length: 1024 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  /** Composite unique: one favorite per user per entity */
+  userEntityIdx: index("favorites_userId_entityType_entityKey_idx").on(table.userId, table.entityType, table.entityKey),
+  /** Index for listing all favorites for a user */
+  userIdx: index("favorites_userId_idx").on(table.userId),
+}));
+
+export type Favorite = typeof favorites.$inferSelect;
+export type InsertFavorite = typeof favorites.$inferInsert;

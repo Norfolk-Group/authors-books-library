@@ -37,6 +37,7 @@ import {
 } from "@/lib/libraryData";
 import { AuthorModal } from "@/components/AuthorModal";
 import { AuthorCardActions } from "@/components/AuthorCardActions";
+import { FavoriteToggle } from "@/components/FavoriteToggle";
 import {
   ICON_MAP,
 } from "@/components/library/libraryConstants";
@@ -91,6 +92,8 @@ export interface FlowbiteAuthorCardProps {
   cardRef?: (el: HTMLDivElement | null) => void;
   /** Map of lowercase author name -> research quality confidence level */
   researchQualityMap?: Map<string, "high" | "medium" | "low">;
+  /** Whether this author is currently favorited by the logged-in user */
+  isFavorite?: boolean;
 }
 
 // -- Main component -------------------------------------------------------------
@@ -107,6 +110,7 @@ export function FlowbiteAuthorCard({
   isHighlighted,
   cardRef,
   researchQualityMap,
+  isFavorite,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -210,8 +214,16 @@ export function FlowbiteAuthorCard({
                   {author.category}
                 </p>
               </div>
-              {/* Right side: Bio-ready dot + actions menu */}
+              {/* Right side: Bio-ready dot + favorite + actions menu */}
               <div className="shrink-0 h-[20px] flex items-center gap-1.5">
+                <FavoriteToggle
+                  entityType="author"
+                  entityKey={displayName.toLowerCase()}
+                  displayName={displayName}
+                  imageUrl={avatarUrl ?? undefined}
+                  initialIsFavorite={isFavorite ?? false}
+                  size="sm"
+                />
                 {isEnriched ? (
                   <span
                     title="Bio ready"

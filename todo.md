@@ -1415,3 +1415,14 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] Create client/src/components/admin/SchedulingTab.tsx
 - [ ] Create client/src/components/admin/FavoritesTab.tsx
 - [ ] Add Scheduling and Favorites tabs to Admin Console
+
+## Master Replan — Execution Batch (March 23, 2026)
+
+- [x] Add platformEnrichmentStatus JSON column to author_profiles (migration 0017)
+- [x] Normalize rating column from VARCHAR to DECIMAL(3,1) on book_profiles (migration 0018)
+- [x] Add enrichmentType VARCHAR(64) to syncStatus table (migration 0019)
+- [x] Add enrichment stats bar chart to Admin Console Books tab (count per enrichment level)
+- [x] Create favorites DB table with entityType/entityId/userId (migration 0020)
+- [x] Add favorites tRPC procedures: toggle, list, checkMany, counts, topFavorited
+- [x] Create FavoriteToggle component (heart icon, optimistic toggle)
+- [x] Wire FavoriteToggle into FlowbiteAuthorCard and BookCard

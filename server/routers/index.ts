@@ -15,6 +15,7 @@ import { apifyRouter } from "./apify.router";
 import { llmRouter } from "./llm.router";
 import { cascadeRouter } from "./cascade.router";
 import { adminRouter } from "./admin.router";
+import { favoritesRouter } from "./favorites.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -35,6 +36,7 @@ export const appRouter = router({
   llm: llmRouter,
   cascade: cascadeRouter,
   admin: adminRouter,
+  favorites: favoritesRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -27,6 +27,12 @@ interface BookStats {
   withSummary: number;
   withRating: number;
   withEnrichedAt: number;
+  enrichmentLevelCounts?: {
+    fullyEnriched: number;
+    wellEnriched: number;
+    partiallyEnriched: number;
+    basic: number;
+  };
 }
 
 interface ScrapeStats {
@@ -120,6 +126,31 @@ export function CascadeTab({ aStats, bStats, scrapeStats }: CascadeTabProps) {
                 <StatRow label="With Summary" value={bStats.withSummary} total={bStats.total} />
                 <StatRow label="With Rating" value={bStats.withRating} total={bStats.total} />
                 <StatRow label="Enriched" value={bStats.withEnrichedAt} total={bStats.total} />
+                {bStats.enrichmentLevelCounts && bStats.total > 0 && (
+                  <div className="pt-3 mt-2 border-t border-border/50">
+                    <p className="text-[10px] font-semibold text-muted-foreground mb-2">Enrichment Level Distribution</p>
+                    {[
+                      { label: "Fully Enriched", value: bStats.enrichmentLevelCounts.fullyEnriched, color: "bg-emerald-500" },
+                      { label: "Well Enriched", value: bStats.enrichmentLevelCounts.wellEnriched, color: "bg-blue-500" },
+                      { label: "Partially Enriched", value: bStats.enrichmentLevelCounts.partiallyEnriched, color: "bg-amber-500" },
+                      { label: "Basic", value: bStats.enrichmentLevelCounts.basic, color: "bg-zinc-400" },
+                    ].map((level) => (
+                      <div key={level.label} className="flex items-center gap-2 mb-1.5">
+                        <span className="text-[10px] text-muted-foreground w-28 shrink-0">{level.label}</span>
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${level.color} transition-all duration-500`}
+                            style={{ width: `${Math.round((level.value / bStats.total) * 100)}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-medium w-6 text-right">{level.value}</span>
+                        <span className="text-[10px] text-muted-foreground w-7 text-right">
+                          {Math.round((level.value / bStats.total) * 100)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">Loading...</p>

@@ -56,6 +56,7 @@ import { AUDIO_BOOKS } from "@/lib/audioData";
 import { FlowbiteAuthorCard } from "@/components/FlowbiteAuthorCard";
 import { canonicalName } from "@/lib/authorAliases";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // Extracted library sub-components
 import { BookCard } from "@/components/library/BookCard";
@@ -240,6 +241,21 @@ export default function Home() {
     }
     return map;
   }, [researchQualityQuery.data]);
+
+  // --- Favorites ---
+  const { isAuthenticated } = useAuth();
+  const allAuthorKeys = useMemo(
+    () => Array.from(new Set(AUTHORS.map((a) => canonicalName(a.name).toLowerCase()))),
+    []
+  );
+  const authorFavoritesQuery = trpc.favorites.checkMany.useQuery(
+    { entityType: "author", entityKeys: allAuthorKeys },
+    { enabled: isAuthenticated, staleTime: 60_000 }
+  );
+  const bookFavoritesQuery = trpc.favorites.checkMany.useQuery(
+    { entityType: "book", entityKeys: allBookTitles.map((t) => t.toLowerCase()) },
+    { enabled: isAuthenticated, staleTime: 60_000 }
+  );
   const dbAvatarMap = useMemo(() => {
     const map = new Map<string, string>();
     const splitSep = /\s+(?:and|&)\s+/i;
@@ -766,6 +782,7 @@ export default function Home() {
                           bookInfoMap={bookInfoMap}
                           onNavigateToBook={navigateToBook}
                           isHighlighted={highlightedAuthorName === canonicalName(a.name).toLowerCase()}
+                          isFavorite={(authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()] ?? false}
                           cardRef={(el) => {
                             const key = canonicalName(a.name).toLowerCase();
                             if (el) authorCardRefs.current.set(key, el);
@@ -808,6 +825,7 @@ export default function Home() {
                             publishedDate={bookInfoMap.get(tk)?.publishedDate}
                             keyThemes={bookInfoMap.get(tk)?.keyThemes}
                             summary={bookInfoMap.get(tk)?.summary}
+                            isFavorite={(bookFavoritesQuery.data ?? {})[tk] ?? false}
                           />
                         </div>
                       );

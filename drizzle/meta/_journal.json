@@ -120,6 +120,13 @@
       "when": 1774211136213,
       "tag": "0016_giant_cerebro",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1774227707006,
+      "tag": "0017_steady_the_anarchist",
+      "breakpoints": true
     }
   ]
 }

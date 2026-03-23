@@ -32,6 +32,7 @@ import { ICON_MAP, getBookEnrichmentLevel } from "./libraryConstants";
 import { ContentTypeBadge } from "./LibraryPrimitives";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
+import { FavoriteToggle } from "@/components/FavoriteToggle";
 
 interface BookCardProps {
   book: BookRecord;
@@ -55,6 +56,8 @@ interface BookCardProps {
   keyThemes?: string;
   /** Short summary for hover tooltip */
   summary?: string;
+  /** Whether this book is currently favorited by the logged-in user */
+  isFavorite?: boolean;
 }
 
 export function BookCard({
@@ -72,6 +75,7 @@ export function BookCard({
   publishedDate,
   keyThemes,
   summary,
+  isFavorite,
 }: BookCardProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
@@ -149,16 +153,26 @@ export function BookCard({
               {book.category}
             </p>
           </div>
-          <a
-            href={driveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-            title="Open in Drive"
-          >
-            <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity" />
-          </a>
+          <div className="flex items-center gap-1 shrink-0">
+            <FavoriteToggle
+              entityType="book"
+              entityKey={displayTitle.toLowerCase()}
+              displayName={displayTitle}
+              imageUrl={coverImageUrl}
+              initialIsFavorite={isFavorite ?? false}
+              size="sm"
+            />
+            <a
+              href={driveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+              title="Open in Drive"
+            >
+              <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity" />
+            </a>
+          </div>
         </div>
 
         {/* ── Row 2: Cover (centered, like author avatar) ─────────────────── */}

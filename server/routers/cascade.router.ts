@@ -97,7 +97,7 @@ export const cascadeRouter = router({
    */
   bookStats: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { total: 0, withCover: 0, withS3Cover: 0, withSummary: 0, withIsbn: 0, withAmazonUrl: 0, withRating: 0, withEnrichedAt: 0, withPublisher: 0, noCover: 0, noSummary: 0 };
+    if (!db) return { total: 0, withCover: 0, withS3Cover: 0, withSummary: 0, withIsbn: 0, withAmazonUrl: 0, withRating: 0, withEnrichedAt: 0, withPublisher: 0, noCover: 0, noSummary: 0, enrichmentLevelCounts: { fullyEnriched: 0, wellEnriched: 0, partiallyEnriched: 0, basic: 0 } };
     const rows = await db
       .select({
         bookTitle: bookProfiles.bookTitle,
@@ -120,11 +120,27 @@ export const cascadeRouter = router({
     const withSummary = rows.filter((r: BookRow) => r.summary && r.summary.length > 0).length;
     const withIsbn = rows.filter((r: BookRow) => r.isbn && r.isbn.length > 0).length;
     const withAmazonUrl = rows.filter((r: BookRow) => r.amazonUrl && r.amazonUrl.length > 0).length;
-    const withRating = rows.filter((r: BookRow) => r.rating && r.rating.length > 0).length;
+    // rating is now DECIMAL — check for null/undefined rather than empty string
+    const withRating = rows.filter((r: BookRow) => r.rating != null).length;
     const withEnrichedAt = rows.filter((r: BookRow) => r.enrichedAt != null).length;
     const withPublisher = rows.filter((r: BookRow) => r.publisher && r.publisher.length > 0).length;
     const noCover = rows.filter((r: BookRow) => !r.coverImageUrl || r.coverImageUrl.length === 0).length;
     const noSummary = rows.filter((r: BookRow) => !r.summary || r.summary.length === 0).length;
+
+    // Compute enrichment level counts (mirrors getBookEnrichmentLevel on the client)
+    const enrichmentLevelCounts = { fullyEnriched: 0, wellEnriched: 0, partiallyEnriched: 0, basic: 0 };
+    for (const r of rows) {
+      let score = 0;
+      if (r.coverImageUrl && r.coverImageUrl.length > 0) score++;
+      if (r.summary && r.summary.length > 0) score++;
+      if (r.rating != null) score++;
+      if (r.amazonUrl && r.amazonUrl.length > 0) score++;
+      if (r.publishedDate && r.publishedDate.length > 0) score++;
+      if (score >= 5) enrichmentLevelCounts.fullyEnriched++;
+      else if (score >= 3) enrichmentLevelCounts.wellEnriched++;
+      else if (score >= 1) enrichmentLevelCounts.partiallyEnriched++;
+      else enrichmentLevelCounts.basic++;
+    }
 
     return {
       total,
@@ -138,6 +154,7 @@ export const cascadeRouter = router({
       withPublisher,
       noCover,
       noSummary,
+      enrichmentLevelCounts,
     };
   }),
 });
