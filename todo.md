@@ -1621,3 +1621,61 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 - [x] Add "Rich Bio ready" teal indicator badge to FlowbiteAuthorCard (hasRichBio prop)
 - [x] Build richBioSet in Home.tsx from new getAllRichBioNames tRPC query and pass hasRichBio to all author card call sites
+
+## Opus Audit — Verified Execution Plan (March 23, 2026)
+
+### Audit Summary
+- 3 items ALREADY_DONE (Claude model ID, nano-banana default, parallelBatch)
+- 27 items STILL_NEEDED
+- 8 items PARTIALLY_DONE
+- 4 items BLOCKED (Twitter/X, Instagram, TikTok, Facebook — need API keys)
+- 0 items DESTRUCTIVE or CONFLICTING
+
+### Block 1: Quick Wins & Cleanup (3 items)
+- [ ] #19 Delete BookModal.tsx shim (deprecated no-op, not imported anywhere)
+- [ ] #16 Consolidate duplicate Tavily fetch logic (waterfall.ts + authorResearcher.ts)
+- [ ] #4 Test live avatar generation on 2-3 authors to verify resemblance
+
+### Block 2: Avatar Pipeline Enhancements (13 items)
+- [ ] #5 Complete resolution types: add outputFormat, outputQuality, numInferenceSteps to types.ts
+- [ ] #6 Fix imageGenerators/google.ts — only pass aspectRatio to Imagen 3
+- [ ] #7 Update imageGenerators/replicate.ts — accept all resolution params
+- [ ] #8 Update meticulousPipeline.ts — pass all resolution options through
+- [ ] #9 Update avatar regeneration tRPC procedure to read resolution params from AppSettings
+- [ ] #10 Create AspectRatioSelector, QualitySlider, DimensionInput UI components
+- [ ] #11 Reorganize Avatar Generation sub-tab into 3 sections (Model, Resolution, Test)
+- [ ] #12 Add vendor capability info alert (which params each vendor supports)
+- [ ] #13 Add "Reset to Defaults" button for resolution settings
+- [ ] #14 Update Test Portrait button to pass current resolution settings
+- [ ] #15 Complete "Reference photo used" thumbnail in Admin view (partially done in AiTab)
+- [ ] #43 Formalize avatar background consistency into main codebase (skill exists)
+- [ ] #3 Upgrade Gemini research pass to inline reference photos as multimodal base64
+
+### Block 3: UI/UX Features (8 items)
+- [ ] #18 Expose authorDescriptionJson in Author Bio Panel ("View Research Description" collapsible)
+- [ ] #22 Add keyboard navigation (arrow keys between cards in grid view)
+- [ ] #23 Add "Recently Added" or "Featured" section to home page
+- [ ] #32 Add YouTube enrichment ActionCard to Admin Console (helper exists, needs UI)
+- [ ] #34 Wire platform pills to real YouTube/TED/Substack data (partially done)
+- [ ] #21 Wire per-card Update Links to auto-refresh modal without close/reopen
+- [ ] #20 Add per-card action progress indicator (spinner overlay + disable menu during mutation)
+- [ ] #24 Add live per-item progress stream (tRPC subscription or SSE) — DEFER: HIGH risk
+
+### Block 4: Infrastructure & Scheduling (11 items)
+- [ ] #25 Create enrichmentSchedules table (migration)
+- [ ] #26 Create enrichmentJobs table (migration)
+- [ ] #27 Create server/lib/staleness.ts (calculateStalenessScore, getStalenessIndicator)
+- [ ] #28 Create FreshnessDot component
+- [ ] #29 Wire FreshnessDot into FlowbiteAuthorCard and BookCard
+- [ ] #30 Create SchedulingTab in Admin Console
+- [ ] #31 Create FavoritesTab in Admin Console (favorites router already exists)
+- [ ] #33 Create TED talk scraper (server/enrichment/ted.ts)
+- [ ] #42 Add mediaPresenceJson, businessProfileJson schema columns — DEFER until data sources confirmed
+- [ ] #39 Phase B RapidAPI enrichment (pending user subscribing to endpoints)
+- [ ] #40-41 Crunchbase + Bloomberg API integration — DEFER: premium APIs, $30k+/year
+
+### Blocked (need API keys from user)
+- [ ] #35 Twitter/X helper (TWITTER_BEARER_TOKEN)
+- [ ] #36 Instagram helper (INSTAGRAM_ACCESS_TOKEN)
+- [ ] #37 TikTok helper (TIKTOK_CLIENT_KEY)
+- [ ] #38 Facebook helper (FACEBOOK_ACCESS_TOKEN)
