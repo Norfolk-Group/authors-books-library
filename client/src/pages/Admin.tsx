@@ -56,6 +56,7 @@ import {
   BookUser,
   FileText,
   Zap,
+  Globe,
   type LucideIcon,
 } from "lucide-react";
 import { AUTHORS, BOOKS } from "@/lib/libraryData";
@@ -293,6 +294,7 @@ export default function Admin() {
   const rebuildAllBookCoversMutation = trpc.bookProfiles.rebuildAllBookCovers.useMutation();
   const auditAvatarBackgroundsMutation = trpc.authorProfiles.auditAvatarBackgrounds.useMutation();
   const normalizeAvatarBackgroundsMutation = trpc.authorProfiles.normalizeAvatarBackgrounds.useMutation();
+  const discoverPlatformsMutation = trpc.authorProfiles.discoverPlatformsBatch.useMutation();
 
   // -- Action states --
   const [regenerateState, setRegenerateState] = useState<ActionState>(INITIAL_STATE);
@@ -308,6 +310,7 @@ export default function Admin() {
   const [normalizeBgState, setNormalizeBgState] = useState<ActionState>(INITIAL_STATE);
   const [bgMismatchList, setBgMismatchList] = useState<string[]>([]);
   const [rebuildCoversState, setRebuildCoversState] = useState<ActionState>(INITIAL_STATE);
+  const [discoverPlatformsState, setDiscoverPlatformsState] = useState<ActionState>(INITIAL_STATE);
 
   // -- Research Cascade stats --
   const authorStats = trpc.cascade.authorStats.useQuery(undefined, { staleTime: 60_000 });
@@ -329,6 +332,7 @@ export default function Admin() {
     updateBookSummariesState,
     auditBgState,
     normalizeBgState,
+    discoverPlatformsState,
   ].some((s) => s.status === "running");
 
   const recordAction = useCallback(
@@ -853,6 +857,31 @@ export default function Admin() {
     }
   }, [normalizeBgState.status, normalizeAvatarBackgroundsMutation, bgMismatchList, settings, utils, recordAction]);
 
+  // -- Discover Author Platforms --
+  const handleDiscoverPlatforms = useCallback(async () => {
+    if (discoverPlatformsState.status === "running") return;
+    setDiscoverPlatformsState({ ...INITIAL_STATE, status: "running", message: "Discovering platform presence for authors..." });
+    const start = Date.now();
+    try {
+      const result = await discoverPlatformsMutation.mutateAsync({ limit: 20, forceRefresh: false });
+      setDiscoverPlatformsState({
+        status: "done",
+        progress: 100,
+        message: `${result.succeeded} authors enriched, ${result.failed} failed`,
+        done: result.succeeded,
+        total: result.processed,
+        failed: result.failed,
+      });
+      toast.success(`Discovered platforms for ${result.succeeded} authors.`);
+      await recordAction("discover-platforms", "Discover Author Platforms", start, "success", result.succeeded);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setDiscoverPlatformsState((s) => ({ ...s, status: "error", message: msg }));
+      toast.error("Platform discovery failed: " + msg);
+      await recordAction("discover-platforms", "Discover Author Platforms", start, `error: ${msg}`);
+    }
+  }, [discoverPlatformsState.status, discoverPlatformsMutation, recordAction]);
+
   // -- Stats for Research Cascade --
   const aStats = authorStats.data;
   const bStats = bookStats.data;
@@ -1137,6 +1166,19 @@ export default function Admin() {
               confirmDescription="This will call the AI enrichment pipeline for every book. Already-enriched books (within 30 days) will be skipped. This may take several minutes."
               onRun={handleEnrichBooks}
               buttonLabel="Enrich Books"
+              disabled={anyRunning}
+            />
+            <ActionCard
+              title="Discover Author Platforms"
+              description="Use Perplexity to discover YouTube, Twitter/X, LinkedIn, Substack, Instagram, TikTok, GitHub, and other platform presence for up to 20 authors at a time."
+              icon={Globe}
+              actionKey="discover-platforms"
+              state={discoverPlatformsState}
+              lastRun={getLastRun("discover-platforms")}
+              confirmTitle="Discover platform presence?"
+              confirmDescription="This will query Perplexity for each author's official social media profiles. Authors enriched within the last 7 days will be skipped. Processes 20 authors per run."
+              onRun={handleDiscoverPlatforms}
+              buttonLabel="Discover Platforms"
               disabled={anyRunning}
             />
           </TabsContent>

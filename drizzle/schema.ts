@@ -88,6 +88,22 @@ export const authorProfiles = mysqlTable("author_profiles", {
   blogUrl: varchar("blogUrl", { length: 512 }),
   /** Author's Substack newsletter URL */
   substackUrl: varchar("substackUrl", { length: 512 }),
+  /** Author's YouTube channel URL */
+  youtubeUrl: varchar("youtubeUrl", { length: 512 }),
+  /** Author's Facebook page URL */
+  facebookUrl: varchar("facebookUrl", { length: 512 }),
+  /** Author's Instagram profile URL */
+  instagramUrl: varchar("instagramUrl", { length: 512 }),
+  /** Author's TikTok profile URL */
+  tiktokUrl: varchar("tiktokUrl", { length: 512 }),
+  /** Author's GitHub profile URL */
+  githubUrl: varchar("githubUrl", { length: 512 }),
+  /** Author's business or company website URL */
+  businessWebsiteUrl: varchar("businessWebsiteUrl", { length: 512 }),
+  /** Author's email newsletter URL (Mailchimp, ConvertKit, Beehiiv, etc.) */
+  newsletterUrl: varchar("newsletterUrl", { length: 512 }),
+  /** Author's speaking bureau or booking page URL */
+  speakingUrl: varchar("speakingUrl", { length: 512 }),
   /** JSON array of newspaper/online article links: [{title, url, date, publication}] */
   newspaperArticlesJson: text("newspaperArticlesJson"),
   /** JSON array of other links: [{label, url, type}] */

@@ -78,12 +78,13 @@ import {
   Headphones,
   ArrowUpDown,
   ShieldCheck,
+  Heart,
   type LucideIcon,
 } from "lucide-react";
 
-type TabType = "authors" | "books" | "audio";
-type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category" | "quality-desc";
-type BookSort = "name-asc" | "name-desc" | "author" | "content-desc" | "enrich-desc";
+type TabType = "authors" | "books" | "audio" | "favorites";
+type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category" | "quality-desc" | "favorites-first";
+type BookSort = "name-asc" | "name-desc" | "author" | "content-desc" | "enrich-desc" | "favorites-first";
 
 /**
  * Normalise a raw book name into a stable lookup key.
@@ -242,6 +243,16 @@ export default function Home() {
     return map;
   }, [researchQualityQuery.data]);
 
+  const platformLinksQuery = trpc.authorProfiles.getAllPlatformLinks.useQuery(undefined, { staleTime: 5 * 60_000 });
+  const platformLinksMap = useMemo(() => {
+    type PlatformRow = typeof platformLinksQuery.data extends (infer T)[] | undefined ? T : never;
+    const map = new Map<string, PlatformRow>();
+    for (const r of platformLinksQuery.data ?? []) {
+      map.set(r.authorName.toLowerCase(), r);
+    }
+    return map;
+  }, [platformLinksQuery.data]);
+
   // --- Favorites ---
   const { isAuthenticated } = useAuth();
   const allAuthorKeys = useMemo(
@@ -357,10 +368,15 @@ export default function Home() {
           const diff = (qualityOrder[aQ] ?? 3) - (qualityOrder[bQ] ?? 3);
           return diff !== 0 ? diff : a.name.localeCompare(b.name);
         }
+        case "favorites-first": {
+          const aFav = (authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()] ? 0 : 1;
+          const bFav = (authorFavoritesQuery.data ?? {})[canonicalName(b.name).toLowerCase()] ? 0 : 1;
+          return aFav !== bFav ? aFav - bFav : a.name.localeCompare(b.name);
+        }
         default: return a.name.localeCompare(b.name);
       }
     });
-  }, [query, selectedCategories, authorSort, researchQualityMap]);
+  }, [query, selectedCategories, authorSort, researchQualityMap, authorFavoritesQuery.data]);
 
   const filteredBooks = useMemo(() => {
     const q = query.toLowerCase();
@@ -405,10 +421,17 @@ export default function Home() {
           const lvB = getBookEnrichmentLevel(profB as Parameters<typeof getBookEnrichmentLevel>[0]);
           return (enrichOrder[lvB] ?? 0) - (enrichOrder[lvA] ?? 0) || a.name.localeCompare(b.name);
         }
+        case "favorites-first": {
+          const tkA = normalizeTitleKey(a.name);
+          const tkB = normalizeTitleKey(b.name);
+          const aFav = (bookFavoritesQuery.data ?? {})[tkA] ? 0 : 1;
+          const bFav = (bookFavoritesQuery.data ?? {})[tkB] ? 0 : 1;
+          return aFav !== bFav ? aFav - bFav : a.name.localeCompare(b.name);
+        }
         default: return a.name.localeCompare(b.name);
       }
     });
-  }, [query, selectedCategories, bookSort, enrichFilter, bookCoversQuery.data]);
+  }, [query, selectedCategories, bookSort, enrichFilter, bookCoversQuery.data, bookFavoritesQuery.data]);
 
   const filteredAudio = useMemo(() => {
     const q = query.toLowerCase();
@@ -488,6 +511,17 @@ export default function Home() {
                       <span className="ml-auto text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">{filteredAudio.length}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  {isAuthenticated && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton isActive={activeTab === "favorites"} onClick={() => { setActiveTab("favorites"); _setSelectedCategoriesAndPersist(new Set()); }} tooltip="Favorites">
+                        <Heart className="w-4 h-4" />
+                        <span>Favorites</span>
+                        <span className="ml-auto text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                          {Object.values(authorFavoritesQuery.data ?? {}).filter(Boolean).length + Object.values(bookFavoritesQuery.data ?? {}).filter(Boolean).length}
+                        </span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -708,6 +742,7 @@ export default function Home() {
                         <SelectItem value="books-desc">Most Books</SelectItem>
                         <SelectItem value="category">Category</SelectItem>
                         <SelectItem value="quality-desc">Research Quality</SelectItem>
+                        {isAuthenticated && <SelectItem value="favorites-first">Favorites First</SelectItem>}
                       </SelectContent>
                     </Select>
                   ) : (
@@ -719,6 +754,7 @@ export default function Home() {
                         <SelectItem value="author">Author</SelectItem>
                         <SelectItem value="content-desc">Most Content</SelectItem>
                         <SelectItem value="enrich-desc">Enrichment Level</SelectItem>
+                        {isAuthenticated && <SelectItem value="favorites-first">Favorites First</SelectItem>}
                       </SelectContent>
                     </Select>
                   )}
@@ -783,6 +819,7 @@ export default function Home() {
                           onNavigateToBook={navigateToBook}
                           isHighlighted={highlightedAuthorName === canonicalName(a.name).toLowerCase()}
                           isFavorite={(authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()] ?? false}
+                          platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
                           cardRef={(el) => {
                             const key = canonicalName(a.name).toLowerCase();
                             if (el) authorCardRefs.current.set(key, el);
@@ -832,17 +869,118 @@ export default function Home() {
                     })}
                   </div>
                 )
-              ) : filteredAudio.length === 0 ? (
-                <EmptyState query={query} />
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                  {filteredAudio.map((a, i) => (
-                    <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                      <AudioCard audio={a} query={query} />
-                    </div>
-                  ))}
-                </div>
-              )}
+              ) : activeTab === "audio" ? (
+                filteredAudio.length === 0 ? (
+                  <EmptyState query={query} />
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {filteredAudio.map((a, i) => (
+                      <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
+                        <AudioCard audio={a} query={query} />
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : activeTab === "favorites" ? (
+                !isAuthenticated ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                    <Heart className="w-12 h-12 text-muted-foreground/30" />
+                    <p className="text-lg font-semibold text-muted-foreground">Sign in to see your favorites</p>
+                    <p className="text-sm text-muted-foreground/70">Favorites are saved to your account.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    {/* Favorite Authors */}
+                    {(() => {
+                      const favAuthors = filteredAuthors.filter((a) =>
+                        (authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()]
+                      );
+                      return favAuthors.length > 0 ? (
+                        <div>
+                          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+                            <Heart className="w-4 h-4 text-rose-500" />
+                            Favorite Authors
+                            <span className="text-xs text-muted-foreground font-normal">({favAuthors.length})</span>
+                          </h2>
+                          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            {favAuthors.map((a, i) => (
+                              <div key={a.id + i}>
+                                <FlowbiteAuthorCard
+                                  author={a}
+                                  query={query}
+                                  onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }}
+                                  isEnriched={enrichedSet.has(a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name)}
+                                  bio={(authorBios as Record<string, string>)[canonicalName(a.name)] ?? dbBioMap.get(canonicalName(a.name).toLowerCase()) ?? null}
+                                  coverMap={bookCoverMap}
+                                  dbAvatarMap={dbAvatarMap}
+                                  researchQualityMap={researchQualityMap}
+                                  bookInfoMap={bookInfoMap}
+                                  onNavigateToBook={navigateToBook}
+                                  isHighlighted={false}
+                                  isFavorite={true}
+                                  platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+                    {/* Favorite Books */}
+                    {(() => {
+                      const favBooks = filteredBooks.filter((b) => {
+                        const tk = normalizeTitleKey(b.name);
+                        return (bookFavoritesQuery.data ?? {})[tk];
+                      });
+                      return favBooks.length > 0 ? (
+                        <div>
+                          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+                            <Heart className="w-4 h-4 text-rose-500" />
+                            Favorite Books
+                            <span className="text-xs text-muted-foreground font-normal">({favBooks.length})</span>
+                          </h2>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                            {favBooks.map((b, i) => {
+                              const titleKey = b.name.split(" - ")[0].trim().replace(/[?!.,;:]+$/, "");
+                              const tk = normalizeTitleKey(b.name);
+                              return (
+                                <div key={b.id + i}>
+                                  <BookCard
+                                    book={b}
+                                    query={query}
+                                    onDetailClick={(book) => { setSelectedBook(book); setBookSheetOpen(true); }}
+                                    coverImageUrl={bookCoverMap.get(titleKey)}
+                                    isEnriched={enrichedTitlesSet.has(titleKey)}
+                                    amazonUrl={amazonUrlMap.get(titleKey)}
+                                    onCoverClick={(url, title, color) => setLightboxCover({ url, title, color })}
+                                    onAuthorClick={navigateToAuthor}
+                                    isHighlighted={false}
+                                    rating={bookInfoMap.get(tk)?.rating}
+                                    ratingCount={bookInfoMap.get(tk)?.ratingCount}
+                                    publishedDate={bookInfoMap.get(tk)?.publishedDate}
+                                    keyThemes={bookInfoMap.get(tk)?.keyThemes}
+                                    summary={bookInfoMap.get(tk)?.summary}
+                                    isFavorite={true}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+                    {/* Empty state */}
+                    {Object.values(authorFavoritesQuery.data ?? {}).filter(Boolean).length === 0 &&
+                     Object.values(bookFavoritesQuery.data ?? {}).filter(Boolean).length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                        <Heart className="w-12 h-12 text-muted-foreground/30" />
+                        <p className="text-lg font-semibold text-muted-foreground">No favorites yet</p>
+                        <p className="text-sm text-muted-foreground/70">Click the heart icon on any author or book card to add it here.</p>
+                      </div>
+                    )}
+                  </div>
+                )
+              ) : null}
             </div>
           </main>
         </SidebarInset>

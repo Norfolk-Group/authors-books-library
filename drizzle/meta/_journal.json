@@ -127,6 +127,13 @@
       "when": 1774227707006,
       "tag": "0017_steady_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1774229529758,
+      "tag": "0018_aromatic_joseph",
+      "breakpoints": true
     }
   ]
 }

@@ -38,6 +38,7 @@ import {
 import { AuthorModal } from "@/components/AuthorModal";
 import { AuthorCardActions } from "@/components/AuthorCardActions";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
+import { PlatformPills } from "@/components/library/PlatformPills";
 import {
   ICON_MAP,
 } from "@/components/library/libraryConstants";
@@ -94,6 +95,23 @@ export interface FlowbiteAuthorCardProps {
   researchQualityMap?: Map<string, "high" | "medium" | "low">;
   /** Whether this author is currently favorited by the logged-in user */
   isFavorite?: boolean;
+  /** Platform presence links for this author (from getAllPlatformLinks query) */
+  platformLinks?: {
+    websiteUrl?: string | null;
+    businessWebsiteUrl?: string | null;
+    youtubeUrl?: string | null;
+    twitterUrl?: string | null;
+    linkedinUrl?: string | null;
+    substackUrl?: string | null;
+    facebookUrl?: string | null;
+    instagramUrl?: string | null;
+    tiktokUrl?: string | null;
+    githubUrl?: string | null;
+    podcastUrl?: string | null;
+    newsletterUrl?: string | null;
+    speakingUrl?: string | null;
+    blogUrl?: string | null;
+  } | null;
 }
 
 // -- Main component -------------------------------------------------------------
@@ -111,6 +129,7 @@ export function FlowbiteAuthorCard({
   cardRef,
   researchQualityMap,
   isFavorite,
+  platformLinks,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -388,6 +407,16 @@ export function FlowbiteAuthorCard({
                 </span>
               )}
             </div>
+
+            {/* Platform pills — shown when platform links have been discovered */}
+            {platformLinks && (
+              <div
+                className="flex justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <PlatformPills links={platformLinks} maxVisible={5} size="sm" />
+              </div>
+            )}
           </div>
 
           {/* -- Divider -- */}

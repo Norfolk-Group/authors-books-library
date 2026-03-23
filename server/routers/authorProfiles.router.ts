@@ -13,6 +13,7 @@ import { parallelBatch } from "../lib/parallelBatch";
 import { persistAvatarResult } from "../lib/authorAvatars/persistResult";
 
 import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
+import { discoverAuthorPlatforms } from "../enrichment/platforms";
 
 // -- Router --------------------------------------------------------------------
 export const authorProfilesRouter = router({
@@ -780,6 +781,197 @@ export const authorProfilesRouter = router({
       })
       .filter((r): r is { authorName: string; confidence: "high" | "medium" | "low" } => r !== null);
   }),
+
+  /**
+   * Returns a lightweight map of authorName -> platform links for all authors
+   * that have been platform-enriched. Used by the frontend to show PlatformPills.
+   */
+  getAllPlatformLinks: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({
+        authorName: authorProfiles.authorName,
+        websiteUrl: authorProfiles.websiteUrl,
+        twitterUrl: authorProfiles.twitterUrl,
+        linkedinUrl: authorProfiles.linkedinUrl,
+        substackUrl: authorProfiles.substackUrl,
+        youtubeUrl: authorProfiles.youtubeUrl,
+        facebookUrl: authorProfiles.facebookUrl,
+        instagramUrl: authorProfiles.instagramUrl,
+        tiktokUrl: authorProfiles.tiktokUrl,
+        githubUrl: authorProfiles.githubUrl,
+        businessWebsiteUrl: authorProfiles.businessWebsiteUrl,
+        newsletterUrl: authorProfiles.newsletterUrl,
+        speakingUrl: authorProfiles.speakingUrl,
+        podcastUrl: authorProfiles.podcastUrl,
+        blogUrl: authorProfiles.blogUrl,
+      })
+      .from(authorProfiles);
+    return rows.filter((r) =>
+      r.websiteUrl || r.twitterUrl || r.linkedinUrl || r.substackUrl ||
+      r.youtubeUrl || r.facebookUrl || r.instagramUrl || r.tiktokUrl ||
+      r.githubUrl || r.businessWebsiteUrl || r.newsletterUrl ||
+      r.speakingUrl || r.podcastUrl || r.blogUrl
+    );
+  }),
+
+  /**
+   * Discover all platform presence links for a single author using Perplexity.
+   */
+  discoverPlatforms: adminProcedure
+    .input(z.object({
+      authorName: z.string(),
+      forceRefresh: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+
+      const perplexityKey = process.env.PERPLEXITY_API_KEY;
+      if (!perplexityKey) throw new Error("PERPLEXITY_API_KEY not configured");
+
+      if (!input.forceRefresh) {
+        const [existing] = await db
+          .select({ platformEnrichmentStatus: authorProfiles.platformEnrichmentStatus })
+          .from(authorProfiles)
+          .where(eq(authorProfiles.authorName, input.authorName))
+          .limit(1);
+        if (existing?.platformEnrichmentStatus) {
+          try {
+            const status = JSON.parse(existing.platformEnrichmentStatus) as { enrichedAt?: string };
+            if (status.enrichedAt) {
+              const age = Date.now() - new Date(status.enrichedAt).getTime();
+              if (age < 7 * 24 * 60 * 60 * 1000) {
+                return { skipped: true, reason: "Recently enriched", authorName: input.authorName, platformCount: 0, platforms: [], links: {} };
+              }
+            }
+          } catch { /* continue */ }
+        }
+      }
+
+      const result = await discoverAuthorPlatforms(input.authorName, perplexityKey);
+      const { links } = result;
+
+      const updatePayload: Record<string, string> = {};
+      if (links.websiteUrl) updatePayload.websiteUrl = links.websiteUrl;
+      if (links.twitterUrl) updatePayload.twitterUrl = links.twitterUrl;
+      if (links.linkedinUrl) updatePayload.linkedinUrl = links.linkedinUrl;
+      if (links.substackUrl) updatePayload.substackUrl = links.substackUrl;
+      if (links.youtubeUrl) updatePayload.youtubeUrl = links.youtubeUrl;
+      if (links.facebookUrl) updatePayload.facebookUrl = links.facebookUrl;
+      if (links.instagramUrl) updatePayload.instagramUrl = links.instagramUrl;
+      if (links.tiktokUrl) updatePayload.tiktokUrl = links.tiktokUrl;
+      if (links.githubUrl) updatePayload.githubUrl = links.githubUrl;
+      if (links.businessWebsiteUrl) updatePayload.businessWebsiteUrl = links.businessWebsiteUrl;
+      if (links.newsletterUrl) updatePayload.newsletterUrl = links.newsletterUrl;
+      if (links.speakingUrl) updatePayload.speakingUrl = links.speakingUrl;
+      if (links.podcastUrl) updatePayload.podcastUrl = links.podcastUrl;
+      if (links.blogUrl) updatePayload.blogUrl = links.blogUrl;
+
+      const platformStatus = {
+        enrichedAt: result.enrichedAt,
+        source: result.source,
+        platformCount: Object.keys(links).length,
+        platforms: Object.keys(links),
+      };
+      updatePayload.platformEnrichmentStatus = JSON.stringify(platformStatus);
+
+      if (Object.keys(updatePayload).length > 0) {
+        await db.update(authorProfiles).set(updatePayload).where(eq(authorProfiles.authorName, input.authorName));
+      }
+
+      return {
+        skipped: false,
+        authorName: input.authorName,
+        platformCount: Object.keys(links).length,
+        platforms: Object.keys(links),
+        links,
+      };
+    }),
+
+  /**
+   * Batch discover platforms for all authors (or a subset).
+   */
+  discoverPlatformsBatch: adminProcedure
+    .input(z.object({
+      limit: z.number().min(1).max(200).optional().default(20),
+      forceRefresh: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+
+      const perplexityKey = process.env.PERPLEXITY_API_KEY;
+      if (!perplexityKey) throw new Error("PERPLEXITY_API_KEY not configured");
+
+      const allAuthors = await db
+        .select({ authorName: authorProfiles.authorName, platformEnrichmentStatus: authorProfiles.platformEnrichmentStatus })
+        .from(authorProfiles)
+        .limit(500);
+
+      const toProcess = allAuthors
+        .filter((a) => {
+          if (input.forceRefresh) return true;
+          if (!a.platformEnrichmentStatus) return true;
+          try {
+            const status = JSON.parse(a.platformEnrichmentStatus) as { enrichedAt?: string };
+            if (!status.enrichedAt) return true;
+            const age = Date.now() - new Date(status.enrichedAt).getTime();
+            return age > 7 * 24 * 60 * 60 * 1000;
+          } catch { return true; }
+        })
+        .slice(0, input.limit);
+
+      const results: Array<{ authorName: string; platformCount: number; error?: string }> = [];
+
+      for (const author of toProcess) {
+        try {
+          const result = await discoverAuthorPlatforms(author.authorName, perplexityKey);
+          const { links } = result;
+
+          const updatePayload: Record<string, string> = {};
+          if (links.websiteUrl) updatePayload.websiteUrl = links.websiteUrl;
+          if (links.twitterUrl) updatePayload.twitterUrl = links.twitterUrl;
+          if (links.linkedinUrl) updatePayload.linkedinUrl = links.linkedinUrl;
+          if (links.substackUrl) updatePayload.substackUrl = links.substackUrl;
+          if (links.youtubeUrl) updatePayload.youtubeUrl = links.youtubeUrl;
+          if (links.facebookUrl) updatePayload.facebookUrl = links.facebookUrl;
+          if (links.instagramUrl) updatePayload.instagramUrl = links.instagramUrl;
+          if (links.tiktokUrl) updatePayload.tiktokUrl = links.tiktokUrl;
+          if (links.githubUrl) updatePayload.githubUrl = links.githubUrl;
+          if (links.businessWebsiteUrl) updatePayload.businessWebsiteUrl = links.businessWebsiteUrl;
+          if (links.newsletterUrl) updatePayload.newsletterUrl = links.newsletterUrl;
+          if (links.speakingUrl) updatePayload.speakingUrl = links.speakingUrl;
+          if (links.podcastUrl) updatePayload.podcastUrl = links.podcastUrl;
+          if (links.blogUrl) updatePayload.blogUrl = links.blogUrl;
+
+          const platformStatus = {
+            enrichedAt: result.enrichedAt,
+            source: result.source,
+            platformCount: Object.keys(links).length,
+            platforms: Object.keys(links),
+          };
+          updatePayload.platformEnrichmentStatus = JSON.stringify(platformStatus);
+
+          if (Object.keys(updatePayload).length > 0) {
+            await db.update(authorProfiles).set(updatePayload).where(eq(authorProfiles.authorName, author.authorName));
+          }
+
+          results.push({ authorName: author.authorName, platformCount: Object.keys(links).length });
+          await new Promise((r) => setTimeout(r, 600));
+        } catch (err) {
+          results.push({ authorName: author.authorName, platformCount: 0, error: String(err) });
+        }
+      }
+
+      return {
+        processed: results.length,
+        succeeded: results.filter((r) => !r.error).length,
+        failed: results.filter((r) => !!r.error).length,
+        results,
+      };
+    }),
 
   triggerBatchRegen: adminProcedure
     .input(z.object({

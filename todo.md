@@ -1426,3 +1426,30 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Add favorites tRPC procedures: toggle, list, checkMany, counts, topFavorited
 - [x] Create FavoriteToggle component (heart icon, optimistic toggle)
 - [x] Wire FavoriteToggle into FlowbiteAuthorCard and BookCard
+
+## Session March 23, 2026 — YouTube, Favorites Tab, Sort by Favorites
+
+- [ ] YouTube Data API v3 enrichment: server/enrichment/youtube.ts, tRPC procedure, Admin Console ActionCard, wire subscriber count + top video into FlowbiteAuthorCard platform pills
+- [ ] Favorites sidebar tab: filtered view of favorited authors and books with same card grid
+- [ ] Sort by Favorites First in Authors and Books sort dropdowns
+
+## Session March 23, 2026 — Platform Presence Enrichment
+
+- [ ] Build server/enrichment/platforms.ts — multi-platform discovery via Perplexity (Substack, website, business, Facebook, Instagram, TikTok, X, GitHub, LinkedIn, YouTube, podcast, newsletter, speaking bureau)
+- [ ] Add enrichPlatformsAll and enrichPlatformsSingle tRPC procedures to authorProfiles router
+- [ ] Build PlatformPills component with SVG brand logos and clickable links
+- [ ] Wire PlatformPills into FlowbiteAuthorCard and library/AuthorCard
+- [ ] Add Platform Enrichment ActionCard to Admin Console Authors tab
+- [ ] Add YouTube enrichment ActionCard to Admin Console Authors tab
+
+## Session March 22, 2026 — Platform Presence Enrichment + Favorites Tab
+
+- [x] getAllPlatformLinks tRPC public query — returns all authors with platform links
+- [x] discoverPlatforms tRPC admin mutation — single author platform discovery via Perplexity
+- [x] discoverPlatformsBatch tRPC admin mutation — batch discovery (up to 200 authors per run)
+- [x] PlatformPills component with inline SVG logos for YouTube, X/Twitter, LinkedIn, Substack, Facebook, Instagram, TikTok, GitHub, Podcast, Newsletter, Speaking, Blog, Website, Company
+- [x] Wire PlatformPills into FlowbiteAuthorCard (shown below bio status row)
+- [x] Pass platformLinks prop from Home.tsx to FlowbiteAuthorCard via platformLinksMap
+- [x] Admin Console Pipeline tab — "Discover Author Platforms" ActionCard with Globe icon
+- [x] Favorites sidebar tab — shows favorited authors and books in separate sections
+- [x] Sort by Favorites First option in Authors and Books sort dropdowns (authenticated only)
