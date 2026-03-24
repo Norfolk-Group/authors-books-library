@@ -1699,3 +1699,12 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] #32a Add YouTube enrichment ActionCard to Admin Console PipelineTab
 - [x] #32b Wire enrichSocialStats mutation to ActionCard trigger button
 - [x] #32c Show per-author YouTube stats in the card
+
+## Sprint: UX Polish #21 + #20c + #44
+
+- [x] #21a Invalidate `authorProfiles.get` query for the specific author after `updateAuthorLinks` mutation settles
+- [x] #21b Show new links immediately in the open Bio Modal without close/reopen
+- [x] #20c Show a brief success toast with the action name when any card mutation completes
+- [x] #44a Add `Research Quality` badge (HIGH/MEDIUM/LOW) to author cards based on `sourceConfidence.overallConfidence`
+- [x] #44b Badge colours: HIGH = green, MEDIUM = amber, LOW = red/muted
+- [x] #44c Only show badge when `sourceConfidence` data is present

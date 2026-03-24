@@ -196,6 +196,7 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
 
   const { settings } = useAppSettings();
   const enrichMutation = trpc.authorProfiles.enrich.useMutation({
+    onSuccess: () => toast.success(`Bio loaded for ${displayName}`),
     onError: (e) => toast.error("Failed to load bio: " + e.message),
   });
 
