@@ -1156,11 +1156,13 @@ export const authorProfilesRouter = router({
           linkedinUrl: author.linkedinUrl,
           wikipediaUrl: author.wikipediaUrl,
           stockTicker: author.stockTicker,
+          twitterUrl: author.twitterUrl,
         },
         {
           youtubeApiKey: ENV.youtubeApiKey,
           apifyApiToken: ENV.apifyApiToken,
           rapidApiKey: ENV.rapidApiKey,
+          twitterBearerToken: ENV.twitterBearerToken,
           phases: input.phases as ("A" | "B")[],
         }
       );
@@ -1209,6 +1211,7 @@ export const authorProfilesRouter = router({
           linkedinUrl: authorProfiles.linkedinUrl,
           wikipediaUrl: authorProfiles.wikipediaUrl,
           stockTicker: authorProfiles.stockTicker,
+          twitterUrl: authorProfiles.twitterUrl,
           socialStatsEnrichedAt: authorProfiles.socialStatsEnrichedAt,
         })
         .from(authorProfiles)
@@ -1235,11 +1238,13 @@ export const authorProfilesRouter = router({
               linkedinUrl: author.linkedinUrl,
               wikipediaUrl: author.wikipediaUrl,
               stockTicker: author.stockTicker,
+              twitterUrl: author.twitterUrl,
             },
             {
               youtubeApiKey: ENV.youtubeApiKey,
               apifyApiToken: ENV.apifyApiToken,
               rapidApiKey: ENV.rapidApiKey,
+              twitterBearerToken: ENV.twitterBearerToken,
               phases: input.phases as ("A" | "B")[],
             }
           );

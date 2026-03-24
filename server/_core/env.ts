@@ -16,6 +16,7 @@ export const ENV = {
   anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
   youtubeApiKey: process.env.YOUTUBE_API_KEY ?? "",
   rapidApiKey: process.env.RAPIDAPI_KEY ?? "",
+  twitterBearerToken: process.env.TWITTER_BEARER_TOKEN ?? "",
   // Google Drive folder IDs (NCG Library structure)
   // Set via environment variables to avoid hardcoding in source
   driveAuthorsFolderId: process.env.DRIVE_AUTHORS_FOLDER_ID ?? "119tuydLrpyvavFEouf3SCq38LAD4_ln5",

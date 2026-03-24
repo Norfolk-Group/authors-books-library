@@ -1655,7 +1655,7 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] #18 Expose authorDescriptionJson in Author Bio Panel ("View Research Description" collapsible)
 - [x] #22 Add keyboard navigation (arrow keys between cards in grid view)
 - [x] #23 Add "Recently Added" or "Featured" section to home page
-- [ ] #32 Add YouTube enrichment ActionCard to Admin Console (helper exists, needs UI)
+- [x] #32 Add YouTube enrichment ActionCard to Admin Console (helper exists, needs UI)
 - [x] #34 Wire platform pills to real YouTube/TED/Substack data (partially done)
 - [ ] #21 Wire per-card Update Links to auto-refresh modal without close/reopen
 - [x] #20 Add per-card action progress indicator (spinner overlay + disable menu during mutation)
@@ -1679,3 +1679,23 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] #36 Instagram helper (INSTAGRAM_ACCESS_TOKEN)
 - [ ] #37 TikTok helper (TIKTOK_CLIENT_KEY)
 - [ ] #38 Facebook helper (FACEBOOK_ACCESS_TOKEN)
+
+## Sprint: #32 + #35 (March 24, 2026)
+
+- [ ] #35a Create server/enrichment/twitter.ts with fetchTwitterFollowerCount helper
+- [ ] #35b Add enrichTwitterStats procedure to authorProfiles.router.ts
+- [ ] #35c Add enrichTwitterStatsBatch procedure for bulk enrichment
+- [x] #35d Write vitest tests for twitter.ts helper
+- [x] #32a Add YouTube enrichment ActionCard to Admin Console PipelineTab / AuthorsTab
+- [x] #32b Wire enrichSocialStats mutation (phases:["A"]) to the ActionCard trigger button
+- [x] #32c Show per-author YouTube stats (subscribers, videos, views) in the card
+
+## Sprint: #32 + #35 (March 24, 2026)
+
+- [ ] #35a Create server/enrichment/twitter.ts with fetchTwitterFollowerCount helper
+- [ ] #35b Add enrichTwitterStats procedure to authorProfiles.router.ts
+- [ ] #35c Add enrichTwitterStatsBatch procedure for bulk enrichment
+- [x] #35d Write vitest tests for twitter.ts helper
+- [x] #32a Add YouTube enrichment ActionCard to Admin Console PipelineTab
+- [x] #32b Wire enrichSocialStats mutation to ActionCard trigger button
+- [x] #32c Show per-author YouTube stats in the card

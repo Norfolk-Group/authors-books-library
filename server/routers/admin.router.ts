@@ -24,6 +24,75 @@ export const adminRouter = router({
       googleBooks: !!(process.env.GOOGLE_BOOKS_API_KEY),
       tavily: !!(process.env.TAVILY_API_KEY),
       youtube: !!(process.env.YOUTUBE_API_KEY),
+      twitter: !!(process.env.TWITTER_BEARER_TOKEN),
+    };
+  }),
+
+  /**
+   * Get a summary of YouTube stats across all enriched authors.
+   * Used by the YouTube ActionCard in Admin Console to show aggregate stats.
+   */
+  getYouTubeStatsSummary: adminProcedure.query(async () => {
+    const { getDb } = await import("../db");
+    const { authorProfiles } = await import("../../drizzle/schema");
+    const { isNotNull } = await import("drizzle-orm");
+    const db = await getDb();
+    if (!db) return { total: 0, withYouTube: 0, topAuthors: [] };
+
+    const rows = await db
+      .select({
+        authorName: authorProfiles.authorName,
+        socialStatsJson: authorProfiles.socialStatsJson,
+        avatarUrl: authorProfiles.avatarUrl,
+        s3AvatarUrl: authorProfiles.s3AvatarUrl,
+      })
+      .from(authorProfiles)
+      .where(isNotNull(authorProfiles.socialStatsJson));
+
+    interface YouTubeData {
+      channelTitle?: string;
+      channelUrl?: string;
+      subscriberCount?: number;
+      videoCount?: number;
+      totalViewCount?: number;
+    }
+    interface SocialStats { youtube?: YouTubeData }
+
+    const withYouTube: Array<{
+      authorName: string;
+      avatarUrl: string | null;
+      s3AvatarUrl: string | null;
+      subscriberCount: number;
+      videoCount: number;
+      totalViewCount: number;
+      channelUrl: string;
+    }> = [];
+
+    for (const row of rows) {
+      if (!row.socialStatsJson) continue;
+      try {
+        const stats = JSON.parse(row.socialStatsJson) as SocialStats;
+        const yt = stats.youtube;
+        if (yt?.subscriberCount !== undefined) {
+          withYouTube.push({
+            authorName: row.authorName,
+            avatarUrl: row.avatarUrl,
+            s3AvatarUrl: row.s3AvatarUrl,
+            subscriberCount: yt.subscriberCount ?? 0,
+            videoCount: yt.videoCount ?? 0,
+            totalViewCount: yt.totalViewCount ?? 0,
+            channelUrl: yt.channelUrl ?? `https://www.youtube.com/results?search_query=${encodeURIComponent(row.authorName)}`,
+          });
+        }
+      } catch { /* skip malformed JSON */ }
+    }
+
+    withYouTube.sort((a, b) => b.subscriberCount - a.subscriberCount);
+
+    return {
+      total: rows.length,
+      withYouTube: withYouTube.length,
+      topAuthors: withYouTube.slice(0, 10),
     };
   }),
 

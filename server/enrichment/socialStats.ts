@@ -6,6 +6,7 @@
  *
  * Platforms covered:
  *   Phase A (no new keys): GitHub, Wikipedia, Substack, YouTube, CNN, Y Combinator
+ *   Phase A+ (TWITTER_BEARER_TOKEN): Twitter/X follower count
  *   Phase B (RAPIDAPI_KEY): Yahoo Finance, CNBC, LinkedIn, Seeking Alpha
  */
 
@@ -14,6 +15,7 @@ import { fetchWikipediaStats } from "./wikipedia";
 import { fetchSubstackStats } from "./substack";
 import { fetchYCStats } from "./ycombinator";
 import { fetchCNNStats } from "./cnn";
+import { fetchTwitterStats } from "./twitter";
 import {
   fetchYahooFinanceStats,
   fetchCNBCStats,
@@ -27,6 +29,7 @@ export interface SocialStatsResult {
   substack?: Awaited<ReturnType<typeof fetchSubstackStats>>;
   ycombinator?: Awaited<ReturnType<typeof fetchYCStats>>;
   cnn?: Awaited<ReturnType<typeof fetchCNNStats>>;
+  twitter?: Awaited<ReturnType<typeof fetchTwitterStats>>;
   yahooFinance?: Awaited<ReturnType<typeof fetchYahooFinanceStats>>;
   cnbc?: Awaited<ReturnType<typeof fetchCNBCStats>>;
   linkedin?: Awaited<ReturnType<typeof fetchLinkedInStats>>;
@@ -43,12 +46,14 @@ export interface AuthorEnrichmentInput {
   linkedinUrl?: string | null;
   wikipediaUrl?: string | null;
   stockTicker?: string | null;
+  twitterUrl?: string | null;
 }
 
 export interface EnrichmentConfig {
   youtubeApiKey?: string;
   apifyApiToken?: string;
   rapidApiKey?: string;
+  twitterBearerToken?: string;
   phases?: ("A" | "B")[];
 }
 
@@ -118,6 +123,13 @@ export async function enrichAuthorSocialStats(
     if (config.apifyApiToken) {
       result.cnn = await run("cnn", () =>
         fetchCNNStats(author.authorName, config.apifyApiToken!)
+      );
+    }
+
+    // Twitter/X — requires TWITTER_BEARER_TOKEN
+    if (config.twitterBearerToken && author.twitterUrl) {
+      result.twitter = await run("twitter", () =>
+        fetchTwitterStats(author.twitterUrl!, config.twitterBearerToken!)
       );
     }
   }

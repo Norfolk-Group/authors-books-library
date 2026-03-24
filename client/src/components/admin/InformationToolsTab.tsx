@@ -149,7 +149,12 @@ export function InformationToolsTab({ settings, updateSettings }: InformationToo
     googleBooks: false,
     tavily: false,
     youtube: false,
+    twitter: false,
   };
+  const ytSummaryQuery = trpc.admin.getYouTubeStatsSummary.useQuery(undefined, {
+    staleTime: 60_000,
+    enabled: toolStatus.youtube ?? false,
+  });
   const enrichSocialStatsMutation = trpc.authorProfiles.enrichSocialStatsBatch.useMutation({
     onSuccess: (data) => {
       toast.success(`YouTube/Social enrichment complete`, {
@@ -374,9 +379,126 @@ export function InformationToolsTab({ settings, updateSettings }: InformationToo
           </p>
         )}
         {(toolStatus.youtube ?? false) && (
+          <div className="space-y-3">
+            {ytSummaryQuery.data && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-md bg-muted/50 p-2 text-center">
+                  <p className="text-lg font-bold tabular-nums">{ytSummaryQuery.data.withYouTube}</p>
+                  <p className="text-[10px] text-muted-foreground">Authors with YouTube</p>
+                </div>
+                <div className="rounded-md bg-muted/50 p-2 text-center">
+                  <p className="text-lg font-bold tabular-nums">{ytSummaryQuery.data.total}</p>
+                  <p className="text-[10px] text-muted-foreground">Total enriched</p>
+                </div>
+              </div>
+            )}
+            {ytSummaryQuery.data?.topAuthors && ytSummaryQuery.data.topAuthors.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Top Channels</p>
+                <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+                  {ytSummaryQuery.data.topAuthors.map((a) => (
+                    <a
+                      key={a.authorName}
+                      href={a.channelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/60 transition-colors group"
+                    >
+                      {(a.s3AvatarUrl || a.avatarUrl) ? (
+                        <img
+                          src={a.s3AvatarUrl || a.avatarUrl || ""}
+                          alt={a.authorName}
+                          className="w-6 h-6 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted shrink-0 flex items-center justify-center">
+                          <span className="text-[8px] font-bold text-muted-foreground">
+                            {a.authorName.charAt(0)}
+                          </span>
+                        </div>
+                      )}
+                      <span className="flex-1 text-[11px] font-medium truncate">{a.authorName}</span>
+                      <span className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                        {a.subscriberCount >= 1_000_000
+                          ? `${(a.subscriberCount / 1_000_000).toFixed(1)}M`
+                          : a.subscriberCount >= 1_000
+                          ? `${(a.subscriberCount / 1_000).toFixed(0)}K`
+                          : a.subscriberCount.toString()}
+                        {" subs"}
+                      </span>
+                      <ExternalLink className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {ytSummaryQuery.isLoading && (
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Loading stats…
+              </div>
+            )}
+            {ytSummaryQuery.data?.withYouTube === 0 && !ytSummaryQuery.isLoading && (
+              <p className="text-[10px] text-muted-foreground">
+                No YouTube channel data yet. Run enrichment below to populate.
+              </p>
+            )}
+            <Separator className="my-1" />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs"
+                disabled={enrichSocialStatsMutation.isPending}
+                onClick={() =>
+                  enrichSocialStatsMutation.mutate(
+                    { phases: ["A"], limit: 20, onlyMissing: true },
+                    { onSuccess: () => ytSummaryQuery.refetch() }
+                  )
+                }
+              >
+                {enrichSocialStatsMutation.isPending ? (
+                  <><Loader2 className="w-3 h-3 mr-1.5 animate-spin" />Enriching…</>
+                ) : (
+                  <><Zap className="w-3 h-3 mr-1.5" />Enrich Missing (up to 20)</>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                disabled={ytSummaryQuery.isFetching}
+                onClick={() => ytSummaryQuery.refetch()}
+              >
+                {ytSummaryQuery.isFetching ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  "Refresh"
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </ToolCard>
+
+      {/* ── Twitter/X ── */}
+      <ToolCard
+        title="Twitter / X API"
+        description="Fetches follower counts and tweet stats for authors with Twitter/X profiles. Requires a Bearer Token with Basic ($100/mo) or Pro tier access."
+        icon={Globe}
+        configured={toolStatus.twitter ?? false}
+        docsUrl="https://developer.twitter.com/en/portal/dashboard"
+      >
+        {!(toolStatus.twitter ?? false) && (
+          <p className="text-[10px] text-muted-foreground">
+            Set TWITTER_BEARER_TOKEN in project secrets to enable Twitter/X follower count enrichment.
+          </p>
+        )}
+        {(toolStatus.twitter ?? false) && (
           <div className="space-y-2">
             <p className="text-[10px] text-muted-foreground">
-              YouTube API is active. Social stats enrichment will fetch channel subscriber counts, video counts, and total views.
+              Twitter Bearer Token is configured. Note: the Twitter Free tier does not include user lookup credits.
+              A Basic ($100/mo) or Pro ($5,000/mo) plan is required to fetch follower counts.
             </p>
             <Button
               size="sm"
