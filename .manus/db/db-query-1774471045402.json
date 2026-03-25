@@ -1,0 +1,19 @@
+{
+  "query": "SELECT authorName, COUNT(*) as cnt FROM author_profiles GROUP BY authorName HAVING cnt > 1; SELECT COUNT(*) as empty_names FROM author_profiles WHERE authorName IS NULL OR authorName = ''; SELECT COUNT(*) as empty_titles FROM book_profiles WHERE bookTitle IS NULL OR bookTitle = '';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT authorName, COUNT(*) as cnt FROM author_profiles GROUP BY authorName HAVING cnt > 1; SELECT COUNT(*) as empty_names FROM author_profiles WHERE authorName IS NULL OR authorName = ''; SELECT COUNT(*) as empty_titles FROM book_profiles WHERE bookTitle IS NULL OR bookTitle = '';",
+  "rows": [
+    {
+      "empty_names": "0"
+    },
+    {
+      "empty_names": "empty_titles"
+    },
+    {
+      "empty_names": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "empty_names\n0\nempty_titles\n0\n",
+  "stderr": "",
+  "execution_time_ms": 72
+}

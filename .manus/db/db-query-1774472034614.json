@@ -1,0 +1,26 @@
+{
+  "query": "SELECT 'authors_with_avatar' as metric, COUNT(*) as cnt FROM author_profiles WHERE s3AvatarUrl IS NOT NULL AND s3AvatarUrl != '' UNION ALL SELECT 'authors_with_bio', COUNT(*) FROM author_profiles WHERE bio IS NOT NULL AND bio != '' UNION ALL SELECT 'books_with_cover', COUNT(*) FROM book_profiles WHERE s3CoverUrl IS NOT NULL AND s3CoverUrl != '' UNION ALL SELECT 'books_with_summary', COUNT(*) FROM book_profiles WHERE summary IS NOT NULL AND summary != ''",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT 'authors_with_avatar' as metric, COUNT(*) as cnt FROM author_profiles WHERE s3AvatarUrl IS NOT NULL AND s3AvatarUrl != '' UNION ALL SELECT 'authors_with_bio', COUNT(*) FROM author_profiles WHERE bio IS NOT NULL AND bio != '' UNION ALL SELECT 'books_with_cover', COUNT(*) FROM book_profiles WHERE s3CoverUrl IS NOT NULL AND s3CoverUrl != '' UNION ALL SELECT 'books_with_summary', COUNT(*) FROM book_profiles WHERE summary IS NOT NULL AND summary != ''",
+  "rows": [
+    {
+      "metric": "books_with_summary",
+      "cnt": "138"
+    },
+    {
+      "metric": "books_with_cover",
+      "cnt": "139"
+    },
+    {
+      "metric": "authors_with_bio",
+      "cnt": "91"
+    },
+    {
+      "metric": "authors_with_avatar",
+      "cnt": "141"
+    }
+  ],
+  "messages": [],
+  "stdout": "metric\tcnt\nbooks_with_summary\t138\nbooks_with_cover\t139\nauthors_with_bio\t91\nauthors_with_avatar\t141\n",
+  "stderr": "",
+  "execution_time_ms": 69
+}

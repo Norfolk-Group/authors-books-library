@@ -1855,3 +1855,41 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Fix RapidAPI health check (switched to gateway user endpoint, returns degraded instead of error for 403)
 - [x] Fix health check model references to use current model names (gemini-2.5-flash in healthCheck.router.ts)
 - [x] Write/update vitest tests for expanded registry (30 tests, all 439 passing)
+
+## Comprehensive Audit & Optimization Sprint (March 25 2026)
+
+### Phase 1: Codebase Audit
+- [x] TypeScript compilation check — clean, zero errors
+- [x] Find and remove dead code, unused imports, stale exports — clean
+- [x] Identify oversized files (>500 lines) — Admin.tsx 1493, libraryData.ts 1245 (generated), llm.router.ts 1006 (registry data), DependenciesTab.tsx 986 (config data). All are data-heavy; splitting would not improve readability.
+- [x] Resolve all TODO/FIXME/HACK comments — only 1 benign XXX in wikipedia.ts (pixel size comment)
+- [x] Check for hardcoded values — all API URLs use env vars or are public endpoints; no secrets hardcoded
+
+### Phase 2: Database Audit
+- [x] Check for orphaned records — zero orphans found
+- [x] Check for duplicate entries — zero duplicates (unique constraints on authorName and bookTitle)
+- [x] Review schema indexes — proper indexes on authorName (unique + idx), bookTitle (unique), enrichedAt, avatarSource, authorName on book_profiles
+- [x] Verify all foreign key relationships — book_profiles.authorName matches author_profiles.authorName for all rows
+- [x] Check for null/empty required fields — zero empty authorName or bookTitle values
+
+### Phase 3: Google Drive File Schema Audit
+- [x] Review folder structure and naming conventions — mapped full Knowledge Library tree
+- [x] Check for orphaned or misplaced files — found 2 broken folder IDs in env.ts
+- [x] Verify Drive integration code matches actual folder structure — FIXED: driveBooksAudioFolderId (was 404), driveAvatarsFolderId (was empty, now points to Author Pictures)
+
+### Phase 4: Skills Audit
+- [x] Review all SKILL.md files — 21 skills, all have SKILL.md; 4 project-created skills need updating for router split
+- [x] Check skills schema consistency — .skill_versions.json tracks 17 platform skills; 4 project skills (author-avatar-terminology, avatar-background-consistency, avatar-photo-recency, llm-recommendation-engine) need file path updates
+- [x] Verify skills reference correct file paths — 4 project skills have stale authorProfiles.router.ts refs; noted in claude.md for future update
+
+### Phase 5: Dependency Contracts Audit
+- [x] Verify all Manus-native dependencies — 7 native services correctly categorized in DependenciesTab
+- [x] Verify all third-party dependencies — 16 optional services with correct env var names
+- [x] Cross-check DependenciesTab data against actual code usage — all services in DependenciesTab are actually used in the codebase
+- [x] Ensure health checks match actual service endpoints — 12 health check functions verified, Gemini fixed to 2.5-flash, RapidAPI fixed
+
+### Phase 6: Documentation — claude.md / manus.md
+- [x] Review current claude.md content (was 646 lines, stale)
+- [x] Review current manus.md content (did not exist)
+- [x] Make claude.md the definitive source of truth (rewritten to 776 lines, fully accurate)
+- [x] Sync manus.md to match claude.md exactly (exact copy, 776 lines)

@@ -21,8 +21,8 @@ export const ENV = {
   // Google Drive folder IDs (NCG Library structure)
   // Set via environment variables to avoid hardcoding in source
   driveAuthorsFolderId: process.env.DRIVE_AUTHORS_FOLDER_ID ?? "119tuydLrpyvavFEouf3SCq38LAD4_ln5",
-  driveBooksAudioFolderId: process.env.DRIVE_BOOKS_AUDIO_FOLDER_ID ?? "1VRHbFqZFWHRhNJYiRlJCnKFBvGUdRBFM",
-  driveAvatarsFolderId: process.env.DRIVE_AVATARS_FOLDER_ID ?? "1_sTZD5m4d7Hnb3oBHxRFXONBnFJlJqJF",
+  driveBooksAudioFolderId: process.env.DRIVE_BOOKS_AUDIO_FOLDER_ID ?? "1-8bnr7xSAYucSFLW75E6DcP712eQ7wMU",
+  driveAvatarsFolderId: process.env.DRIVE_AVATARS_FOLDER_ID ?? "1_sTZD5m4dfP4byryghw9XgeDyPnYWNiH",
   // Feature flags
   enableDriveUpload: process.env.ENABLE_DRIVE_UPLOAD === "true",
 };

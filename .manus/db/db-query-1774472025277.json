@@ -1,0 +1,34 @@
+{
+  "query": "SELECT 'author_profiles' as tbl, COUNT(*) as cnt FROM author_profiles UNION ALL SELECT 'book_profiles', COUNT(*) FROM book_profiles UNION ALL SELECT 'users', COUNT(*) FROM users UNION ALL SELECT 'favorites', COUNT(*) FROM favorites UNION ALL SELECT 'enrichment_schedules', COUNT(*) FROM enrichment_schedules UNION ALL SELECT 'enrichment_jobs', COUNT(*) FROM enrichment_jobs",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT 'author_profiles' as tbl, COUNT(*) as cnt FROM author_profiles UNION ALL SELECT 'book_profiles', COUNT(*) FROM book_profiles UNION ALL SELECT 'users', COUNT(*) FROM users UNION ALL SELECT 'favorites', COUNT(*) FROM favorites UNION ALL SELECT 'enrichment_schedules', COUNT(*) FROM enrichment_schedules UNION ALL SELECT 'enrichment_jobs', COUNT(*) FROM enrichment_jobs",
+  "rows": [
+    {
+      "tbl": "users",
+      "cnt": "1"
+    },
+    {
+      "tbl": "author_profiles",
+      "cnt": "171"
+    },
+    {
+      "tbl": "favorites",
+      "cnt": "0"
+    },
+    {
+      "tbl": "book_profiles",
+      "cnt": "139"
+    },
+    {
+      "tbl": "enrichment_schedules",
+      "cnt": "0"
+    },
+    {
+      "tbl": "enrichment_jobs",
+      "cnt": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "tbl\tcnt\nusers\t1\nauthor_profiles\t171\nfavorites\t0\nbook_profiles\t139\nenrichment_schedules\t0\nenrichment_jobs\t0\n",
+  "stderr": "",
+  "execution_time_ms": 87
+}
