@@ -77,6 +77,7 @@ export function LibrarySidebar({
   const showCategoryFilter = activeTab !== "audio";
 
   // Drive Sync (admin only)
+  const utils = trpc.useUtils();
   const regenerateMutation = trpc.library.regenerate.useMutation();
   const [syncState, setSyncState] = useState<"idle" | "running" | "done" | "error">("idle");
   const handleDriveSync = async () => {
@@ -86,7 +87,9 @@ export function LibrarySidebar({
       const result = await regenerateMutation.mutateAsync();
       if (result.success && result.stats) {
         setSyncState("done");
-        toast.success(`Drive synced — ${result.stats.authors} authors, ${result.stats.books} books. Reload to see changes.`, { duration: 8000 });
+        // Invalidate the live stats query so the stat tiles refresh immediately
+        await utils.library.getStats.invalidate();
+        toast.success(`Drive synced — ${result.stats.authors} authors, ${result.stats.books} books`, { duration: 8000 });
         setTimeout(() => setSyncState("idle"), 5000);
       } else {
         setSyncState("error");
