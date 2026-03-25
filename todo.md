@@ -1893,3 +1893,57 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Review current manus.md content (did not exist)
 - [x] Make claude.md the definitive source of truth (rewritten to 776 lines, fully accurate)
 - [x] Sync manus.md to match claude.md exactly (exact copy, 776 lines)
+
+## Feature: Add Context7 to Dependencies Tab (March 25, 2026)
+- [ ] Add Context7 card to DependenciesTab third-party section (MCP-based, no API key needed)
+- [ ] Add Context7 health check to healthCheck.router.ts (ping resolve-library-id)
+- [ ] Update claude.md and manus.md dependency contracts table
+
+## Execute Suggestions Sprint (March 25, 2026)
+
+### Suggestion 1: Update 4 Project Skills with Correct Router Paths
+- [x] Update llm-recommendation-engine SKILL.md: updated SettingsTab→ModelSelector, UseCase type expanded to 6, vendor table updated to 13 vendors/48 models, recommended field updated to array
+- [x] Update author-avatar-terminology SKILL.md: authorProfiles.router.ts → authorAvatar.router.ts
+- [x] Update avatar-background-consistency SKILL.md: authorProfiles.router.ts → authorAvatar.router.ts, AiTab.tsx → BackgroundSelector.tsx
+- [x] Update avatar-photo-recency SKILL.md: no authorProfiles.router.ts refs found — already clean
+
+### Suggestion 2: Regenerate libraryData.ts from Fresh Drive Scan
+- [ ] Trigger Drive rescan via tRPC library.regenerate procedure
+- [ ] Verify new author/book counts in the sidebar match DB counts
+
+### Suggestion 3: Add Context7 to Dependencies Tab
+- [ ] Add Context7 card to DependenciesTab third-party section (MCP-based, no API key)
+- [ ] Add Context7 health check to healthCheck.router.ts (calls checkContext7Health from context7.ts)
+- [ ] Wire context7 health check key into DependenciesTab healthCheckKey field
+
+## Feature: Substack & Medium Support (March 25, 2026)
+
+### Content Type Support (Drive Scan)
+- [x] Add "Substack" and "Medium" to CONTENT_TYPE_NORMALIZE map in library.router.ts (also Blog, Newsletter)
+- [x] Add Substack and Medium icons to CONTENT_TYPE_ICONS in library.router.ts (rss, pen-line)
+- [x] Add Substack and Medium color tokens to CONTENT_TYPE_COLORS (#ff6719, #00ab6c)
+
+### Author Profile Fields
+- [x] Add substackUrl (already existed) and mediumUrl columns to author_profiles schema
+- [x] Run pnpm db:push to migrate schema (migration 0029_burly_peter_quill.sql applied)
+- [x] Add substackUrl and mediumUrl to author enrichment procedures (authorLinks.ts + authorSocial.router.ts linkFields)
+- [x] Show Substack and Medium links in author bio modal (AuthorModal.tsx, AuthorBioPanel.tsx, AuthorDetail.tsx)
+- [x] Show Substack and Medium icons on author cards when URLs are available (PlatformPills.tsx + FlowbiteAuthorCard.tsx)
+
+### Enrichment
+- [x] Add Substack URL discovery to authorEnrichment.ts (Wikidata P4265 = Substack username → https://{username}.substack.com)
+- [x] Add Medium URL discovery to authorEnrichment.ts (infer from website URL if it contains medium.com)
+- [x] Add substackUrl and mediumUrl to batch enrichment procedures (authorProfiles.router.ts uses ...info spread; AuthorInfo interface updated)
+
+## Session March 25, 2026 — Drive Connector & Context7
+- [x] Fix AUTHORS_ROOT folder ID in env.ts (already correct: 18SjO_Cz6U7hjsSQZwSFVaAA12pL2RQaf)
+- [x] Add SKIP_FOLDERS filter to library.router.ts scanAuthors() to exclude Bios, Book Covers, Author Pictures, Avatars, Photos
+- [x] Trigger fresh Drive rescan: 105 authors, 174 books across 9 categories
+- [x] Regenerate client/src/lib/libraryData.ts with updated counts (was 87/245, now 105/174)
+- [x] Add Substack and Medium to CONTENT_TYPE_ICONS and CONTENT_TYPE_COLORS in libraryData.ts
+- [x] Add Context7 to DependenciesTab.tsx (third-party section, free API, no key required)
+- [x] Add checkContext7() ping function to healthCheck.router.ts (POST to mcp.context7.com/mcp)
+- [x] Add context7 to checkService enum and checkAll batch in healthCheck.router.ts
+- [x] Add context7 to ServiceKey type and SERVICE_META in ToolHealthCheckTab.tsx
+- [x] Update healthCheck.test.ts to expect 13 results (was 12, added Context7)
+- [x] All 439 tests passing, TypeScript clean

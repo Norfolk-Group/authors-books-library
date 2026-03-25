@@ -33,6 +33,7 @@ export interface AuthorPlatformLinks {
   twitterUrl?: string;
   linkedinUrl?: string;
   substackUrl?: string;
+  mediumUrl?: string;
   facebookUrl?: string;
   instagramUrl?: string;
   tiktokUrl?: string;
@@ -78,6 +79,7 @@ Return a JSON object with this exact structure:
   "twitterUrl": "https://twitter.com/... or https://x.com/...",
   "linkedinUrl": "https://linkedin.com/in/...",
   "substackUrl": "https://....substack.com",
+  "mediumUrl": "https://medium.com/@authorname",
   "facebookUrl": "https://facebook.com/...",
   "instagramUrl": "https://instagram.com/...",
   "tiktokUrl": "https://tiktok.com/@...",
@@ -149,7 +151,7 @@ Rules:
       // Parse legacy individual URL fields
       const legacyKeys: (keyof Omit<AuthorPlatformLinks, "websites">)[] = [
         "websiteUrl", "businessWebsiteUrl", "youtubeUrl", "twitterUrl",
-        "linkedinUrl", "substackUrl", "facebookUrl", "instagramUrl",
+        "linkedinUrl", "substackUrl", "mediumUrl", "facebookUrl", "instagramUrl",
         "tiktokUrl", "githubUrl", "podcastUrl", "newsletterUrl",
         "speakingUrl", "blogUrl",
       ];

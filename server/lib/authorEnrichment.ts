@@ -16,6 +16,8 @@ export interface AuthorInfo {
   websiteUrl: string;
   twitterUrl: string;
   linkedinUrl: string;
+  substackUrl?: string;
+  mediumUrl?: string;
 }
 
 // -- LLM fallback bio ----------------------------------------------------------
@@ -184,6 +186,14 @@ export async function enrichAuthorViaWikipedia(
 
         const linkedinId = claims["P6634"]?.[0]?.mainsnak?.datavalue?.value ?? "";
         if (linkedinId) result.linkedinUrl = `https://www.linkedin.com/in/${linkedinId}`;
+
+        // P4265 = Substack username
+        const substackUsername = claims["P4265"]?.[0]?.mainsnak?.datavalue?.value ?? "";
+        if (substackUsername) result.substackUrl = `https://${substackUsername}.substack.com`;
+
+        // P4033 = Mastodon address; P7085 = TikTok username; no standard Wikidata property for Medium
+        // Medium: try to infer from website if it contains medium.com
+        if (website && website.includes("medium.com")) result.mediumUrl = website;
       }
     }
   } catch (err) {

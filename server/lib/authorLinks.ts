@@ -29,6 +29,7 @@ export interface AuthorLinksResult {
   podcastUrl?: string;
   blogUrl?: string;
   substackUrl?: string;
+  mediumUrl?: string;
   newspaperArticles: AuthorLinkArticle[];
   otherLinks: AuthorOtherLink[];
   source: "perplexity" | "gemini" | "fallback";
@@ -49,7 +50,8 @@ export async function enrichAuthorLinks(
 4. Podcast URL (if they host or regularly appear on a podcast)
 5. Blog URL (personal blog, Medium, etc.)
 6. Substack newsletter URL
-7. Up to 5 notable newspaper or online articles ABOUT them (not by them) — include title, URL, publication name, and date if available
+7. Medium profile URL (medium.com/@authorname)
+8. Up to 5 notable newspaper or online articles ABOUT them (not by them) — include title, URL, publication name, and date if available
 8. Any other notable online presence (YouTube channel, speaking page, etc.)
 
 Return ONLY a JSON object with this exact structure:
@@ -60,6 +62,7 @@ Return ONLY a JSON object with this exact structure:
   "podcastUrl": "https://..." or null,
   "blogUrl": "https://..." or null,
   "substackUrl": "https://..." or null,
+  "mediumUrl": "https://medium.com/@..." or null,
   "newspaperArticles": [
     {"title": "...", "url": "https://...", "date": "YYYY-MM-DD", "publication": "..."}
   ],
@@ -101,6 +104,7 @@ Only include URLs you are confident are correct. Use null for unknown fields.`;
               podcastUrl: { type: ["string", "null"] },
               blogUrl: { type: ["string", "null"] },
               substackUrl: { type: ["string", "null"] },
+              mediumUrl: { type: ["string", "null"] },
               newspaperArticles: {
                 type: "array",
                 items: {
@@ -139,6 +143,7 @@ Only include URLs you are confident are correct. Use null for unknown fields.`;
               "podcastUrl",
               "blogUrl",
               "substackUrl",
+              "mediumUrl",
               "newspaperArticles",
               "otherLinks",
             ],
@@ -159,6 +164,7 @@ Only include URLs you are confident are correct. Use null for unknown fields.`;
       podcastUrl: parsed.podcastUrl ?? undefined,
       blogUrl: parsed.blogUrl ?? undefined,
       substackUrl: parsed.substackUrl ?? undefined,
+      mediumUrl: parsed.mediumUrl ?? undefined,
       newspaperArticles: parsed.newspaperArticles ?? [],
       otherLinks: parsed.otherLinks ?? [],
       source: "gemini",
@@ -224,6 +230,7 @@ async function callPerplexityLinks(
       podcastUrl: parsed.podcastUrl ?? undefined,
       blogUrl: parsed.blogUrl ?? undefined,
       substackUrl: parsed.substackUrl ?? undefined,
+      mediumUrl: parsed.mediumUrl ?? undefined,
       newspaperArticles: parsed.newspaperArticles ?? [],
       otherLinks: parsed.otherLinks ?? [],
     };

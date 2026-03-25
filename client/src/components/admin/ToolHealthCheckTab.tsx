@@ -36,7 +36,8 @@ type ServiceKey =
   | "rapidapi"
   | "sec_edgar"
   | "openalex"
-  | "github";
+  | "github"
+  | "context7";
 
 interface ServiceHealthResult {
   service: string;
@@ -124,6 +125,12 @@ const SERVICE_META: Record<
     description: "Repository search for technical book references",
     icon: "🐙",
     docsUrl: "https://docs.github.com/en/rest",
+  },
+  context7: {
+    label: "Context7",
+    description: "Up-to-date library docs and code examples for technical books (free, no key)",
+    icon: "📚",
+    docsUrl: "https://context7.com",
   },
 };
 

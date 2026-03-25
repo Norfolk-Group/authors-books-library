@@ -1,0 +1,1 @@
+ALTER TABLE `author_profiles` ADD `mediumUrl` varchar(512);

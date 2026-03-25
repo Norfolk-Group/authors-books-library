@@ -45,6 +45,17 @@ const CONTENT_TYPE_NORMALIZE: Record<string, string> = {
   "other": "Other",
   "pdf": "PDF",
   "transcript": "Transcript",
+  // Publishing platforms
+  "substack": "Substack",
+  "substack posts": "Substack",
+  "substack articles": "Substack",
+  "medium": "Medium",
+  "medium posts": "Medium",
+  "medium articles": "Medium",
+  "blog": "Blog",
+  "blog posts": "Blog",
+  "newsletter": "Newsletter",
+  "newsletters": "Newsletter",
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -163,7 +174,11 @@ function scanAuthors(): { authors: AuthorEntry[]; books: BookRecord[] } {
   const authors: AuthorEntry[] = [];
   const books: BookRecord[] = [];
 
-  const categoryFolders = gwsList(AUTHORS_ROOT).filter(isFolder);
+  // Skip support/asset folders that live alongside category folders
+  const SKIP_FOLDERS = new Set(["bios", "book covers", "author pictures", "authors", "avatars", "photos"]);
+  const categoryFolders = gwsList(AUTHORS_ROOT)
+    .filter(isFolder)
+    .filter((f) => !SKIP_FOLDERS.has(f.name.toLowerCase().trim()));
 
   for (const catFolder of categoryFolders) {
     const category = catFolder.name;
@@ -366,6 +381,10 @@ export const CONTENT_TYPE_ICONS: Record<string, string> = {
   "Papers": "scroll",
   "Articles": "newspaper",
   "Links": "link",
+  "Substack": "rss",
+  "Medium": "pen-line",
+  "Blog": "pen-square",
+  "Newsletter": "mail",
   "Other": "folder",
 };
 export const CONTENT_TYPE_COLORS: Record<string, string> = {
@@ -379,6 +398,10 @@ export const CONTENT_TYPE_COLORS: Record<string, string> = {
   "Papers": "#0d9488",
   "Articles": "#78350f",
   "Links": "#4338ca",
+  "Substack": "#ff6719",
+  "Medium": "#00ab6c",
+  "Blog": "#6366f1",
+  "Newsletter": "#0ea5e9",
   "Other": "#9ca3af",
 };
 export const LIBRARY_STATS = {

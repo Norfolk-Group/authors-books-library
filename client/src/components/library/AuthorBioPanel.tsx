@@ -389,6 +389,7 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
     twitterUrl: profile.twitterUrl,
     linkedinUrl: profile.linkedinUrl,
     substackUrl: profile.substackUrl,
+    mediumUrl: profile.mediumUrl,
     facebookUrl: profile.facebookUrl,
     instagramUrl: profile.instagramUrl,
     tiktokUrl: profile.tiktokUrl,

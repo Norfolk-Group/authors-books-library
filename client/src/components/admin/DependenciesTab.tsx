@@ -415,6 +415,24 @@ const OPTIONAL_DEPENDENCIES: Dependency[] = [
     requiresKey: false,
     docsUrl: "https://www.notion.so",
   },
+  {
+    id: "context7",
+    name: "Context7",
+    type: "optional",
+    description:
+      "Up-to-date library documentation and code examples for technical books. Fetches versioned docs from GitHub repositories to enrich technical references.",
+    features: [
+      "Technical book references",
+      "Library documentation lookup",
+      "Code example enrichment",
+      "Framework version detection",
+    ],
+    envVars: [],
+    requiresKey: false,
+    freeApi: true,
+    healthCheckKey: "context7",
+    docsUrl: "https://context7.com",
+  },
 ];
 
 // ─── All dependencies for export (used by tests) ────────────────────────────

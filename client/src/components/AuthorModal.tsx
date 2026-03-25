@@ -201,7 +201,7 @@ export function AuthorModal({ author, avatarUrl: photoOverride, onClose }: Autho
               {profile && (
                 profile.websiteUrl || profile.twitterUrl || profile.linkedinUrl ||
                 profile.podcastUrl || profile.blogUrl || profile.substackUrl ||
-                profile.newspaperArticlesJson || profile.otherLinksJson
+                profile.mediumUrl || profile.newspaperArticlesJson || profile.otherLinksJson
               ) && (
                 <>
                   <div className="h-px bg-border" />
@@ -250,6 +250,13 @@ export function AuthorModal({ author, avatarUrl: photoOverride, onClose }: Autho
                           className="flex items-center gap-2 text-xs text-primary hover:underline">
                           <Rss className="w-3.5 h-3.5 flex-shrink-0" />
                           Substack
+                        </a>
+                      )}
+                      {profile.mediumUrl && (
+                        <a href={profile.mediumUrl} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-primary hover:underline">
+                          <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
+                          Medium
                         </a>
                       )}
                       {profile.newspaperArticlesJson && (() => {

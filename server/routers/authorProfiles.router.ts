@@ -270,6 +270,7 @@ const authorProfilesCoreRouter = router({
           podcastUrl: result.podcastUrl,
           blogUrl: result.blogUrl,
           substackUrl: result.substackUrl,
+          mediumUrl: result.mediumUrl,
           newspaperArticlesJson: result.newspaperArticles.length > 0
             ? JSON.stringify(result.newspaperArticles)
             : undefined,
@@ -326,6 +327,7 @@ const authorProfilesCoreRouter = router({
               podcastUrl: result.podcastUrl,
               blogUrl: result.blogUrl,
               substackUrl: result.substackUrl,
+              mediumUrl: result.mediumUrl,
               newspaperArticlesJson: result.newspaperArticles.length > 0
                 ? JSON.stringify(result.newspaperArticles)
                 : undefined,

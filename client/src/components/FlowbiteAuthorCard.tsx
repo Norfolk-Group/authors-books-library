@@ -109,6 +109,7 @@ export interface FlowbiteAuthorCardProps {
     twitterUrl?: string | null;
     linkedinUrl?: string | null;
     substackUrl?: string | null;
+    mediumUrl?: string | null;
     facebookUrl?: string | null;
     instagramUrl?: string | null;
     tiktokUrl?: string | null;

@@ -88,6 +88,8 @@ export const authorProfiles = mysqlTable("author_profiles", {
   blogUrl: varchar("blogUrl", { length: 512 }),
   /** Author's Substack newsletter URL */
   substackUrl: varchar("substackUrl", { length: 512 }),
+  /** Author's Medium profile URL (e.g. medium.com/@authorname) */
+  mediumUrl: varchar("mediumUrl", { length: 512 }),
   /** Number of posts published on Substack (from public /api/v1/publication endpoint) */
   substackPostCount: int("substackPostCount"),
   /** Subscriber range label from Substack (e.g. '10K-50K', '50K-100K') */

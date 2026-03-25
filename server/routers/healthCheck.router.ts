@@ -344,6 +344,33 @@ async function checkGitHub(): Promise<ServiceHealthResult> {
   }
 }
 
+async function checkContext7(): Promise<ServiceHealthResult> {
+  try {
+    // Context7 MCP server — ping the resolve-library-id endpoint with a well-known library
+    const { result: res, latencyMs } = await timed(() =>
+      fetch("https://mcp.context7.com/mcp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: {
+            name: "resolve-library-id",
+            arguments: { libraryName: "react" },
+          },
+        }),
+      })
+    );
+    if (!res.ok) {
+      return degraded("Context7", latencyMs, `HTTP ${res.status} — MCP endpoint reachable but returned error`);
+    }
+    return ok("Context7", latencyMs, "MCP endpoint reachable (free, no key required)");
+  } catch (e: unknown) {
+    return error("Context7", null, "Network error", String(e));
+  }
+}
+
 // ─── Router ───────────────────────────────────────────────────────────────────
 
 export const healthCheckRouter = router({
@@ -366,6 +393,7 @@ export const healthCheckRouter = router({
           "sec_edgar",
           "openalex",
           "github",
+          "context7",
         ]),
       })
     )
@@ -383,6 +411,7 @@ export const healthCheckRouter = router({
         case "sec_edgar":  return checkSecEdgar();
         case "openalex":   return checkOpenAlex();
         case "github":     return checkGitHub();
+        case "context7":   return checkContext7();
       }
     }),
 
@@ -399,6 +428,11 @@ export const healthCheckRouter = router({
   /** Ping GitHub API */
   checkGitHub: publicProcedure.mutation(async (): Promise<ServiceHealthResult> => {
     return checkGitHub();
+  }),
+
+  /** Ping Context7 MCP endpoint */
+  checkContext7: publicProcedure.mutation(async (): Promise<ServiceHealthResult> => {
+    return checkContext7();
   }),
 
   /**
@@ -418,6 +452,7 @@ export const healthCheckRouter = router({
       checkSecEdgar(),
       checkOpenAlex(),
       checkGitHub(),
+      checkContext7(),
     ]);
 
     return results.map((r, i) => {
@@ -425,7 +460,7 @@ export const healthCheckRouter = router({
         "Apify", "Google Gemini", "Anthropic (Claude)", "Replicate",
         "YouTube Data API", "Twitter/X API", "Tavily Search",
         "Perplexity AI", "RapidAPI", "SEC EDGAR", "OpenAlex",
-        "GitHub API",
+        "GitHub API", "Context7",
       ];
       if (r.status === "fulfilled") return r.value;
       return error(services[i], null, "Unexpected error", String(r.reason));
