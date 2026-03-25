@@ -64,6 +64,7 @@ import { AudioCard } from "@/components/library/AudioCard";
 import { AuthorBioPanel } from "@/components/library/AuthorBioPanel";
 import { BookDetailPanel } from "@/components/library/BookDetailPanel";
 import { StatCard, EmptyState } from "@/components/library/LibraryPrimitives";
+import { FloatingBooks } from "@/components/FloatingBooks";
 import { buildAuthorDimensions, buildBookDimensions, type FreshnessDimension } from "@/components/library/FreshnessDot";
 import { ICON_MAP, FORMAT_CLASSES, FORMAT_LABEL, STATS, getBookEnrichmentLevel, type BookEnrichmentLevel } from "@/components/library/libraryConstants";
 
@@ -760,12 +761,17 @@ export default function Home() {
           </header>
 
           <main ref={mainRef} className="flex-1 px-3 sm:px-6 py-4 sm:py-6 overflow-auto">
-            {/* Stats strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {/* Stats strip with 3D floating books background */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 -top-4 -bottom-4 overflow-hidden rounded-xl opacity-40">
+                <FloatingBooks count={6} className="w-full h-full" />
+              </div>
+              <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
               <StatCard label="Authors" value={STATS.totalAuthors} icon={Users} />
               <StatCard label="Books" value={STATS.totalBooks} icon={BookOpen} />
               <StatCard label="Audiobooks" value={AUDIO_BOOKS.length} icon={Headphones} />
               <StatCard label="Categories" value={STATS.totalCategories} icon={LayoutGrid} />
+              </div>
             </div>
 
             {/* Active filters */}

@@ -1,7 +1,8 @@
 /**
  * rapidapi.ts — Phase B enrichment helpers using RapidAPI
  *
- * Covers: Yahoo Finance, CNBC, LinkedIn, Seeking Alpha (Bloomberg proxy)
+ * Covers: Yahoo Finance, CNBC, LinkedIn
+ * (Seeking Alpha removed — not subscribed)
  *
  * All require RAPIDAPI_KEY environment variable.
  * Each function gracefully returns null if the key is missing or the API fails.
@@ -79,83 +80,236 @@ export async function fetchYahooFinanceStats(
 
 // ─── CNBC ─────────────────────────────────────────────────────────────────────
 
+export interface CNBCArticle {
+  title: string;
+  url: string;
+  date: string | null;
+  description: string | null;
+  section: string | null;
+  imageUrl: string | null;
+}
+
 export interface CNBCStats {
+  /** Total number of matching articles found across all feeds */
   articleCount: number;
-  recentArticles: Array<{ title: string; url: string; date: string | null }>;
+  /** Up to 5 most recent matching articles */
+  recentArticles: CNBCArticle[];
+  /** ISO date string of the most recently published matching article */
   latestArticleDate: string | null;
+  /** CNBC franchise feeds that were searched */
+  feedsSearched: number;
   fetchedAt: string;
 }
 
 /**
- * Search CNBC for articles mentioning an author via RapidAPI.
- * @param authorName - Full name of the author
+ * CNBC franchise IDs covering business, leadership, and investing content.
+ * These are the feeds most likely to feature business-book authors.
+ *
+ * Discovered via probe:
+ *   10000664 = Business News (general)
+ *   10000108 = Business
+ *   10000113 = Investing
+ *   10001147 = Make It (leadership/career)
+ *   10000110 = Economy
+ *   10000115 = Technology
+ */
+const CNBC_FRANCHISE_IDS = [
+  10000664, // Business News
+  10001147, // Make It (leadership, career, personal finance)
+  10000108, // Business
+  10000113, // Investing
+  10000110, // Economy
+];
+
+/** Raw article shape returned by the CNBC news/v2/list endpoint */
+interface CNBCRawArticle {
+  __typename?: string;
+  id?: number;
+  type?: string;
+  headline?: string;
+  shorterHeadline?: string;
+  description?: string;
+  pageName?: string;
+  relatedTagsFilteredFormatted?: string;
+  dateFirstPublished?: string;
+  dateLastPublished?: string;
+  sectionHierarchyFormatted?: string;
+  authorFormatted?: string;
+  shortDateFirstPublished?: string;
+  url?: string;
+  premium?: boolean;
+  promoImage?: { url?: string };
+  section?: { tagName?: string };
+}
+
+interface CNBCFeedResponse {
+  data?: {
+    sectionsEntries?: Array<{
+      assets?: CNBCRawArticle[];
+    }>;
+  };
+}
+
+/**
+ * Build name-matching tokens from an author name.
+ * Returns [fullNameLower, firstName, lastName] for flexible matching.
+ */
+function buildNameTokens(authorName: string): {
+  full: string;
+  first: string;
+  last: string;
+  parts: string[];
+} {
+  const full = authorName.toLowerCase().trim();
+  const parts = full.split(/\s+/).filter(Boolean);
+  return {
+    full,
+    first: parts[0] || "",
+    last: parts[parts.length - 1] || "",
+    parts,
+  };
+}
+
+/**
+ * Check whether a raw CNBC article matches the given author.
+ *
+ * Matching strategy (in order of confidence):
+ *   1. authorFormatted contains the full name
+ *   2. authorFormatted contains the last name AND first name (separately)
+ *   3. relatedTagsFilteredFormatted contains the full name
+ *   4. headline contains the full name
+ *   5. relatedTagsFilteredFormatted contains last name AND first name
+ */
+function articleMatchesAuthor(
+  article: CNBCRawArticle,
+  tokens: ReturnType<typeof buildNameTokens>
+): boolean {
+  const author = (article.authorFormatted || "").toLowerCase();
+  const tags = (article.relatedTagsFilteredFormatted || "").toLowerCase();
+  const headline = (article.headline || "").toLowerCase();
+
+  // Exact full-name match in author byline
+  if (author.includes(tokens.full)) return true;
+
+  // Last + first in author byline (handles "grant, adam" style)
+  if (
+    tokens.last.length > 2 &&
+    tokens.first.length > 1 &&
+    author.includes(tokens.last) &&
+    author.includes(tokens.first)
+  )
+    return true;
+
+  // Full name in tags (e.g. "adam grant" as a tag)
+  if (tags.includes(tokens.full)) return true;
+
+  // Full name in headline
+  if (headline.includes(tokens.full)) return true;
+
+  // Last + first in tags (pipe-separated tag list)
+  const tagList = tags.split("|").map((t) => t.trim());
+  const hasLastInTags = tagList.some((t) => t === tokens.last || t.includes(tokens.last));
+  const hasFirstInTags = tagList.some((t) => t === tokens.first || t.includes(tokens.first));
+  if (tokens.last.length > 3 && tokens.first.length > 2 && hasLastInTags && hasFirstInTags)
+    return true;
+
+  return false;
+}
+
+/**
+ * Fetch articles from a single CNBC franchise feed.
+ */
+async function fetchCNBCFeed(
+  franchiseId: number,
+  count: number,
+  rapidApiKey: string
+): Promise<CNBCRawArticle[]> {
+  const res = await fetch(
+    `https://cnbc.p.rapidapi.com/news/v2/list?franchiseId=${franchiseId}&count=${count}`,
+    {
+      headers: {
+        "x-rapidapi-host": "cnbc.p.rapidapi.com",
+        "x-rapidapi-key": rapidApiKey,
+      },
+    }
+  );
+  if (!res.ok) return [];
+  const data = (await res.json()) as CNBCFeedResponse;
+  return data.data?.sectionsEntries?.[0]?.assets || [];
+}
+
+/**
+ * Search CNBC for articles mentioning an author by fetching multiple franchise
+ * feeds in parallel and filtering by author name.
+ *
+ * Strategy:
+ *   - Fetch 5 franchise feeds (business, make-it, investing, economy, tech)
+ *     in parallel, 30 articles each → up to 150 candidates
+ *   - Filter by author name using a multi-signal matcher
+ *   - De-duplicate by article ID
+ *   - Return up to 5 most recent matches
+ *
+ * @param authorName - Full name of the author (e.g. "Adam Grant")
  * @param rapidApiKey - RapidAPI key
  */
 export async function fetchCNBCStats(
   authorName: string,
   rapidApiKey: string
 ): Promise<CNBCStats | null> {
-  if (!rapidApiKey) return null;
+  if (!rapidApiKey || !authorName.trim()) return null;
+
+  const tokens = buildNameTokens(authorName);
 
   try {
-    // Use the CNBC search endpoint
-    const res = await fetch(
-      `https://cnbc.p.rapidapi.com/news/v2/list?franchiseId=10000664&count=20`,
-      {
-        headers: {
-          "x-rapidapi-host": "cnbc.p.rapidapi.com",
-          "x-rapidapi-key": rapidApiKey,
-        },
-      }
+    // Fetch all feeds in parallel
+    const feedResults = await Promise.allSettled(
+      CNBC_FRANCHISE_IDS.map((id) => fetchCNBCFeed(id, 30, rapidApiKey))
     );
-    if (!res.ok) {
-      console.warn(`[CNBC] API error: ${res.status}`);
-      return null;
+
+    // Flatten and de-duplicate by article ID
+    const seen = new Set<number>();
+    const allArticles: CNBCRawArticle[] = [];
+    for (const result of feedResults) {
+      if (result.status === "fulfilled") {
+        for (const article of result.value) {
+          if (article.id && !seen.has(article.id)) {
+            seen.add(article.id);
+            allArticles.push(article);
+          }
+        }
+      }
     }
-    const data = (await res.json()) as {
-      data?: {
-        articles?: Array<{
-          title?: string;
-          url?: string;
-          datePublished?: string;
-          author?: string;
-        }>;
-      };
-    };
 
-    const articles = data.data?.articles || [];
+    // Filter to articles that match the author
+    const matching = allArticles.filter((a) => articleMatchesAuthor(a, tokens));
 
-    // Filter articles that mention the author
-    const authorLower = authorName.toLowerCase();
-    const nameParts = authorLower.split(" ");
-    const lastName = nameParts[nameParts.length - 1];
-
-    const matching = articles.filter((a) => {
-      const titleLower = (a.title || "").toLowerCase();
-      const authorField = (a.author || "").toLowerCase();
-      return (
-        titleLower.includes(lastName) ||
-        authorField.includes(authorLower) ||
-        authorField.includes(lastName)
-      );
+    // Sort by date descending
+    matching.sort((a, b) => {
+      const da = a.dateFirstPublished || "";
+      const db = b.dateFirstPublished || "";
+      return db.localeCompare(da);
     });
 
-    const recentArticles = matching.slice(0, 5).map((a) => ({
-      title: a.title || "",
+    const recentArticles: CNBCArticle[] = matching.slice(0, 5).map((a) => ({
+      title: a.headline || a.shorterHeadline || "",
       url: a.url || "",
-      date: a.datePublished || null,
+      date: a.dateFirstPublished || null,
+      description: a.description || null,
+      section: a.section?.tagName || a.sectionHierarchyFormatted?.split("|")[0] || null,
+      imageUrl: a.promoImage?.url || null,
     }));
 
-    const dates = recentArticles
-      .map((a) => a.date)
-      .filter(Boolean)
-      .sort()
-      .reverse();
+    const latestDate = recentArticles.find((a) => a.date)?.date || null;
+
+    console.info(
+      `[CNBC] ${authorName}: searched ${allArticles.length} articles across ${CNBC_FRANCHISE_IDS.length} feeds → ${matching.length} matches`
+    );
 
     return {
       articleCount: matching.length,
       recentArticles,
-      latestArticleDate: dates[0] || null,
+      latestArticleDate: latestDate,
+      feedsSearched: CNBC_FRANCHISE_IDS.length,
       fetchedAt: new Date().toISOString(),
     };
   } catch (err) {
@@ -219,7 +373,7 @@ export async function fetchLinkedInStats(
   }
 }
 
-// ─── Seeking Alpha (Bloomberg proxy) ─────────────────────────────────────────
+// ─── Seeking Alpha stub (kept for type compatibility, always returns null) ────
 
 export interface SeekingAlphaStats {
   articleCount: number;
@@ -229,72 +383,12 @@ export interface SeekingAlphaStats {
 }
 
 /**
- * Search Seeking Alpha (Bloomberg-adjacent financial news) for author mentions.
- * @param authorName - Full name of the author
- * @param rapidApiKey - RapidAPI key
+ * Seeking Alpha integration removed (not subscribed to this RapidAPI endpoint).
+ * Stub kept for backward compatibility with existing socialStatsJson data.
  */
 export async function fetchSeekingAlphaStats(
-  authorName: string,
-  rapidApiKey: string
+  _authorName: string,
+  _rapidApiKey: string
 ): Promise<SeekingAlphaStats | null> {
-  if (!rapidApiKey) return null;
-
-  try {
-    const res = await fetch(
-      `https://seeking-alpha.p.rapidapi.com/news/v2/list?size=20&number=1`,
-      {
-        headers: {
-          "x-rapidapi-host": "seeking-alpha.p.rapidapi.com",
-          "x-rapidapi-key": rapidApiKey,
-        },
-      }
-    );
-    if (!res.ok) {
-      console.warn(`[SeekingAlpha] API error: ${res.status}`);
-      return null;
-    }
-    const data = (await res.json()) as {
-      data?: Array<{
-        attributes?: {
-          title?: string;
-          publishOn?: string;
-          getUrl?: string;
-        };
-      }>;
-    };
-
-    const articles = data.data || [];
-    const authorLower = authorName.toLowerCase();
-    const nameParts = authorLower.split(" ");
-    const lastName = nameParts[nameParts.length - 1];
-
-    const matching = articles.filter((a) => {
-      const title = (a.attributes?.title || "").toLowerCase();
-      return title.includes(lastName);
-    });
-
-    const recentArticles = matching.slice(0, 5).map((a) => ({
-      title: a.attributes?.title || "",
-      url: a.attributes?.getUrl
-        ? `https://seekingalpha.com${a.attributes.getUrl}`
-        : "",
-      date: a.attributes?.publishOn || null,
-    }));
-
-    const dates = recentArticles
-      .map((a) => a.date)
-      .filter(Boolean)
-      .sort()
-      .reverse();
-
-    return {
-      articleCount: matching.length,
-      recentArticles,
-      latestArticleDate: dates[0] || null,
-      fetchedAt: new Date().toISOString(),
-    };
-  } catch (err) {
-    console.error(`[SeekingAlpha] Error for ${authorName}:`, err);
-    return null;
-  }
+  return null;
 }

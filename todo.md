@@ -767,9 +767,9 @@
 
 ## Future — Three.js Integration
 
-- [ ] Add Three.js (via @react-three/fiber + @react-three/drei) to project
-- [ ] Decide use case: 3D background scene, card flip effect, interactive globe, or other
-- [ ] Implement Three.js feature once use case is confirmed by user
+- [x] Add Three.js (via @react-three/fiber + @react-three/drei) to project
+- [x] Decide use case: floating books 3D background on hero stat section
+- [x] Implement FloatingBooks 3D background component on hero section
 
 ## Session March 21, 2026 — One-Author-Per-Card Rule
 
@@ -1020,11 +1020,11 @@
 
 ## Session March 22, 2026 — Avatar Terminology Standardization
 
-- [ ] Audit all photo/picture/portrait references in code, UI strings, comments, and docs
-- [ ] Rename UI labels, sidebar items, variable names, and comments to use "avatar" terminology
-- [ ] Update CLAUDE.md, memory.md, and any docs that use old terminology
-- [ ] Create skill: author-avatar-terminology enforcing "avatar" as the canonical term
-- [ ] Run tests, save checkpoint
+- [x] Audit all photo/picture/portrait references in code, UI strings, comments, and docs (duplicate — completed below)
+- [x] Rename UI labels, sidebar items, variable names, and comments to use "avatar" terminology (duplicate — completed below)
+- [x] Update CLAUDE.md, memory.md, and any docs that use old terminology (duplicate — completed below)
+- [x] Create skill: author-avatar-terminology enforcing "avatar" as the canonical term (duplicate — completed below)
+- [x] Run tests, save checkpoint (duplicate — completed below)
 
 ## Session March 22, 2026 — Avatar Terminology Standardization
 
@@ -1037,10 +1037,10 @@
 
 ## Session March 22, 2026 — Execute 3 Pipeline Suggestions
 
-- [ ] Test meticulous pipeline on Aaron Ross (no avatar, group shot cleared)
-- [ ] Add Anthropic/Claude routing to authorResearcher.ts research stage
-- [ ] Expose authorDescriptionJson in Admin UI Author Bio Panel as "View Description" panel
-- [ ] Run tests, update todo.md, save checkpoint
+- [x] Test meticulous pipeline on Aaron Ross — all 3 sources hit (Wikipedia, Tavily, Apify), 5 photos, Gemini Vision analysis successful
+- [x] Add Anthropic/Claude routing to authorResearcher.ts research stage (already implemented: lines 371-510)
+- [x] Expose authorDescriptionJson in Admin UI Author Bio Panel as "View Description" panel (already implemented: AuthorBioPanel.tsx lines 398-400)
+- [x] Run tests, update todo.md, save checkpoint
 
 ## Session March 22, 2026 — Admin Console Overhaul + Per-Card Actions
 
@@ -1059,10 +1059,10 @@
 
 ## Session March 22, 2026 — Avatar Pipeline Fixes
 
-- [ ] Fix Claude default model ID in authorResearcher.ts (claude-3-5-sonnet-20241022 → claude-sonnet-4-5-20250929)
-- [ ] Upgrade Gemini research pass to inline reference photos as true multimodal base64 image parts
-- [ ] Set nano-banana as default avatarGenModel in AppSettings defaults and AI tab UI
-- [ ] Run tests, save checkpoint
+- [x] Fix Claude default model ID in authorResearcher.ts (already using claude-sonnet-4-5-20250929 at line 474)
+- [x] Upgrade Gemini research pass to inline reference photos as true multimodal base64 image parts (already implemented: fetchImageAsBase64 at lines 384-466)
+- [x] Set nano-banana as default avatarGenModel in AppSettings defaults and AI tab UI (already set: AppSettingsContext line 133, AiTab line 86)
+- [x] Run tests, save checkpoint
 
 ## Session March 22, 2026 — Avatar Resolution Pipeline (Claude Opus Plan)
 
@@ -1737,3 +1737,87 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] #HC13 Add "Run All Checks" button and per-service "Re-check" button
 - [x] #HC14 Wire ToolHealthCheckTab into Admin Console as a new "Health" tab
 - [x] #HC15 Write vitest tests for healthCheck.router.ts
+
+## Feature: CNBC RapidAPI Integration
+
+- [ ] #CNBC1 Probe CNBC API endpoints and map response shape
+- [ ] #CNBC2 Rewrite fetchCNBCStats with author-targeted search endpoint (not franchise list)
+- [ ] #CNBC3 Improve author-name filtering: first+last name, partial match, byline match
+- [ ] #CNBC4 Add fetchCNBCAuthorProfile helper: fetch author page if available
+- [ ] #CNBC5 Store CNBC results in businessProfileJson (separate from socialStatsJson)
+- [ ] #CNBC6 Add enrichBusinessProfile tRPC procedure (admin-only)
+- [ ] #CNBC7 Surface CNBC articles section in Author Bio Panel (collapsible, max 5 articles)
+- [ ] #CNBC8 Add CNBC pill to PlatformPills component
+- [ ] #CNBC9 Write Vitest tests for fetchCNBCStats (mock fetch, all branches)
+- [ ] #CNBC10 Save checkpoint
+
+## Feature: Consensus Integration (Scientific Research)
+- [ ] #CON1 Explore Consensus MCP tools — list available endpoints and understand query/response shapes
+- [ ] #CON2 Build server/enrichment/consensus.ts — search for research papers by book title and author name
+- [ ] #CON3 Add researchPapersJson column to book_profiles schema (papers cited, citation count, DOI links)
+- [ ] #CON4 Add hIndex and citationCount columns to author_profiles schema
+- [ ] #CON5 Build enrichResearchPapers procedure — per-book paper discovery and storage
+- [ ] #CON6 Build enrichResearchPapersBatch procedure — batch processing for all books
+- [ ] #CON7 Build "Research Foundation" UI section on book detail page showing original studies
+- [ ] #CON8 Add Consensus to Health Check panel
+- [ ] #CON9 Write Vitest tests for consensus enrichment
+
+## Feature: Similarweb Integration (Web Traffic Analytics)
+- [ ] #SW1 Explore Similarweb MCP/skill tools — understand available traffic metrics
+- [ ] #SW2 Build server/enrichment/similarweb.ts — fetch traffic data for author websites
+- [ ] #SW3 Add webTrafficJson column to author_profiles schema (monthly visits, rank, traffic sources, geo)
+- [ ] #SW4 Build enrichWebTraffic procedure — fetch traffic for all discovered author URLs
+- [ ] #SW5 Build enrichWebTrafficBatch procedure — batch processing for all authors
+- [ ] #SW6 Build "Web Presence" UI card on author detail page showing quantified traffic metrics
+- [ ] #SW7 Add Similarweb to Health Check panel
+- [ ] #SW8 Write Vitest tests for similarweb enrichment
+
+## Feature: Quartr Integration (Financial Data & Earnings Calls)
+- [ ] #QR1 Explore Quartr MCP tools — list available endpoints for earnings call transcripts and company research
+- [ ] #QR2 Build server/enrichment/quartr.ts — search earnings call transcripts for author/book mentions
+- [ ] #QR3 Add earningsCallMentionsJson column to author_profiles schema
+- [ ] #QR4 Add corporateAdvisoryRoles column to author_profiles schema
+- [ ] #QR5 Build enrichEarningsCallMentions procedure — per-author transcript search
+- [ ] #QR6 Build enrichEarningsCallMentionsBatch procedure — batch processing
+- [ ] #QR7 Build "Enterprise Impact" UI section on author detail page showing corporate citations
+- [ ] #QR8 Add Quartr to Health Check panel
+- [ ] #QR9 Write Vitest tests for quartr enrichment
+
+## Feature: Apollo.io Integration (Professional Profiles)
+- [ ] #AP1 Explore Apollo.io MCP tools — understand people/company search endpoints
+- [ ] #AP2 Build server/enrichment/apollo.ts — search for author professional profiles
+- [ ] #AP3 Add professionalProfileJson column to author_profiles schema (role, company, funding, board seats)
+- [ ] #AP4 Build enrichProfessionalProfile procedure — per-author profile lookup
+- [ ] #AP5 Build enrichProfessionalProfileBatch procedure — batch processing
+- [ ] #AP6 Build "Professional Profile" UI card on author detail page showing roles, board seats, company data
+- [ ] #AP7 Add Apollo.io to Health Check panel
+- [ ] #AP8 Write Vitest tests for apollo enrichment
+
+## Feature: Notion Bidirectional Sync (Reading Notes)
+- [ ] #NT1 Explore Notion MCP tools — list databases, understand page/block CRUD operations
+- [ ] #NT2 Design Notion database schema mirroring book library (title, author, category, rating, notes, highlights)
+- [ ] #NT3 Build server/enrichment/notion.ts — create/update Notion pages from book_profiles
+- [ ] #NT4 Build syncToNotion procedure — push book data to Notion database
+- [ ] #NT5 Build syncFromNotion procedure — pull reading notes and annotations back to app
+- [ ] #NT6 Build "Reading Notes" UI section on book detail page showing synced Notion content
+- [ ] #NT7 Build Admin Console "Notion Sync" tab with push/pull controls and sync status
+- [ ] #NT8 Write Vitest tests for notion sync
+
+## Feature: Google Drive Document Archive
+- [ ] #GD1 Audit existing Google Drive integration (gws CLI, drive-media-folders skill)
+- [ ] #GD2 Design folder structure for author documents (transcripts, papers, chapter samples)
+- [ ] #GD3 Build server/enrichment/gdrive.ts — upload and index documents per author
+- [ ] #GD4 Add documentArchiveJson column to author_profiles schema (list of Drive file links with metadata)
+- [ ] #GD5 Build archiveDocument procedure — upload a document to Drive and link it to an author
+- [ ] #GD6 Build "Documents" UI section on author detail page showing archived files with download links
+- [ ] #GD7 Write Vitest tests for gdrive archive
+
+## Feature: Context7 Integration (Code Documentation & Technical References)
+- [ ] #C71 Explore Context7 MCP tools — understand available endpoints and query patterns
+- [ ] #C72 Evaluate Context7 for technical book enrichment — surface code examples, API docs, framework references cited in technical books
+- [ ] #C73 Build server/enrichment/context7.ts — fetch relevant documentation/code references for technical books
+- [ ] #C74 Add technicalReferencesJson column to book_profiles schema (code examples, API docs, framework links)
+- [ ] #C75 Build enrichTechnicalReferences procedure — per-book documentation discovery
+- [ ] #C76 Build "Technical References" UI section on book detail page for technical books
+- [ ] #C77 Add Context7 to Health Check panel
+- [ ] #C78 Write Vitest tests for context7 enrichment
