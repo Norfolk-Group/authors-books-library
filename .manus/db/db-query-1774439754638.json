@@ -1,0 +1,40 @@
+{
+  "query": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles' ORDER BY ORDINAL_POSITION DESC LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles' ORDER BY ORDINAL_POSITION DESC LIMIT 10",
+  "rows": [
+    {
+      "COLUMN_NAME": "documentArchiveEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "documentArchiveJson"
+    },
+    {
+      "COLUMN_NAME": "professionalProfileEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "professionalProfileJson"
+    },
+    {
+      "COLUMN_NAME": "earningsCallMentionsEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "earningsCallMentionsJson"
+    },
+    {
+      "COLUMN_NAME": "webTrafficEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "webTrafficJson"
+    },
+    {
+      "COLUMN_NAME": "academicResearchEnrichedAt"
+    },
+    {
+      "COLUMN_NAME": "academicResearchJson"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\ndocumentArchiveEnrichedAt\ndocumentArchiveJson\nprofessionalProfileEnrichedAt\nprofessionalProfileJson\nearningsCallMentionsEnrichedAt\nearningsCallMentionsJson\nwebTrafficEnrichedAt\nwebTrafficJson\nacademicResearchEnrichedAt\nacademicResearchJson\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}

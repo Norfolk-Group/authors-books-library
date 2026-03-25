@@ -1,0 +1,40 @@
+{
+  "query": "SELECT authorName FROM author_profiles WHERE authorName LIKE '%Cialdini%' OR authorName LIKE '%Poland%' OR authorName LIKE '%Thaler%' OR authorName LIKE '%Hawking%' OR authorName LIKE '%Grant%' ORDER BY authorName",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT authorName FROM author_profiles WHERE authorName LIKE '%Cialdini%' OR authorName LIKE '%Poland%' OR authorName LIKE '%Thaler%' OR authorName LIKE '%Hawking%' OR authorName LIKE '%Grant%' ORDER BY authorName",
+  "rows": [
+    {
+      "authorName": "Adam Grant"
+    },
+    {
+      "authorName": "Richard H Thaler"
+    },
+    {
+      "authorName": "Richard H. Thaler"
+    },
+    {
+      "authorName": "Robert B Cialdini"
+    },
+    {
+      "authorName": "Robert B. Cialdini"
+    },
+    {
+      "authorName": "Robert Cialdini"
+    },
+    {
+      "authorName": "Robert M Grant"
+    },
+    {
+      "authorName": "Stephen Hawking"
+    },
+    {
+      "authorName": "Stephen R Poland"
+    },
+    {
+      "authorName": "Steven Hawking"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\nAdam Grant\nRichard H Thaler\nRichard H. Thaler\nRobert B Cialdini\nRobert B. Cialdini\nRobert Cialdini\nRobert M Grant\nStephen Hawking\nStephen R Poland\nSteven Hawking\n",
+  "stderr": "",
+  "execution_time_ms": 72
+}

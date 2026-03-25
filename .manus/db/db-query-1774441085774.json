@@ -1,0 +1,14 @@
+{
+  "query": "SELECT id, authorName FROM author_profiles WHERE authorName LIKE '%Dettmer%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, authorName FROM author_profiles WHERE authorName LIKE '%Dettmer%';",
+  "rows": [
+    {
+      "id": "30073",
+      "authorName": "Philipp Dettmer"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tauthorName\n30073\tPhilipp Dettmer\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}

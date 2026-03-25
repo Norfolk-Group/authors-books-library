@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, title, authorName FROM book_profiles WHERE title IN ('Book PDF', 'Charles Duhigg', 'David Brooks', 'Jefferson-Fisher-Open-Graph') OR id LIKE 'bk_rand%' OR title LIKE '%Open-Graph%' OR (authorName IS NULL AND title NOT LIKE '%:%') ORDER BY title;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, title, authorName FROM book_profiles WHERE title IN ('Book PDF', 'Charles Duhigg', 'David Brooks', 'Jefferson-Fisher-Open-Graph') OR id LIKE 'bk_rand%' OR title LIKE '%Open-Graph%' OR (authorName IS NULL AND title NOT LIKE '%:%') ORDER BY title;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'title' in 'where clause'"
+  ]
+}

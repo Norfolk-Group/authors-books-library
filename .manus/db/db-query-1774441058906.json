@@ -1,0 +1,42 @@
+{
+  "query": "SELECT bookTitle, authorName FROM book_profiles WHERE authorName IN ('Robert B Cialdini', 'Robert B. Cialdini', 'Robert Cialdini', 'Richard H Thaler', 'Richard H. Thaler', 'Steven Hawking', 'Stephen Hawking', 'Founders Pocket Guide', 'Stephen Poland') ORDER BY authorName, bookTitle;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT bookTitle, authorName FROM book_profiles WHERE authorName IN ('Robert B Cialdini', 'Robert B. Cialdini', 'Robert Cialdini', 'Richard H Thaler', 'Richard H. Thaler', 'Steven Hawking', 'Stephen Hawking', 'Founders Pocket Guide', 'Stephen Poland') ORDER BY authorName, bookTitle;",
+  "rows": [
+    {
+      "bookTitle": "Founder\\u2019s Pocket Guide",
+      "authorName": "Founders Pocket Guide"
+    },
+    {
+      "bookTitle": "Misbehaving",
+      "authorName": "Richard H Thaler"
+    },
+    {
+      "bookTitle": "Nudge",
+      "authorName": "Richard H Thaler"
+    },
+    {
+      "bookTitle": "Misbehaving The Making of Behavior Economics by Richard H. Thaler",
+      "authorName": "Richard H. Thaler"
+    },
+    {
+      "bookTitle": "Influence",
+      "authorName": "Robert B Cialdini"
+    },
+    {
+      "bookTitle": "Pre-Suasion",
+      "authorName": "Robert B Cialdini"
+    },
+    {
+      "bookTitle": "The Grand Design",
+      "authorName": "Stephen Hawking"
+    },
+    {
+      "bookTitle": "Founder’s Pocket Guide",
+      "authorName": "Stephen Poland"
+    }
+  ],
+  "messages": [],
+  "stdout": "bookTitle\tauthorName\nFounder\\u2019s Pocket Guide\tFounders Pocket Guide\nMisbehaving\tRichard H Thaler\nNudge\tRichard H Thaler\nMisbehaving The Making of Behavior Economics by Richard H. Thaler\tRichard H. Thaler\nInfluence\tRobert B Cialdini\nPre-Suasion\tRobert B Cialdini\nThe Grand Design\tStephen Hawking\nFounder’s Pocket Guide\tStephen Poland\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

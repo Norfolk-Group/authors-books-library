@@ -1,0 +1,14 @@
+{
+  "query": "SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION) as cols, COUNT(*) as total FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION) as cols, COUNT(*) as total FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'author_profiles'",
+  "rows": [
+    {
+      "cols": "id,authorName,bio,websiteUrl,twitterUrl,linkedinUrl,enrichedAt,createdAt,updatedAt,avatarUrl,avatarSourceUrl,s3AvatarUrl,s3AvatarKey,avatarSource,authorDescriptionJson,authorDescriptionCachedAt,lastAvatarPrompt,lastAvatarPromptBuiltAt,driveAvatarFileId,avatarGenVendor,avatarGenModel,avatarResearchVendor,avatarResearchModel,podcastUrl,blogUrl,substackUrl,newspaperArticlesJson,otherLinksJson,lastLinksEnrichedAt,linksEnrichmentSource,bestReferencePhotoUrl,platformEnrichmentStatus,researchQuality,youtubeUrl,facebookUrl,instagramUrl,tiktokUrl,githubUrl,businessWebsiteUrl,newsletterUrl,speakingUrl,substackPostCount,substackSubscriberRange,substackStatsEnrichedAt,socialStatsJson,socialStatsEnrichedAt,stockTicker,wikipediaUrl,driveFolderId,websitesJson,professionalEntriesJson,richBioJson,mediaPresenceJson,mediaPresenceEnrichedAt,businessProfileJson,businessProfileEnrichedAt,academicResearchJson,academicResearchEnrichedAt,webTrafficJson,webTrafficEnrichedAt,earningsCallMentionsJson,earningsCallMentionsEnrichedAt,profe",
+      "total": "66"
+    }
+  ],
+  "messages": [],
+  "stdout": "cols\ttotal\nid,authorName,bio,websiteUrl,twitterUrl,linkedinUrl,enrichedAt,createdAt,updatedAt,avatarUrl,avatarSourceUrl,s3AvatarUrl,s3AvatarKey,avatarSource,authorDescriptionJson,authorDescriptionCachedAt,lastAvatarPrompt,lastAvatarPromptBuiltAt,driveAvatarFileId,avatarGenVendor,avatarGenModel,avatarResearchVendor,avatarResearchModel,podcastUrl,blogUrl,substackUrl,newspaperArticlesJson,otherLinksJson,lastLinksEnrichedAt,linksEnrichmentSource,bestReferencePhotoUrl,platformEnrichmentStatus,researchQuality,youtubeUrl,facebookUrl,instagramUrl,tiktokUrl,githubUrl,businessWebsiteUrl,newsletterUrl,speakingUrl,substackPostCount,substackSubscriberRange,substackStatsEnrichedAt,socialStatsJson,socialStatsEnrichedAt,stockTicker,wikipediaUrl,driveFolderId,websitesJson,professionalEntriesJson,richBioJson,mediaPresenceJson,mediaPresenceEnrichedAt,businessProfileJson,businessProfileEnrichedAt,academicResearchJson,academicResearchEnrichedAt,webTrafficJson,webTrafficEnrichedAt,earningsCallMentionsJson,earningsCallMentionsEnrichedAt,profe\t66\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, bookTitle, authorName, HEX(SUBSTRING(bookTitle, 8, 1)) as char_hex FROM book_profiles WHERE bookTitle LIKE '%Founder%Pocket%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName, HEX(SUBSTRING(bookTitle, 8, 1)) as char_hex FROM book_profiles WHERE bookTitle LIKE '%Founder%Pocket%';",
+  "rows": [
+    {
+      "id": "57",
+      "bookTitle": "Founder\\u2019s Pocket Guide",
+      "authorName": "Stephen R Poland",
+      "char_hex": "5C"
+    },
+    {
+      "id": "30003",
+      "bookTitle": "Founder’s Pocket Guide",
+      "authorName": "Stephen Poland",
+      "char_hex": "E28099"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\tchar_hex\n57\tFounder\\u2019s Pocket Guide\tStephen R Poland\t5C\n30003\tFounder’s Pocket Guide\tStephen Poland\tE28099\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

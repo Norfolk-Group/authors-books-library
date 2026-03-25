@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle IN ('Book PDF', 'Charles Duhigg', 'David Brooks', 'Jefferson-Fisher-Open-Graph') OR bookTitle LIKE 'bk_rand%' ORDER BY bookTitle;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle IN ('Book PDF', 'Charles Duhigg', 'David Brooks', 'Jefferson-Fisher-Open-Graph') OR bookTitle LIKE 'bk_rand%' ORDER BY bookTitle;",
+  "rows": [
+    {
+      "id": "180002",
+      "bookTitle": "Book PDF",
+      "authorName": ""
+    },
+    {
+      "id": "180003",
+      "bookTitle": "Charles Duhigg",
+      "authorName": ""
+    },
+    {
+      "id": "180004",
+      "bookTitle": "David Brooks",
+      "authorName": ""
+    },
+    {
+      "id": "180005",
+      "bookTitle": "Jefferson-Fisher-Open-Graph",
+      "authorName": ""
+    },
+    {
+      "id": "180001",
+      "bookTitle": "bk_rand_011854",
+      "authorName": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\n180002\tBook PDF\t\n180003\tCharles Duhigg\t\n180004\tDavid Brooks\t\n180005\tJefferson-Fisher-Open-Graph\t\n180001\tbk_rand_011854\t\n",
+  "stderr": "",
+  "execution_time_ms": 132
+}

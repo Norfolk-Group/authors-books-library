@@ -1,0 +1,9 @@
+{
+  "query": "DELETE FROM author_profiles WHERE id = 30093; UPDATE book_profiles SET authorName = 'Stephen Hawking' WHERE authorName = 'Steven Hawking';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute DELETE FROM author_profiles WHERE id = 30093; UPDATE book_profiles SET authorName = 'Stephen Hawking' WHERE authorName = 'Steven Hawking';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 75
+}

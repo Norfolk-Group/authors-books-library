@@ -1,0 +1,20 @@
+{
+  "query": "SELECT SUM(CASE WHEN academicResearchJson IS NOT NULL THEN 1 ELSE 0 END) as has_academic, SUM(CASE WHEN webTrafficJson IS NOT NULL THEN 1 ELSE 0 END) as has_web_traffic, SUM(CASE WHEN earningsCallMentionsJson IS NOT NULL THEN 1 ELSE 0 END) as has_enterprise_impact, SUM(CASE WHEN professionalProfileJson IS NOT NULL THEN 1 ELSE 0 END) as has_prof_profile, SUM(CASE WHEN documentArchiveJson IS NOT NULL THEN 1 ELSE 0 END) as has_doc_archive, SUM(CASE WHEN businessProfileJson IS NOT NULL THEN 1 ELSE 0 END) as has_business_profile, SUM(CASE WHEN mediaPresenceJson IS NOT NULL THEN 1 ELSE 0 END) as has_media_presence, SUM(CASE WHEN platformEnrichmentStatus IS NOT NULL THEN 1 ELSE 0 END) as has_platform_status FROM author_profiles",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT SUM(CASE WHEN academicResearchJson IS NOT NULL THEN 1 ELSE 0 END) as has_academic, SUM(CASE WHEN webTrafficJson IS NOT NULL THEN 1 ELSE 0 END) as has_web_traffic, SUM(CASE WHEN earningsCallMentionsJson IS NOT NULL THEN 1 ELSE 0 END) as has_enterprise_impact, SUM(CASE WHEN professionalProfileJson IS NOT NULL THEN 1 ELSE 0 END) as has_prof_profile, SUM(CASE WHEN documentArchiveJson IS NOT NULL THEN 1 ELSE 0 END) as has_doc_archive, SUM(CASE WHEN businessProfileJson IS NOT NULL THEN 1 ELSE 0 END) as has_business_profile, SUM(CASE WHEN mediaPresenceJson IS NOT NULL THEN 1 ELSE 0 END) as has_media_presence, SUM(CASE WHEN platformEnrichmentStatus IS NOT NULL THEN 1 ELSE 0 END) as has_platform_status FROM author_profiles",
+  "rows": [
+    {
+      "has_academic": "0",
+      "has_web_traffic": "0",
+      "has_enterprise_impact": "0",
+      "has_prof_profile": "0",
+      "has_doc_archive": "0",
+      "has_business_profile": "0",
+      "has_media_presence": "0",
+      "has_platform_status": "176"
+    }
+  ],
+  "messages": [],
+  "stdout": "has_academic\thas_web_traffic\thas_enterprise_impact\thas_prof_profile\thas_doc_archive\thas_business_profile\thas_media_presence\thas_platform_status\n0\t0\t0\t0\t0\t0\t0\t176\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

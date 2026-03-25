@@ -1,0 +1,19 @@
+{
+  "query": "SELECT bp.bookTitle, bp.authorName FROM book_profiles bp LEFT JOIN author_profiles ap ON bp.authorName = ap.authorName WHERE ap.id IS NULL AND bp.authorName != '' AND bp.authorName IS NOT NULL; SELECT COUNT(*) as total_authors FROM author_profiles; SELECT COUNT(*) as total_books FROM book_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT bp.bookTitle, bp.authorName FROM book_profiles bp LEFT JOIN author_profiles ap ON bp.authorName = ap.authorName WHERE ap.id IS NULL AND bp.authorName != '' AND bp.authorName IS NOT NULL; SELECT COUNT(*) as total_authors FROM author_profiles; SELECT COUNT(*) as total_books FROM book_profiles;",
+  "rows": [
+    {
+      "total_authors": "171"
+    },
+    {
+      "total_authors": "total_books"
+    },
+    {
+      "total_authors": "139"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_authors\n171\ntotal_books\n139\n",
+  "stderr": "",
+  "execution_time_ms": 74
+}

@@ -1,0 +1,20 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CASE WHEN bio IS NOT NULL THEN 1 ELSE 0 END) as has_bio, SUM(CASE WHEN avatarUrl IS NOT NULL THEN 1 ELSE 0 END) as has_avatar, SUM(CASE WHEN s3AvatarUrl IS NOT NULL THEN 1 ELSE 0 END) as has_s3_avatar, SUM(CASE WHEN socialStatsJson IS NOT NULL THEN 1 ELSE 0 END) as has_social_stats, SUM(CASE WHEN richBioJson IS NOT NULL THEN 1 ELSE 0 END) as has_rich_bio, SUM(CASE WHEN websitesJson IS NOT NULL THEN 1 ELSE 0 END) as has_websites, SUM(CASE WHEN enrichedAt IS NOT NULL THEN 1 ELSE 0 END) as enriched FROM author_profiles",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COUNT(*) as total, SUM(CASE WHEN bio IS NOT NULL THEN 1 ELSE 0 END) as has_bio, SUM(CASE WHEN avatarUrl IS NOT NULL THEN 1 ELSE 0 END) as has_avatar, SUM(CASE WHEN s3AvatarUrl IS NOT NULL THEN 1 ELSE 0 END) as has_s3_avatar, SUM(CASE WHEN socialStatsJson IS NOT NULL THEN 1 ELSE 0 END) as has_social_stats, SUM(CASE WHEN richBioJson IS NOT NULL THEN 1 ELSE 0 END) as has_rich_bio, SUM(CASE WHEN websitesJson IS NOT NULL THEN 1 ELSE 0 END) as has_websites, SUM(CASE WHEN enrichedAt IS NOT NULL THEN 1 ELSE 0 END) as enriched FROM author_profiles",
+  "rows": [
+    {
+      "total": "176",
+      "has_bio": "103",
+      "has_avatar": "141",
+      "has_s3_avatar": "141",
+      "has_social_stats": "176",
+      "has_rich_bio": "176",
+      "has_websites": "171",
+      "enriched": "125"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\thas_bio\thas_avatar\thas_s3_avatar\thas_social_stats\thas_rich_bio\thas_websites\tenriched\n176\t103\t141\t141\t176\t176\t171\t125\n",
+  "stderr": "",
+  "execution_time_ms": 61
+}

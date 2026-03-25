@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, bookTitle, authorName FROM book_profiles WHERE authorName LIKE '%Hawking%' ORDER BY authorName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName FROM book_profiles WHERE authorName LIKE '%Hawking%' ORDER BY authorName;",
+  "rows": [
+    {
+      "id": "131",
+      "bookTitle": "The Grand Design",
+      "authorName": "Stephen Hawking"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\n131\tThe Grand Design\tStephen Hawking\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

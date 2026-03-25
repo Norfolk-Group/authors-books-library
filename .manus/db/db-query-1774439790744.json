@@ -1,0 +1,22 @@
+{
+  "query": "SELECT COUNT(*) as total, SUM(CASE WHEN summary IS NOT NULL THEN 1 ELSE 0 END) as has_summary, SUM(CASE WHEN coverImageUrl IS NOT NULL THEN 1 ELSE 0 END) as has_cover, SUM(CASE WHEN s3CoverUrl IS NOT NULL THEN 1 ELSE 0 END) as has_s3_cover, SUM(CASE WHEN richSummaryJson IS NOT NULL THEN 1 ELSE 0 END) as has_rich_summary, SUM(CASE WHEN resourceLinksJson IS NOT NULL THEN 1 ELSE 0 END) as has_resource_links, SUM(CASE WHEN technicalReferencesJson IS NOT NULL THEN 1 ELSE 0 END) as has_tech_refs, SUM(CASE WHEN readingNotesJson IS NOT NULL THEN 1 ELSE 0 END) as has_reading_notes, SUM(CASE WHEN amazonUrl IS NOT NULL THEN 1 ELSE 0 END) as has_amazon, SUM(CASE WHEN enrichedAt IS NOT NULL THEN 1 ELSE 0 END) as enriched FROM book_profiles",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COUNT(*) as total, SUM(CASE WHEN summary IS NOT NULL THEN 1 ELSE 0 END) as has_summary, SUM(CASE WHEN coverImageUrl IS NOT NULL THEN 1 ELSE 0 END) as has_cover, SUM(CASE WHEN s3CoverUrl IS NOT NULL THEN 1 ELSE 0 END) as has_s3_cover, SUM(CASE WHEN richSummaryJson IS NOT NULL THEN 1 ELSE 0 END) as has_rich_summary, SUM(CASE WHEN resourceLinksJson IS NOT NULL THEN 1 ELSE 0 END) as has_resource_links, SUM(CASE WHEN technicalReferencesJson IS NOT NULL THEN 1 ELSE 0 END) as has_tech_refs, SUM(CASE WHEN readingNotesJson IS NOT NULL THEN 1 ELSE 0 END) as has_reading_notes, SUM(CASE WHEN amazonUrl IS NOT NULL THEN 1 ELSE 0 END) as has_amazon, SUM(CASE WHEN enrichedAt IS NOT NULL THEN 1 ELSE 0 END) as enriched FROM book_profiles",
+  "rows": [
+    {
+      "total": "147",
+      "has_summary": "146",
+      "has_cover": "147",
+      "has_s3_cover": "142",
+      "has_rich_summary": "147",
+      "has_resource_links": "145",
+      "has_tech_refs": "0",
+      "has_reading_notes": "0",
+      "has_amazon": "147",
+      "enriched": "147"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\thas_summary\thas_cover\thas_s3_cover\thas_rich_summary\thas_resource_links\thas_tech_refs\thas_reading_notes\thas_amazon\tenriched\n147\t146\t147\t142\t147\t145\t0\t0\t147\t147\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

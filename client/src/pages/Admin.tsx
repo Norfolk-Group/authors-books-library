@@ -885,7 +885,7 @@ export default function Admin() {
     setDiscoverPlatformsState({ ...INITIAL_STATE, status: "running", message: "Discovering platform presence for authors..." });
     const start = Date.now();
     try {
-      const result = await discoverPlatformsMutation.mutateAsync({ limit: 20, forceRefresh: false });
+      const result = await discoverPlatformsMutation.mutateAsync({ limit: 20 });
       setDiscoverPlatformsState({
         status: "done",
         progress: 100,

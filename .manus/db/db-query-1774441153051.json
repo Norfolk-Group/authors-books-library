@@ -1,0 +1,31 @@
+{
+  "query": "SELECT COUNT(*) as total_authors FROM author_profiles; SELECT COUNT(*) as total_books FROM book_profiles; SELECT id, authorName FROM author_profiles WHERE authorName LIKE '%Cialdini%' OR authorName LIKE '%Thaler%' OR authorName LIKE '%Hawking%' OR authorName = 'Founders Pocket Guide';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COUNT(*) as total_authors FROM author_profiles; SELECT COUNT(*) as total_books FROM book_profiles; SELECT id, authorName FROM author_profiles WHERE authorName LIKE '%Cialdini%' OR authorName LIKE '%Thaler%' OR authorName LIKE '%Hawking%' OR authorName = 'Founders Pocket Guide';",
+  "rows": [
+    {
+      "total_authors": "171"
+    },
+    {
+      "total_authors": "total_books"
+    },
+    {
+      "total_authors": "140"
+    },
+    {
+      "total_authors": "id\tauthorName"
+    },
+    {
+      "total_authors": "30077\tRichard Thaler"
+    },
+    {
+      "total_authors": "30080\tRobert Cialdini"
+    },
+    {
+      "total_authors": "30089\tStephen Hawking"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_authors\n171\ntotal_books\n140\nid\tauthorName\n30077\tRichard Thaler\n30080\tRobert Cialdini\n30089\tStephen Hawking\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}

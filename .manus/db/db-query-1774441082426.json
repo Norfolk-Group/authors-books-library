@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle LIKE '%Immune%' OR authorName LIKE '%Dettmer%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle LIKE '%Immune%' OR authorName LIKE '%Dettmer%';",
+  "rows": [
+    {
+      "id": "108",
+      "bookTitle": "Immune",
+      "authorName": "Philipp Dettmer"
+    },
+    {
+      "id": "120002",
+      "bookTitle": "Immune by Philip Dettmer",
+      "authorName": "Philip Dettmer"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\n108\tImmune\tPhilipp Dettmer\n120002\tImmune by Philip Dettmer\tPhilip Dettmer\n",
+  "stderr": "",
+  "execution_time_ms": 59
+}

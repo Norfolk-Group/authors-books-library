@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle LIKE '%Misbehaving%' ORDER BY bookTitle;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle LIKE '%Misbehaving%' ORDER BY bookTitle;",
+  "rows": [
+    {
+      "id": "113",
+      "bookTitle": "Misbehaving",
+      "authorName": "Richard H Thaler"
+    },
+    {
+      "id": "120004",
+      "bookTitle": "Misbehaving The Making of Behavior Economics by Richard H. Thaler",
+      "authorName": "Richard H. Thaler"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\n113\tMisbehaving\tRichard H Thaler\n120004\tMisbehaving The Making of Behavior Economics by Richard H. Thaler\tRichard H. Thaler\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

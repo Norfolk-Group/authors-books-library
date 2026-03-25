@@ -1814,3 +1814,23 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] #C76 Build getTechnicalReferences tRPC query for book detail page
 - [x] #C77 Add GitHub to Health Check panel (free API, no key needed)
 - [x] #C78 Write Vitest tests for context7 enrichment (server/context7.test.ts)
+
+## Audit Fix Sprint (March 25, 2026)
+
+### Database Data Integrity
+- [x] Delete 5 junk book records (bk_rand_011854, Book PDF, Charles Duhigg-as-book, David Brooks-as-book, Jefferson-Fisher-Open-Graph)
+- [x] Merge Robert Cialdini duplicate authors (3 variants → 1 canonical)
+- [x] Merge Richard Thaler duplicate authors (2 variants → 1 canonical)
+- [x] Merge Stephen Hawking duplicate authors (2 variants → 1 canonical)
+- [x] Fix orphaned book: Update Founder's Pocket Guide authorName to "Stephen R Poland"
+- [x] Remove suspect author "Founders Pocket Guide" (not a person)
+- [x] Add Philip Dettmer to author_profiles (already existed as Philipp Dettmer; deleted duplicate book) for orphaned "Immune" book
+
+### Code Quality — File Size Reduction
+- [x] Split authorProfiles.router.ts (2176 lines) into sub-routers: authorAvatar.router.ts (484), authorEnrichment.router.ts (570), authorSocial.router.ts (659), core (360)
+- [x] Extract AiTab.tsx (1289→195 lines): ModelSelector (386), BackgroundSelector (159), BatchRegenSection (146), AvatarDetailTable (140), AvatarResolutionControls (150)
+- [x] Extract Home.tsx (1187→623 lines): useLibraryData hook (439), LibrarySidebar component (250)
+
+### Code Hygiene
+- [x] Resolve TODO comment in server/db.ts:92 (replaced with note pointing to routers)
+- [x] Resolve TODO comment in wikipedia.ts:27 (no longer present; already cleaned up)

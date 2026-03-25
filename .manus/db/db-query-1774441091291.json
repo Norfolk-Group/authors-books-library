@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, authorName, bio IS NOT NULL as hasBio, LENGTH(bio) as bioLen, avatarUrl, s3AvatarUrl, enrichedAt, richBioJson IS NOT NULL as hasRichBio FROM author_profiles WHERE authorName IN ('Robert B Cialdini', 'Robert B. Cialdini', 'Robert Cialdini');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, authorName, bio IS NOT NULL as hasBio, LENGTH(bio) as bioLen, avatarUrl, s3AvatarUrl, enrichedAt, richBioJson IS NOT NULL as hasRichBio FROM author_profiles WHERE authorName IN ('Robert B Cialdini', 'Robert B. Cialdini', 'Robert Cialdini');",
+  "rows": [
+    {
+      "id": "30080",
+      "authorName": "Robert B Cialdini",
+      "hasBio": "1",
+      "bioLen": "269",
+      "avatarUrl": "NULL",
+      "s3AvatarUrl": "NULL",
+      "enrichedAt": "2026-03-15 19:41:30",
+      "hasRichBio": "1"
+    },
+    {
+      "id": "60005",
+      "authorName": "Robert B. Cialdini",
+      "hasBio": "1",
+      "bioLen": "269",
+      "avatarUrl": "NULL",
+      "s3AvatarUrl": "NULL",
+      "enrichedAt": "2026-03-16 00:05:15",
+      "hasRichBio": "1"
+    },
+    {
+      "id": "150022",
+      "authorName": "Robert Cialdini",
+      "hasBio": "0",
+      "bioLen": "NULL",
+      "avatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-robert-cialdini-1774146288383.png",
+      "s3AvatarUrl": "https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-robert-cialdini-1774146288383.png",
+      "enrichedAt": "NULL",
+      "hasRichBio": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tauthorName\thasBio\tbioLen\tavatarUrl\ts3AvatarUrl\tenrichedAt\thasRichBio\n30080\tRobert B Cialdini\t1\t269\tNULL\tNULL\t2026-03-15 19:41:30\t1\n60005\tRobert B. Cialdini\t1\t269\tNULL\tNULL\t2026-03-16 00:05:15\t1\n150022\tRobert Cialdini\t0\tNULL\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-robert-cialdini-1774146288383.png\thttps://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/author-avatars/drive-robert-cialdini-1774146288383.png\tNULL\t1\n",
+  "stderr": "",
+  "execution_time_ms": 65
+}

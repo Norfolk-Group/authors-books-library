@@ -1,0 +1,70 @@
+{
+  "query": "SELECT authorName FROM author_profiles WHERE avatarUrl IS NULL AND s3AvatarUrl IS NULL LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT authorName FROM author_profiles WHERE avatarUrl IS NULL AND s3AvatarUrl IS NULL LIMIT 20",
+  "rows": [
+    {
+      "authorName": "Esther Perel"
+    },
+    {
+      "authorName": "Founders Pocket Guide"
+    },
+    {
+      "authorName": "Fred Dust"
+    },
+    {
+      "authorName": "George Friedman"
+    },
+    {
+      "authorName": "Houston Howard"
+    },
+    {
+      "authorName": "James Surowiecki"
+    },
+    {
+      "authorName": "Ray Kurzweil"
+    },
+    {
+      "authorName": "Rhea Orion"
+    },
+    {
+      "authorName": "Richard H Thaler"
+    },
+    {
+      "authorName": "Rob Fitzpatrick"
+    },
+    {
+      "authorName": "Rob Walling"
+    },
+    {
+      "authorName": "Robert B Cialdini"
+    },
+    {
+      "authorName": "Robert M Grant"
+    },
+    {
+      "authorName": "Sanjoy Mahajan"
+    },
+    {
+      "authorName": "Scott Brinker"
+    },
+    {
+      "authorName": "Scott Galloway"
+    },
+    {
+      "authorName": "Sean Ellis"
+    },
+    {
+      "authorName": "Shankar Vedantam"
+    },
+    {
+      "authorName": "Stephen Hawking"
+    },
+    {
+      "authorName": "Stephen R Poland"
+    }
+  ],
+  "messages": [],
+  "stdout": "authorName\nEsther Perel\nFounders Pocket Guide\nFred Dust\nGeorge Friedman\nHouston Howard\nJames Surowiecki\nRay Kurzweil\nRhea Orion\nRichard H Thaler\nRob Fitzpatrick\nRob Walling\nRobert B Cialdini\nRobert M Grant\nSanjoy Mahajan\nScott Brinker\nScott Galloway\nSean Ellis\nShankar Vedantam\nStephen Hawking\nStephen R Poland\n",
+  "stderr": "",
+  "execution_time_ms": 67
+}

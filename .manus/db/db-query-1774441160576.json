@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE book_profiles SET authorName = 'Stephen R Poland' WHERE bookTitle = \"Founder's Pocket Guide\" AND authorName = 'Stephen Poland';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute UPDATE book_profiles SET authorName = 'Stephen R Poland' WHERE bookTitle = \"Founder's Pocket Guide\" AND authorName = 'Stephen Poland';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 57
+}

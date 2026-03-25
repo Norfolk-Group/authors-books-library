@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle LIKE '%Founder%Pocket%' ORDER BY bookTitle;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, bookTitle, authorName FROM book_profiles WHERE bookTitle LIKE '%Founder%Pocket%' ORDER BY bookTitle;",
+  "rows": [
+    {
+      "id": "57",
+      "bookTitle": "Founder\\u2019s Pocket Guide",
+      "authorName": "Founders Pocket Guide"
+    },
+    {
+      "id": "30003",
+      "bookTitle": "Founder’s Pocket Guide",
+      "authorName": "Stephen Poland"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tbookTitle\tauthorName\n57\tFounder\\u2019s Pocket Guide\tFounders Pocket Guide\n30003\tFounder’s Pocket Guide\tStephen Poland\n",
+  "stderr": "",
+  "execution_time_ms": 64
+}

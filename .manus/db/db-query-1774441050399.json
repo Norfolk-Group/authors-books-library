@@ -1,0 +1,74 @@
+{
+  "query": "SELECT id, authorName, bio IS NOT NULL as hasBio, avatarUrl IS NOT NULL as hasAvatar, s3AvatarUrl IS NOT NULL as hasS3Avatar, enrichedAt FROM author_profiles WHERE authorName LIKE '%Cialdini%' OR authorName LIKE '%Thaler%' OR authorName LIKE '%Hawking%' OR authorName = 'Founders Pocket Guide' ORDER BY authorName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, authorName, bio IS NOT NULL as hasBio, avatarUrl IS NOT NULL as hasAvatar, s3AvatarUrl IS NOT NULL as hasS3Avatar, enrichedAt FROM author_profiles WHERE authorName LIKE '%Cialdini%' OR authorName LIKE '%Thaler%' OR authorName LIKE '%Hawking%' OR authorName = 'Founders Pocket Guide' ORDER BY authorName;",
+  "rows": [
+    {
+      "id": "30034",
+      "authorName": "Founders Pocket Guide",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-15 19:40:47"
+    },
+    {
+      "id": "30077",
+      "authorName": "Richard H Thaler",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-15 19:41:26"
+    },
+    {
+      "id": "60004",
+      "authorName": "Richard H. Thaler",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-16 00:05:15"
+    },
+    {
+      "id": "30080",
+      "authorName": "Robert B Cialdini",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-15 19:41:30"
+    },
+    {
+      "id": "60005",
+      "authorName": "Robert B. Cialdini",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-16 00:05:15"
+    },
+    {
+      "id": "150022",
+      "authorName": "Robert Cialdini",
+      "hasBio": "0",
+      "hasAvatar": "1",
+      "hasS3Avatar": "1",
+      "enrichedAt": "NULL"
+    },
+    {
+      "id": "30089",
+      "authorName": "Stephen Hawking",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-15 19:41:38"
+    },
+    {
+      "id": "30093",
+      "authorName": "Steven Hawking",
+      "hasBio": "1",
+      "hasAvatar": "0",
+      "hasS3Avatar": "0",
+      "enrichedAt": "2026-03-15 19:41:42"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tauthorName\thasBio\thasAvatar\thasS3Avatar\tenrichedAt\n30034\tFounders Pocket Guide\t1\t0\t0\t2026-03-15 19:40:47\n30077\tRichard H Thaler\t1\t0\t0\t2026-03-15 19:41:26\n60004\tRichard H. Thaler\t1\t0\t0\t2026-03-16 00:05:15\n30080\tRobert B Cialdini\t1\t0\t0\t2026-03-15 19:41:30\n60005\tRobert B. Cialdini\t1\t0\t0\t2026-03-16 00:05:15\n150022\tRobert Cialdini\t0\t1\t1\tNULL\n30089\tStephen Hawking\t1\t0\t0\t2026-03-15 19:41:38\n30093\tSteven Hawking\t1\t0\t0\t2026-03-15 19:41:42\n",
+  "stderr": "",
+  "execution_time_ms": 76
+}

@@ -1,0 +1,30 @@
+{
+  "query": "SELECT bookTitle, coverImageUrl FROM book_profiles WHERE s3CoverUrl IS NULL AND coverImageUrl IS NOT NULL LIMIT 10",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT bookTitle, coverImageUrl FROM book_profiles WHERE s3CoverUrl IS NULL AND coverImageUrl IS NOT NULL LIMIT 10",
+  "rows": [
+    {
+      "bookTitle": "bk_rand_011854",
+      "coverImageUrl": ""
+    },
+    {
+      "bookTitle": "Book PDF",
+      "coverImageUrl": ""
+    },
+    {
+      "bookTitle": "Charles Duhigg",
+      "coverImageUrl": ""
+    },
+    {
+      "bookTitle": "David Brooks",
+      "coverImageUrl": ""
+    },
+    {
+      "bookTitle": "Jefferson-Fisher-Open-Graph",
+      "coverImageUrl": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "bookTitle\tcoverImageUrl\nbk_rand_011854\t\nBook PDF\t\nCharles Duhigg\t\nDavid Brooks\t\nJefferson-Fisher-Open-Graph\t\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}

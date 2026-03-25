@@ -1,0 +1,14 @@
+{
+  "query": "SELECT bp.bookTitle, bp.authorName FROM book_profiles bp LEFT JOIN author_profiles ap ON bp.authorName = ap.authorName WHERE ap.id IS NULL AND bp.authorName != '' AND bp.authorName IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT bp.bookTitle, bp.authorName FROM book_profiles bp LEFT JOIN author_profiles ap ON bp.authorName = ap.authorName WHERE ap.id IS NULL AND bp.authorName != '' AND bp.authorName IS NOT NULL;",
+  "rows": [
+    {
+      "bookTitle": "Founder’s Pocket Guide",
+      "authorName": "Stephen Poland"
+    }
+  ],
+  "messages": [],
+  "stdout": "bookTitle\tauthorName\nFounder’s Pocket Guide\tStephen Poland\n",
+  "stderr": "",
+  "execution_time_ms": 62
+}

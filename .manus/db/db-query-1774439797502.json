@@ -1,0 +1,13 @@
+{
+  "query": "SELECT COUNT(*) as orphaned_books FROM book_profiles bp LEFT JOIN author_profiles ap ON bp.authorName = ap.authorName WHERE ap.id IS NULL",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT COUNT(*) as orphaned_books FROM book_profiles bp LEFT JOIN author_profiles ap ON bp.authorName = ap.authorName WHERE ap.id IS NULL",
+  "rows": [
+    {
+      "orphaned_books": "7"
+    }
+  ],
+  "messages": [],
+  "stdout": "orphaned_books\n7\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

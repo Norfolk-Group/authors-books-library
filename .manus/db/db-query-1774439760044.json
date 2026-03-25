@@ -1,0 +1,14 @@
+{
+  "query": "SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION) as cols, COUNT(*) as total FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'book_profiles'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION) as cols, COUNT(*) as total FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'book_profiles'",
+  "rows": [
+    {
+      "cols": "id,bookTitle,authorName,summary,keyThemes,rating,ratingCount,amazonUrl,goodreadsUrl,resourceUrl,resourceLabel,enrichedAt,createdAt,updatedAt,coverImageUrl,publishedDate,isbn,publisher,s3CoverUrl,s3CoverKey,publisherUrl,lastSummaryEnrichedAt,summaryEnrichmentSource,coverImageSource,driveFolderId,resourceLinksJson,richSummaryJson,wikipediaUrl,technicalReferencesJson,technicalReferencesEnrichedAt,readingNotesJson,readingNotesSyncedAt",
+      "total": "32"
+    }
+  ],
+  "messages": [],
+  "stdout": "cols\ttotal\nid,bookTitle,authorName,summary,keyThemes,rating,ratingCount,amazonUrl,goodreadsUrl,resourceUrl,resourceLabel,enrichedAt,createdAt,updatedAt,coverImageUrl,publishedDate,isbn,publisher,s3CoverUrl,s3CoverKey,publisherUrl,lastSummaryEnrichedAt,summaryEnrichmentSource,coverImageSource,driveFolderId,resourceLinksJson,richSummaryJson,wikipediaUrl,technicalReferencesJson,technicalReferencesEnrichedAt,readingNotesJson,readingNotesSyncedAt\t32\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

@@ -1,0 +1,37 @@
+{
+  "query": "SHOW TABLES",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SHOW TABLES",
+  "rows": [
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "admin_action_log"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "author_profiles"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "book_profiles"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "enrichment_jobs"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "enrichment_schedules"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "favorites"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "sync_status"
+    },
+    {
+      "Tables_in_ehSrGoKN2NYhXg8UYLtWGw": "users"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_ehSrGoKN2NYhXg8UYLtWGw\n__drizzle_migrations\nadmin_action_log\nauthor_profiles\nbook_profiles\nenrichment_jobs\nenrichment_schedules\nfavorites\nsync_status\nusers\n",
+  "stderr": "",
+  "execution_time_ms": 127
+}

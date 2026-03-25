@@ -1,0 +1,9 @@
+{
+  "query": "SELECT authorName FROM author_profiles WHERE authorName IN (SELECT DISTINCT ap2.authorName FROM author_profiles ap1 JOIN author_profiles ap2 ON ap1.id != ap2.id AND (ap1.authorName LIKE CONCAT(ap2.authorName, '%') OR ap2.authorName LIKE CONCAT(ap1.authorName, '%')) WHERE LENGTH(ap1.authorName) != LENGTH(ap2.authorName)) ORDER BY authorName LIMIT 20",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT authorName FROM author_profiles WHERE authorName IN (SELECT DISTINCT ap2.authorName FROM author_profiles ap1 JOIN author_profiles ap2 ON ap1.id != ap2.id AND (ap1.authorName LIKE CONCAT(ap2.authorName, '%') OR ap2.authorName LIKE CONCAT(ap1.authorName, '%')) WHERE LENGTH(ap1.authorName) != LENGTH(ap2.authorName)) ORDER BY authorName LIMIT 20",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 92
+}
