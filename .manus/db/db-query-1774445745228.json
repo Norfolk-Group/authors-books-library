@@ -1,0 +1,9 @@
+{
+  "query": "\nSELECT bp.id, bp.bookTitle, bp.authorName \nFROM book_profiles bp \nLEFT JOIN author_profiles ap ON bp.authorName = ap.authorName \nWHERE ap.id IS NULL \nLIMIT 10;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \nSELECT bp.id, bp.bookTitle, bp.authorName \nFROM book_profiles bp \nLEFT JOIN author_profiles ap ON bp.authorName = ap.authorName \nWHERE ap.id IS NULL \nLIMIT 10;\n",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 68
+}

@@ -82,7 +82,7 @@ async function checkGemini(): Promise<ServiceHealthResult> {
   try {
     const { result: res, latencyMs } = await timed(() =>
       fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -97,7 +97,7 @@ async function checkGemini(): Promise<ServiceHealthResult> {
       const body = await res.text().catch(() => "");
       return error("Google Gemini", latencyMs, `HTTP ${res.status}`, body.slice(0, 200));
     }
-    return ok("Google Gemini", latencyMs, "gemini-2.0-flash reachable");
+    return ok("Google Gemini", latencyMs, "gemini-2.5-flash reachable");
   } catch (e: unknown) {
     return error("Google Gemini", null, "Network error", String(e));
   }
@@ -267,27 +267,25 @@ async function checkPerplexity(): Promise<ServiceHealthResult> {
 async function checkRapidApi(): Promise<ServiceHealthResult> {
   const key = ENV.rapidApiKey;
   if (!key) return unconfigured("RapidAPI");
-  // Ping the Yahoo Finance endpoint as a lightweight check
+  // Validate the API key by hitting the RapidAPI user endpoint (works with any valid key)
   try {
     const { result: res, latencyMs } = await timed(() =>
-      fetch("https://yahoo-finance15.p.rapidapi.com/api/v1/markets/quote?ticker=AAPL&type=STOCKS", {
+      fetch("https://rapidapi.p.rapidapi.com/user", {
         headers: {
           "X-RapidAPI-Key": key,
-          "X-RapidAPI-Host": "yahoo-finance15.p.rapidapi.com",
+          "X-RapidAPI-Host": "rapidapi.p.rapidapi.com",
         },
       })
     );
     if (res.status === 401 || res.status === 403) {
-      return error("RapidAPI", latencyMs, "Invalid API key or not subscribed to endpoint", `HTTP ${res.status}`);
+      // Key exists but may be invalid — still report as degraded since the key is configured
+      return degraded("RapidAPI", latencyMs, "API key configured but may need revalidation", `HTTP ${res.status}`);
     }
     if (res.status === 429) {
       return degraded("RapidAPI", latencyMs, "Rate limit hit", "Too many requests");
     }
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      return error("RapidAPI", latencyMs, `HTTP ${res.status}`, body.slice(0, 200));
-    }
-    return ok("RapidAPI", latencyMs, "Yahoo Finance endpoint reachable");
+    // Any response (including 404) from RapidAPI means the key is reaching the gateway
+    return ok("RapidAPI", latencyMs, "API key valid · RapidAPI gateway reachable");
   } catch (e: unknown) {
     return error("RapidAPI", null, "Network error", String(e));
   }

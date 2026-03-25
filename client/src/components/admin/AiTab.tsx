@@ -33,6 +33,7 @@ const PURPOSES: PurposeConfig[] = [
     imageGenOnly: true,
     defaultVendor: "google",
     defaultModel: "nano-banana",
+    // No recommendUseCase — image-gen models are not scored by the text recommendation engine
   },
   {
     label: "Avatar Research",
@@ -43,6 +44,7 @@ const PURPOSES: PurposeConfig[] = [
     modelKey: "avatarResearchModel",
     defaultVendor: "google",
     defaultModel: "gemini-2.5-flash",
+    recommendUseCase: "avatar_research",
   },
   {
     label: "Author Research",
@@ -56,6 +58,8 @@ const PURPOSES: PurposeConfig[] = [
     secondaryModelKey: "authorResearchSecondaryModel",
     defaultVendor: "google",
     defaultModel: "gemini-2.5-flash",
+    recommendUseCase: "research",
+    secondaryRecommendUseCase: "refinement",
   },
   {
     label: "Book Research",
@@ -69,6 +73,8 @@ const PURPOSES: PurposeConfig[] = [
     secondaryModelKey: "bookResearchSecondaryModel",
     defaultVendor: "google",
     defaultModel: "gemini-2.5-flash",
+    recommendUseCase: "research",
+    secondaryRecommendUseCase: "refinement",
   },
   {
     label: "Other",
@@ -82,6 +88,8 @@ const PURPOSES: PurposeConfig[] = [
     secondaryModelKey: "otherAiSecondaryModel",
     defaultVendor: "google",
     defaultModel: "gemini-2.5-flash",
+    recommendUseCase: "structured",
+    secondaryRecommendUseCase: "refinement",
   },
 ];
 

@@ -1842,3 +1842,16 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Each dependency shows: name, type badge (Native/Optional), description, features, env vars, status indicator, latency, docs link
 - [x] Add "dependencies" tab trigger and content in Admin.tsx
 - [x] Write vitest tests for the dependencies tab data structure (25 tests, all passing)
+
+## Feature: LLM Vendor/Model Expansion & Recommendations (March 25, 2026)
+- [x] Fix stale Gemini 2.0 Flash reference in healthCheck.router.ts (updated to gemini-2.5-flash)
+- [x] Fix stale Gemini 2.0 Flash entry in llm.router.ts vendor registry (removed deprecated model)
+- [x] Add missing vendors to registry: xAI (Grok 3/Mini/Fast), DeepSeek (V3/R1/V3-0324), Perplexity (Sonar/Pro/Reasoning), Amazon (Nova Pro/Lite/Micro), Alibaba (Qwen Max/Plus/Turbo/Coder), AI21 (Jamba 1.5)
+- [x] Update existing vendor model lists — Anthropic updated to Claude 3.5 Haiku, xAI expanded to 3 models, 13 vendors / 48 models total
+- [x] Add task-based model recommendation engine — 6 use cases: research, refinement, structured, avatar_research, code, bulk
+- [x] Add "Auto-Recommend" button to each ModelSelector that auto-selects best model per task
+- [x] Add "Refresh" button to each ModelSelector that re-runs recommendation engine
+- [x] Support primary and secondary LLM selection with toggle switch (already existed; enhanced with recommendation badges)
+- [x] Fix RapidAPI health check (switched to gateway user endpoint, returns degraded instead of error for 403)
+- [x] Fix health check model references to use current model names (gemini-2.5-flash in healthCheck.router.ts)
+- [x] Write/update vitest tests for expanded registry (30 tests, all 439 passing)

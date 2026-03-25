@@ -1,13 +1,17 @@
 /**
- * LLM Router — vendor/model catalogue with recommendation engine.
+ * LLM Router — vendor/model catalogue with task-based recommendation engine.
  *
  * Architecture:
  *  - VENDOR_CATALOGUE_RAW: static registry of all major LLM providers + models.
  *  - applyRecommendations(): scores each model per use-case and tags the top
  *    pick as `recommended`. Re-runs on every `refreshVendors` call.
- *  - Use cases:
- *      "research"   → LLM 1 pass: factual extraction, synthesis, world knowledge
- *      "refinement" → LLM 2 pass: prose quality, tone, editing
+ *  - Task-based use cases:
+ *      "research"        → LLM 1 pass: factual extraction, synthesis, world knowledge
+ *      "refinement"      → LLM 2 pass: prose quality, tone, editing
+ *      "structured"      → JSON schema output, structured data extraction
+ *      "avatar_research" → Deep visual description for avatar generation pipeline
+ *      "code"            → Code generation and analysis
+ *      "bulk"            → High-volume, cost-sensitive batch processing
  *
  * Seeded defaults (March 2026):
  *   LLM 1 (research):   Google → Gemini 2.5 Flash  (fast, 1M ctx, strong factual)
@@ -21,29 +25,38 @@ import { invokeLLM } from "../_core/llm";
 // Types
 // ---------------------------------------------------------------------------
 
-export type UseCase = "research" | "refinement";
+export const USE_CASES = [
+  "research",
+  "refinement",
+  "structured",
+  "avatar_research",
+  "code",
+  "bulk",
+] as const;
+
+export type UseCase = (typeof USE_CASES)[number];
 
 export interface LLMModel {
   id: string;
   displayName: string;
   description: string;
-  contextWindow: number; // input tokens (K)
+  contextWindow: number; // input tokens
   outputTokens: number;
   tier: "flagship" | "balanced" | "fast" | "lite" | "image-gen";
   /** True if this model is an image generation model, not a text LLM */
   imageGen?: boolean;
   speed: "fast" | "balanced" | "powerful";
-  /** Populated by the recommendation engine — not stored in the raw catalogue */
-  recommended?: UseCase;
-  /** Human-readable reason for the recommendation */
-  recommendedReason?: string;
+  /** Populated by the recommendation engine — all use cases this model is recommended for */
+  recommended?: UseCase[];
+  /** Human-readable reasons for each recommendation, keyed by use case */
+  recommendedReasons?: Record<string, string>;
 }
 
 export interface LLMVendor {
   id: string;
   displayName: string;
   shortName: string;
-  logoColor: string;  // brand accent hex for UI
+  logoColor: string; // brand accent hex for UI
   models: LLMModel[];
 }
 
@@ -62,7 +75,7 @@ const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
       {
         id: "gemini-2.5-pro",
         displayName: "Gemini 2.5 Pro",
-        description: "Best reasoning and writing quality in the 2.5 family. Recommended for research.",
+        description: "Best reasoning and writing quality in the 2.5 family.",
         contextWindow: 1048576,
         outputTokens: 65536,
         tier: "flagship",
@@ -84,15 +97,6 @@ const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
         contextWindow: 1048576,
         outputTokens: 65536,
         tier: "lite",
-        speed: "fast",
-      },
-      {
-        id: "gemini-2.0-flash",
-        displayName: "Gemini 2.0 Flash",
-        description: "Reliable and fast, proven in production.",
-        contextWindow: 1048576,
-        outputTokens: 8192,
-        tier: "balanced",
         speed: "fast",
       },
       {
@@ -234,13 +238,87 @@ const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
         speed: "balanced",
       },
       {
-        id: "claude-3-haiku-20240307",
-        displayName: "Claude Haiku 3",
+        id: "claude-3-5-haiku-20241022",
+        displayName: "Claude 3.5 Haiku",
         description: "Lightweight fast model. Good for simple tasks and bulk processing.",
         contextWindow: 200000,
-        outputTokens: 4096,
+        outputTokens: 8192,
         tier: "lite",
         speed: "fast",
+      },
+    ],
+  },
+
+  // ── xAI (Grok) ───────────────────────────────────────────────────────────
+  {
+    id: "xai",
+    displayName: "xAI",
+    shortName: "Grok",
+    logoColor: "#000000",
+    models: [
+      {
+        id: "grok-3",
+        displayName: "Grok 3",
+        description: "xAI's flagship model. Strong reasoning with real-time knowledge.",
+        contextWindow: 131072,
+        outputTokens: 16384,
+        tier: "flagship",
+        speed: "powerful",
+      },
+      {
+        id: "grok-3-mini",
+        displayName: "Grok 3 Mini",
+        description: "Efficient Grok 3 variant. Fast inference for structured tasks.",
+        contextWindow: 131072,
+        outputTokens: 16384,
+        tier: "balanced",
+        speed: "fast",
+      },
+      {
+        id: "grok-3-mini-fast",
+        displayName: "Grok 3 Mini Fast",
+        description: "Fastest Grok variant. Optimized for low-latency bulk operations.",
+        contextWindow: 131072,
+        outputTokens: 16384,
+        tier: "lite",
+        speed: "fast",
+      },
+    ],
+  },
+
+  // ── DeepSeek ──────────────────────────────────────────────────────────────
+  {
+    id: "deepseek",
+    displayName: "DeepSeek",
+    shortName: "DeepSeek",
+    logoColor: "#4D6BFE",
+    models: [
+      {
+        id: "deepseek-v3",
+        displayName: "DeepSeek V3",
+        description: "Flagship MoE model. Exceptional coding and reasoning at low cost.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "flagship",
+        speed: "powerful",
+      },
+      {
+        id: "deepseek-r1",
+        displayName: "DeepSeek R1",
+        description: "Reasoning-focused model with chain-of-thought capabilities.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "flagship",
+        speed: "powerful",
+      },
+      {
+        id: "deepseek-v3-0324",
+        displayName: "DeepSeek V3 (March 2024)",
+        description: "Updated V3 with improved instruction following and coding.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "balanced",
+        speed: "balanced",
       },
     ],
   },
@@ -356,55 +434,36 @@ const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
     ],
   },
 
-  // ── xAI ───────────────────────────────────────────────────────────────────
+  // ── Perplexity ────────────────────────────────────────────────────────────
   {
-    id: "xai",
-    displayName: "xAI",
-    shortName: "xAI",
-    logoColor: "#1DA1F2",
+    id: "perplexity",
+    displayName: "Perplexity AI",
+    shortName: "Perplexity",
+    logoColor: "#20808D",
     models: [
       {
-        id: "grok-3",
-        displayName: "Grok 3",
-        description: "xAI's flagship model. Strong reasoning with real-time knowledge.",
-        contextWindow: 131072,
-        outputTokens: 16384,
+        id: "sonar-pro",
+        displayName: "Sonar Pro",
+        description: "Web-grounded reasoning model. Best for research with live citations.",
+        contextWindow: 200000,
+        outputTokens: 8192,
         tier: "flagship",
-        speed: "powerful",
+        speed: "balanced",
       },
       {
-        id: "grok-3-mini",
-        displayName: "Grok 3 Mini",
-        description: "Efficient Grok 3 variant. Fast inference for structured tasks.",
-        contextWindow: 131072,
-        outputTokens: 16384,
+        id: "sonar",
+        displayName: "Sonar",
+        description: "Fast web-grounded model. Good for quick fact-checking.",
+        contextWindow: 128000,
+        outputTokens: 8192,
         tier: "balanced",
         speed: "fast",
       },
-    ],
-  },
-
-  // ── DeepSeek ──────────────────────────────────────────────────────────────
-  {
-    id: "deepseek",
-    displayName: "DeepSeek",
-    shortName: "DeepSeek",
-    logoColor: "#4D6BFE",
-    models: [
       {
-        id: "deepseek-v3",
-        displayName: "DeepSeek V3",
-        description: "Flagship MoE model. Exceptional coding and reasoning at low cost.",
-        contextWindow: 128000,
-        outputTokens: 8192,
-        tier: "flagship",
-        speed: "powerful",
-      },
-      {
-        id: "deepseek-r1",
-        displayName: "DeepSeek R1",
-        description: "Reasoning-focused model with chain-of-thought capabilities.",
-        contextWindow: 128000,
+        id: "sonar-reasoning-pro",
+        displayName: "Sonar Reasoning Pro",
+        description: "Deep reasoning with web grounding. Best for complex research questions.",
+        contextWindow: 200000,
         outputTokens: 8192,
         tier: "flagship",
         speed: "powerful",
@@ -485,10 +544,84 @@ const VENDOR_CATALOGUE_RAW: LLMVendor[] = [
       },
     ],
   },
+
+  // ── Alibaba (Qwen) ───────────────────────────────────────────────────────
+  {
+    id: "alibaba",
+    displayName: "Alibaba Cloud (Qwen)",
+    shortName: "Qwen",
+    logoColor: "#FF6A00",
+    models: [
+      {
+        id: "qwen-max",
+        displayName: "Qwen Max",
+        description: "Alibaba's flagship model. Strong multilingual and reasoning capabilities.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "flagship",
+        speed: "powerful",
+      },
+      {
+        id: "qwen-plus",
+        displayName: "Qwen Plus",
+        description: "Balanced Qwen model. Good cost-performance for general tasks.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "balanced",
+        speed: "balanced",
+      },
+      {
+        id: "qwen-turbo",
+        displayName: "Qwen Turbo",
+        description: "Fast Qwen variant. Optimized for high-throughput batch processing.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "lite",
+        speed: "fast",
+      },
+      {
+        id: "qwen-coder-plus",
+        displayName: "Qwen Coder Plus",
+        description: "Specialized for code generation. Strong at structured output.",
+        contextWindow: 128000,
+        outputTokens: 8192,
+        tier: "balanced",
+        speed: "balanced",
+      },
+    ],
+  },
+
+  // ── AI21 Labs ─────────────────────────────────────────────────────────────
+  {
+    id: "ai21",
+    displayName: "AI21 Labs",
+    shortName: "AI21",
+    logoColor: "#6C47FF",
+    models: [
+      {
+        id: "jamba-1.5-large",
+        displayName: "Jamba 1.5 Large",
+        description: "SSM-Transformer hybrid. 256K context with efficient long-document processing.",
+        contextWindow: 256000,
+        outputTokens: 4096,
+        tier: "flagship",
+        speed: "balanced",
+      },
+      {
+        id: "jamba-1.5-mini",
+        displayName: "Jamba 1.5 Mini",
+        description: "Compact Jamba model. Fast inference for structured tasks.",
+        contextWindow: 256000,
+        outputTokens: 4096,
+        tier: "balanced",
+        speed: "fast",
+      },
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------------------
-// Recommendation Engine
+// Task-Based Recommendation Engine
 // ---------------------------------------------------------------------------
 
 interface ScoringCriteria {
@@ -506,43 +639,166 @@ const USE_CASE_CRITERIA: Record<UseCase, ScoringCriteria> = {
    */
   research: {
     contextWindowScore: (ctx) => Math.min(ctx / 100000, 10),
-    tierScore: (tier) => ({ flagship: 4, balanced: 8, fast: 6, lite: 2, "image-gen": 0 }[tier] ?? 0),
-    speedScore: (speed) => ({ fast: 7, balanced: 10, powerful: 6 }[speed] ?? 0),
-    vendorBonus: (v) => ({ google: 5, openai: 3, anthropic: 3, meta: 2, mistral: 1 }[v] ?? 0),
+    tierScore: (tier) =>
+      ({ flagship: 4, balanced: 8, fast: 6, lite: 2, "image-gen": 0 })[tier] ?? 0,
+    speedScore: (speed) => ({ fast: 7, balanced: 10, powerful: 6 })[speed] ?? 0,
+    vendorBonus: (v) =>
+      ({ google: 5, openai: 3, anthropic: 3, perplexity: 4, meta: 2, mistral: 1, xai: 2, deepseek: 2 })[v] ?? 0,
     modelBonus: (id) => {
       const bonuses: Record<string, number> = {
-        "gemini-2.5-flash": 15,   // ★ Recommended for LLM 1
+        "gemini-2.5-flash": 15, // recommended for LLM 1
         "gemini-2.5-pro": 10,
         "gemini-3-flash-preview": 8,
         "gpt-4o": 8,
         "llama-4-scout": 7,
         "claude-sonnet-4-5-20250929": 6,
+        "sonar-pro": 8,
+        "grok-3": 5,
+        "deepseek-v3": 5,
         "command-r-plus": 5,
       };
       return bonuses[id] ?? 0;
     },
   },
+
   /**
    * Refinement (LLM 2): Needs prose quality, tone, editing ability.
    * Prefer: flagship tier, powerful models, Anthropic/Google.
    */
   refinement: {
     contextWindowScore: (ctx) => Math.min(ctx / 200000, 5),
-    tierScore: (tier) => ({ flagship: 10, balanced: 7, fast: 4, lite: 1, "image-gen": 0 }[tier] ?? 0),
-    speedScore: (speed) => ({ fast: 3, balanced: 7, powerful: 10 }[speed] ?? 0),
-    vendorBonus: (v) => ({ anthropic: 5, google: 5, openai: 3, meta: 1 }[v] ?? 0),
+    tierScore: (tier) =>
+      ({ flagship: 10, balanced: 7, fast: 4, lite: 1, "image-gen": 0 })[tier] ?? 0,
+    speedScore: (speed) => ({ fast: 3, balanced: 7, powerful: 10 })[speed] ?? 0,
+    vendorBonus: (v) =>
+      ({ anthropic: 5, google: 5, openai: 3, xai: 2, meta: 1 })[v] ?? 0,
     modelBonus: (id) => {
       const bonuses: Record<string, number> = {
-        "gemini-2.5-pro": 20,     // ★ Recommended for LLM 2
+        "gemini-2.5-pro": 20, // recommended for LLM 2
         "claude-opus-4-5-20251101": 18,
         "claude-sonnet-4-5-20250929": 15,
         "gemini-3.1-pro-preview": 14,
         "gpt-4o": 12,
         "o3": 10,
+        "grok-3": 8,
       };
       return bonuses[id] ?? 0;
     },
   },
+
+  /**
+   * Structured output: JSON schema, data extraction, structured responses.
+   * Prefer: models with strong instruction following and JSON mode support.
+   */
+  structured: {
+    contextWindowScore: (ctx) => Math.min(ctx / 100000, 5),
+    tierScore: (tier) =>
+      ({ flagship: 6, balanced: 10, fast: 8, lite: 4, "image-gen": 0 })[tier] ?? 0,
+    speedScore: (speed) => ({ fast: 10, balanced: 8, powerful: 4 })[speed] ?? 0,
+    vendorBonus: (v) =>
+      ({ google: 5, openai: 5, anthropic: 3, deepseek: 3, mistral: 2 })[v] ?? 0,
+    modelBonus: (id) => {
+      const bonuses: Record<string, number> = {
+        "gemini-2.5-flash": 15,
+        "gpt-4o-mini": 12,
+        "o4-mini": 10,
+        "claude-haiku-4-5-20251001": 8,
+        "deepseek-v3": 7,
+        "mistral-small-3": 6,
+        "grok-3-mini": 5,
+      };
+      return bonuses[id] ?? 0;
+    },
+  },
+
+  /**
+   * Avatar research: Deep visual description synthesis for avatar generation.
+   * Needs strong visual understanding and descriptive writing.
+   */
+  avatar_research: {
+    contextWindowScore: (ctx) => Math.min(ctx / 200000, 5),
+    tierScore: (tier) =>
+      ({ flagship: 8, balanced: 10, fast: 5, lite: 2, "image-gen": 0 })[tier] ?? 0,
+    speedScore: (speed) => ({ fast: 6, balanced: 10, powerful: 8 })[speed] ?? 0,
+    vendorBonus: (v) =>
+      ({ google: 6, anthropic: 4, openai: 3, xai: 2 })[v] ?? 0,
+    modelBonus: (id) => {
+      const bonuses: Record<string, number> = {
+        "gemini-2.5-flash": 18,
+        "gemini-2.5-pro": 14,
+        "claude-sonnet-4-5-20250929": 10,
+        "gpt-4o": 8,
+        "grok-3": 6,
+      };
+      return bonuses[id] ?? 0;
+    },
+  },
+
+  /**
+   * Code generation: Code writing, analysis, debugging.
+   * Prefer: models with strong coding benchmarks.
+   */
+  code: {
+    contextWindowScore: (ctx) => Math.min(ctx / 100000, 5),
+    tierScore: (tier) =>
+      ({ flagship: 8, balanced: 7, fast: 5, lite: 2, "image-gen": 0 })[tier] ?? 0,
+    speedScore: (speed) => ({ fast: 6, balanced: 8, powerful: 10 })[speed] ?? 0,
+    vendorBonus: (v) =>
+      ({ anthropic: 5, openai: 5, google: 4, deepseek: 5, mistral: 3 })[v] ?? 0,
+    modelBonus: (id) => {
+      const bonuses: Record<string, number> = {
+        "claude-sonnet-4-20250514": 18,
+        "gpt-4.1": 15,
+        "codestral-2501": 14,
+        "deepseek-v3": 13,
+        "o3": 12,
+        "gemini-2.5-pro": 10,
+        "qwen-coder-plus": 8,
+      };
+      return bonuses[id] ?? 0;
+    },
+  },
+
+  /**
+   * Bulk processing: High-volume, cost-sensitive batch operations.
+   * Prefer: fast, lite models with good throughput.
+   */
+  bulk: {
+    contextWindowScore: (ctx) => Math.min(ctx / 200000, 3),
+    tierScore: (tier) =>
+      ({ flagship: 2, balanced: 6, fast: 8, lite: 10, "image-gen": 0 })[tier] ?? 0,
+    speedScore: (speed) => ({ fast: 10, balanced: 6, powerful: 2 })[speed] ?? 0,
+    vendorBonus: (v) =>
+      ({ google: 5, openai: 3, anthropic: 2, deepseek: 4, alibaba: 3 })[v] ?? 0,
+    modelBonus: (id) => {
+      const bonuses: Record<string, number> = {
+        "gemini-2.5-flash-lite": 18,
+        "gpt-4o-mini": 14,
+        "claude-3-5-haiku-20241022": 12,
+        "claude-haiku-4-5-20251001": 11,
+        "grok-3-mini-fast": 10,
+        "deepseek-v3-0324": 9,
+        "qwen-turbo": 8,
+        "amazon.nova-micro-v1:0": 7,
+      };
+      return bonuses[id] ?? 0;
+    },
+  },
+};
+
+const RECOMMENDATION_REASONS: Record<UseCase, string> = {
+  research:
+    "Best for LLM 1 research pass — fast, large context, strong factual recall for bulk author/book enrichment.",
+  refinement:
+    "Best for LLM 2 refinement pass — highest prose quality for polishing bios and summaries.",
+  structured:
+    "Best for structured output — fast JSON schema compliance and data extraction.",
+  avatar_research:
+    "Best for avatar pipeline — strong visual understanding and descriptive writing for image prompts.",
+  code:
+    "Best for code generation — top coding benchmarks with strong instruction following.",
+  bulk:
+    "Best for bulk processing — fastest throughput at lowest cost for high-volume batch operations.",
 };
 
 function scoreModel(vendorId: string, model: LLMModel, useCase: UseCase): number {
@@ -556,13 +812,6 @@ function scoreModel(vendorId: string, model: LLMModel, useCase: UseCase): number
   );
 }
 
-const RECOMMENDATION_REASONS: Record<UseCase, string> = {
-  research:
-    "Best for LLM 1 research pass — fast, large context, strong factual recall for bulk author/book enrichment.",
-  refinement:
-    "Best for LLM 2 refinement pass — highest prose quality for polishing bios and summaries.",
-};
-
 /**
  * Run the recommendation engine over the full catalogue.
  * Tags the top-scoring model per use case with `recommended` and `recommendedReason`.
@@ -571,12 +820,14 @@ const RECOMMENDATION_REASONS: Record<UseCase, string> = {
 export function applyRecommendations(catalogue: LLMVendor[]): LLMVendor[] {
   const cloned: LLMVendor[] = catalogue.map((v) => ({
     ...v,
-    models: v.models.map((m) => ({ ...m, recommended: undefined, recommendedReason: undefined })),
+    models: v.models.map((m) => ({
+      ...m,
+      recommended: [] as UseCase[],
+      recommendedReasons: {} as Record<string, string>,
+    })),
   }));
 
-  const useCases: UseCase[] = ["research", "refinement"];
-
-  for (const useCase of useCases) {
+  for (const useCase of USE_CASES) {
     let topScore = -Infinity;
     let topVendorIdx = -1;
     let topModelIdx = -1;
@@ -584,6 +835,7 @@ export function applyRecommendations(catalogue: LLMVendor[]): LLMVendor[] {
     for (let vi = 0; vi < cloned.length; vi++) {
       const vendor = cloned[vi];
       for (let mi = 0; mi < vendor.models.length; mi++) {
+        if (vendor.models[mi].imageGen) continue; // skip image-gen models for text use cases
         const score = scoreModel(vendor.id, vendor.models[mi], useCase);
         if (score > topScore) {
           topScore = score;
@@ -594,9 +846,11 @@ export function applyRecommendations(catalogue: LLMVendor[]): LLMVendor[] {
     }
 
     if (topVendorIdx >= 0 && topModelIdx >= 0) {
-      cloned[topVendorIdx].models[topModelIdx].recommended = useCase;
-      cloned[topVendorIdx].models[topModelIdx].recommendedReason =
-        RECOMMENDATION_REASONS[useCase];
+      const model = cloned[topVendorIdx].models[topModelIdx];
+      if (!model.recommended) model.recommended = [];
+      if (!model.recommendedReasons) model.recommendedReasons = {};
+      model.recommended.push(useCase);
+      model.recommendedReasons[useCase] = RECOMMENDATION_REASONS[useCase];
     }
   }
 
@@ -607,38 +861,50 @@ export function applyRecommendations(catalogue: LLMVendor[]): LLMVendor[] {
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Exported catalogue with recommendations pre-applied */
+export const VENDOR_CATALOGUE: LLMVendor[] = applyRecommendations(
+  VENDOR_CATALOGUE_RAW
+);
+
 /** Find a vendor by ID (case-insensitive) */
 export function findVendor(vendorId: string): LLMVendor | undefined {
   return VENDOR_CATALOGUE.find((v) => v.id === vendorId.toLowerCase());
 }
 
 /** Find a model within a vendor */
-export function findModel(vendorId: string, modelId: string): LLMModel | undefined {
+export function findModel(
+  vendorId: string,
+  modelId: string
+): LLMModel | undefined {
   return findVendor(vendorId)?.models.find((m) => m.id === modelId);
 }
 
 /**
  * Get the recommended model ID for a given use case.
  */
-export function getRecommendedModel(useCase: UseCase): { vendorId: string; modelId: string } | null {
+export function getRecommendedModel(
+  useCase: UseCase
+): { vendorId: string; modelId: string; modelName: string; reason: string } | null {
   for (const vendor of VENDOR_CATALOGUE) {
     for (const model of vendor.models) {
-      if (model.recommended === useCase) {
-        return { vendorId: vendor.id, modelId: model.id };
+      if (model.recommended?.includes(useCase)) {
+        return {
+          vendorId: vendor.id,
+          modelId: model.id,
+          modelName: model.displayName,
+          reason: model.recommendedReasons?.[useCase] ?? RECOMMENDATION_REASONS[useCase],
+        };
       }
     }
   }
   return null;
 }
 
-/** Exported catalogue with recommendations pre-applied */
-export const VENDOR_CATALOGUE: LLMVendor[] = applyRecommendations(VENDOR_CATALOGUE_RAW);
-
 /** Seeded defaults — derived from the recommendation engine */
 export const DEFAULT_PRIMARY_VENDOR = "google";
-export const DEFAULT_PRIMARY_MODEL = "gemini-2.5-flash";  // LLM 1: research
+export const DEFAULT_PRIMARY_MODEL = "gemini-2.5-flash"; // LLM 1: research
 export const DEFAULT_SECONDARY_VENDOR = "google";
-export const DEFAULT_SECONDARY_MODEL = "gemini-2.5-pro";  // LLM 2: refinement
+export const DEFAULT_SECONDARY_MODEL = "gemini-2.5-pro"; // LLM 2: refinement
 
 // ---------------------------------------------------------------------------
 // Router
@@ -657,7 +923,9 @@ export const llmRouter = router({
   listModels: publicProcedure
     .input(z.object({ vendorId: z.string().optional() }))
     .query(({ input }) => {
-      const vendor = input.vendorId ? findVendor(input.vendorId) : findVendor("google");
+      const vendor = input.vendorId
+        ? findVendor(input.vendorId)
+        : findVendor("google");
       return vendor?.models ?? findVendor("google")!.models;
     }),
 
@@ -667,13 +935,16 @@ export const llmRouter = router({
    */
   refreshVendors: adminProcedure.mutation(() => {
     const refreshed = applyRecommendations(VENDOR_CATALOGUE_RAW);
+    const allRecs: Record<string, ReturnType<typeof getRecommendedModel>> = {};
+    for (const uc of USE_CASES) {
+      allRecs[uc] = getRecommendedModel(uc);
+    }
     return {
       vendors: refreshed,
       refreshedAt: new Date(),
-      recommendations: {
-        research: getRecommendedModel("research"),
-        refinement: getRecommendedModel("refinement"),
-      },
+      vendorCount: refreshed.length,
+      modelCount: refreshed.reduce((s, v) => s + v.models.length, 0),
+      recommendations: allRecs,
     };
   }),
 
@@ -682,16 +953,32 @@ export const llmRouter = router({
    * Used by the UI to highlight the recommended model in each selector.
    */
   getRecommendations: publicProcedure.query(() => {
+    const recs: Record<string, ReturnType<typeof getRecommendedModel>> = {};
+    for (const uc of USE_CASES) {
+      recs[uc] = getRecommendedModel(uc);
+    }
     return {
-      research: getRecommendedModel("research"),
-      refinement: getRecommendedModel("refinement"),
+      recommendations: recs,
+      useCases: USE_CASES,
       updatedAt: new Date(),
     };
   }),
 
+  /**
+   * Get the recommended model for a specific task/use case.
+   * Returns vendor + model + reason. UI can use this for the "Auto-Recommend" button.
+   */
+  recommendForTask: publicProcedure
+    .input(z.object({ useCase: z.enum(USE_CASES) }))
+    .query(({ input }) => {
+      return getRecommendedModel(input.useCase);
+    }),
+
   /** Test a model with a lightweight ping — returns latency in ms */
   testModel: adminProcedure
-    .input(z.object({ modelId: z.string(), vendorId: z.string().optional() }))
+    .input(
+      z.object({ modelId: z.string(), vendorId: z.string().optional() })
+    )
     .mutation(async ({ input }) => {
       const start = Date.now();
       try {
@@ -701,8 +988,13 @@ export const llmRouter = router({
         });
         const latencyMs = Date.now() - start;
         const content = result.choices[0]?.message?.content;
-        const text = typeof content === "string" ? content : JSON.stringify(content);
-        return { success: true, latencyMs, response: text.trim().slice(0, 100) };
+        const text =
+          typeof content === "string" ? content : JSON.stringify(content);
+        return {
+          success: true,
+          latencyMs,
+          response: text.trim().slice(0, 100),
+        };
       } catch (err) {
         return {
           success: false,
