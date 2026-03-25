@@ -116,6 +116,21 @@ export interface WaterfallOptions {
   avatarBgColor?: string;
   /** If true, force re-research even if a cached AuthorDescription exists in DB */
   forceRefresh?: boolean;
+  // ── Resolution & Output Controls (passed through to MeticulousPipeline) ──
+  /** Aspect ratio for the generated image */
+  avatarAspectRatio?: string;
+  /** Explicit width in pixels (Replicate only) */
+  avatarWidth?: number;
+  /** Explicit height in pixels (Replicate only) */
+  avatarHeight?: number;
+  /** Output image format */
+  avatarOutputFormat?: string;
+  /** Output quality 1-100 */
+  avatarOutputQuality?: number;
+  /** Guidance scale for generation */
+  avatarGuidanceScale?: number;
+  /** Number of inference steps */
+  avatarInferenceSteps?: number;
 }
 
 /** Default per-tier timeouts (ms) */
@@ -311,6 +326,14 @@ export async function processAuthorAvatarWaterfall(
           researchModel: avatarResearchModel,
           useCache: !forceRefresh,
           forceRefresh,
+          // Pass resolution params through to the pipeline
+          aspectRatio: options.avatarAspectRatio,
+          width: options.avatarWidth,
+          height: options.avatarHeight,
+          outputFormat: options.avatarOutputFormat as any,
+          outputQuality: options.avatarOutputQuality,
+          guidanceScale: options.avatarGuidanceScale,
+          numInferenceSteps: options.avatarInferenceSteps,
         }),
         new Promise<null>((_, reject) =>
           setTimeout(() => reject(new Error(`T5 timeout after ${timeouts[5]}ms`)), timeouts[5])

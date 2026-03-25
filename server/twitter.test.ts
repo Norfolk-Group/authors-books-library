@@ -217,3 +217,12 @@ describe("fetchTwitterStats (live)", () => {
     expect(true).toBe(true);
   }, 10_000);
 });
+
+// ── searchTwitterUsername ──────────────────────────────────────────────────
+
+describe("searchTwitterUsername", () => {
+  it("should be exported from the twitter module", async () => {
+    const mod = await import("./enrichment/twitter");
+    expect(typeof mod.searchTwitterUsername).toBe("function");
+  });
+});

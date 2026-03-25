@@ -459,6 +459,21 @@ export const authorProfilesRouter = router({
       avatarResearchModel: z.string().optional(),
       /** If true, skip Wikipedia/Tavily/Apify and go straight to Tier 5 meticulous AI generation */
       forceRegenerate: z.boolean().optional(),
+      // ── Resolution & Output Controls ──────────────────────────────────────
+      /** Aspect ratio for the generated image (e.g. "1:1", "3:4", "16:9") */
+      aspectRatio: z.string().optional(),
+      /** Explicit width in pixels (Replicate only, must be multiple of 64) */
+      width: z.number().int().min(0).max(2048).optional(),
+      /** Explicit height in pixels (Replicate only, must be multiple of 64) */
+      height: z.number().int().min(0).max(2048).optional(),
+      /** Output image format */
+      outputFormat: z.enum(["webp", "png", "jpeg"]).optional(),
+      /** Output quality 1-100 */
+      outputQuality: z.number().int().min(1).max(100).optional(),
+      /** Guidance scale for generation (1-20) */
+      guidanceScale: z.number().min(1).max(20).optional(),
+      /** Number of inference steps (1-50, Replicate only) */
+      numInferenceSteps: z.number().int().min(1).max(50).optional(),
     }))
     .mutation(async ({ input }) => {
       const db = await getDb();
@@ -468,6 +483,14 @@ export const authorProfilesRouter = router({
       //   Wikipedia + Tavily + Apify research → Gemini Vision analysis → AuthorDescription JSON
       //   → meticulous prompt → configurable graphics LLM (Nano Banana / Replicate)
       const { processAuthorAvatarWaterfall } = await import("../lib/authorAvatars/waterfall");
+      // Server-side validation for custom dimensions
+      if (input.width && input.width > 0 && input.width % 64 !== 0) {
+        throw new Error(`Width must be a multiple of 64 (got ${input.width})`);
+      }
+      if (input.height && input.height > 0 && input.height % 64 !== 0) {
+        throw new Error(`Height must be a multiple of 64 (got ${input.height})`);
+      }
+
       const result = await processAuthorAvatarWaterfall(input.authorName, {
         maxTier: 5,
         // forceRegenerate=true skips Tiers 1-3 and goes straight to Tier 5 meticulous pipeline
@@ -481,6 +504,14 @@ export const authorProfilesRouter = router({
         // forceRefresh clears cached AuthorDescription so the pipeline re-researches
         // using the author's current real photo (important after a photo correction)
         forceRefresh: input.forceRegenerate ?? false,
+        // Resolution & Output Controls
+        avatarAspectRatio: input.aspectRatio,
+        avatarWidth: input.width,
+        avatarHeight: input.height,
+        avatarOutputFormat: input.outputFormat,
+        avatarOutputQuality: input.outputQuality,
+        avatarGuidanceScale: input.guidanceScale,
+        avatarInferenceSteps: input.numInferenceSteps,
       });
 
       if (!result || result.source === "failed" || (!result.avatarUrl && !result.s3AvatarUrl)) {
@@ -1839,6 +1870,307 @@ const books = await db
       return {
         data: JSON.parse(row.academicResearchJson),
         enrichedAt: row.academicResearchEnrichedAt,
+      };
+    }),
+
+  // ── Twitter/X Enrichment ──────────────────────────────────────────────────
+
+  /** Enrich a single author's Twitter stats using their twitterUrl */
+  enrichTwitterStats: adminProcedure
+    .input(z.object({ authorName: z.string() }))
+    .mutation(async ({ input }) => {
+      const { fetchTwitterStats, searchTwitterUsername } = await import("../enrichment/twitter");
+      const { ENV } = await import("../_core/env");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      if (!ENV.twitterBearerToken) {
+        throw new Error("TWITTER_BEARER_TOKEN not configured");
+      }
+
+      const [author] = await db
+        .select({
+          authorName: authorProfiles.authorName,
+          twitterUrl: authorProfiles.twitterUrl,
+          socialStatsJson: authorProfiles.socialStatsJson,
+        })
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!author) throw new Error(`Author not found: ${input.authorName}`);
+
+      let twitterHandle = author.twitterUrl;
+
+      // If no Twitter URL, try to search for one
+      if (!twitterHandle) {
+        const found = await searchTwitterUsername(input.authorName, ENV.twitterBearerToken);
+        if (found) {
+          twitterHandle = `https://x.com/${found}`;
+          // Persist the discovered Twitter URL
+          await db
+            .update(authorProfiles)
+            .set({ twitterUrl: twitterHandle })
+            .where(eq(authorProfiles.authorName, input.authorName));
+        } else {
+          return { success: false, authorName: input.authorName, error: "No Twitter handle found" };
+        }
+      }
+
+      const stats = await fetchTwitterStats(twitterHandle, ENV.twitterBearerToken);
+      if (!stats) {
+        return { success: false, authorName: input.authorName, error: "Twitter API returned no data" };
+      }
+
+      // Merge Twitter stats into existing socialStatsJson
+      const existing = author.socialStatsJson ? JSON.parse(author.socialStatsJson) : {};
+      existing.twitter = stats;
+      existing.enrichedAt = new Date().toISOString();
+
+      await db
+        .update(authorProfiles)
+        .set({
+          socialStatsJson: JSON.stringify(existing),
+          socialStatsEnrichedAt: new Date(),
+        })
+        .where(eq(authorProfiles.authorName, input.authorName));
+
+      return {
+        success: true,
+        authorName: input.authorName,
+        followerCount: stats.followerCount,
+        username: stats.username,
+      };
+    }),
+
+  /** Batch enrich Twitter stats for all authors with Twitter URLs */
+  enrichTwitterStatsBatch: adminProcedure
+    .input(z.object({
+      limit: z.number().optional().default(20),
+      onlyMissing: z.boolean().optional().default(true),
+    }))
+    .mutation(async ({ input }) => {
+      const { fetchTwitterStats } = await import("../enrichment/twitter");
+      const { ENV } = await import("../_core/env");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      if (!ENV.twitterBearerToken) {
+        throw new Error("TWITTER_BEARER_TOKEN not configured");
+      }
+
+      // Get authors with Twitter URLs
+      const allAuthors = await db
+        .select({
+          authorName: authorProfiles.authorName,
+          twitterUrl: authorProfiles.twitterUrl,
+          socialStatsJson: authorProfiles.socialStatsJson,
+        })
+        .from(authorProfiles)
+        .where(isNotNull(authorProfiles.twitterUrl));
+
+      // Filter to those missing Twitter stats if onlyMissing
+      const toProcess = input.onlyMissing
+        ? allAuthors.filter((a) => {
+            if (!a.socialStatsJson) return true;
+            const parsed = JSON.parse(a.socialStatsJson);
+            return !parsed.twitter;
+          })
+        : allAuthors;
+
+      const batch = toProcess.slice(0, input.limit);
+      const results: Array<{ authorName: string; success: boolean; error?: string }> = [];
+
+      for (const author of batch) {
+        try {
+          const stats = await fetchTwitterStats(author.twitterUrl!, ENV.twitterBearerToken);
+          if (stats) {
+            const existing = author.socialStatsJson ? JSON.parse(author.socialStatsJson) : {};
+            existing.twitter = stats;
+            existing.enrichedAt = new Date().toISOString();
+
+            await db
+              .update(authorProfiles)
+              .set({
+                socialStatsJson: JSON.stringify(existing),
+                socialStatsEnrichedAt: new Date(),
+              })
+              .where(eq(authorProfiles.authorName, author.authorName));
+
+            results.push({ authorName: author.authorName, success: true });
+          } else {
+            results.push({ authorName: author.authorName, success: false, error: "No data returned" });
+          }
+        } catch (err: any) {
+          results.push({ authorName: author.authorName, success: false, error: String(err) });
+        }
+        // Rate limit: 15 req/15min = 1 per minute for safety
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+
+      return {
+        processed: results.length,
+        succeeded: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
+        results,
+      };
+    }),
+
+  /** Get Twitter stats for a single author */
+  getTwitterStats: publicProcedure
+    .input(z.object({ authorName: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const [row] = await db
+        .select({ socialStatsJson: authorProfiles.socialStatsJson })
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!row?.socialStatsJson) return null;
+      const parsed = JSON.parse(row.socialStatsJson);
+      return parsed.twitter ?? null;
+    }),
+
+  // ── Business Profile (CNBC + Yahoo Finance) ──────────────────────────────────
+
+  /** Enrich a single author's business profile from CNBC + Yahoo Finance */
+  enrichBusinessProfile: adminProcedure
+    .input(z.object({ authorName: z.string() }))
+    .mutation(async ({ input }) => {
+      const { fetchCNBCAuthorProfile, fetchYahooFinanceStats } = await import("../enrichment/rapidapi");
+      const { ENV } = await import("../_core/env");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      if (!ENV.rapidApiKey) {
+        throw new Error("RAPIDAPI_KEY not configured");
+      }
+
+      const [author] = await db
+        .select({
+          authorName: authorProfiles.authorName,
+          stockTicker: authorProfiles.stockTicker,
+        })
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!author) throw new Error(`Author not found: ${input.authorName}`);
+
+      const profile: Record<string, unknown> = {};
+
+      // CNBC author profile
+      const cnbc = await fetchCNBCAuthorProfile(input.authorName, ENV.rapidApiKey);
+      if (cnbc) profile.cnbc = cnbc;
+
+      // Yahoo Finance (if author has a stock ticker)
+      if (author.stockTicker) {
+        const yahoo = await fetchYahooFinanceStats(author.stockTicker, ENV.rapidApiKey);
+        if (yahoo) profile.yahooFinance = yahoo;
+      }
+
+      profile.enrichedAt = new Date().toISOString();
+
+      await db
+        .update(authorProfiles)
+        .set({
+          businessProfileJson: JSON.stringify(profile),
+          businessProfileEnrichedAt: new Date(),
+        })
+        .where(eq(authorProfiles.authorName, input.authorName));
+
+      return {
+        success: true,
+        authorName: input.authorName,
+        hasCnbc: !!cnbc,
+        cnbcArticleCount: cnbc?.articleCount ?? 0,
+        hasYahooFinance: !!author.stockTicker,
+      };
+    }),
+
+  /** Batch enrich business profiles for all authors */
+  enrichBusinessProfileBatch: adminProcedure
+    .input(z.object({
+      limit: z.number().optional().default(20),
+      onlyMissing: z.boolean().optional().default(true),
+    }))
+    .mutation(async ({ input }) => {
+      const { fetchCNBCAuthorProfile, fetchYahooFinanceStats } = await import("../enrichment/rapidapi");
+      const { ENV } = await import("../_core/env");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      if (!ENV.rapidApiKey) {
+        throw new Error("RAPIDAPI_KEY not configured");
+      }
+
+      const allAuthors = await db
+        .select({
+          authorName: authorProfiles.authorName,
+          stockTicker: authorProfiles.stockTicker,
+          businessProfileJson: authorProfiles.businessProfileJson,
+        })
+        .from(authorProfiles);
+
+      const toProcess = input.onlyMissing
+        ? allAuthors.filter((a) => !a.businessProfileJson)
+        : allAuthors;
+
+      const batch = toProcess.slice(0, input.limit);
+      const results: Array<{ authorName: string; success: boolean; error?: string }> = [];
+
+      for (const author of batch) {
+        try {
+          const profile: Record<string, unknown> = {};
+          const cnbc = await fetchCNBCAuthorProfile(author.authorName, ENV.rapidApiKey);
+          if (cnbc) profile.cnbc = cnbc;
+          if (author.stockTicker) {
+            const yahoo = await fetchYahooFinanceStats(author.stockTicker, ENV.rapidApiKey);
+            if (yahoo) profile.yahooFinance = yahoo;
+          }
+          profile.enrichedAt = new Date().toISOString();
+
+          await db
+            .update(authorProfiles)
+            .set({
+              businessProfileJson: JSON.stringify(profile),
+              businessProfileEnrichedAt: new Date(),
+            })
+            .where(eq(authorProfiles.authorName, author.authorName));
+
+          results.push({ authorName: author.authorName, success: true });
+        } catch (err: any) {
+          results.push({ authorName: author.authorName, success: false, error: String(err) });
+        }
+        // Rate limit: avoid hammering RapidAPI
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+
+      return {
+        processed: results.length,
+        succeeded: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
+        results,
+      };
+    }),
+
+  /** Get business profile data for a single author */
+  getBusinessProfile: publicProcedure
+    .input(z.object({ authorName: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const [row] = await db
+        .select({
+          businessProfileJson: authorProfiles.businessProfileJson,
+          businessProfileEnrichedAt: authorProfiles.businessProfileEnrichedAt,
+        })
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!row?.businessProfileJson) return null;
+      return {
+        data: JSON.parse(row.businessProfileJson),
+        enrichedAt: row.businessProfileEnrichedAt,
       };
     }),
 });

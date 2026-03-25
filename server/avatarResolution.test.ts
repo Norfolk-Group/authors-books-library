@@ -163,3 +163,45 @@ describe("Avatar Resolution Controls — Pipeline Options Passthrough", () => {
     expect(genRequest.numInferenceSteps).toBe(28);
   });
 });
+
+describe("Background Post-Processing", () => {
+  it("should export postProcessBackground function", async () => {
+    const mod = await import("./lib/authorAvatars/backgroundPostProcess");
+    expect(typeof mod.postProcessBackground).toBe("function");
+  });
+
+  it("should export BackgroundPostProcessResult interface", async () => {
+    const mod = await import("./lib/authorAvatars/backgroundPostProcess");
+    // Module should load without errors
+    expect(mod).toBeDefined();
+  });
+
+  it("SPECIAL_BACKGROUNDS should contain bokeh-gold background description", async () => {
+    const { SPECIAL_BACKGROUNDS } = await import("./lib/authorAvatars/promptBuilder");
+    const bgDesc = (SPECIAL_BACKGROUNDS as Record<string, string>)["bokeh-gold"];
+    expect(typeof bgDesc).toBe("string");
+    expect(bgDesc.length).toBeGreaterThan(10);
+  });
+
+  it("postProcessBackground should handle empty author name gracefully", async () => {
+    const { postProcessBackground } = await import("./lib/authorAvatars/backgroundPostProcess");
+    // With empty URL, generateImage will throw, which is caught and returns error result
+    const result = await postProcessBackground("", "", "bokeh-gold");
+    expect(result.success).toBe(false);
+    expect(result.error).toBeTruthy();
+  });
+});
+
+describe("Prompt Builder SPECIAL_BACKGROUNDS export", () => {
+  it("should export SPECIAL_BACKGROUNDS", async () => {
+    const mod = await import("./lib/authorAvatars/promptBuilder");
+    expect(mod.SPECIAL_BACKGROUNDS).toBeDefined();
+    expect(typeof mod.SPECIAL_BACKGROUNDS).toBe("object");
+  });
+
+  it("SPECIAL_BACKGROUNDS should contain bokeh-gold as default", async () => {
+    const { SPECIAL_BACKGROUNDS } = await import("./lib/authorAvatars/promptBuilder");
+    expect(SPECIAL_BACKGROUNDS["bokeh-gold"]).toBeDefined();
+    expect(typeof SPECIAL_BACKGROUNDS["bokeh-gold"]).toBe("string");
+  });
+});

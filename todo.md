@@ -1079,18 +1079,18 @@
 - [x] Update `meticulousPipeline.ts` — pass resolution options through to generators (remove hardcoded `aspectRatio: "1:1"` and `guidanceScale: 7.5`)
 
 ### API Routes
-- [ ] Update avatar regeneration tRPC procedure to read resolution params from input and fall back to AppSettings defaults
-- [ ] Add server-side validation for resolution params (dimension range, format enum, quality range)
+- [x] Update avatar regeneration tRPC procedure to read resolution params from input and fall back to AppSettings defaults
+- [x] Add server-side validation for resolution params (dimension range, format enum, quality range)
 
 ### Admin Console UI — Avatar Generation Sub-Tab
-- [ ] Create `components/admin/AspectRatioSelector.tsx` with visual ratio labels and descriptions
-- [ ] Create `components/admin/QualitySlider.tsx` with live value display
-- [ ] Create `components/admin/DimensionInput.tsx` with 64px step validation
-- [ ] Reorganize Avatar Generation sub-tab into 3 sections: Model Selection, Image Size & Format, Generation Parameters
-- [ ] Add conditional visibility: Replicate-only controls hidden when vendor=google; aspectRatio hidden for Gemini image models
-- [ ] Add vendor capability info alert (Gemini = no resolution control; Imagen 3 = aspectRatio only; Replicate = full control)
-- [ ] Add "Reset to Defaults" button for resolution settings
-- [ ] Update Test Portrait button to pass current resolution settings to the pipeline
+- [x] Create `components/admin/AspectRatioSelector.tsx` with visual ratio labels and descriptions
+- [x] Create `components/admin/QualitySlider.tsx` with live value display
+- [x] Create `components/admin/DimensionInput.tsx` with 64px step validation
+- [x] Reorganize Avatar Generation sub-tab into 3 sections: Model Selection, Image Size & Format, Generation Parameters
+- [x] Add conditional visibility: Replicate-only controls hidden when vendor=google; aspectRatio hidden for Gemini image models
+- [x] Add vendor capability info alert (Gemini = no resolution control; Imagen 3 = aspectRatio only; Replicate = full control)
+- [x] Add "Reset to Defaults" button for resolution settings
+- [x] Update Test Portrait button to pass current resolution settings to the pipeline
 
 ## Session March 22, 2026 — Suggested Next Steps (Queued for Execution)
 
@@ -1121,7 +1121,7 @@
 - [x] Create skill: `avatar-background-consistency` — enforces uniform background across all author avatars (skill exists at /home/ubuntu/skills/avatar-background-consistency/)
 - [x] Document the canonical background spec (color, style, prompt fragment) in the skill (SKILL.md exists)
 - [x] Add background enforcement to AI generation prompts in `promptBuilder.ts` (SPECIAL_BACKGROUNDS with bokeh-gold default)
-- [ ] Add background post-processing step for real photos (remove.bg or Gemini background replacement)
+- [x] Add background post-processing step for real photos (Gemini background replacement via backgroundPostProcess.ts)
 - [x] Add background consistency controls to Admin Console → AI tab → Avatar Generation sub-tab (Background Selector UI implemented)
 - [x] Add batch "Normalize Avatar Backgrounds" action to Admin Console → Authors tab (normalizeAvatarBackgrounds procedure + Admin Console ActionCard)
 - [x] Update CLAUDE.md with the canonical background spec (CLAUDE.md updated)
@@ -1240,7 +1240,7 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Clean and optimize code: consolidate duplicate Tavily fetch logic (#16 completed in Opus Audit sprint)
 - [x] Wire parallelBatch into generateAllPortraits procedure (delegated to generateAllMissingAvatars which uses parallelBatch)
 - [x] Add "Reference photo used" thumbnail to Admin view (bestReferencePhotoUrl in AvatarDetailTable + Author Bio Modal)
-- [ ] Add live per-item progress stream to Admin Console batch operations (tRPC subscription or SSE) — DEFERRED
+- [x] Add live per-item progress stream to Admin Console batch operations (SSE via sseProgress.ts + useBatchProgress hook + BatchProgressBar component)
 - [x] Add "Research Quality" badge (high/medium/low) to author cards based on sourceConfidence.overallConfidence (implemented in FlowbiteAuthorCard)
 - [x] BookDetailPanel: add framer-motion spring animation to cover image (motion.img with spring animation)
 - [x] BookModal: add framer-motion spring animation to cover image (BookModal unified with BookDetailPanel)
@@ -1462,9 +1462,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] YouTube helper: fetch subscriber count, video count, view count via Data API v3 (YOUTUBE_API_KEY) (implemented)
 - [x] Twitter/X helper: fetch follower count via v2 API (server/enrichment/twitter.ts exists)
 - [x] LinkedIn helper: company page follower count (via RapidAPI in socialStats.ts)
-- [ ] Instagram helper: follower count via Graph API (requires INSTAGRAM_ACCESS_TOKEN) — BLOCKED: needs API key
-- [ ] TikTok helper: follower/like count via Research API (requires TIKTOK_CLIENT_KEY) — BLOCKED: needs API key
-- [ ] Facebook helper: page fan count via Graph API (requires FACEBOOK_ACCESS_TOKEN) — BLOCKED: needs API key
+- [x] Instagram helper: follower count via Graph API (server/enrichment/instagram.ts — graceful API key check, returns null if no key)
+- [x] TikTok helper: follower/like count via Research API (server/enrichment/tiktok.ts — graceful API key check, returns null if no key)
+- [x] Facebook helper: page fan count via Graph API (server/enrichment/facebook.ts — graceful API key check, returns null if no key)
 - [x] tRPC enrichSocialStats (single author) + enrichSocialStatsBatch (batch) procedures (implemented)
 - [x] tRPC getSocialStats public query returning all authors' stats (implemented)
 - [x] PlatformPills: show stat badge (e.g. "1.2M subs") next to each platform pill (stat badges implemented)
@@ -1641,12 +1641,12 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] #6 Fix imageGenerators/google.ts — only pass aspectRatio to Imagen 3 (mapToImagen3AspectRatio helper exists)
 - [x] #7 Update imageGenerators/replicate.ts — accept all resolution params (validateDimension helper exists)
 - [x] #8 Update meticulousPipeline.ts — pass all resolution options through (resolution options passed through)
-- [ ] #9 Update avatar regeneration tRPC procedure to read resolution params from AppSettings
-- [ ] #10 Create AspectRatioSelector, QualitySlider, DimensionInput UI components
-- [ ] #11 Reorganize Avatar Generation sub-tab into 3 sections (Model, Resolution, Test)
-- [ ] #12 Add vendor capability info alert (which params each vendor supports)
-- [ ] #13 Add "Reset to Defaults" button for resolution settings
-- [ ] #14 Update Test Portrait button to pass current resolution settings
+- [x] #9 Update avatar regeneration tRPC procedure to read resolution params from AppSettings
+- [x] #10 Create AspectRatioSelector, QualitySlider, DimensionInput UI components
+- [x] #11 Reorganize Avatar Generation sub-tab into 3 sections (Model, Resolution, Test)
+- [x] #12 Add vendor capability info alert (which params each vendor supports)
+- [x] #13 Add "Reset to Defaults" button for resolution settings
+- [x] #14 Update Test Portrait button to pass current resolution settings
 - [x] #15 Complete "Reference photo used" thumbnail in Admin view (bestReferencePhotoUrl in AvatarDetailTable + Author Bio Modal)
 - [x] #43 Formalize avatar background consistency into main codebase (normalizeAvatarBackgrounds in Admin Console + skill)
 - [x] #3 Upgrade Gemini research pass to inline reference photos as multimodal base64 (fetchImageAsBase64 already implemented)
@@ -1659,7 +1659,7 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] #34 Wire platform pills to real YouTube/TED/Substack data (partially done)
 - [x] #21 Wire per-card Update Links to auto-refresh modal without close/reopen (#21a-b completed in UX Polish sprint)
 - [x] #20 Add per-card action progress indicator (spinner overlay + disable menu during mutation)
-- [ ] #24 Add live per-item progress stream (tRPC subscription or SSE) — DEFERRED: high risk, low priority
+- [x] #24 Add live per-item progress stream (SSE via sseProgress.ts + useBatchProgress + BatchProgressBar)
 
 ### Block 4: Infrastructure & Scheduling (11 items)
 - [x] #25 Create enrichmentSchedules table (migration)
@@ -1676,15 +1676,15 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 ### Blocked (need API keys from user)
 - [x] #35 Twitter/X helper (server/enrichment/twitter.ts exists, TWITTER_BEARER_TOKEN set)
-- [ ] #36 Instagram helper (INSTAGRAM_ACCESS_TOKEN)
-- [ ] #37 TikTok helper (TIKTOK_CLIENT_KEY)
-- [ ] #38 Facebook helper (FACEBOOK_ACCESS_TOKEN)
+- [x] #36 Instagram helper (server/enrichment/instagram.ts)
+- [x] #37 TikTok helper (server/enrichment/tiktok.ts)
+- [x] #38 Facebook helper (server/enrichment/facebook.ts)
 
 ## Sprint: #32 + #35 (March 24, 2026)
 
 - [x] #35a Create server/enrichment/twitter.ts with fetchTwitterFollowerCount helper (implemented)
-- [ ] #35b Add enrichTwitterStats procedure to authorProfiles.router.ts
-- [ ] #35c Add enrichTwitterStatsBatch procedure for bulk enrichment
+- [x] #35b Add enrichTwitterStats procedure to authorProfiles.router.ts
+- [x] #35c Add enrichTwitterStatsBatch procedure for bulk enrichment
 - [x] #35d Write vitest tests for twitter.ts helper
 - [x] #32a Add YouTube enrichment ActionCard to Admin Console PipelineTab / AuthorsTab
 - [x] #32b Wire enrichSocialStats mutation (phases:["A"]) to the ActionCard trigger button
@@ -1693,8 +1693,8 @@ Live URL: https://authlib-ehsrgokn.manus.space
 ## Sprint: #32 + #35 (March 24, 2026)
 
 - [x] #35a Create server/enrichment/twitter.ts with fetchTwitterFollowerCount helper (implemented)
-- [ ] #35b Add enrichTwitterStats procedure to authorProfiles.router.ts
-- [ ] #35c Add enrichTwitterStatsBatch procedure for bulk enrichment
+- [x] #35b Add enrichTwitterStats procedure to authorProfiles.router.ts
+- [x] #35c Add enrichTwitterStatsBatch procedure for bulk enrichment
 - [x] #35d Write vitest tests for twitter.ts helper
 - [x] #32a Add YouTube enrichment ActionCard to Admin Console PipelineTab
 - [x] #32b Wire enrichSocialStats mutation to ActionCard trigger button
@@ -1742,14 +1742,14 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 - [x] #CNBC1 Probe CNBC API endpoints and map response shape (CNBC via RapidAPI in rapidapi.ts)
 - [x] #CNBC2 Rewrite fetchCNBCStats with author-targeted search endpoint (fetchCNBCStats in rapidapi.ts)
-- [ ] #CNBC3 Improve author-name filtering: first+last name, partial match, byline match (enhancement)
-- [ ] #CNBC4 Add fetchCNBCAuthorProfile helper: fetch author page if available
-- [ ] #CNBC5 Store CNBC results in businessProfileJson (separate from socialStatsJson)
-- [ ] #CNBC6 Add enrichBusinessProfile tRPC procedure (admin-only)
-- [ ] #CNBC7 Surface CNBC articles section in Author Bio Panel (collapsible, max 5 articles)
+- [x] #CNBC3 Improve author-name filtering: first+last name, partial match, byline match (7-signal matcher in rapidapi.ts)
+- [x] #CNBC4 Add fetchCNBCAuthorProfile helper: fetch author page if available (fetchCNBCAuthorProfile in rapidapi.ts)
+- [x] #CNBC5 Store CNBC results in businessProfileJson (enrichBusinessProfile procedure stores in businessProfileJson)
+- [x] #CNBC6 Add enrichBusinessProfile tRPC procedure (admin-only) (enrichBusinessProfile + getBusinessProfile in authorProfiles.router.ts)
+- [x] #CNBC7 Surface CNBC articles section in Author Bio Panel (CNBCArticlesSection collapsible component)
 - [x] #CNBC8 Add CNBC pill to PlatformPills component (CNBC icon in PlatformPills.tsx)
-- [ ] #CNBC9 Write Vitest tests for fetchCNBCStats (mock fetch, all branches) (enhancement)
-- [ ] #CNBC10 Save checkpoint
+- [x] #CNBC9 Write Vitest tests for fetchCNBCStats (server/cnbc.test.ts — buildNameTokens, CNBCArticle, CNBCAuthorProfile, fetchCNBCStats)
+- [x] #CNBC10 Save checkpoint
 
 ## Feature: Consensus Integration (Scientific Research)
 - [x] #CON1 Explore Consensus MCP tools — used OpenAlex (free, no key) + Semantic Scholar fallback instead of paid Consensus MCP

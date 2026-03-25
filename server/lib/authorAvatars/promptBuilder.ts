@@ -27,7 +27,7 @@ import { AuthorDescription, ImagePromptPackage } from "./types.js";
 
 // ── Background descriptions ────────────────────────────────────────────────────
 
-const SPECIAL_BACKGROUNDS: Record<string, string> = {
+export const SPECIAL_BACKGROUNDS: Record<string, string> = {
   "bokeh-gold":
     "Warm golden bokeh with organic light distribution. " +
     "Primary tones: rich amber, warm cream, soft gold. " +

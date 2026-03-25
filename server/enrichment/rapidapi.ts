@@ -154,7 +154,7 @@ interface CNBCFeedResponse {
  * Build name-matching tokens from an author name.
  * Returns [fullNameLower, firstName, lastName] for flexible matching.
  */
-function buildNameTokens(authorName: string): {
+export function buildNameTokens(authorName: string): {
   full: string;
   first: string;
   last: string;
@@ -174,11 +174,13 @@ function buildNameTokens(authorName: string): {
  * Check whether a raw CNBC article matches the given author.
  *
  * Matching strategy (in order of confidence):
- *   1. authorFormatted contains the full name
- *   2. authorFormatted contains the last name AND first name (separately)
+ *   1. authorFormatted contains the full name (exact)
+ *   2. authorFormatted contains last name AND first name (handles "Grant, Adam" bylines)
  *   3. relatedTagsFilteredFormatted contains the full name
  *   4. headline contains the full name
  *   5. relatedTagsFilteredFormatted contains last name AND first name
+ *   6. description/pageName contains the full name (partial match)
+ *   7. Byline partial: author field contains any 2+ name parts (handles middle names)
  */
 function articleMatchesAuthor(
   article: CNBCRawArticle,
@@ -187,11 +189,13 @@ function articleMatchesAuthor(
   const author = (article.authorFormatted || "").toLowerCase();
   const tags = (article.relatedTagsFilteredFormatted || "").toLowerCase();
   const headline = (article.headline || "").toLowerCase();
+  const description = (article.description || "").toLowerCase();
+  const pageName = (article.pageName || "").toLowerCase();
 
-  // Exact full-name match in author byline
+  // 1. Exact full-name match in author byline
   if (author.includes(tokens.full)) return true;
 
-  // Last + first in author byline (handles "grant, adam" style)
+  // 2. Last + first in author byline (handles "grant, adam" or "adam s. grant" style)
   if (
     tokens.last.length > 2 &&
     tokens.first.length > 1 &&
@@ -200,18 +204,31 @@ function articleMatchesAuthor(
   )
     return true;
 
-  // Full name in tags (e.g. "adam grant" as a tag)
+  // 3. Full name in tags (e.g. "adam grant" as a tag)
   if (tags.includes(tokens.full)) return true;
 
-  // Full name in headline
+  // 4. Full name in headline
   if (headline.includes(tokens.full)) return true;
 
-  // Last + first in tags (pipe-separated tag list)
+  // 5. Last + first in tags (pipe-separated tag list)
   const tagList = tags.split("|").map((t) => t.trim());
   const hasLastInTags = tagList.some((t) => t === tokens.last || t.includes(tokens.last));
   const hasFirstInTags = tagList.some((t) => t === tokens.first || t.includes(tokens.first));
   if (tokens.last.length > 3 && tokens.first.length > 2 && hasLastInTags && hasFirstInTags)
     return true;
+
+  // 6. Full name in description or pageName (partial match for broader coverage)
+  if (description.includes(tokens.full)) return true;
+  if (pageName.includes(tokens.full)) return true;
+
+  // 7. Byline partial: if author has 3+ name parts, match if 2+ parts appear in byline
+  //    (handles middle names, initials, suffixes like "Jr.", "III")
+  if (tokens.parts.length >= 2 && author.length > 3) {
+    const matchingParts = tokens.parts.filter(
+      (p) => p.length > 1 && author.includes(p)
+    );
+    if (matchingParts.length >= 2) return true;
+  }
 
   return false;
 }
@@ -391,4 +408,86 @@ export async function fetchSeekingAlphaStats(
   _rapidApiKey: string
 ): Promise<SeekingAlphaStats | null> {
   return null;
+}
+
+// ─── CNBC Author Profile ────────────────────────────────────────────────────
+
+export interface CNBCAuthorProfile {
+  authorName: string;
+  /** Number of articles found mentioning this author */
+  articleCount: number;
+  /** Up to 5 most recent articles */
+  recentArticles: CNBCArticle[];
+  /** Most recent article date */
+  latestArticleDate: string | null;
+  /** Author's primary topics based on article sections */
+  topTopics: string[];
+  /** Whether author appears as a CNBC contributor (byline match) */
+  isContributor: boolean;
+  fetchedAt: string;
+}
+
+/**
+ * Build a full CNBC author profile by aggregating article data.
+ * Extends fetchCNBCStats with topic analysis and contributor detection.
+ *
+ * @param authorName - Full name of the author
+ * @param rapidApiKey - RapidAPI key
+ */
+export async function fetchCNBCAuthorProfile(
+  authorName: string,
+  rapidApiKey: string
+): Promise<CNBCAuthorProfile | null> {
+  if (!rapidApiKey || !authorName.trim()) return null;
+
+  const stats = await fetchCNBCStats(authorName, rapidApiKey);
+  if (!stats) return null;
+
+  // Analyze topics from article sections
+  const topicCounts = new Map<string, number>();
+  for (const article of stats.recentArticles) {
+    if (article.section) {
+      const count = topicCounts.get(article.section) || 0;
+      topicCounts.set(article.section, count + 1);
+    }
+  }
+  const topTopics = Array.from(topicCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([topic]) => topic);
+
+  // Check if author appears as a CNBC contributor (byline match)
+  // Re-fetch raw articles to check authorFormatted field
+  const tokens = buildNameTokens(authorName);
+  let isContributor = false;
+
+  try {
+    const feedResults = await Promise.allSettled(
+      CNBC_FRANCHISE_IDS.slice(0, 2).map((id) => fetchCNBCFeed(id, 10, rapidApiKey))
+    );
+    for (const result of feedResults) {
+      if (result.status === "fulfilled") {
+        for (const article of result.value) {
+          const byline = (article.authorFormatted || "").toLowerCase();
+          if (byline.includes(tokens.full) || (byline.includes(tokens.first) && byline.includes(tokens.last))) {
+            isContributor = true;
+            break;
+          }
+        }
+      }
+      if (isContributor) break;
+    }
+  } catch {
+    // Non-critical — contributor detection is best-effort
+  }
+
+  return {
+    authorName,
+    articleCount: stats.articleCount,
+    recentArticles: stats.recentArticles,
+    latestArticleDate: stats.latestArticleDate,
+    topTopics,
+    isContributor,
+    fetchedAt: new Date().toISOString(),
+  };
 }
