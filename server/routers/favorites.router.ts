@@ -93,10 +93,10 @@ export const favoritesRouter = router({
     .input(
       z.object({
         entityType: z.enum(["author", "book"]),
-        entityKeys: z.array(z.string()).max(200),
+        entityKeys: z.array(z.string()).max(500),
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) return {};
 

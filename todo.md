@@ -1947,3 +1947,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Add context7 to ServiceKey type and SERVICE_META in ToolHealthCheckTab.tsx
 - [x] Update healthCheck.test.ts to expect 13 results (was 12, added Context7)
 - [x] All 439 tests passing, TypeScript clean
+
+## Bug Fix: HTTP 414 Request-URI Too Large (March 25, 2026)
+- [x] Root cause: `trpc.favorites.checkMany.useQuery` sent 100+ author keys and 200+ book keys as a GET query string, exceeding nginx's URI length limit
+- [x] Fix: Replaced two `checkMany.useQuery` calls in `useLibraryData.ts` with a single `trpc.favorites.list.useQuery` (returns all user favorites, small result set), then built author/book maps client-side from that data
+- [x] Also changed `checkMany` procedure from `.query()` to `.mutation()` and raised key limit to 500 as a safety net
+- [x] All 439 tests passing, TypeScript clean

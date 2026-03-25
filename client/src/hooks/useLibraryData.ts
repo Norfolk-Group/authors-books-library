@@ -197,19 +197,29 @@ export function useLibraryData({
   }, [platformLinksQuery.data]);
 
   // ── Favorites ───────────────────────────────────────────────────────────
+  // Fetch all favorites for the current user (small result set) and build
+  // maps client-side — avoids sending hundreds of keys in a GET URL (HTTP 414).
 
-  const allAuthorKeys = useMemo(
-    () => Array.from(new Set(AUTHORS.map((a) => canonicalName(a.name).toLowerCase()))),
-    []
-  );
-  const authorFavoritesQuery = trpc.favorites.checkMany.useQuery(
-    { entityType: "author", entityKeys: allAuthorKeys },
+  const allFavoritesQuery = trpc.favorites.list.useQuery(
+    undefined,
     { enabled: isAuthenticated, staleTime: 60_000 }
   );
-  const bookFavoritesQuery = trpc.favorites.checkMany.useQuery(
-    { entityType: "book", entityKeys: allBookTitles.map((t) => t.toLowerCase()) },
-    { enabled: isAuthenticated, staleTime: 60_000 }
-  );
+
+  const authorFavoritesQuery = useMemo(() => {
+    const data: Record<string, boolean> = {};
+    for (const fav of allFavoritesQuery.data ?? []) {
+      if (fav.entityType === "author") data[fav.entityKey] = true;
+    }
+    return { data, isLoading: allFavoritesQuery.isLoading };
+  }, [allFavoritesQuery.data, allFavoritesQuery.isLoading]);
+
+  const bookFavoritesQuery = useMemo(() => {
+    const data: Record<string, boolean> = {};
+    for (const fav of allFavoritesQuery.data ?? []) {
+      if (fav.entityType === "book") data[fav.entityKey] = true;
+    }
+    return { data, isLoading: allFavoritesQuery.isLoading };
+  }, [allFavoritesQuery.data, allFavoritesQuery.isLoading]);
 
   const dbAvatarMap = useMemo(() => {
     const map = new Map<string, string>();
