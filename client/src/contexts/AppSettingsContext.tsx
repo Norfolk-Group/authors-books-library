@@ -102,8 +102,24 @@ export interface AppSettings {
   replicateModel: string;
   /** Perplexity: default research model ID */
   perplexityModel: string;
-  /** Batch concurrency: max parallel tasks for all batch operations (1–10, default: 3) */
+  /** Batch concurrency: max parallel tasks for all batch operations (1-10, default: 3) */
   batchConcurrency: number;
+
+  // -- Avatar Resolution & Output Controls --
+  /** Avatar aspect ratio (default: 1:1) */
+  avatarAspectRatio: string;
+  /** Avatar explicit width in pixels (Replicate only, 0 = use aspect ratio) */
+  avatarWidth: number;
+  /** Avatar explicit height in pixels (Replicate only, 0 = use aspect ratio) */
+  avatarHeight: number;
+  /** Avatar output format */
+  avatarOutputFormat: string;
+  /** Avatar output quality 1-100 */
+  avatarOutputQuality: number;
+  /** Avatar guidance scale (1-20) */
+  avatarGuidanceScale: number;
+  /** Avatar inference steps (1-50, Replicate only) */
+  avatarInferenceSteps: number;
 }
 
 interface AppSettingsContextType {
@@ -153,6 +169,15 @@ const DEFAULT_SETTINGS: AppSettings = {
   batchConcurrency: 3,
   replicateModel: "black-forest-labs/flux-1.1-pro",
   perplexityModel: "sonar-pro",
+
+  // Avatar Resolution defaults
+  avatarAspectRatio: "1:1",
+  avatarWidth: 0,
+  avatarHeight: 0,
+  avatarOutputFormat: "webp",
+  avatarOutputQuality: 90,
+  avatarGuidanceScale: 7.5,
+  avatarInferenceSteps: 28,
 };
 
 const STORAGE_KEY = "app-settings-v2";

@@ -219,11 +219,26 @@ export interface ImageGeneratorConfig {
   model: string;
 }
 
+// ── Resolution & Output Types ─────────────────────────────────────────────────
+
+export type AspectRatio = "1:1" | "3:4" | "4:3" | "9:16" | "16:9" | "2:3" | "3:2";
+export type OutputFormat = "png" | "webp" | "jpeg";
+
 export interface ImageGenerationRequest {
   prompt: string;
   negativePrompt?: string;
-  aspectRatio?: string;
+  aspectRatio?: AspectRatio | string;
+  /** Explicit width in pixels (Replicate only, must be multiple of 64) */
+  width?: number;
+  /** Explicit height in pixels (Replicate only, must be multiple of 64) */
+  height?: number;
+  /** Output image format */
+  outputFormat?: OutputFormat;
+  /** Output quality 1-100 (Replicate only) */
+  outputQuality?: number;
   guidanceScale?: number;
+  /** Number of inference steps (Replicate only, 1-50) */
+  numInferenceSteps?: number;
   /**
    * Optional reference image for guided generation.
    * When provided, the generator passes this as a multimodal input
@@ -288,6 +303,21 @@ export interface MeticulousPipelineOptions {
   promptOnly?: boolean;
   /** Force regeneration even if cache is fresh */
   forceRefresh?: boolean;
+  // ── Resolution & Output Controls ──────────────────────────────────────────
+  /** Aspect ratio for the generated image */
+  aspectRatio?: AspectRatio | string;
+  /** Explicit width in pixels (Replicate only) */
+  width?: number;
+  /** Explicit height in pixels (Replicate only) */
+  height?: number;
+  /** Output image format */
+  outputFormat?: OutputFormat;
+  /** Output quality 1-100 */
+  outputQuality?: number;
+  /** Guidance scale for generation */
+  guidanceScale?: number;
+  /** Number of inference steps */
+  numInferenceSteps?: number;
 }
 
 export interface MeticulousPipelineResult {

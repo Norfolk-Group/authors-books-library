@@ -251,8 +251,13 @@ export async function runMeticulousPipeline(
   const imageResult = await generator.generate({
     prompt: promptPackage.prompt,
     negativePrompt: promptPackage.negativePrompt,
-    aspectRatio: "1:1",
-    guidanceScale: 7.5,
+    aspectRatio: options.aspectRatio ?? "1:1",
+    width: options.width,
+    height: options.height,
+    outputFormat: options.outputFormat,
+    outputQuality: options.outputQuality,
+    guidanceScale: options.guidanceScale ?? 7.5,
+    numInferenceSteps: options.numInferenceSteps,
     referenceImageBase64: promptPackage.referenceImageBase64,
     referenceImageMimeType: promptPackage.referenceImageMimeType,
   });

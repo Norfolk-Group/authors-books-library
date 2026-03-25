@@ -44,6 +44,8 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  Settings2,
+  Ratio,
 } from "lucide-react";
 import { toast } from "sonner";
 import { type AppSettings } from "@/contexts/AppSettingsContext";
@@ -770,7 +772,229 @@ function ModelSelector({ purpose, settings, updateSettings }: ModelSelectorProps
   );
 }
 
-// ── Batch Regeneration Section ───────────────────────────────────────────────
+//// ── Avatar Resolution & Output Controls ────────────────────────────────────
+
+const ASPECT_RATIOS = [
+  { value: "1:1", label: "1:1 Square", desc: "Profile pictures" },
+  { value: "3:4", label: "3:4 Portrait", desc: "Book covers, cards" },
+  { value: "4:3", label: "4:3 Landscape", desc: "Thumbnails, banners" },
+  { value: "2:3", label: "2:3 Tall", desc: "Phone wallpaper" },
+  { value: "3:2", label: "3:2 Wide", desc: "Desktop wallpaper" },
+  { value: "9:16", label: "9:16 Story", desc: "Social stories" },
+  { value: "16:9", label: "16:9 Cinema", desc: "Widescreen" },
+];
+
+const OUTPUT_FORMATS = [
+  { value: "webp", label: "WebP", desc: "Best compression, modern browsers" },
+  { value: "png", label: "PNG", desc: "Lossless, larger files" },
+  { value: "jpeg", label: "JPEG", desc: "Universal, lossy" },
+];
+
+function AvatarResolutionControls({
+  settings,
+  updateSettings,
+}: {
+  settings: AppSettings;
+  updateSettings: (patch: Partial<AppSettings>) => void;
+}) {
+  const isReplicate = (settings.avatarGenVendor ?? "google") === "replicate";
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <Settings2 className="w-4 h-4" />
+          Avatar Resolution & Output
+        </CardTitle>
+        <CardDescription className="text-xs">
+          Fine-tune the quality, format, and dimensions of generated avatars.
+          Some options are vendor-specific (marked accordingly).
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          {/* Aspect Ratio */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <Ratio className="w-3.5 h-3.5 text-muted-foreground" />
+              <Label className="text-xs">Aspect Ratio</Label>
+            </div>
+            <Select
+              value={settings.avatarAspectRatio ?? "1:1"}
+              onValueChange={(v) => updateSettings({ avatarAspectRatio: v })}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ASPECT_RATIOS.map((ar) => (
+                  <SelectItem key={ar.value} value={ar.value}>
+                    <span className="font-medium">{ar.label}</span>
+                    <span className="text-muted-foreground ml-1">— {ar.desc}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Output Format */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />
+              <Label className="text-xs">Output Format</Label>
+            </div>
+            <Select
+              value={settings.avatarOutputFormat ?? "webp"}
+              onValueChange={(v) => updateSettings({ avatarOutputFormat: v })}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {OUTPUT_FORMATS.map((f) => (
+                  <SelectItem key={f.value} value={f.value}>
+                    <span className="font-medium">{f.label}</span>
+                    <span className="text-muted-foreground ml-1">— {f.desc}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Output Quality */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">Output Quality</Label>
+              <span className="text-xs font-bold tabular-nums">
+                {settings.avatarOutputQuality ?? 90}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min={10}
+              max={100}
+              step={5}
+              value={settings.avatarOutputQuality ?? 90}
+              onChange={(e) => updateSettings({ avatarOutputQuality: Number(e.target.value) })}
+              className="w-full h-2 rounded-full accent-primary cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-muted-foreground">
+              <span>10 (fast)</span>
+              <span>50</span>
+              <span>100 (best)</span>
+            </div>
+          </div>
+
+          {/* Guidance Scale */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">Guidance Scale</Label>
+              <span className="text-xs font-bold tabular-nums">
+                {(settings.avatarGuidanceScale ?? 7.5).toFixed(1)}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={20}
+              step={0.5}
+              value={settings.avatarGuidanceScale ?? 7.5}
+              onChange={(e) => updateSettings({ avatarGuidanceScale: Number(e.target.value) })}
+              className="w-full h-2 rounded-full accent-primary cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-muted-foreground">
+              <span>1 (creative)</span>
+              <span>7.5 (balanced)</span>
+              <span>20 (strict)</span>
+            </div>
+          </div>
+
+          {/* Inference Steps (Replicate only) */}
+          <div className={`space-y-2 ${!isReplicate ? "opacity-40 pointer-events-none" : ""}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs">Inference Steps</Label>
+                <Badge variant="outline" className="text-[8px] px-1 py-0">Replicate</Badge>
+              </div>
+              <span className="text-xs font-bold tabular-nums">
+                {settings.avatarInferenceSteps ?? 28}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={50}
+              step={1}
+              value={settings.avatarInferenceSteps ?? 28}
+              onChange={(e) => updateSettings({ avatarInferenceSteps: Number(e.target.value) })}
+              className="w-full h-2 rounded-full accent-primary cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-muted-foreground">
+              <span>1 (fast)</span>
+              <span>28 (default)</span>
+              <span>50 (max quality)</span>
+            </div>
+          </div>
+
+          {/* Custom Dimensions (Replicate only) */}
+          <div className={`space-y-2 ${!isReplicate ? "opacity-40 pointer-events-none" : ""}`}>
+            <div className="flex items-center gap-1.5">
+              <Label className="text-xs">Custom Dimensions</Label>
+              <Badge variant="outline" className="text-[8px] px-1 py-0">Replicate</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[9px] text-muted-foreground">Width (px)</Label>
+                <input
+                  type="number"
+                  min={0}
+                  max={2048}
+                  step={64}
+                  value={settings.avatarWidth ?? 0}
+                  onChange={(e) => updateSettings({ avatarWidth: Number(e.target.value) })}
+                  className="w-full h-7 text-xs px-2 rounded border border-border bg-background"
+                  placeholder="0 = auto"
+                />
+              </div>
+              <div>
+                <Label className="text-[9px] text-muted-foreground">Height (px)</Label>
+                <input
+                  type="number"
+                  min={0}
+                  max={2048}
+                  step={64}
+                  value={settings.avatarHeight ?? 0}
+                  onChange={(e) => updateSettings({ avatarHeight: Number(e.target.value) })}
+                  className="w-full h-7 text-xs px-2 rounded border border-border bg-background"
+                  placeholder="0 = auto"
+                />
+              </div>
+            </div>
+            <p className="text-[9px] text-muted-foreground">
+              Set to 0 for auto (uses aspect ratio). Must be multiples of 64.
+            </p>
+          </div>
+
+        </div>
+
+        {/* Summary */}
+        <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border">
+          <p className="text-[10px] text-muted-foreground">
+            <strong>Current:</strong>{" "}
+            {settings.avatarAspectRatio ?? "1:1"} ·{" "}
+            {(settings.avatarOutputFormat ?? "webp").toUpperCase()} @{settings.avatarOutputQuality ?? 90}% ·{" "}
+            Guidance {(settings.avatarGuidanceScale ?? 7.5).toFixed(1)}
+            {isReplicate && ` · ${settings.avatarInferenceSteps ?? 28} steps`}
+            {isReplicate && (settings.avatarWidth ?? 0) > 0 && ` · ${settings.avatarWidth}×${settings.avatarHeight}px`}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Batch Regeneration Section ───────────────────────────────────────────
 
 function BatchRegenSection() {
   const utils = trpc.useUtils();
@@ -1093,6 +1317,9 @@ export function AiTab({ settings, updateSettings }: AiTabProps) {
 
       {/* ── Batch Avatar Regeneration ──────────────────────────────────────── */}
       <BatchRegenSection />
+
+      {/* ── Avatar Resolution & Output Controls ──────────────────────────────── */}
+      <AvatarResolutionControls settings={settings} updateSettings={updateSettings} />
 
       {/* ── Author Avatar Details Table ──────────────────────────────────────── */}
       <AvatarDetailTable />

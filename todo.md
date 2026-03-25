@@ -1067,16 +1067,16 @@
 ## Session March 22, 2026 — Avatar Resolution Pipeline (Claude Opus Plan)
 
 ### Types & Interfaces
-- [ ] Add `AspectRatio` and `OutputFormat` types to `server/lib/authorAvatars/types.ts`
-- [ ] Extend `ImageGenerationRequest` with: `aspectRatio`, `width`, `height`, `outputFormat`, `outputQuality`, `guidanceScale`, `numInferenceSteps`
-- [ ] Extend `MeticulousPipelineOptions` with the same resolution fields
-- [ ] Add avatar resolution fields to `AppSettings`: `avatarAspectRatio`, `avatarWidth`, `avatarHeight`, `avatarOutputFormat`, `avatarOutputQuality`, `avatarGuidanceScale`, `avatarInferenceSteps`
-- [ ] Add default values for new resolution settings in `AppSettingsContext.tsx`
+- [x] Add `AspectRatio` and `OutputFormat` types to `server/lib/authorAvatars/types.ts`
+- [x] Extend `ImageGenerationRequest` with: `aspectRatio`, `width`, `height`, `outputFormat`, `outputQuality`, `guidanceScale`, `numInferenceSteps`
+- [x] Extend `MeticulousPipelineOptions` with the same resolution fields
+- [x] Add avatar resolution fields to `AppSettings`: `avatarAspectRatio`, `avatarWidth`, `avatarHeight`, `avatarOutputFormat`, `avatarOutputQuality`, `avatarGuidanceScale`, `avatarInferenceSteps`
+- [x] Add default values for new resolution settings in `AppSettingsContext.tsx`
 
 ### Backend Image Generators
-- [ ] Fix `imageGenerators/google.ts` — only pass `aspectRatio` to Imagen 3 (not Gemini image models); add `mapToImagen3AspectRatio` helper for unsupported ratio mapping
-- [ ] Update `imageGenerators/replicate.ts` — accept and use all resolution params (width, height, format, quality, steps, guidanceScale); add `validateDimension` helper for 64px alignment
-- [ ] Update `meticulousPipeline.ts` — pass resolution options through to generators (remove hardcoded `aspectRatio: "1:1"` and `guidanceScale: 7.5`)
+- [x] Fix `imageGenerators/google.ts` — only pass `aspectRatio` to Imagen 3 (not Gemini image models); add `mapToImagen3AspectRatio` helper for unsupported ratio mapping
+- [x] Update `imageGenerators/replicate.ts` — accept and use all resolution params (width, height, format, quality, steps, guidanceScale); add `validateDimension` helper for 64px alignment
+- [x] Update `meticulousPipeline.ts` — pass resolution options through to generators (remove hardcoded `aspectRatio: "1:1"` and `guidanceScale: 7.5`)
 
 ### API Routes
 - [ ] Update avatar regeneration tRPC procedure to read resolution params from input and fall back to AppSettings defaults
@@ -1752,25 +1752,18 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] #CNBC10 Save checkpoint
 
 ## Feature: Consensus Integration (Scientific Research)
-- [ ] #CON1 Explore Consensus MCP tools — list available endpoints and understand query/response shapes
-- [ ] #CON2 Build server/enrichment/consensus.ts — search for research papers by book title and author name
-- [ ] #CON3 Add researchPapersJson column to book_profiles schema (papers cited, citation count, DOI links)
-- [ ] #CON4 Add hIndex and citationCount columns to author_profiles schema
-- [ ] #CON5 Build enrichResearchPapers procedure — per-book paper discovery and storage
-- [ ] #CON6 Build enrichResearchPapersBatch procedure — batch processing for all books
-- [ ] #CON7 Build "Research Foundation" UI section on book detail page showing original studies
-- [ ] #CON8 Add Consensus to Health Check panel
-- [ ] #CON9 Write Vitest tests for consensus enrichment
+- [x] #CON1 Explore Consensus MCP tools — used OpenAlex (free, no key) + Semantic Scholar fallback instead of paid Consensus MCP
+- [x] #CON2 Build server/enrichment/academicResearch.ts — OpenAlex author search, top papers, book-related papers, S2 fallback
+- [x] #CON3 Add academicResearchJson + academicResearchEnrichedAt columns to author_profiles schema
+- [x] #CON4 h-index and citationCount stored inside academicResearchJson (no separate columns needed)
+- [x] #CON5 Build enrichAcademicResearch procedure — per-author academic profile + papers
+- [x] #CON6 Build enrichAcademicResearchBatch procedure — batch processing for all authors
+- [x] #CON7 Build AcademicResearchPanel UI on author detail page — h-index, citations, top papers, book-related papers, admin enrich button
+- [ ] #CON8 Add OpenAlex/S2 to Health Check panel (deferred)
+- [x] #CON9 Write Vitest tests for academic research enrichment (academicResearch.test.ts — 17 tests)
 
-## Feature: Similarweb Integration (Web Traffic Analytics)
-- [ ] #SW1 Explore Similarweb MCP/skill tools — understand available traffic metrics
-- [ ] #SW2 Build server/enrichment/similarweb.ts — fetch traffic data for author websites
-- [ ] #SW3 Add webTrafficJson column to author_profiles schema (monthly visits, rank, traffic sources, geo)
-- [ ] #SW4 Build enrichWebTraffic procedure — fetch traffic for all discovered author URLs
-- [ ] #SW5 Build enrichWebTrafficBatch procedure — batch processing for all authors
-- [ ] #SW6 Build "Web Presence" UI card on author detail page showing quantified traffic metrics
-- [ ] #SW7 Add Similarweb to Health Check panel
-- [ ] #SW8 Write Vitest tests for similarweb enrichment
+## Feature: Similarweb Integration (Web Traffic Analytics) — CANCELLED per user request
+- [x] #SW1–8 CANCELLED — user opted out of Similarweb integration
 
 ## Feature: Quartr Integration (Financial Data & Earnings Calls)
 - [ ] #QR1 Explore Quartr MCP tools — list available endpoints for earnings call transcripts and company research

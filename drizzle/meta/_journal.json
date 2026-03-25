@@ -190,6 +190,13 @@
       "when": 1774310933789,
       "tag": "0026_next_tombstone",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1774398486481,
+      "tag": "0027_solid_pepper_potts",
+      "breakpoints": true
     }
   ]
 }

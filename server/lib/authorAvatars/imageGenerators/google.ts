@@ -40,6 +40,25 @@ export const GOOGLE_MODELS: Record<string, string> = {
 export const DEFAULT_GOOGLE_MODEL = "gemini-2.5-flash-image";
 
 /**
+ * Imagen 3 only supports a limited set of aspect ratios.
+ * Map any input ratio to the nearest supported one.
+ */
+const IMAGEN3_ASPECT_RATIOS = ["1:1", "3:4", "4:3", "9:16", "16:9"] as const;
+
+function mapToImagen3AspectRatio(ratio: string | undefined): string {
+  if (!ratio) return "1:1";
+  if ((IMAGEN3_ASPECT_RATIOS as readonly string[]).includes(ratio)) return ratio;
+  // Map common ratios to nearest Imagen 3 equivalent
+  const mapping: Record<string, string> = {
+    "2:3": "3:4",
+    "3:2": "4:3",
+    "4:5": "3:4",
+    "5:4": "4:3",
+  };
+  return mapping[ratio] ?? "1:1";
+}
+
+/**
  * Reference instruction prepended before the reference image.
  * Tells the model exactly how to use the reference photo.
  */
@@ -137,7 +156,7 @@ export class GoogleImagenGenerator implements ImageGenerator {
       prompt: request.prompt,
       config: {
         numberOfImages: 1,
-        aspectRatio: request.aspectRatio ?? "1:1",
+        aspectRatio: mapToImagen3AspectRatio(request.aspectRatio),
       },
     });
     const image = response.generatedImages?.[0];

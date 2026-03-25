@@ -1433,4 +1433,147 @@ export const authorProfilesRouter = router({
         results,
       };
     }),
+
+  // ── Academic Research Enrichment (OpenAlex + Semantic Scholar) ─────────────
+
+  /** Enrich a single author's academic profile: h-index, citations, top papers */
+  enrichAcademicResearch: adminProcedure
+    .input(z.object({ authorName: z.string() }))
+    .mutation(async ({ input }) => {
+      const { enrichAcademicProfile } = await import("../enrichment/academicResearch");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Fetch author + their books
+      const [profile] = await db
+        .select()
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!profile) throw new Error(`Author not found: ${input.authorName}`);
+
+      // Get book titles for this author
+const books = await db
+            .select({ bookTitle: bookProfiles.bookTitle })
+            .from(bookProfiles)
+            .where(eq(bookProfiles.authorName, input.authorName));
+          const bookTitles = books.map((b) => b.bookTitle).filter(Boolean);
+
+          const result = await enrichAcademicProfile(input.authorName, bookTitles);
+
+      await db
+        .update(authorProfiles)
+        .set({
+          academicResearchJson: JSON.stringify(result),
+          academicResearchEnrichedAt: new Date(),
+        })
+        .where(eq(authorProfiles.authorName, input.authorName));
+
+      return {
+        authorName: input.authorName,
+        hIndex: result.authorProfile?.hIndex ?? 0,
+        citationCount: result.authorProfile?.citationCount ?? 0,
+        topPapersCount: result.topPapers.length,
+        bookRelatedPapersCount: result.bookRelatedPapers.length,
+        source: result.authorProfile?.source ?? "none",
+        fetchedAt: result.fetchedAt,
+      };
+    }),
+
+  /** Batch enrich academic research for all authors */
+  enrichAcademicResearchBatch: adminProcedure
+    .input(
+      z.object({
+        limit: z.number().optional().default(50),
+        onlyMissing: z.boolean().optional().default(true),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { enrichAcademicProfile } = await import("../enrichment/academicResearch");
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      // Fetch authors
+      const condition = input.onlyMissing
+        ? isNull(authorProfiles.academicResearchEnrichedAt)
+        : undefined;
+      const rows = await db
+        .select({
+          authorName: authorProfiles.authorName,
+        })
+        .from(authorProfiles)
+        .where(condition)
+        .limit(input.limit);
+
+      const results: Array<{
+        authorName: string;
+        hIndex: number;
+        citationCount: number;
+        error?: string;
+      }> = [];
+
+      for (const row of rows) {
+        try {
+          // Get book titles for this author
+const books = await db
+            .select({ bookTitle: bookProfiles.bookTitle })
+            .from(bookProfiles)
+            .where(eq(bookProfiles.authorName, row.authorName));
+          const bookTitles = books.map((b) => b.bookTitle).filter(Boolean);
+
+          const result = await enrichAcademicProfile(row.authorName, bookTitles);
+
+          await db
+            .update(authorProfiles)
+            .set({
+              academicResearchJson: JSON.stringify(result),
+              academicResearchEnrichedAt: new Date(),
+            })
+            .where(eq(authorProfiles.authorName, row.authorName));
+
+          results.push({
+            authorName: row.authorName,
+            hIndex: result.authorProfile?.hIndex ?? 0,
+            citationCount: result.authorProfile?.citationCount ?? 0,
+          });
+        } catch (err: any) {
+          results.push({
+            authorName: row.authorName,
+            hIndex: 0,
+            citationCount: 0,
+            error: String(err.message ?? err),
+          });
+        }
+        // Throttle to respect OpenAlex rate limits
+        await new Promise((r) => setTimeout(r, 500));
+      }
+
+      return {
+        processed: results.length,
+        succeeded: results.filter((r) => !r.error).length,
+        failed: results.filter((r) => !!r.error).length,
+        results,
+      };
+    }),
+
+  /** Get academic research data for a single author */
+  getAcademicResearch: publicProcedure
+    .input(z.object({ authorName: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const [row] = await db
+        .select({
+          academicResearchJson: authorProfiles.academicResearchJson,
+          academicResearchEnrichedAt: authorProfiles.academicResearchEnrichedAt,
+        })
+        .from(authorProfiles)
+        .where(eq(authorProfiles.authorName, input.authorName))
+        .limit(1);
+      if (!row?.academicResearchJson) return null;
+      return {
+        data: JSON.parse(row.academicResearchJson),
+        enrichedAt: row.academicResearchEnrichedAt,
+      };
+    }),
 });

@@ -193,6 +193,21 @@ export const authorProfiles = mysqlTable("author_profiles", {
   businessProfileJson: text("businessProfileJson"),
   /** When businessProfileJson was last enriched */
   businessProfileEnrichedAt: timestamp("businessProfileEnrichedAt"),
+  /**
+   * Academic research profile from OpenAlex / Semantic Scholar.
+   * JSON string of AcademicEnrichmentResult: authorProfile (hIndex, citations, affiliations),
+   * topPapers (most-cited works), bookRelatedPapers (research behind books).
+   */
+  academicResearchJson: text("academicResearchJson"),
+  /** When academicResearchJson was last enriched */
+  academicResearchEnrichedAt: timestamp("academicResearchEnrichedAt"),
+  /**
+   * Similarweb traffic data for the author's primary website.
+   * JSON string of SimilarwebTrafficResult: monthlyVisits, globalRank, trafficSources, etc.
+   */
+  webTrafficJson: text("webTrafficJson"),
+  /** When webTrafficJson was last enriched */
+  webTrafficEnrichedAt: timestamp("webTrafficEnrichedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

@@ -45,8 +45,10 @@ import { AvatarUpload } from "@/components/AvatarUpload";
 import { fireConfetti } from "@/hooks/useConfetti";
 import authorBios from "@/lib/authorBios.json";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import type { SocialStatsResult } from "../../../server/enrichment/socialStats";
 import type { RichBioResult, ProfessionalEntry } from "../../../server/enrichment/richBio";
+import AcademicResearchPanel from "@/components/AcademicResearchPanel";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -230,6 +232,8 @@ export default function AuthorDetail() {
   );
 
   const { settings } = useAppSettings();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const enrichMutation = trpc.authorProfiles.enrich.useMutation({
     onError: (e) => toast.error("Failed to load bio: " + e.message),
   });
@@ -610,6 +614,9 @@ export default function AuthorDetail() {
             </div>
           </section>
         )}
+
+        {/* ── Academic Research Foundation ── */}
+        <AcademicResearchPanel authorName={displayName} isAdmin={isAdmin} />
 
         {/* ── Books ── */}
         {author && author.books.length > 0 && (
