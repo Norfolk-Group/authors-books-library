@@ -12,7 +12,7 @@
  */
 
 import { useState, useCallback, useEffect } from "react";
-import { MoreHorizontal, Sparkles, RefreshCw, Link2, BookUser, Loader2, Check, X } from "lucide-react";
+import { MoreHorizontal, Sparkles, RefreshCw, Link2, BookUser, Loader2, Check, X, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +41,10 @@ interface AuthorCardActionsProps {
   onLinksUpdated?: () => void;
   /** Called whenever any mutation starts or finishes — use for per-card loading overlay */
   onMutatingChange?: (isMutating: boolean) => void;
+  /** Called when Edit Author is clicked — parent opens AuthorFormDialog */
+  onEditClick?: () => void;
+  /** Called when Delete Author is clicked — parent opens DeleteAuthorDialog */
+  onDeleteClick?: () => void;
 }
 
 export function AuthorCardActions({
@@ -51,6 +55,8 @@ export function AuthorCardActions({
   onBioUpdated,
   onLinksUpdated,
   onMutatingChange,
+  onEditClick,
+  onDeleteClick,
 }: AuthorCardActionsProps) {
   const { settings } = useAppSettings();
   const utils = trpc.useUtils();
@@ -251,6 +257,30 @@ export function AuthorCardActions({
           <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">Refresh All Data</span>
         </DropdownMenuItem>
+
+        {(onEditClick || onDeleteClick) && (
+          <>
+            <DropdownMenuSeparator />
+            {onEditClick && (
+              <DropdownMenuItem
+                onClick={(e) => { e.stopPropagation(); onEditClick(); }}
+                className="gap-2 cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-xs">Edit Author</span>
+              </DropdownMenuItem>
+            )}
+            {onDeleteClick && (
+              <DropdownMenuItem
+                onClick={(e) => { e.stopPropagation(); onDeleteClick(); }}
+                className="gap-2 cursor-pointer text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="text-xs">Delete Author</span>
+              </DropdownMenuItem>
+            )}
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

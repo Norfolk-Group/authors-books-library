@@ -109,11 +109,28 @@ export function BookFormDialog({
     possessionStatus: (initialData?.possessionStatus as PossessionStatus) ?? "",
   }));
 
+  const enrichBookMutation = trpc.bookProfiles.enrich.useMutation({
+    onSuccess: (data) => {
+      if (!data?.skipped) {
+        toast.success(`"${form.bookTitle}" enriched`, {
+          description: "Cover, summary, ratings, and links fetched from Google Books.",
+        });
+        utils.bookProfiles.get.invalidate({ bookTitle: form.bookTitle });
+        utils.bookProfiles.getMany.invalidate();
+      }
+    },
+    // Silent fail — enrichment is best-effort
+  });
+
   const createMutation = trpc.bookProfiles.createBook.useMutation({
     onSuccess: (data) => {
-      toast.success(`"${data?.bookTitle}" added to your library.`);
+      toast.success(`"${data?.bookTitle}" added to your library.`, {
+        description: "Enrichment running in background — cover and summary will populate shortly.",
+      });
       utils.bookProfiles.getMany.invalidate();
       utils.library.getStats.invalidate();
+      // Fire-and-forget enrichment
+      enrichBookMutation.mutate({ bookTitle: form.bookTitle, authorName: form.authorName || undefined });
       onSuccess?.(form.bookTitle);
       onOpenChange(false);
       setForm(EMPTY);

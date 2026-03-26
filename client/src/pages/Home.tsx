@@ -52,6 +52,7 @@ import { AuthorFormDialog } from "@/components/library/AuthorFormDialog";
 import { DeleteAuthorDialog } from "@/components/library/DeleteAuthorDialog";
 import { BookFormDialog } from "@/components/library/BookFormDialog";
 import { DeleteBookDialog } from "@/components/library/DeleteBookDialog";
+import { PhysicalBookQuickAddDialog } from "@/components/library/PhysicalBookQuickAddDialog";
 import { PlusCircle } from "lucide-react";
 import {
   useLibraryData,
@@ -112,6 +113,7 @@ export default function Home() {
   const [editAuthorData, setEditAuthorData] = useState<{ authorName: string } | null>(null);
   const [deleteAuthorName, setDeleteAuthorName] = useState<string | null>(null);
   const [addBookOpen, setAddBookOpen] = useState(false);
+  const [physicalBookOpen, setPhysicalBookOpen] = useState(false);
   const [editBookData, setEditBookData] = useState<{ bookTitle: string } | null>(null);
   const [deleteBookTitle, setDeleteBookTitle] = useState<string | null>(null);
 
@@ -323,13 +325,23 @@ export default function Home() {
                     </button>
                   )}
                   {isAuthenticated && activeTab === "books" && (
-                    <button
-                      onClick={() => setAddBookOpen(true)}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-[#c9b96e]/50 text-[#c9b96e] bg-[#c9b96e]/5 hover:bg-[#c9b96e]/15 hover:border-[#c9b96e] shadow-[0_2px_0_#8a7a3a] hover:shadow-[0_1px_0_#8a7a3a] hover:translate-y-[1px] active:shadow-none active:translate-y-[2px] transition-all"
-                    >
-                      <PlusCircle className="w-3.5 h-3.5" />
-                      Add Book
-                    </button>
+                    <>
+                      <button
+                        onClick={() => setPhysicalBookOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-amber-500/50 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 hover:border-amber-500 shadow-[0_2px_0_#92400e] hover:shadow-[0_1px_0_#92400e] hover:translate-y-[1px] active:shadow-none active:translate-y-[2px] transition-all"
+                        title="Quick-add a physical book you own"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        Physical
+                      </button>
+                      <button
+                        onClick={() => setAddBookOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-[#c9b96e]/50 text-[#c9b96e] bg-[#c9b96e]/5 hover:bg-[#c9b96e]/15 hover:border-[#c9b96e] shadow-[0_2px_0_#8a7a3a] hover:shadow-[0_1px_0_#8a7a3a] hover:translate-y-[1px] active:shadow-none active:translate-y-[2px] transition-all"
+                      >
+                        <PlusCircle className="w-3.5 h-3.5" />
+                        Add Book
+                      </button>
+                    </>
                   )}
                   {activeTab === "books" && (
                     <button
@@ -543,6 +555,8 @@ export default function Home() {
                             if (el) authorCardRefs.current.set(key, el);
                             else authorCardRefs.current.delete(key);
                           }}
+                          onEditClick={isAuthenticated ? () => setEditAuthorData({ authorName: canonicalName(a.name) }) : undefined}
+                          onDeleteClick={isAuthenticated ? () => setDeleteAuthorName(canonicalName(a.name)) : undefined}
                         />
                       </div>
                     ))}
@@ -581,6 +595,8 @@ export default function Home() {
                               freshnessDimensions={bookFreshnessMap.get(tk)}
                               format={bookInfoMap.get(tk)?.format ?? null}
                               possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
+                              onEditClick={isAuthenticated ? () => setEditBookData({ bookTitle: titleKey }) : undefined}
+                              onDeleteClick={isAuthenticated ? () => setDeleteBookTitle(titleKey) : undefined}
                             />
                           </div>
                         );
@@ -655,6 +671,8 @@ export default function Home() {
                                   hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
                                   platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
                                   freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
+                                  onEditClick={isAuthenticated ? () => setEditAuthorData({ authorName: canonicalName(a.name) }) : undefined}
+                                  onDeleteClick={isAuthenticated ? () => setDeleteAuthorName(canonicalName(a.name)) : undefined}
                                 />
                               </div>
                             ))}
@@ -700,6 +718,10 @@ export default function Home() {
                                     isFavorite={true}
                                     hasRichSummary={richSummarySet.has(titleKey)}
                                     freshnessDimensions={bookFreshnessMap.get(tk)}
+                                    format={bookInfoMap.get(tk)?.format ?? null}
+                                    possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
+                                    onEditClick={isAuthenticated ? () => setEditBookData({ bookTitle: titleKey }) : undefined}
+                                    onDeleteClick={isAuthenticated ? () => setDeleteBookTitle(titleKey) : undefined}
                                   />
                                 </div>
                               );
@@ -780,6 +802,12 @@ export default function Home() {
       onOpenChange={(v) => { if (!v) setDeleteBookTitle(null); }}
       bookTitle={deleteBookTitle ?? ""}
       onSuccess={() => setDeleteBookTitle(null)}
+    />
+
+    <PhysicalBookQuickAddDialog
+      open={physicalBookOpen}
+      onOpenChange={setPhysicalBookOpen}
+      onSuccess={() => setPhysicalBookOpen(false)}
     />
     </>
   );

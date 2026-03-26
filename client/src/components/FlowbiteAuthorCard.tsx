@@ -101,6 +101,10 @@ export interface FlowbiteAuthorCardProps {
   hasRichBio?: boolean;
   /** Freshness dimensions for this author (from getAllFreshness query) */
   freshnessDimensions?: FreshnessDimension[];
+  /** Called when Edit Author is selected from the card menu */
+  onEditClick?: () => void;
+  /** Called when Delete Author is selected from the card menu */
+  onDeleteClick?: () => void;
   /** Platform presence links for this author (from getAllPlatformLinks query) */
   platformLinks?: {
     websiteUrl?: string | null;
@@ -139,6 +143,8 @@ export function FlowbiteAuthorCard({
   platformLinks,
   hasRichBio,
   freshnessDimensions,
+  onEditClick,
+  onDeleteClick,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -298,6 +304,8 @@ export function FlowbiteAuthorCard({
                   onBioUpdated={() => void utils.authorProfiles.getAllBios.invalidate()}
                   onLinksUpdated={() => void utils.authorProfiles.get.invalidate({ authorName: displayName })}
                   onMutatingChange={setIsMutating}
+                  onEditClick={onEditClick}
+                  onDeleteClick={onDeleteClick}
                 />
               </div>
             </div>

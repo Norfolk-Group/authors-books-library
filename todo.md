@@ -2068,8 +2068,18 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Build AuthorFormDialog (create + edit in one dialog) with all key fields
 - [x] Build DeleteAuthorDialog with name-confirmation step
 - [x] Wire "Add Author" button into Authors tab toolbar (admin only)
-- [ ] Wire "Edit" and "Delete" actions into AuthorCard and AuthorDetail page (next session)
+- [x] Wire "Edit" and "Delete" actions into AuthorCard and AuthorDetail page
 - [x] Build BookFormDialog (create + edit in one dialog) with format/possession/links fields
 - [x] Build DeleteBookDialog with title-confirmation step
 - [x] Wire "Add Book" button into Books tab toolbar (admin only)
-- [ ] Wire "Edit" and "Delete" actions into BookCard and BookDetail page (next session)
+- [x] Wire "Edit" and "Delete" actions into BookCard and BookDetail page
+
+## Session March 26, 2026 — Card Context Menus + Quick-Add + Auto-Enrichment
+- [x] Add Edit/Delete actions to AuthorCardActions dropdown (existing menu)
+- [x] Add BookCardActions dropdown with Edit/Delete/Enrich actions
+- [x] Wire edit/delete callbacks into FlowbiteAuthorCard and BookCard
+- [x] Wire edit/delete callbacks in Home.tsx for all card instances (Authors, Books, Favorites tabs)
+- [x] Build PhysicalBookQuickAddDialog (pre-set format=physical, possessionStatus=owned)
+- [x] Add "Add Physical Book" shortcut button in Books tab toolbar
+- [x] Auto-trigger author enrichment (bio + social links) after createAuthor succeeds (fire-and-forget)
+- [x] Auto-trigger book enrichment (cover + summary) after createBook succeeds (fire-and-forget)

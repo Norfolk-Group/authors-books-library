@@ -113,11 +113,28 @@ export function AuthorFormDialog({
     ...initialData,
   }));
 
+  const enrichMutation = trpc.authorProfiles.enrich.useMutation({
+    onSuccess: (data) => {
+      if (!data?.cached) {
+        toast.success(`Bio and links enriched for "${form.authorName}"`, {
+          description: "Wikipedia, social platforms, and academic data fetched.",
+        });
+        utils.authorProfiles.get.invalidate({ authorName: form.authorName });
+        utils.authorProfiles.getMany.invalidate();
+      }
+    },
+    // Silent fail — enrichment is best-effort
+  });
+
   const createMutation = trpc.authorProfiles.createAuthor.useMutation({
     onSuccess: (data) => {
-      toast.success(`"${data?.authorName}" added to your library.`);
+      toast.success(`"${data?.authorName}" added to your library.`, {
+        description: "Enrichment running in background — bio and links will populate shortly.",
+      });
       utils.authorProfiles.getMany.invalidate();
       utils.library.getStats.invalidate();
+      // Fire-and-forget enrichment
+      enrichMutation.mutate({ authorName: form.authorName });
       onSuccess?.(form.authorName);
       onOpenChange(false);
       setForm(EMPTY);

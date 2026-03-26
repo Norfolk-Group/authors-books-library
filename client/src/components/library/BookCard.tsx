@@ -28,6 +28,7 @@ import {
   FileText,
   type LucideIcon,
 } from "lucide-react";
+import { BookCardActions } from "./BookCardActions";
 import { CATEGORY_COLORS, CATEGORY_ICONS, type BookRecord } from "@/lib/libraryData";
 import { ICON_MAP, getBookEnrichmentLevel } from "./libraryConstants";
 import { ContentTypeBadge } from "./LibraryPrimitives";
@@ -80,6 +81,10 @@ interface BookCardProps {
   format?: string | null;
   /** Possession/reading status: owned | wishlist | reference | borrowed | gifted | read | reading | unread */
   possessionStatus?: string | null;
+  /** Called when Edit Book is selected from the card menu */
+  onEditClick?: () => void;
+  /** Called when Delete Book is selected from the card menu */
+  onDeleteClick?: () => void;
 }
 
 export function BookCard({
@@ -104,6 +109,8 @@ export function BookCard({
   freshnessDimensions,
   format,
   possessionStatus,
+  onEditClick,
+  onDeleteClick,
 }: BookCardProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
@@ -216,6 +223,11 @@ export function BookCard({
             >
               <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity" />
             </a>
+            <BookCardActions
+              bookTitle={displayTitle}
+              onEditClick={onEditClick}
+              onDeleteClick={onDeleteClick}
+            />
           </div>
         </div>
 
