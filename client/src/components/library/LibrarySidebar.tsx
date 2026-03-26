@@ -76,6 +76,9 @@ export function LibrarySidebar({
   const { settings: { colorMode: appTheme } } = useAppSettings();
   const showCategoryFilter = activeTab !== "audio";
 
+  // Live last-sync timestamp
+  const lastSyncQuery = trpc.admin.getLastSync.useQuery(undefined, { staleTime: 5 * 60_000 });
+
   // Drive Sync (admin only)
   const utils = trpc.useUtils();
   const regenerateMutation = trpc.library.regenerate.useMutation();
@@ -89,6 +92,8 @@ export function LibrarySidebar({
         setSyncState("done");
         // Invalidate the live stats query so the stat tiles refresh immediately
         await utils.library.getStats.invalidate();
+        // Invalidate the last-sync timestamp so the sidebar footer updates
+        await utils.admin.getLastSync.invalidate();
         toast.success(`Drive synced — ${result.stats.authors} authors, ${result.stats.books} books`, { duration: 8000 });
         setTimeout(() => setSyncState("idle"), 5000);
       } else {
@@ -216,7 +221,34 @@ export function LibrarySidebar({
       </SidebarContent>
 
       <SidebarFooter className="px-4 py-3 border-t border-sidebar-border group-data-[collapsible=icon]:hidden">
-        <p className="text-[10px] text-muted-foreground mb-1">{`Data as of ${STATS.lastUpdated}`}</p>
+        {(() => {
+          const ts = lastSyncQuery.data;
+          let label: string;
+          if (lastSyncQuery.isLoading) {
+            label = "Data as of …";
+          } else if (ts) {
+            const d = new Date(ts);
+            const now = new Date();
+            const diffMs = now.getTime() - d.getTime();
+            const diffMins = Math.floor(diffMs / 60_000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+            let relative: string;
+            if (diffMins < 2) relative = "just now";
+            else if (diffMins < 60) relative = `${diffMins}m ago`;
+            else if (diffHours < 24) relative = `${diffHours}h ago`;
+            else if (diffDays === 1) relative = "yesterday";
+            else relative = d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+            label = `Synced ${relative}`;
+          } else {
+            label = `Data as of ${STATS.lastUpdated}`;
+          }
+          return (
+            <p className="text-[10px] text-muted-foreground mb-1" title={ts ? new Date(ts).toLocaleString() : undefined}>
+              {label}
+            </p>
+          );
+        })()}
         {authorAvatarData && (() => {
           const withAvatar = authorAvatarData.filter(r => r.avatarUrl).length;
           const total = STATS.totalAuthors;

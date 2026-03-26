@@ -1961,3 +1961,6 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 ## Session March 25, 2026 — Auto-refresh stat tiles
 - [x] After successful Drive sync, invalidate library.getStats query so stat tiles update without page reload
+
+## Session March 25, 2026 — Live "Data as of" timestamp
+- [x] Replace static STATS.lastUpdated in sidebar footer with live timestamp from last successful regenerate action log

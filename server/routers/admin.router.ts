@@ -9,6 +9,25 @@ import { getDb } from "../db";
 import { adminActionLog } from "../../drizzle/schema";
 
 export const adminRouter = router({
+  /**
+   * Returns the timestamp of the last successful Drive regeneration.
+   * Public so the sidebar can display it without requiring admin auth.
+   */
+  getLastSync: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return null;
+    const rows = await db
+      .select({ lastRunAt: adminActionLog.lastRunAt, lastRunResult: adminActionLog.lastRunResult })
+      .from(adminActionLog)
+      .where(eq(adminActionLog.actionKey, "regenerate"))
+      .limit(1);
+    const row = rows[0];
+    if (!row || !row.lastRunAt) return null;
+    // Only return the timestamp if the last run was successful
+    if (!row.lastRunResult?.startsWith("success")) return null;
+    return row.lastRunAt;
+  }),
+
   /** Get all action logs */
   getActionLogs: adminProcedure.query(async () => {
     const db = await getDb();
