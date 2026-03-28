@@ -12,6 +12,8 @@ import { BookSubfolderRow } from "@/components/library/LibraryPrimitives";
 import { AuthorCardActions } from "@/components/AuthorCardActions";
 import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
+import { isLikelyAuthorName } from "../../../../shared/authorNameValidator";
+import { AlertTriangle } from "lucide-react";
 import {
   CATEGORY_COLORS,
   CATEGORY_ICONS,
@@ -81,6 +83,8 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
   const [avatarRegenerating, setAvatarRegenerating] = useState(false);
   const avatarUrl = liveAvatarUrl ?? dbAvatarMap?.get(displayName.toLowerCase()) ?? getAuthorAvatar(displayName);
   const hasBooks = author.books && author.books.length > 0;
+  // Guardrail: flag cards whose name looks like a book title or topic phrase
+  const isSuspiciousName = !isLikelyAuthorName(displayName);
 
   return (
     <motion.div
@@ -186,6 +190,19 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
               <h3 className="text-base font-bold leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]">
                 {highlight(displayName, query)}
               </h3>
+              {isSuspiciousName && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-600 border border-amber-500/30 cursor-help">
+                      <AlertTriangle className="w-3 h-3" />
+                      Possible mis-classification
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[220px] text-xs">
+                    This name may be a book title or topic phrase rather than a person. Check the Drive folder and delete if incorrect.
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {specialty && (
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-0.5">
                   {highlight(specialty, query)}

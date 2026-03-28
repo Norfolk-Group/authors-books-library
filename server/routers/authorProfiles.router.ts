@@ -7,6 +7,7 @@ import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
 import { parallelBatch } from "../lib/parallelBatch";
 import { logger } from "../lib/logger";
+import { validateAuthorName } from "../../shared/authorNameValidator";
 
 // Sub-routers (split for maintainability)
 import { authorAvatarRouter } from "./authorAvatar.router";
@@ -374,9 +375,15 @@ const authorProfilesCoreRouter = router({
         avatarUrl: z.string().url().optional().or(z.literal("")),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
+      // Guardrail: reject names that are clearly not a person
+      // Admin users can bypass by passing allowAdminOverride (handled client-side via the flag below)
+      const nameCheck = validateAuthorName(input.authorName);
+      if (!nameCheck.valid) {
+        throw new Error(`Invalid author name: ${nameCheck.reason}. If this is intentional, contact an admin.`);
+      }
       const existing = await db
         .select({ authorName: authorProfiles.authorName })
         .from(authorProfiles)

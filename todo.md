@@ -2106,3 +2106,33 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Remove stale probe/debug/test scripts (probe-cnbc*.mjs, probe-rapidapi.mjs, debug-rich-bio.ts, test-aaron-ross*.ts/mjs)
 - [x] Remove ThemeContext.tsx (superseded by AppSettingsContext.tsx)
 - [x] Remove stale probe/debug/test scripts
+
+## Session March 28, 2026 — Author Name Guardrails
+
+### Audit
+- [ ] Identify all current false-positive author records in DB (book titles, content types, topic phrases)
+- [ ] Trace entry points: Drive scanner, manual createAuthor, libraryData.ts generation
+
+### Validator
+- [ ] Create shared/authorNameValidator.ts with isLikelyAuthorName() + KNOWN_BAD_AUTHOR_NAMES blocklist
+- [ ] Rules: min 2 words, no content-type keywords (PDF, Transcript, Audio, etc.), no topic phrases, no single common nouns
+- [ ] Write vitest tests for the validator (valid names, edge cases, known bad examples)
+
+### Drive Scanner Guardrail
+- [ ] Apply isLikelyAuthorName() in library.router.ts before emitting an author entry
+- [ ] Log/skip entries that fail validation with a warning
+
+### DB Write Guardrail
+- [ ] Apply isLikelyAuthorName() in authorProfiles.router.ts createAuthor procedure
+- [ ] Return a typed error if name fails validation (with bypass flag for admin overrides)
+
+### UI Guardrail
+- [ ] Show warning badge on author cards where name looks suspicious (client-side check)
+- [ ] Add validation to the Add Author form with inline error message
+
+### Cleanup
+- [ ] Delete confirmed false-positive author_profiles rows from DB
+- [ ] Remove corresponding entries from libraryData.ts / authorAliases.ts if present
+
+### Documentation
+- [ ] Update claude.md with validator architecture and guardrail entry points

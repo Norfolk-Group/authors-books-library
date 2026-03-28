@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { CATEGORIES } from "@/lib/libraryData";
-import { Loader2, UserPlus, Save } from "lucide-react";
+import { Loader2, UserPlus, Save, AlertTriangle } from "lucide-react";
+import { validateAuthorName } from "../../../../shared/authorNameValidator";
 
 interface AuthorFormData {
   authorName: string;
@@ -163,10 +164,19 @@ export function AuthorFormDialog({
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  // Live validation result for the author name field
+  const nameValidation = form.authorName.trim()
+    ? validateAuthorName(form.authorName.trim())
+    : null;
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.authorName.trim()) {
       toast.error("Please enter the author's full name.");
+      return;
+    }
+    if (nameValidation && !nameValidation.valid) {
+      toast.error(`Name looks invalid: ${nameValidation.reason}`);
       return;
     }
     if (isEdit) {
@@ -201,8 +211,16 @@ export function AuthorFormDialog({
                     onChange={(e) => handleChange("authorName", e.target.value)}
                     placeholder="e.g. Adam Grant"
                     disabled={isEdit}
-                    className="bg-[#12122a] border-[#2a2a4a] text-[#e8e8f0] placeholder:text-[#4a4a6a] focus:border-[#c9b96e] disabled:opacity-60"
+                    className={`bg-[#12122a] border-[#2a2a4a] text-[#e8e8f0] placeholder:text-[#4a4a6a] focus:border-[#c9b96e] disabled:opacity-60 ${
+                      nameValidation && !nameValidation.valid ? "border-rose-500 focus:border-rose-400" : ""
+                    }`}
                   />
+                  {nameValidation && !nameValidation.valid && (
+                    <p className="flex items-center gap-1 text-xs text-rose-400 mt-1">
+                      <AlertTriangle className="w-3 h-3 shrink-0" />
+                      {nameValidation.reason}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5">

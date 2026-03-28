@@ -1,0 +1,20 @@
+{
+  "query": "SELECT id, authorName, createdAt FROM author_profiles WHERE id IN (30101, 30096);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute SELECT id, authorName, createdAt FROM author_profiles WHERE id IN (30101, 30096);",
+  "rows": [
+    {
+      "id": "30101",
+      "authorName": "Your Next Five Moves",
+      "createdAt": "2026-03-15 19:41:49"
+    },
+    {
+      "id": "30096",
+      "authorName": "TEST Matthew Dixon",
+      "createdAt": "2026-03-15 19:41:44"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tauthorName\tcreatedAt\n30101\tYour Next Five Moves\t2026-03-15 19:41:49\n30096\tTEST Matthew Dixon\t2026-03-15 19:41:44\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}

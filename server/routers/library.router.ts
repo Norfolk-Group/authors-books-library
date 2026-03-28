@@ -11,6 +11,7 @@ import { ENV } from "../_core/env";
 import { getDb } from "../db";
 import { authorProfiles, bookProfiles } from "../../drizzle/schema";
 import { sql } from "drizzle-orm";
+import { validateAuthorName } from "../../shared/authorNameValidator";
 
 // -- Constants ------------------------------------------------
 // Folder IDs are configurable via DRIVE_AUTHORS_FOLDER_ID / DRIVE_BOOKS_AUDIO_FOLDER_ID env vars
@@ -196,6 +197,13 @@ function scanAuthors(): { authors: AuthorEntry[]; books: BookRecord[] } {
         const key = c.name.toLowerCase().trim();
         return contentTypeNames.has(key) || AUDIO_FOLDER_NAMES.has(key);
       });
+
+      // Guardrail: skip Drive folders whose name is not a plausible person name
+      const nameValidation = validateAuthorName(authorFolder.name);
+      if (!nameValidation.valid) {
+        console.warn(`[library.scanner] Skipping non-person folder "${authorFolder.name}": ${nameValidation.reason}`);
+        continue;
+      }
 
       const authorEntry: AuthorEntry = {
         name: authorFolder.name,

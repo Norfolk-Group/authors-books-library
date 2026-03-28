@@ -1,0 +1,546 @@
+{
+  "query": "DESCRIBE author_profiles;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute DESCRIBE author_profiles;",
+  "rows": [
+    {
+      "Field": "id",
+      "Type": "int",
+      "Null": "NO",
+      "Key": "PRI",
+      "Default": "NULL",
+      "Extra": "auto_increment"
+    },
+    {
+      "Field": "authorName",
+      "Type": "varchar(256)",
+      "Null": "NO",
+      "Key": "UNI",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "bio",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "websiteUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "twitterUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "linkedinUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "enrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "createdAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": ""
+    },
+    {
+      "Field": "updatedAt",
+      "Type": "timestamp",
+      "Null": "NO",
+      "Key": "",
+      "Default": "CURRENT_TIMESTAMP",
+      "Extra": "DEFAULT_GENERATED on update CURRENT_TIMESTAMP"
+    },
+    {
+      "Field": "avatarUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "avatarSourceUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "s3AvatarUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "s3AvatarKey",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "avatarSource",
+      "Type": "enum('wikipedia','tavily','apify','ai','google-imagen','drive')",
+      "Null": "YES",
+      "Key": "MUL",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "authorDescriptionJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "authorDescriptionCachedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastAvatarPrompt",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastAvatarPromptBuiltAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "driveAvatarFileId",
+      "Type": "varchar(255)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "avatarGenVendor",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "avatarGenModel",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "avatarResearchVendor",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "avatarResearchModel",
+      "Type": "varchar(100)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "podcastUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "blogUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "substackUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "newspaperArticlesJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "otherLinksJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "lastLinksEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "linksEnrichmentSource",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "bestReferencePhotoUrl",
+      "Type": "varchar(1024)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "platformEnrichmentStatus",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "researchQuality",
+      "Type": "enum('high','medium','low')",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "youtubeUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "facebookUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "instagramUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "tiktokUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "githubUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "businessWebsiteUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "newsletterUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "speakingUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "substackPostCount",
+      "Type": "int",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "substackSubscriberRange",
+      "Type": "varchar(50)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "substackStatsEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "socialStatsJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "socialStatsEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "stockTicker",
+      "Type": "varchar(20)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "wikipediaUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "driveFolderId",
+      "Type": "varchar(128)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "websitesJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "professionalEntriesJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "richBioJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "mediaPresenceJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "mediaPresenceEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "businessProfileJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "businessProfileEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "academicResearchJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "academicResearchEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "webTrafficJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "webTrafficEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "earningsCallMentionsJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "earningsCallMentionsEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "professionalProfileJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "professionalProfileEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "documentArchiveJson",
+      "Type": "text",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "documentArchiveEnrichedAt",
+      "Type": "timestamp",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    },
+    {
+      "Field": "mediumUrl",
+      "Type": "varchar(512)",
+      "Null": "YES",
+      "Key": "",
+      "Default": "NULL",
+      "Extra": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "Field\tType\tNull\tKey\tDefault\tExtra\nid\tint\tNO\tPRI\tNULL\tauto_increment\nauthorName\tvarchar(256)\tNO\tUNI\tNULL\t\nbio\ttext\tYES\t\tNULL\t\nwebsiteUrl\tvarchar(512)\tYES\t\tNULL\t\ntwitterUrl\tvarchar(512)\tYES\t\tNULL\t\nlinkedinUrl\tvarchar(512)\tYES\t\tNULL\t\nenrichedAt\ttimestamp\tYES\tMUL\tNULL\t\ncreatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\t\nupdatedAt\ttimestamp\tNO\t\tCURRENT_TIMESTAMP\tDEFAULT_GENERATED on update CURRENT_TIMESTAMP\navatarUrl\tvarchar(1024)\tYES\t\tNULL\t\navatarSourceUrl\tvarchar(1024)\tYES\t\tNULL\t\ns3AvatarUrl\tvarchar(1024)\tYES\t\tNULL\t\ns3AvatarKey\tvarchar(512)\tYES\t\tNULL\t\navatarSource\tenum('wikipedia','tavily','apify','ai','google-imagen','drive')\tYES\tMUL\tNULL\t\nauthorDescriptionJson\ttext\tYES\t\tNULL\t\nauthorDescriptionCachedAt\ttimestamp\tYES\t\tNULL\t\nlastAvatarPrompt\ttext\tYES\t\tNULL\t\nlastAvatarPromptBuiltAt\ttimestamp\tYES\t\tNULL\t\ndriveAvatarFileId\tvarchar(255)\tYES\t\tNULL\t\navatarGenVendor\tvarchar(50)\tYES\t\tNULL\t\navatarGenModel\tvarchar(100)\tYES\t\tNULL\t\navatarResearchVendor\tvarchar(50)\tYES\t\tNULL\t\navatarResearchModel\tvarchar(100)\tYES\t\tNULL\t\npodcastUrl\tvarchar(512)\tYES\t\tNULL\t\nblogUrl\tvarchar(512)\tYES\t\tNULL\t\nsubstackUrl\tvarchar(512)\tYES\t\tNULL\t\nnewspaperArticlesJson\ttext\tYES\t\tNULL\t\notherLinksJson\ttext\tYES\t\tNULL\t\nlastLinksEnrichedAt\ttimestamp\tYES\t\tNULL\t\nlinksEnrichmentSource\tvarchar(50)\tYES\t\tNULL\t\nbestReferencePhotoUrl\tvarchar(1024)\tYES\t\tNULL\t\nplatformEnrichmentStatus\ttext\tYES\t\tNULL\t\nresearchQuality\tenum('high','medium','low')\tYES\t\tNULL\t\nyoutubeUrl\tvarchar(512)\tYES\t\tNULL\t\nfacebookUrl\tvarchar(512)\tYES\t\tNULL\t\ninstagramUrl\tvarchar(512)\tYES\t\tNULL\t\ntiktokUrl\tvarchar(512)\tYES\t\tNULL\t\ngithubUrl\tvarchar(512)\tYES\t\tNULL\t\nbusinessWebsiteUrl\tvarchar(512)\tYES\t\tNULL\t\nnewsletterUrl\tvarchar(512)\tYES\t\tNULL\t\nspeakingUrl\tvarchar(512)\tYES\t\tNULL\t\nsubstackPostCount\tint\tYES\t\tNULL\t\nsubstackSubscriberRange\tvarchar(50)\tYES\t\tNULL\t\nsubstackStatsEnrichedAt\ttimestamp\tYES\t\tNULL\t\nsocialStatsJson\ttext\tYES\t\tNULL\t\nsocialStatsEnrichedAt\ttimestamp\tYES\t\tNULL\t\nstockTicker\tvarchar(20)\tYES\t\tNULL\t\nwikipediaUrl\tvarchar(512)\tYES\t\tNULL\t\ndriveFolderId\tvarchar(128)\tYES\t\tNULL\t\nwebsitesJson\ttext\tYES\t\tNULL\t\nprofessionalEntriesJson\ttext\tYES\t\tNULL\t\nrichBioJson\ttext\tYES\t\tNULL\t\nmediaPresenceJson\ttext\tYES\t\tNULL\t\nmediaPresenceEnrichedAt\ttimestamp\tYES\t\tNULL\t\nbusinessProfileJson\ttext\tYES\t\tNULL\t\nbusinessProfileEnrichedAt\ttimestamp\tYES\t\tNULL\t\nacademicResearchJson\ttext\tYES\t\tNULL\t\nacademicResearchEnrichedAt\ttimestamp\tYES\t\tNULL\t\nwebTrafficJson\ttext\tYES\t\tNULL\t\nwebTrafficEnrichedAt\ttimestamp\tYES\t\tNULL\t\nearningsCallMentionsJson\ttext\tYES\t\tNULL\t\nearningsCallMentionsEnrichedAt\ttimestamp\tYES\t\tNULL\t\nprofessionalProfileJson\ttext\tYES\t\tNULL\t\nprofessionalProfileEnrichedAt\ttimestamp\tYES\t\tNULL\t\ndocumentArchiveJson\ttext\tYES\t\tNULL\t\ndocumentArchiveEnrichedAt\ttimestamp\tYES\t\tNULL\t\nmediumUrl\tvarchar(512)\tYES\t\tNULL\t\n",
+  "stderr": "",
+  "execution_time_ms": 60
+}

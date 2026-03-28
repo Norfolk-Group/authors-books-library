@@ -1,0 +1,8 @@
+{
+  "query": "\n-- Show what we're about to delete\nSELECT id, author_name, created_at FROM author_profiles \nWHERE id IN (30101, 30096);\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 46FBtXPMNF6LwZ8.root --database ehSrGoKN2NYhXg8UYLtWGw --execute \n-- Show what we're about to delete\nSELECT id, author_name, created_at FROM author_profiles \nWHERE id IN (30101, 30096);\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 3: Unknown column 'author_name' in 'field list'"
+  ]
+}
