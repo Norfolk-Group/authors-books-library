@@ -233,6 +233,65 @@ export const authorProfiles = mysqlTable("author_profiles", {
   documentArchiveJson: text("documentArchiveJson"),
   /** When documentArchiveJson was last indexed */
   documentArchiveEnrichedAt: timestamp("documentArchiveEnrichedAt"),
+
+  // ── Contextual Intelligence (geography, history, family, associations) ──────
+  /**
+   * JSON object with full geographical biography.
+   * Shape: {
+   *   birthCity, birthCountry, childhoodCity, formativeCities: string[],
+   *   currentBase, countriesLived: string[], culturalRegions: string[],
+   *   geographyNarrative: string  // LLM synthesis of how geography shaped worldview
+   * }
+   */
+  geographyJson: text("geographyJson"),
+  /**
+   * JSON object with historical/era context.
+   * Shape: {
+   *   birthDecade: string, formativeYears: { from: number, to: number },
+   *   majorWorldEvents: [{ year: number, event: string, relevance: string }],
+   *   culturalEra: string, eraNarrative: string
+   * }
+   */
+  historicalContextJson: text("historicalContextJson"),
+  /**
+   * JSON object with family and upbringing data.
+   * Shape: {
+   *   parents: [{ name, profession, nationality, notes }],
+   *   siblings: { count: number, birthOrder: string, notes: string },
+   *   spouse: { name, profession, duration, notes },
+   *   children: { count: number, notes: string },
+   *   familyCulture: { religion, politicalLeanings, socioeconomicClass, immigrationBackground, notes }
+   * }
+   */
+  familyJson: text("familyJson"),
+  /**
+   * JSON object with associations, networks, and intellectual lineage.
+   * Shape: {
+   *   mentors: [{ name, relationship, contribution }],
+   *   proteges: [{ name, notes }],
+   *   collaborators: [{ name, type: 'co-author'|'co-presenter'|'business', notes }],
+   *   intellectualRivals: [{ name, disagreement }],
+   *   organizations: [{ name, role, type: 'think-tank'|'board'|'conference'|'association', url }],
+   *   universities: [{ name, degree, year, role: 'student'|'faculty'|'honorary' }],
+   *   schoolsOfThought: string[],
+   *   citedInfluences: [{ name, type: 'author'|'thinker'|'book', notes }],
+   *   intellectualDescendants: [{ name, notes }],
+   *   signatureFrameworks: [{ name, description, year }]
+   * }
+   */
+  associationsJson: text("associationsJson"),
+  /**
+   * JSON object with formative experiences (pivotal moments).
+   * Shape: [{ type: 'trauma'|'epiphany'|'career'|'travel'|'loss'|'other', description: string, approximateYear?: number, source: string }]
+   */
+  formativeExperiencesJson: text("formativeExperiencesJson"),
+  /** Raw source responses from the 8-source biographical research waterfall — stored for auditability */
+  authorBioSourcesJson: text("authorBioSourcesJson"),
+  /** Completeness score 0–100 based on populated biographical fields */
+  bioCompleteness: int("bioCompleteness").default(0),
+  /** When the contextual intelligence layer was last enriched */
+  contextualIntelligenceEnrichedAt: timestamp("contextualIntelligenceEnrichedAt"),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -510,3 +569,364 @@ export const enrichmentJobs = mysqlTable("enrichment_jobs", {
 
 export type EnrichmentJob = typeof enrichmentJobs.$inferSelect;
 export type InsertEnrichmentJob = typeof enrichmentJobs.$inferInsert;
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DIGITAL AUTHOR RAG PIPELINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * author_rag_profiles — tracks the Digital Me RAG file for each author.
+ * The RAG file is a structured Markdown document stored in S3 that encapsulates
+ * everything the system knows about an author in a form suitable for LLM system
+ * prompt injection (author impersonation chatbot).
+ */
+export const authorRagProfiles = mysqlTable("author_rag_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key → author_profiles.authorName */
+  authorName: varchar("authorName", { length: 256 }).notNull().unique(),
+  /** S3 URL of the RAG Markdown file */
+  ragFileUrl: varchar("ragFileUrl", { length: 1024 }),
+  /** S3 key for the RAG file (used for versioning and cleanup) */
+  ragFileKey: varchar("ragFileKey", { length: 512 }),
+  /** Monotonically increasing version number (starts at 1) */
+  ragVersion: int("ragVersion").notNull().default(1),
+  /** When this version of the RAG file was generated */
+  ragGeneratedAt: timestamp("ragGeneratedAt"),
+  /** Word count of the RAG file */
+  ragWordCount: int("ragWordCount"),
+  /** LLM model used for the final synthesis call */
+  ragModel: varchar("ragModel", { length: 128 }),
+  /** LLM vendor used for the final synthesis call */
+  ragVendor: varchar("ragVendor", { length: 64 }),
+  /** Number of content items included in this RAG generation */
+  contentItemCount: int("contentItemCount").notNull().default(0),
+  /** Bio completeness score at the time of RAG generation (0–100) */
+  bioCompletenessAtGeneration: int("bioCompletenessAtGeneration"),
+  /** Pipeline status */
+  ragStatus: mysqlEnum("ragStatus", ["pending", "generating", "ready", "stale"]).notNull().default("pending"),
+  /** Error message if the last generation failed */
+  ragError: text("ragError"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  authorNameIdx: index("author_rag_profiles_authorName_idx").on(table.authorName),
+  ragStatusIdx: index("author_rag_profiles_ragStatus_idx").on(table.ragStatus),
+}));
+
+export type AuthorRagProfile = typeof authorRagProfiles.$inferSelect;
+export type InsertAuthorRagProfile = typeof authorRagProfiles.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UNIVERSAL CONTENT MODEL
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * content_items — universal content model for all content types.
+ * Replaces the book-only model; books are migrated here as contentType='book'.
+ * Every intellectual or creative output by any author is a row in this table.
+ */
+export const contentItems = mysqlTable("content_items", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Content type discriminator */
+  contentType: mysqlEnum("contentType", [
+    "book", "paper", "article", "substack", "newsletter",
+    "podcast", "podcast_episode", "youtube_video", "youtube_channel",
+    "ted_talk", "masterclass", "online_course", "tv_show", "tv_episode",
+    "film", "radio", "photography", "social_post", "speech", "interview",
+    "blog_post", "website", "tool", "other"
+  ]).notNull(),
+  /** Display title */
+  title: varchar("title", { length: 512 }).notNull(),
+  /** Optional subtitle or episode title */
+  subtitle: varchar("subtitle", { length: 512 }),
+  /** 2–3 sentence summary */
+  description: text("description"),
+  /**
+   * Full LLM-enriched description.
+   * Shape: { fullSummary, keyInsights: string[], notableQuotes: string[], themes: string[], enrichedAt, model }
+   */
+  richDescriptionJson: text("richDescriptionJson"),
+  /** Primary URL (Amazon page, podcast feed, YouTube link, etc.) */
+  url: varchar("url", { length: 1024 }),
+  /** Thumbnail or cover image URL */
+  coverImageUrl: varchar("coverImageUrl", { length: 1024 }),
+  /** S3-mirrored cover URL */
+  s3CoverUrl: varchar("s3CoverUrl", { length: 1024 }),
+  /** S3 key for the mirrored cover */
+  s3CoverKey: varchar("s3CoverKey", { length: 512 }),
+  /** Publication / release date */
+  publishedDate: varchar("publishedDate", { length: 64 }),
+  /** JSON string array of tags */
+  tagsJson: text("tagsJson"),
+  /** Average rating (0.0–5.0) */
+  rating: decimal("rating", { precision: 3, scale: 1 }),
+  /** Number of ratings */
+  ratingCount: int("ratingCount"),
+  /** ISO 639-1 language code */
+  language: varchar("language", { length: 8 }),
+  /**
+   * Type-specific metadata stored as JSON.
+   * book: { isbn, publisher, amazonUrl, goodreadsUrl, keyThemes }
+   * paper: { doi, journal, institution, pdfUrl, citationCount }
+   * podcast: { feedUrl, spotifyUrl, appleUrl, episodeCount }
+   * youtube_video: { channelId, videoId, viewCount, likeCount }
+   * etc.
+   */
+  metadataJson: text("metadataJson"),
+  /** Whether this item is included in the library (shown in UI, synced to Dropbox) */
+  includedInLibrary: int("includedInLibrary").notNull().default(1),
+  /** Google Drive folder ID (if backed by Drive) */
+  driveFolderId: varchar("driveFolderId", { length: 128 }),
+  /** Personal reading/consumption notes from Notion */
+  readingNotesJson: text("readingNotesJson"),
+  /** When the record was last enriched */
+  enrichedAt: timestamp("enrichedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  contentTypeIdx: index("content_items_contentType_idx").on(table.contentType),
+  titleIdx: index("content_items_title_idx").on(table.title),
+  includedIdx: index("content_items_included_idx").on(table.includedInLibrary),
+}));
+
+export type ContentItem = typeof contentItems.$inferSelect;
+export type InsertContentItem = typeof contentItems.$inferInsert;
+
+/**
+ * author_content_links — M:M join table between authors and content items.
+ * An author can have multiple content items; a content item can have multiple authors.
+ */
+export const authorContentLinks = mysqlTable("author_content_links", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key → author_profiles.authorName */
+  authorName: varchar("authorName", { length: 256 }).notNull(),
+  /** Foreign key → content_items.id */
+  contentItemId: int("contentItemId").notNull(),
+  /** Author's role on this content item */
+  role: mysqlEnum("role", ["primary", "co-author", "editor", "contributor", "foreword", "narrator"]).notNull().default("primary"),
+  /** Display order when listing authors for a content item */
+  displayOrder: int("displayOrder").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  authorIdx: index("author_content_links_authorName_idx").on(table.authorName),
+  contentIdx: index("author_content_links_contentItemId_idx").on(table.contentItemId),
+  uniqueLink: index("author_content_links_unique_idx").on(table.authorName, table.contentItemId),
+}));
+
+export type AuthorContentLink = typeof authorContentLinks.$inferSelect;
+export type InsertAuthorContentLink = typeof authorContentLinks.$inferInsert;
+
+/**
+ * content_files — tracks S3-stored files for each content item.
+ * One content item can have multiple files (e.g., PDF + MP3 audio).
+ */
+export const contentFiles = mysqlTable("content_files", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key → content_items.id */
+  contentItemId: int("contentItemId").notNull(),
+  /** S3 object key */
+  s3Key: varchar("s3Key", { length: 512 }).notNull().unique(),
+  /** CloudFront CDN URL */
+  s3Url: varchar("s3Url", { length: 1024 }).notNull(),
+  /** Original filename before slug normalization */
+  originalFilename: varchar("originalFilename", { length: 512 }),
+  /** Clean slug filename used in Dropbox/Drive mirror */
+  cleanFilename: varchar("cleanFilename", { length: 512 }),
+  /** MIME type */
+  mimeType: varchar("mimeType", { length: 128 }),
+  /** File size in bytes */
+  fileSizeBytes: int("fileSizeBytes"),
+  /** MD5 checksum for deduplication */
+  md5Checksum: varchar("md5Checksum", { length: 32 }),
+  /** File type category */
+  fileType: mysqlEnum("fileType", ["pdf", "mp3", "mp4", "epub", "doc", "transcript", "image", "json", "other"]).notNull().default("pdf"),
+  /** Dropbox path where this file was last mirrored */
+  dropboxPath: varchar("dropboxPath", { length: 1024 }),
+  /** When this file was last mirrored to Dropbox */
+  dropboxSyncedAt: timestamp("dropboxSyncedAt"),
+  /** Google Drive file ID where this file was last mirrored */
+  driveFileId: varchar("driveFileId", { length: 128 }),
+  /** When this file was last mirrored to Google Drive */
+  driveSyncedAt: timestamp("driveSyncedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  contentItemIdx: index("content_files_contentItemId_idx").on(table.contentItemId),
+  fileTypeIdx: index("content_files_fileType_idx").on(table.fileType),
+}));
+
+export type ContentFile = typeof contentFiles.$inferSelect;
+export type InsertContentFile = typeof contentFiles.$inferInsert;
+
+/**
+ * ingest_sources — tracks where each content item originated.
+ * Enables traceability from S3 file back to its original source.
+ */
+export const ingestSources = mysqlTable("ingest_sources", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key → content_items.id */
+  contentItemId: int("contentItemId").notNull(),
+  /** Source type */
+  sourceType: mysqlEnum("sourceType", [
+    "dropbox", "google_drive", "manual_upload", "scrape",
+    "api", "dropbox_mirror", "drive_mirror"
+  ]).notNull(),
+  /** Source path or URL (e.g., Dropbox path, Drive folder ID, scrape URL) */
+  sourcePath: varchar("sourcePath", { length: 1024 }),
+  /** When this source was last synced */
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  contentItemIdx: index("ingest_sources_contentItemId_idx").on(table.contentItemId),
+}));
+
+export type IngestSource = typeof ingestSources.$inferSelect;
+export type InsertIngestSource = typeof ingestSources.$inferInsert;
+
+/**
+ * author_subscriptions — periodic refresh subscriptions per author per platform.
+ * Enables the system to monitor for new content (new YouTube videos, Substack posts, etc.)
+ */
+export const authorSubscriptions = mysqlTable("author_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key → author_profiles.authorName */
+  authorName: varchar("authorName", { length: 256 }).notNull(),
+  /** Platform being monitored */
+  platform: mysqlEnum("platform", [
+    "youtube", "substack", "podcast", "medium", "newsletter",
+    "google_books", "amazon", "twitter", "linkedin"
+  ]).notNull(),
+  /** Platform-specific identifier (channel ID, feed URL, etc.) */
+  platformId: varchar("platformId", { length: 512 }),
+  /** Feed URL for polling */
+  feedUrl: varchar("feedUrl", { length: 1024 }),
+  /** Whether this subscription is active */
+  enabled: int("enabled").notNull().default(1),
+  /** Polling interval in hours */
+  intervalHours: int("intervalHours").notNull().default(24),
+  /** When this subscription was last polled */
+  lastPolledAt: timestamp("lastPolledAt"),
+  /** When new content was last found */
+  lastNewContentAt: timestamp("lastNewContentAt"),
+  /** Number of new items found in the last poll */
+  lastPollNewCount: int("lastPollNewCount").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  authorPlatformIdx: index("author_subscriptions_author_platform_idx").on(table.authorName, table.platform),
+}));
+
+export type AuthorSubscription = typeof authorSubscriptions.$inferSelect;
+export type InsertAuthorSubscription = typeof authorSubscriptions.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// S3-TO-DROPBOX/DRIVE SYNC
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * sync_jobs — tracks each S3-to-Dropbox/Drive sync run.
+ */
+export const syncJobs = mysqlTable("sync_jobs", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Target platform */
+  target: mysqlEnum("target", ["dropbox", "google_drive", "both"]).notNull(),
+  /** Job status */
+  status: mysqlEnum("status", ["pending", "running", "completed", "failed", "cancelled"]).notNull().default("pending"),
+  /** How the job was triggered */
+  triggeredBy: mysqlEnum("triggeredBy", ["manual", "schedule", "api"]).notNull().default("manual"),
+  /** Scope: 'all' or comma-separated author names */
+  scope: varchar("scope", { length: 1024 }).notNull().default("all"),
+  /** Total files to sync */
+  totalFiles: int("totalFiles").notNull().default(0),
+  /** Files successfully synced */
+  syncedFiles: int("syncedFiles").notNull().default(0),
+  /** Files skipped (already current) */
+  skippedFiles: int("skippedFiles").notNull().default(0),
+  /** Files that failed */
+  failedFiles: int("failedFiles").notNull().default(0),
+  /** Total bytes transferred */
+  bytesTransferred: int("bytesTransferred").notNull().default(0),
+  /** Human-readable status message */
+  message: text("message"),
+  /** Error details */
+  error: text("error"),
+  /** JSON array of per-file results: [{s3Key, targetPath, status, error?, bytes}] */
+  fileResultsJson: text("fileResultsJson"),
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  statusIdx: index("sync_jobs_status_idx").on(table.status),
+  targetIdx: index("sync_jobs_target_idx").on(table.target),
+}));
+
+export type SyncJob = typeof syncJobs.$inferSelect;
+export type InsertSyncJob = typeof syncJobs.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER INTEREST GRAPH & RAG CONTRAST ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * user_interests — the user's personal interest/topic graph.
+ * Each row is a subject, theme, or topic the user is currently focused on.
+ * These are cross-referenced against author RAG files to produce alignment scores.
+ */
+export const userInterests = mysqlTable("user_interests", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Owner's Manus openId */
+  userId: varchar("userId", { length: 64 }).notNull(),
+  /** The interest topic name, e.g. "Behavioral Change", "Leadership", "Neuroscience" */
+  topic: varchar("topic", { length: 256 }).notNull(),
+  /** Optional longer description of what this interest means to the user */
+  description: text("description"),
+  /** Grouping cluster, e.g. "Leadership", "Science", "Business Strategy" */
+  category: varchar("category", { length: 128 }),
+  /** Priority weight: low | medium | high | critical */
+  weight: mysqlEnum("weight", ["low", "medium", "high", "critical"]).notNull().default("medium"),
+  /** Hex color for UI display, e.g. "#3B82F6" */
+  color: varchar("color", { length: 7 }).default("#6366F1"),
+  /** Display order within category (for drag-to-reorder) */
+  displayOrder: int("displayOrder").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_interests_userId_idx").on(table.userId),
+  userCategoryIdx: index("user_interests_userId_category_idx").on(table.userId, table.category),
+}));
+
+export type UserInterest = typeof userInterests.$inferSelect;
+export type InsertUserInterest = typeof userInterests.$inferInsert;
+
+/**
+ * author_interest_scores — alignment scores between authors and user interests.
+ * Computed by the RAG Contrast Engine: LLM scores each author's RAG file
+ * against each user interest on a 0–10 scale with a one-sentence rationale.
+ */
+export const authorInterestScores = mysqlTable("author_interest_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Foreign key → author_profiles.authorName */
+  authorName: varchar("authorName", { length: 256 }).notNull(),
+  /** Foreign key → user_interests.id */
+  interestId: int("interestId").notNull(),
+  /** Owner's Manus openId (denormalized for fast per-user queries) */
+  userId: varchar("userId", { length: 64 }).notNull(),
+  /** Alignment score 0–10 */
+  score: int("score").notNull(),
+  /** One-sentence rationale explaining the score */
+  rationale: text("rationale"),
+  /** LLM model used to compute the score */
+  modelUsed: varchar("modelUsed", { length: 128 }),
+  /** When the score was computed */
+  computedAt: timestamp("computedAt").defaultNow().notNull(),
+  /** RAG file version used for scoring */
+  ragVersion: int("ragVersion"),
+}, (table) => ({
+  authorInterestIdx: index("author_interest_scores_author_interest_idx").on(table.authorName, table.interestId),
+  userIdx: index("author_interest_scores_userId_idx").on(table.userId),
+  scoreIdx: index("author_interest_scores_score_idx").on(table.score),
+}));
+
+export type AuthorInterestScore = typeof authorInterestScores.$inferSelect;
+export type InsertAuthorInterestScore = typeof authorInterestScores.$inferInsert;

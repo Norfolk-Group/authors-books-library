@@ -40,6 +40,8 @@ import {
   Mic,
   Mail,
   Presentation,
+  Brain,
+  MessageSquare,
 } from "lucide-react";
 import { AUTHORS, CATEGORY_COLORS } from "@/lib/libraryData";
 import { canonicalName } from "@/lib/authorAliases";
@@ -98,6 +100,45 @@ function ProfessionalEntryCard({ entry }: { entry: ProfessionalEntry }) {
           <p className="text-xs text-muted-foreground leading-relaxed mt-1">{entry.description}</p>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Digital Me Chat Button ──────────────────────────────────────────────────────
+function DigitalMeChatButton({ authorName }: { authorName: string }) {
+  const [, navigate] = useLocation();
+  const { data: ragInfo } = trpc.ragPipeline.getStatus.useQuery(
+    { authorName },
+    { staleTime: 60_000 }
+  );
+
+  const isReady = ragInfo?.ragStatus === "ready";
+  const slug = encodeURIComponent(authorName);
+
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => navigate(`/chat/${slug}`)}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+          isReady
+            ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+            : "bg-muted text-muted-foreground hover:bg-muted/80"
+        }`}
+      >
+        <MessageSquare className="w-3.5 h-3.5" />
+        Chat with {authorName.split(" ")[0]}
+      </button>
+      {isReady && (
+        <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+          <Brain className="w-3 h-3" />
+          Digital Me Active
+        </span>
+      )}
+      {!isReady && ragInfo && (
+        <span className="text-[10px] text-muted-foreground">
+          Digital Me not generated
+        </span>
+      )}
     </div>
   );
 }
@@ -465,6 +506,10 @@ export default function AuthorDetail() {
                 Open in Google Drive
               </a>
             )}
+            {/* ── Digital Me Chat Button ── */}
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              <DigitalMeChatButton authorName={displayName} />
+            </div>
           </div>
         </section>
 

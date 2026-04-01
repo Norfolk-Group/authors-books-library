@@ -2136,3 +2136,118 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 ### Documentation
 - [ ] Update claude.md with validator architecture and guardrail entry points
+
+## Session Apr 1, 2026 — Platform Redesign (New Requirements)
+
+### S3-to-Dropbox/Drive One-Way Sync
+- [ ] Design sync engine: S3 → Dropbox with author-based folder structure (NCG Knowledge Library/{Author}/{ContentType}/{Title}/)
+- [ ] Build `syncJobs` table: tracks sync runs, files synced, skipped, errors
+- [ ] Build Dropbox OAuth token refresh flow (server-side)
+- [ ] Implement stream-based S3 → Dropbox transfer (no memory buffering for large audio)
+- [ ] Add `_metadata.json` sidecar per book folder (title, authors, ISBN, rating, summary, S3 URL)
+- [ ] Build Admin → Sync Manager panel: status, Sync Now, schedule toggle, scope selector, Clean Up Mirrors
+- [ ] Add Google Drive sync as secondary option (rclone / gws CLI)
+- [ ] Write vitest tests for sync engine
+
+### Aggressive Author Biographical Research
+- [ ] Build `authorBioResearch.ts` — 8-source waterfall: Wikipedia → Wikidata → Perplexity → Tavily → Google Knowledge Graph → LinkedIn scrape → Amazon author page → LLM synthesis
+- [ ] Extract: full name, birth date/place, education, career timeline, awards, nationality, languages spoken, family background, physical description, personality traits, known ideologies, causes championed, political/religious leanings (if public), favorite subjects, intellectual influences, notable controversies
+- [ ] Store all raw source responses in `authorBioSourcesJson` column for auditability
+- [ ] Build `bioCompleteness` score (0–100) based on populated fields
+- [ ] Add "Deep Research" button on author modal — triggers full 8-source pipeline
+- [ ] Add "Bio Completeness" badge on author cards (color-coded: red <40, amber 40–70, green >70)
+- [ ] Batch "Research All Authors" action in Admin Console
+
+### Digital Author RAG Pipeline
+- [ ] Design `author_rag_profiles` table: ragFileUrl (S3), ragFileKey, ragVersion, ragGeneratedAt, ragWordCount, ragModel, ragStatus (pending/generating/ready/stale)
+- [ ] Build RAG synthesis pipeline: N+1 LLM calls — one per content item chunk + one final synthesis call
+- [ ] RAG file sections: Identity & Biography, Voice & Writing Style, Core Ideology & Worldview, Favorite Subjects & Themes, Personality & Behavioral Traits, Physical Presence & Brand, Causes & Advocacy, Intellectual Influences, Signature Phrases & Rhetorical Patterns, Content Catalog Summary
+- [ ] Store RAG file as structured Markdown in S3 (human-readable + machine-parseable)
+- [ ] Add `ragStatus` indicator on author cards (gray=none, amber=generating, green=ready)
+- [ ] Build "Generate Digital Me" button on author detail page
+- [ ] Build "Regenerate" button (triggered when new content is added or bio is updated)
+- [ ] Batch "Generate All RAG Files" action in Admin Console with progress bar
+- [ ] Write vitest tests for RAG pipeline
+
+### Author Impersonation Chatbot
+- [ ] Build `AuthorChatbot.tsx` page — full-screen chat UI, author avatar in header, "Speaking as {Author Name}" badge
+- [ ] Wire chatbot to RAG file via system prompt injection (RAG file loaded as context)
+- [ ] Add "Chat with {Author}" button on every author card and author detail page
+- [ ] Support multi-turn conversation with conversation history
+- [ ] Add "Reset conversation" button
+- [ ] Show disclaimer: "This is an AI simulation based on {Author}'s published works"
+- [ ] Write vitest tests for chatbot router
+
+### Schema Migration (prerequisite for all above)
+- [ ] Add `author_rag_profiles` table to drizzle/schema.ts
+- [ ] Add `content_items` table (universal content model)
+- [ ] Add `author_content_links` join table (M:M authors ↔ content)
+- [ ] Add `content_files` table (S3 file tracking per content item)
+- [ ] Add `ingest_sources` table (tracks where content came from)
+- [ ] Add `author_subscriptions` table (periodic refresh subscriptions)
+- [ ] Add `syncJobs` table (Dropbox/Drive sync tracking)
+- [ ] Run pnpm db:push and verify migration
+
+### Author Contextual Intelligence (feeds Digital Me personality)
+- [ ] **Geography layer**: birthplace, childhood city, formative cities lived in, current base, countries visited/lived in, cultural regions of influence — sourced from Wikipedia, Wikidata P19/P20/P551, Perplexity
+- [ ] **Historical/era context**: decade born, major world events during formative years (wars, movements, recessions, tech shifts), cultural era they grew up in — used by LLM to explain worldview anchors
+- [ ] **Family & upbringing**: parents' professions, socioeconomic background, siblings, spouse/partner, children, family nationality/religion — sourced from Wikipedia, Perplexity, author's own books/interviews
+- [ ] **Associations & networks**: mentors, proteges, frequent collaborators, intellectual rivals, organizations belonged to (YPO, WEF, TED, Aspen Ideas, etc.), universities attended, fraternities/sororities, religious affiliations, political party (if public)
+- [ ] **Intellectual lineage**: who they cite most, whose ideas they built on, which schools of thought they belong to (e.g., behavioral economics, stoicism, positive psychology), academic advisors
+- [ ] **Formative experiences**: known traumas, pivotal career moments, near-death or transformative experiences mentioned in interviews/books — sourced from Perplexity + book content analysis
+- [ ] Store all contextual layers in `authorContextJson` column (structured JSON with source citations per field)
+- [ ] Feed all contextual layers into RAG file under "Formative Context" section
+- [ ] RAG synthesis prompt must explicitly instruct LLM to use geographic/historical/family context to shape tone, references, and worldview of the Digital Me persona
+
+### User Interest Graph & RAG Contrast Engine
+- [ ] **`user_interests` table**: id, userId, topic (text), description (optional), weight (1–5 priority), color (for UI), createdAt, updatedAt
+- [ ] **Admin → My Interests panel**: full CRUD UI — add interest with name + optional description + priority weight, edit inline, delete with confirmation, drag-to-reorder by priority
+- [ ] **Interest categories**: allow grouping interests into clusters (e.g., "Leadership", "Neuroscience", "Business Strategy") — stored as `category` field on interest record
+- [ ] **RAG Contrast Engine** (`server/lib/ragContrast.ts`):
+  - For each author with a ready RAG file, run an LLM call: "Given these user interests: [{list}], score this author's alignment on each interest from 0–10 and explain why in one sentence per interest"
+  - Store results in `author_interest_scores` table: authorId, interestId, score (0–10), rationale (text), computedAt
+  - Re-compute scores automatically when: (a) a new interest is added/edited, (b) an author's RAG file is regenerated
+- [ ] **Interest Alignment view on Author cards**: show top 2–3 matching interests as colored pills with score bars
+- [ ] **Author Discovery by Interest**: in sidebar/filter, allow filtering authors by interest alignment (e.g., "Show authors scoring >7 on Leadership")
+- [ ] **Interest Heatmap in Admin**: matrix view — rows = authors, columns = interests, cells = color-coded score (red=low, green=high) — sortable by column
+- [ ] **Group contrast**: select 2–5 authors and compare their RAG files against a chosen interest — LLM produces a comparative analysis ("How do Adam Grant and Carol Dweck each approach Growth Mindset?")
+- [ ] **Interest-to-Content mapping**: for each interest, surface the top 5 most relevant books/articles/podcasts across all authors (LLM semantic search over RAG files)
+- [ ] **"Why this author?" explainer**: on author card, a button that generates a 3-sentence explanation of why this author is relevant to the user's current interests
+- [ ] Write vitest tests for interest CRUD and contrast scoring
+
+### LLM Model Configuration
+- [ ] Use Claude Opus (claude-opus-4-5 or latest available) as default model for all complex synthesis tasks: contextual intelligence enrichment, Digital Me RAG generation, RAG contrast scoring, group author comparisons
+- [ ] Wire `ANTHROPIC_API_KEY` into all pipeline entry points; use `claude-opus-4-5` model string
+- [ ] Keep Gemini 2.5 Pro as secondary/fallback model where Anthropic is unavailable
+- [ ] Update Admin AI Model config to seed Claude Opus as primary, Gemini 2.5 Pro as secondary
+
+## Session Apr 1, 2026 — Digital Me RAG Pipeline & Intelligence Features
+
+### Completed this session
+- [x] Schema migration: added 9 new tables (author_rag_profiles, content_items, author_content_links, content_files, ingest_sources, author_subscriptions, sync_jobs, user_interests, author_interest_scores) + new columns on author_profiles (geographyJson, historicalContextJson, familyJson, associationsJson, formativeExperiencesJson, authorBioSourcesJson, bioCompleteness)
+- [x] Contextual intelligence enrichment module (server/enrichment/contextualIntelligence.ts): 8-source waterfall for geography, history, family, associations, intellectual lineage
+- [x] Contextual intelligence tRPC router wired into main app router
+- [x] Digital Me RAG pipeline router (ragPipeline.router.ts): N+1 LLM synthesis using Claude Opus, S3 storage, versioning, status tracking
+- [x] User interests router (userInterests.router.ts): full CRUD + RAG contrast engine using Claude Opus
+- [x] Author chatbot router (authorChatbot.router.ts): impersonation chat powered by RAG file system prompt
+- [x] Sync Jobs router (syncJobs.router.ts): S3-to-Dropbox + S3-to-Google-Drive one-way sync with author folder structure
+- [x] DigitalMeTab admin component: RAG pipeline controls, per-author status table, batch generation
+- [x] MyInterestsTab admin component: interest CRUD, category management, weight sliders, RAG contrast scoring
+- [x] SyncJobsTab admin component: job trigger form, live job history table, cancel controls
+- [x] AuthorChatbot page (/chat/:slug): full-screen impersonation chat UI with RAG-powered responses
+- [x] Chat button on AuthorDetail page with Digital Me status badge (Brain icon when active)
+- [x] Admin.tsx: added Sync, Digital Me, My Interests tabs
+- [x] App.tsx: added /chat/:slug route
+- [x] 477 vitest tests passing (32 test files) — all new procedures covered in digitalMe.test.ts
+- [x] Claude Opus (claude-opus-4-5) wired as primary model for all complex synthesis tasks
+- [x] Push to GitHub and save checkpoint
+
+### Pending (next session)
+- [ ] Wire Dropbox credentials via Admin → Settings (DROPBOX_ACCESS_TOKEN)
+- [ ] Wire Google Drive credentials via Admin → Settings (GOOGLE_DRIVE_PARENT_FOLDER_ID)
+- [ ] Interest alignment pills on author cards (show top 2–3 matching interests with score bars)
+- [ ] Author Discovery by Interest: sidebar filter by interest alignment score
+- [ ] Interest Heatmap in Admin: matrix view (authors × interests, color-coded scores)
+- [ ] Group contrast: compare 2–5 authors against a chosen interest
+- [ ] "Why this author?" explainer button on author cards
+- [ ] Aggressive biographical research: newspaper archives, oral histories, podcast transcripts

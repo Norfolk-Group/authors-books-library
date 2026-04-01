@@ -57,6 +57,7 @@ import {
   FileText,
   Zap,
   Globe,
+  Cloud,
   BarChart2,
   type LucideIcon,
   Heart,
@@ -76,6 +77,9 @@ import { SchedulingTab } from "@/components/admin/SchedulingTab";
 import { FavoritesTab } from "@/components/admin/FavoritesTab";
 import { ToolHealthCheckTab } from "@/components/admin/ToolHealthCheckTab";
 import { DependenciesTab } from "@/components/admin/DependenciesTab";
+import { DigitalMeTab } from "@/components/admin/DigitalMeTab";
+import { MyInterestsTab } from "@/components/admin/MyInterestsTab";
+import { SyncJobsTab } from "@/components/admin/SyncJobsTab";
 
 // -- Types ------------------------------------------------------
 type ActionStatus = "idle" | "running" | "done" | "error";
@@ -1086,6 +1090,21 @@ export default function Admin() {
               <Activity className="w-3.5 h-3.5" />
               <span>Health</span>
             </TabsTrigger>
+            <TabsTrigger value="sync" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
+              <Cloud className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sync</span>
+              <span className="sm:hidden">Sync</span>
+            </TabsTrigger>
+            <TabsTrigger value="digital-me" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
+              <BrainCircuit className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Digital Me</span>
+              <span className="sm:hidden">AI</span>
+            </TabsTrigger>
+            <TabsTrigger value="interests" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
+              <Heart className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">My Interests</span>
+              <span className="sm:hidden">Interests</span>
+            </TabsTrigger>
             <TabsTrigger value="about" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
               <Info className="w-3.5 h-3.5" />
               <span>About</span>
@@ -1480,6 +1499,18 @@ export default function Admin() {
           {/* -- Tab: Health -- */}
           <TabsContent value="health">
             <ToolHealthCheckTab />
+          </TabsContent>
+          {/* -- Tab: Sync Jobs -- */}
+          <TabsContent value="sync">
+            <SyncJobsTab />
+          </TabsContent>
+          {/* -- Tab: Digital Me -- */}
+          <TabsContent value="digital-me">
+            <DigitalMeTab />
+          </TabsContent>
+          {/* -- Tab: My Interests -- */}
+          <TabsContent value="interests">
+            <MyInterestsTab />
           </TabsContent>
           {/* -- Tab 6: About -- */}
           <TabsContent value="about">

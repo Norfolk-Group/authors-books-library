@@ -18,6 +18,11 @@ import { adminRouter } from "./admin.router";
 import { favoritesRouter } from "./favorites.router";
 import { schedulingRouter } from "./scheduling.router";
 import { healthCheckRouter } from "./healthCheck.router";
+import { contextualIntelligenceRouter } from "./contextualIntelligence.router";
+import { ragPipelineRouter } from "./ragPipeline.router";
+import { userInterestsRouter } from "./userInterests.router";
+import { authorChatbotRouter } from "./authorChatbot.router";
+import { syncJobsRouter } from "./syncJobs.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -41,6 +46,12 @@ export const appRouter = router({
   favorites: favoritesRouter,
   scheduling: schedulingRouter,
   healthCheck: healthCheckRouter,
+  // ── New intelligence features ──────────────────────────────────────────────
+  contextualIntelligence: contextualIntelligenceRouter,
+  ragPipeline: ragPipelineRouter,
+  userInterests: userInterestsRouter,
+  authorChatbot: authorChatbotRouter,
+  syncJobs: syncJobsRouter,
 });
 
 export type AppRouter = typeof appRouter;
