@@ -12,6 +12,8 @@ const AuthorCompare = lazy(() => import("./pages/AuthorCompare"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const BookDetail = lazy(() => import("./pages/BookDetail"));
 const AuthorChatbot = lazy(() => import("./pages/AuthorChatbot"));
+const InterestHeatmap = lazy(() => import("./pages/InterestHeatmap"));
+const GroupContrast = lazy(() => import("./pages/GroupContrast"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-screen text-muted-foreground">
@@ -49,6 +51,16 @@ function Router() {
       <Route path={"/chat/:slug"}>
         <Suspense fallback={<PageLoader />}>
           <AuthorChatbot />
+        </Suspense>
+      </Route>
+      <Route path={"/interests/heatmap"}>
+        <Suspense fallback={<PageLoader />}>
+          <InterestHeatmap />
+        </Suspense>
+      </Route>
+      <Route path={"/interests/contrast"}>
+        <Suspense fallback={<PageLoader />}>
+          <GroupContrast />
         </Suspense>
       </Route>
       <Route path={"/admin"}>

@@ -80,6 +80,7 @@ import { DependenciesTab } from "@/components/admin/DependenciesTab";
 import { DigitalMeTab } from "@/components/admin/DigitalMeTab";
 import { MyInterestsTab } from "@/components/admin/MyInterestsTab";
 import { SyncJobsTab } from "@/components/admin/SyncJobsTab";
+import { AIModelConfigTab } from "@/components/admin/AIModelConfigTab";
 
 // -- Types ------------------------------------------------------
 type ActionStatus = "idle" | "running" | "done" | "error";
@@ -1105,6 +1106,11 @@ export default function Admin() {
               <span className="hidden sm:inline">My Interests</span>
               <span className="sm:hidden">Interests</span>
             </TabsTrigger>
+            <TabsTrigger value="ai-models" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
+              <BrainCircuit className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">AI Models</span>
+              <span className="sm:hidden">Models</span>
+            </TabsTrigger>
             <TabsTrigger value="about" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
               <Info className="w-3.5 h-3.5" />
               <span>About</span>
@@ -1511,6 +1517,10 @@ export default function Admin() {
           {/* -- Tab: My Interests -- */}
           <TabsContent value="interests">
             <MyInterestsTab />
+          </TabsContent>
+          {/* -- Tab: AI Models -- */}
+          <TabsContent value="ai-models">
+            <AIModelConfigTab />
           </TabsContent>
           {/* -- Tab 6: About -- */}
           <TabsContent value="about">

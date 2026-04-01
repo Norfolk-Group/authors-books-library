@@ -65,11 +65,28 @@ export function SyncJobsTab() {
   const [triggering, setTriggering] = useState(false);
 
   const { data: jobs = [], refetch: refetchJobs } = trpc.syncJobs.listJobs.useQuery({ limit: 30 });
+  const { data: dropboxStatus, refetch: refetchDropboxStatus } = trpc.syncJobs.getDropboxStatus.useQuery(undefined, { refetchInterval: 10000 });
   const triggerMutation = trpc.syncJobs.triggerSync.useMutation();
   const cancelMutation = trpc.syncJobs.cancelJob.useMutation();
 
-  const hasDropbox = !!import.meta.env.VITE_HAS_DROPBOX;
   const hasDrive = !!import.meta.env.VITE_HAS_DRIVE;
+
+  async function handleConnectDropbox() {
+    // Open the OAuth flow in a new tab; the callback will redirect back to /admin?tab=sync
+    window.open("/api/dropbox/connect", "_blank", "width=600,height=700");
+    // Poll for connection status after a short delay
+    setTimeout(() => refetchDropboxStatus(), 3000);
+  }
+
+  async function handleDisconnectDropbox() {
+    try {
+      await fetch("/api/dropbox/disconnect", { method: "POST" });
+      await refetchDropboxStatus();
+      toast.success("Dropbox disconnected");
+    } catch (err) {
+      toast.error(`Disconnect failed: ${String(err)}`);
+    }
+  }
 
   function toggleContentType(ct: ContentType) {
     setContentTypes((prev) =>
@@ -109,15 +126,69 @@ export function SyncJobsTab() {
 
   return (
     <div className="space-y-4">
-      {/* Credential status */}
+      {/* Dropbox connection status */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Cloud className="w-4 h-4" />
+            Dropbox Connection
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Connect Dropbox once — the app uses OAuth 2 refresh tokens for permanent, non-expiring access.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dropboxStatus?.connected ? (
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm font-medium text-emerald-700">Connected</span>
+                  {dropboxStatus.hasRefreshToken && (
+                    <Badge className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200">Permanent Token</Badge>
+                  )}
+                  {!dropboxStatus.hasRefreshToken && dropboxStatus.hasStaticToken && (
+                    <Badge className="text-xs bg-orange-100 text-orange-700 border-orange-200">Static Token (expires)</Badge>
+                  )}
+                </div>
+                {dropboxStatus.accountEmail && (
+                  <p className="text-xs text-muted-foreground ml-6">{dropboxStatus.accountEmail}</p>
+                )}
+                {dropboxStatus.connectedAt && (
+                  <p className="text-xs text-muted-foreground ml-6">Connected {new Date(dropboxStatus.connectedAt).toLocaleDateString()}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {!dropboxStatus.hasRefreshToken && (
+                  <Button size="sm" variant="outline" onClick={handleConnectDropbox} className="text-xs h-7">
+                    Upgrade to Permanent
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" onClick={handleDisconnectDropbox} className="text-xs h-7 text-red-600 hover:text-red-700">
+                  Disconnect
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-orange-500" />
+                <span className="text-sm text-muted-foreground">Not connected</span>
+              </div>
+              <Button size="sm" onClick={handleConnectDropbox} className="text-xs h-7 gap-1.5">
+                <Cloud className="w-3.5 h-3.5" />
+                Connect Dropbox
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Google Drive status */}
       <div className="flex gap-2 flex-wrap">
-        <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${hasDropbox ? "border-emerald-300 text-emerald-700 bg-emerald-50" : "border-orange-300 text-orange-700 bg-orange-50"}`}>
-          <Cloud className="w-3 h-3" />
-          Dropbox: {hasDropbox ? "Connected" : "Token not set"}
-        </div>
         <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${hasDrive ? "border-emerald-300 text-emerald-700 bg-emerald-50" : "border-orange-300 text-orange-700 bg-orange-50"}`}>
           <FolderOpen className="w-3 h-3" />
-          Google Drive: {hasDrive ? "Connected" : "Credentials not set"}
+          Google Drive: {hasDrive ? "Folder ID configured" : "GOOGLE_DRIVE_PARENT_FOLDER_ID not set"}
         </div>
       </div>
 

@@ -23,6 +23,7 @@ import { ragPipelineRouter } from "./ragPipeline.router";
 import { userInterestsRouter } from "./userInterests.router";
 import { authorChatbotRouter } from "./authorChatbot.router";
 import { syncJobsRouter } from "./syncJobs.router";
+import { appSettingsRouter } from "./appSettings.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -52,6 +53,7 @@ export const appRouter = router({
   userInterests: userInterestsRouter,
   authorChatbot: authorChatbotRouter,
   syncJobs: syncJobsRouter,
+  appSettings: appSettingsRouter,
 });
 
 export type AppRouter = typeof appRouter;

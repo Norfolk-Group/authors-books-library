@@ -40,6 +40,8 @@ import { AuthorModal } from "@/components/AuthorModal";
 import { AuthorCardActions } from "@/components/AuthorCardActions";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { PlatformPills } from "@/components/library/PlatformPills";
+import { InterestAlignmentPills } from "@/components/library/InterestAlignmentPills";
+import { WhyThisAuthor } from "@/components/library/WhyThisAuthor";
 import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "@/components/library/FreshnessDot";
 import {
   ICON_MAP,
@@ -478,6 +480,14 @@ export function FlowbiteAuthorCard({
                 <PlatformPills links={platformLinks} maxVisible={8} size="sm" />
               </div>
             )}
+            {/* Interest alignment pills — shown when user has scored this author */}
+            <div className="px-1" onClick={(e) => e.stopPropagation()}>
+              <InterestAlignmentPills authorName={displayName} maxPills={3} />
+            </div>
+            {/* Why this author? explainer */}
+            <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+              <WhyThisAuthor authorName={displayName} />
+            </div>
             {/* Discreet link — View Full Profile */}
             <div className="flex justify-center mt-1" onClick={(e) => e.stopPropagation()}>
               <Link

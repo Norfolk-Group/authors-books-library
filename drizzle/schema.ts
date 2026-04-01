@@ -930,3 +930,16 @@ export const authorInterestScores = mysqlTable("author_interest_scores", {
 
 export type AuthorInterestScore = typeof authorInterestScores.$inferSelect;
 export type InsertAuthorInterestScore = typeof authorInterestScores.$inferInsert;
+
+// ── App Settings ─────────────────────────────────────────────────────────────
+/**
+ * Generic key-value store for application settings.
+ * Used for: Dropbox refresh token, Google Drive folder ID, AI model preferences, etc.
+ */
+export const appSettings = mysqlTable("app_settings", {
+  key: varchar("key", { length: 128 }).primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type AppSetting = typeof appSettings.$inferSelect;
+export type InsertAppSetting = typeof appSettings.$inferInsert;

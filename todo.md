@@ -2251,3 +2251,47 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] Group contrast: compare 2–5 authors against a chosen interest
 - [ ] "Why this author?" explainer button on author cards
 - [ ] Aggressive biographical research: newspaper archives, oral histories, podcast transcripts
+
+## Session Apr 1, 2026 — Dropbox OAuth 2 Refresh Flow
+- [ ] Add DROPBOX_APP_KEY and DROPBOX_APP_SECRET secrets
+- [ ] Build server/dropboxAuth.ts: exchange refresh token for access token, cache with TTL
+- [ ] Add /api/dropbox/connect endpoint (generates Dropbox authorization URL)
+- [ ] Add /api/dropbox/callback endpoint (exchanges code for refresh token, stores in DB)
+- [ ] Update syncJobs.router.ts to use dropboxAuth helper for all Dropbox API calls
+- [ ] Add Dropbox Connect button in Admin → Sync tab with live connection status
+- [ ] Wire InterestHeatmap and GroupContrast routes into App.tsx
+- [ ] Add navigation links to heatmap and group contrast from sidebar/admin
+- [ ] Admin AI Model config tab: vendor selector, primary/secondary model, renew buttons
+
+## Session Apr 1, 2026 — Dropbox OAuth 2 Refresh Flow (Completed)
+- [x] Added DROPBOX_APP_KEY and DROPBOX_APP_SECRET secrets
+- [x] Built server/dropboxAuth.ts: exchange refresh token for access token, cache with TTL
+- [x] Added /api/dropbox/connect endpoint (generates Dropbox authorization URL)
+- [x] Added /api/dropbox/callback endpoint (exchanges code for refresh token, stores in DB)
+- [x] Updated syncJobs.router.ts to use dropboxAuth helper for all Dropbox API calls
+- [x] Added Dropbox Connect button in Admin → Sync tab with live connection status
+- [x] Added getDropboxStatus tRPC procedure for live polling
+- [x] Wired InterestHeatmap route: /interests/heatmap
+- [x] Wired GroupContrast route: /interests/contrast
+- [x] app_settings table added to schema and migrated (migration 0032)
+- [x] 481 tests passing (33 test files)
+
+## Session Apr 1, 2026 — Full Todo Execution (Completed)
+- [x] InterestAlignmentPills component: score bars, color-coded pills, top-3 interests per author card
+- [x] WhyThisAuthor component: LLM-generated 3-sentence rationale button on author cards
+- [x] whyThisAuthor tRPC procedure added to userInterests router (Claude Opus synthesis)
+- [x] scoreAllAuthors tRPC procedure added for bulk heatmap data
+- [x] InterestHeatmap page: /interests/heatmap — authors x interests matrix, color-coded, sortable
+- [x] GroupContrast page: /interests/contrast — compare 2-5 authors on a chosen interest
+- [x] Routes wired in App.tsx: /interests/heatmap and /interests/contrast
+- [x] Dropbox OAuth 2 refresh flow: dropboxAuth.ts with token exchange, caching, DB persistence
+- [x] /api/dropbox/connect and /api/dropbox/callback Express routes
+- [x] /api/dropbox/disconnect Express route
+- [x] SyncJobsTab updated: live Dropbox connection status card, Connect button, Permanent Token badge
+- [x] getDropboxStatus tRPC procedure with 10s polling
+- [x] app_settings table added to schema and migrated (migration 0032)
+- [x] appSettings.router.ts: getModelConfig, saveModelConfig, get, set procedures
+- [x] AIModelConfigTab.tsx: 3-column layout, 8 vendors, 35 models, primary/secondary toggle
+- [x] AI Models tab wired into Admin.tsx
+- [x] appSettings.test.ts: 11 new tests for appSettings router, dropboxAuth, and vendor catalogue
+- [x] 492 tests passing (34 test files)

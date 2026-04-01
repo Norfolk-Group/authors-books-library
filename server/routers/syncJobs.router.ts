@@ -24,6 +24,7 @@ import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { syncJobs, authorProfiles, bookProfiles, authorRagProfiles } from "../../drizzle/schema";
 import { eq, desc, inArray } from "drizzle-orm";
+import { getDropboxToken, getDropboxConnectionStatus } from "../dropboxAuth";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -202,11 +203,14 @@ export const syncJobsRouter = router({
       if (!db) return { success: false, message: "Database unavailable" };
 
       // Check credentials
-      const dropboxToken = process.env.DROPBOX_ACCESS_TOKEN;
+      let dropboxToken: string | null = null;
+      if (input.target === "dropbox" || input.target === "both") {
+        try { dropboxToken = await getDropboxToken(); } catch { dropboxToken = null; }
+      }
       const driveParentId = process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID;
 
-      if (input.target === "dropbox" && !dropboxToken) {
-        return { success: false, message: "DROPBOX_ACCESS_TOKEN not configured. Add it in Admin → Settings." };
+      if ((input.target === "dropbox" || input.target === "both") && !dropboxToken) {
+        return { success: false, message: "Dropbox is not connected. Please connect via Admin → Sync → Connect Dropbox." };
       }
       if (input.target === "google_drive" && !driveParentId) {
         return { success: false, message: "GOOGLE_DRIVE_PARENT_FOLDER_ID not configured. Add it in Admin → Settings." };
@@ -247,6 +251,16 @@ export const syncJobsRouter = router({
       await db.update(syncJobs).set({ status: "cancelled", completedAt: new Date() }).where(eq(syncJobs.id, input.id));
       return { success: true };
     }),
+
+  /**
+   * Get Dropbox connection status (OAuth 2 refresh token flow).
+   * Returns whether Dropbox is connected, the account email, and whether
+   * the connection uses a refresh token (permanent) or a static token (temporary).
+   */
+  getDropboxStatus: publicProcedure
+    .query(async () => {
+      return await getDropboxConnectionStatus();
+    }),
 });
 
 // ── Async sync runner ─────────────────────────────────────────────────────────
@@ -262,7 +276,8 @@ async function runSyncJob(
   const db = await getDb();
   if (!db) return;
 
-    const dropboxToken: string = process.env.DROPBOX_ACCESS_TOKEN ?? "";
+    let dropboxToken = "";
+    try { dropboxToken = await getDropboxToken(); } catch { dropboxToken = ""; }
     const driveParentId: string = process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID ?? "";
 
   // Collect files to sync

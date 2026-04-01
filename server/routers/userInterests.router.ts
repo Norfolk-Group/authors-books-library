@@ -428,4 +428,144 @@ Be specific — cite actual books, frameworks, and ideas from each author.`,
         authorsWithRag: Object.keys(ragFiles),
       };
     }),
+
+  /**
+   * Batch score all authors with ready RAG files against all user interests.
+   */
+  scoreAllAuthors: protectedProcedure
+    .input(z.object({
+      model: z.string().optional().default(DEFAULT_SCORING_MODEL),
+    }).optional())
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+
+      const model = input?.model ?? DEFAULT_SCORING_MODEL;
+
+      const interests = await db
+        .select()
+        .from(userInterests)
+        .where(eq(userInterests.userId, ctx.user.openId));
+
+      if (interests.length === 0) {
+        return { success: false, scored: 0, message: "No interests defined." };
+      }
+
+      // Get all authors with ready RAG files
+      const ragRows = await db
+        .select({ authorName: authorRagProfiles.authorName, ragFileUrl: authorRagProfiles.ragFileUrl, ragVersion: authorRagProfiles.ragVersion })
+        .from(authorRagProfiles)
+        .where(eq(authorRagProfiles.ragStatus, "ready"));
+
+      let scored = 0;
+      for (const rag of ragRows) {
+        if (!rag.ragFileUrl) continue;
+        try {
+          const resp = await fetch(rag.ragFileUrl);
+          if (!resp.ok) continue;
+          const ragContent = await resp.text();
+          const scores = await scoreAuthorAgainstInterests(
+            rag.authorName,
+            ragContent,
+            interests.map((i) => ({ id: i.id, topic: i.topic, description: i.description, weight: i.weight })),
+            model
+          );
+          for (const score of scores) {
+            await db
+              .insert(authorInterestScores)
+              .values({
+                authorName: rag.authorName,
+                interestId: score.interestId,
+                userId: ctx.user.openId,
+                score: score.score,
+                rationale: score.rationale,
+                modelUsed: model,
+                computedAt: new Date(),
+                ragVersion: rag.ragVersion,
+              })
+              .onDuplicateKeyUpdate({
+                set: {
+                  score: score.score,
+                  rationale: score.rationale,
+                  modelUsed: model,
+                  computedAt: new Date(),
+                  ragVersion: rag.ragVersion,
+                },
+              });
+          }
+          scored++;
+        } catch { /* skip failed authors */ }
+      }
+
+      return { success: true, scored, total: ragRows.length };
+    }),
+
+  /**
+   * Generate a 3-sentence explanation of why an author is relevant
+   * to the user's current interests. Uses Claude Opus.
+   */
+  whyThisAuthor: protectedProcedure
+    .input(z.object({
+      authorName: z.string().min(1),
+      model: z.string().optional().default(DEFAULT_SCORING_MODEL),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+
+      const interests = await db
+        .select()
+        .from(userInterests)
+        .where(eq(userInterests.userId, ctx.user.openId))
+        .orderBy(desc(userInterests.displayOrder));
+
+      if (interests.length === 0) {
+        throw new Error("You have no interests defined. Add some in Admin → My Interests.");
+      }
+
+      const scores = await db
+        .select()
+        .from(authorInterestScores)
+        .where(and(
+          eq(authorInterestScores.authorName, input.authorName),
+          eq(authorInterestScores.userId, ctx.user.openId)
+        ))
+        .orderBy(desc(authorInterestScores.score));
+
+      const interestList = interests
+        .map((i) => `"${i.topic}"${i.description ? ` (${i.description})` : ""}`)
+        .join(", ");
+
+      const topScores = scores.slice(0, 5).map((s) => {
+        const interest = interests.find((i) => i.id === s.interestId);
+        return interest ? `${interest.topic}: ${s.score}/10 — ${s.rationale ?? ""}` : "";
+      }).filter(Boolean).join("\n");
+
+      const prompt = `You are explaining to a reader why a specific author is relevant to their personal interests.
+
+AUTHOR: ${input.authorName}
+USER INTERESTS: ${interestList}
+${topScores ? `\nALIGNMENT SCORES:\n${topScores}` : ""}
+
+Write exactly 3 sentences explaining why this author is relevant to the user's interests.
+- Sentence 1: The core connection between this author's work and the user's interests
+- Sentence 2: A specific book, idea, or framework that directly addresses their interests
+- Sentence 3: What unique perspective this author brings that other authors don't
+
+Be specific, concrete, and compelling. Do not use generic phrases.`;
+
+      const response = await invokeLLM({
+        model: input.model,
+        messages: [
+          { role: "system", content: "You are a precise intellectual matchmaker. Write exactly 3 sentences, no more, no less." },
+          { role: "user", content: prompt },
+        ],
+      });
+
+      const responseContent = response?.choices?.[0]?.message?.content;
+      return {
+        explanation: typeof responseContent === "string" ? responseContent.trim() : "Could not generate explanation.",
+        authorName: input.authorName,
+      };
+    }),
 });

@@ -225,6 +225,13 @@
       "when": 1775071400339,
       "tag": "0031_sour_bill_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1775083424286,
+      "tag": "0032_chunky_green_goblin",
+      "breakpoints": true
     }
   ]
 }
