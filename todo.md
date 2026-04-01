@@ -2310,3 +2310,33 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Added Interest Heatmap and Group Contrast navigation links to sidebar footer
 - [x] Fixed activate-digital-me.mjs column name bugs (wordCount → ragWordCount, generatedAt → ragGeneratedAt)
 - [x] 492 tests passing (34 test files)
+
+## Session Apr 1, 2026 — Digital Me Batch Generation
+
+- [ ] Generate Digital Me for Simon Sinek (Start With Why, Leaders Eat Last, Infinite Game)
+- [ ] Generate Digital Me for James Clear (Atomic Habits)
+- [ ] Generate Digital Me for Brené Brown (Daring Greatly, Braving the Wilderness)
+- [ ] Run interest scoring for all 4 authors against 8 seeded interests
+- [ ] Verify Interest Heatmap and Group Contrast pages with populated data
+
+## Session Apr 1, 2026 — Flowbite Integration
+
+- [ ] Install flowbite + flowbite-react packages
+- [ ] Wire Flowbite CSS import to index.css (Tailwind v4 CSS-first)
+- [ ] Add flowbite-react Vite plugin to vite.config.ts
+- [ ] Verify coexistence with shadcn/ui (no ThemeProvider conflict)
+- [ ] Restart dev server and confirm no build errors
+
+## Session Apr 1, 2026 — Digital Me + Interest Scoring Execution
+- [x] Digital Me generated for Simon Sinek (Claude Opus, ~2000 words)
+- [x] Digital Me generated for James Clear (Claude Opus, ~2000 words)
+- [x] Digital Me generated for Brené Brown (Claude Opus, ~2000 words)
+- [x] Interest scoring run for all 4 authors × 8 interests (32 Claude Opus calls, all stored in DB)
+- [x] Flowbite + flowbite-react integrated (packages installed, Vite plugin disabled due to Node 22/oxc-parser incompatibility — components work without it)
+- [x] score-interests.mjs script created and validated
+- [x] Sidebar links added: Interest Heatmap and Group Contrast
+- [x] InterestAlignmentPills and WhyThisAuthor components wired into FlowbiteAuthorCard
+- [x] AI Model Config tab added to Admin (8 vendors, 35 models, primary/secondary toggle)
+- [x] Dropbox OAuth 2 refresh token flow implemented (dropboxAuth.ts, dropboxOAuthRoutes.ts)
+- [x] app_settings table added to DB for key-value config persistence
+- [x] 492 tests passing (34 test files)

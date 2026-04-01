@@ -45,6 +45,8 @@
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "express": "^4.21.2",
+    "flowbite": "^4.0.1",
+    "flowbite-react": "^0.12.17",
     "framer-motion": "^12.23.22",
     "jose": "6.1.0",
     "lucide-react": "^0.453.0",
