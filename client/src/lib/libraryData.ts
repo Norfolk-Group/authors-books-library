@@ -3783,14 +3783,6 @@ export const BOOKS: BookRecord[] = [
     }
   },
   {
-    "name": "Charles Duhigg",
-    "id": "1Ck-hu-uKHF9uuMUeIZeI4QW9KkDoljIu",
-    "category": "Self-Help & Productivity",
-    "contentTypes": {
-      "Images": 1
-    }
-  },
-  {
     "name": "The Power of Habit",
     "id": "1NnP0Cl67rohkjnj2UfecCoNMnLWT3iNf",
     "category": "Self-Help & Productivity",

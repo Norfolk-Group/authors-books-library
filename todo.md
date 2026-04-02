@@ -2340,3 +2340,34 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Dropbox OAuth 2 refresh token flow implemented (dropboxAuth.ts, dropboxOAuthRoutes.ts)
 - [x] app_settings table added to DB for key-value config persistence
 - [x] 492 tests passing (34 test files)
+
+## Session Apr 1, 2026 — Author DB Audit (False Positives)
+- [ ] Pull all author names from DB and classify with Claude Opus (person vs non-person)
+- [ ] Present flagged non-person entries to user for review
+- [ ] Delete confirmed bad records and all linked data (book_profiles, author_rag_profiles, author_interest_scores)
+- [ ] Add server-side guardrail to prevent future false-positive author creation
+- [ ] Run tests and save checkpoint
+
+## Session Apr 1, 2026 — Author Card Grid Redesign
+- [ ] Redesign FlowbiteAuthorCard with strict 4-zone grid: avatar TL, badges TR, info middle, content shelf bottom
+- [ ] Avatar zone: fixed 96×96px square inner card, top-left, always same position
+- [ ] Badges zone: category pill, quality badge, platform icons, interest pills — right of avatar, top-aligned
+- [ ] Info zone: author name, specialty, bio snippet — full-width middle strip
+- [ ] Content shelf: book covers strip — full-width bottom, fixed height
+- [ ] Card background: light theme-aware color (glass/frosted effect)
+- [ ] All cards identical structure regardless of data density
+- [ ] Run tests and save checkpoint
+
+## Session Apr 1, 2026 — Card Redesign & Data Cleanup (Completed)
+- [x] Redesigned FlowbiteAuthorCard with strict 4-zone grid layout (6 zones total):
+  - Zone 1+2: Top row — 88×88px square avatar (top-left) + metadata panel (top-right), fixed h-[112px]
+  - Zone 3: Author info — name, specialty, bio snippet, fixed h-[80px]
+  - Zone 4: Interest alignment pills, fixed h-[32px]
+  - Zone 5: Content shelf — horizontal scrolling book covers, fixed h-[120px]
+  - Zone 6: Actions bar — Why this author? + Chat + Profile, fixed h-[40px]
+- [x] Category color left-border stripe (3px) using CATEGORY_COLORS per theme-aware-cards skill
+- [x] Apple fluid glass effect: backdrop-blur-md + bg-card/80
+- [x] Digital Me badge (violet) and Chat button shown when RAG profile is ready
+- [x] Removed Charles Duhigg false positive from BOOKS array in libraryData.ts
+- [x] Scanned AUTHORS array — 0 false positives found (all 240 entries are valid person names)
+- [x] 492 tests passing (34 test files), 0 TypeScript errors
