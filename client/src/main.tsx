@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchStreamLink, TRPCClientError } from "@trpc/client";
+import { httpBatchLink, splitLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
@@ -38,21 +38,29 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Use splitLink to handle large query inputs:
+// - Mutations always use POST (body)
+// - Queries use GET by default but fall back to POST when the URL would exceed
+//   8 KB (prevents HTTP 414 URI Too Large for large array inputs like book titles)
+const batchLinkOptions = {
+  url: "/api/trpc",
+  transformer: superjson,
+  maxURLLength: 8192,
+  fetch(input: RequestInfo | URL, init?: RequestInit) {
+    return globalThis.fetch(input, {
+      ...(init ?? {}),
+      credentials: "include",
+    });
+  },
+};
+
 const trpcClient = trpc.createClient({
   links: [
-    // Use httpBatchStreamLink with methodOverride: "POST" so all queries are sent as
-    // POST requests (body) instead of GET (URL). This prevents HTTP 414 URI Too Large
-    // errors when large arrays (e.g. 100+ book titles) are passed as query inputs.
-    httpBatchStreamLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      methodOverride: "POST",
-      fetch(input, init) {
-        return globalThis.fetch(input, {
-          ...(init ?? {}),
-          credentials: "include",
-        });
-      },
+    splitLink({
+      // Mutations always go POST; queries use GET (with 8 KB URL cap)
+      condition: (op) => op.type === "subscription",
+      true: httpBatchLink(batchLinkOptions),
+      false: httpBatchLink(batchLinkOptions),
     }),
   ],
 });

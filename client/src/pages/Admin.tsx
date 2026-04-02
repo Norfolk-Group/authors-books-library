@@ -18,7 +18,7 @@ import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
 import PageHeader from "@/components/PageHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,35 +36,52 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
-  RefreshCw,
-  Sparkles,
-  BookOpen,
+  ArrowsClockwise,
+  Sparkle,
+  Books,
   Camera,
-  ImageIcon,
-  Upload,
+  Image,
+  CloudArrowUp,
   Database,
-  BarChart3,
-  Settings,
+  ChartBar,
+  Gear,
   Info,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
+  Spinner,
+  CheckCircle,
+  XCircle,
   Clock,
-  BrainCircuit,
-  Users,
-  Link2,
-  BookUser,
+  Brain,
+  UsersThree,
+  Link,
+  UserCircle,
   FileText,
-  Zap,
+  Lightning,
   Globe,
   Cloud,
-  BarChart2,
-  type LucideIcon,
+  ChartLine,
   Heart,
-  Activity,
   Briefcase,
   Package,
-} from "lucide-react";
+  PencilSimple,
+  MagicWand,
+  ShareNetwork,
+  Buildings,
+  ImageSquare,
+  Palette,
+  CalendarCheck,
+  Robot,
+  Cpu,
+  Wrench,
+  Star,
+  Heartbeat,
+  ArrowSquareOut,
+  Cpu as CircuitBoard,
+} from "@phosphor-icons/react";
+import { Loader2 } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+// Alias for semantic clarity
+const CheckCircle2 = CheckCircle;
+const AlertCircle = XCircle;
 import { AUTHORS, BOOKS } from "@/lib/libraryData";
 import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
@@ -136,7 +153,7 @@ function StatusIcon({ status }: { status: ActionStatus }) {
 interface ActionCardProps {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   actionKey: string;
   state: ActionState;
   lastRun?: {
@@ -1017,517 +1034,413 @@ export default function Admin() {
   const bStats = bookStats.data;
   const scrapeStats = batchScrapeStats.data;
 
+  const [activeSection, setActiveSection] = useState("authors");
+
+  type NavItem = { id: string; label: string; icon: PhosphorIcon };
+  type NavGroup = { label: string; icon: PhosphorIcon; items: NavItem[] };
+
+  const navGroups: NavGroup[] = [
+    {
+      label: "Content",
+      icon: Books,
+      items: [
+        { id: "authors", label: "Authors", icon: UsersThree },
+        { id: "books", label: "Books", icon: Books },
+        { id: "pipeline", label: "Data Pipeline", icon: Database },
+      ],
+    },
+    {
+      label: "Media",
+      icon: Image,
+      items: [
+        { id: "media", label: "Media Assets", icon: Image },
+        { id: "sync", label: "Sync & Storage", icon: Cloud },
+      ],
+    },
+    {
+      label: "Intelligence",
+      icon: Brain,
+      items: [
+        { id: "digital-me", label: "Digital Me", icon: Robot },
+        { id: "cascade", label: "Research", icon: ChartBar },
+        { id: "ai", label: "AI Settings", icon: Cpu },
+        { id: "ai-models", label: "AI Models", icon: CircuitBoard },
+      ],
+    },
+    {
+      label: "Personalization",
+      icon: Heart,
+      items: [
+        { id: "interests", label: "My Interests", icon: Heart },
+        { id: "favorites", label: "Favorites", icon: Star },
+      ],
+    },
+    {
+      label: "System",
+      icon: Wrench,
+      items: [
+        { id: "health", label: "Health", icon: Heartbeat },
+        { id: "dependencies", label: "Dependencies", icon: Package },
+        { id: "scheduling", label: "Schedules", icon: CalendarCheck },
+        { id: "tools", label: "Info Tools", icon: Lightning },
+      ],
+    },
+    {
+      label: "Configuration",
+      icon: Gear,
+      items: [
+        { id: "settings", label: "App Settings", icon: Gear },
+        { id: "about", label: "About", icon: Info },
+      ],
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PageHeader crumbs={[{ label: "Admin Console" }]} />
 
-      <div className="container max-w-5xl py-6 px-4">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Admin Console</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage data pipelines, media operations, and application settings.
-            {anyRunning && (
-              <Badge variant="secondary" className="ml-2 text-[10px]">
-                <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                Operations running
-              </Badge>
-            )}
-          </p>
-        </div>
-
-        <Tabs defaultValue="authors" className="space-y-4">
-          <TabsList className="flex flex-wrap w-full h-auto gap-0.5">
-            <TabsTrigger value="authors" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Users className="w-3.5 h-3.5" />
-              <span>Authors</span>
-            </TabsTrigger>
-            <TabsTrigger value="books" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Books</span>
-            </TabsTrigger>
-            <TabsTrigger value="pipeline" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Database className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Data Pipeline</span>
-              <span className="sm:hidden">Data</span>
-            </TabsTrigger>
-            <TabsTrigger value="media" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>Media</span>
-            </TabsTrigger>
-            <TabsTrigger value="cascade" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Research</span>
-              <span className="sm:hidden">Stats</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Settings className="w-3.5 h-3.5" />
-              <span>Settings</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <BrainCircuit className="w-3.5 h-3.5" />
-              <span>AI</span>
-            </TabsTrigger>
-            <TabsTrigger value="tools" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Zap className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Info Tools</span>
-              <span className="sm:hidden">Tools</span>
-            </TabsTrigger>
-            <TabsTrigger value="scheduling" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Clock className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Schedules</span>
-              <span className="sm:hidden">Sched</span>
-            </TabsTrigger>
-            <TabsTrigger value="favorites" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Heart className="w-3.5 h-3.5" />
-              <span>Favorites</span>
-            </TabsTrigger>
-            <TabsTrigger value="dependencies" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Package className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Dependencies</span>
-              <span className="sm:hidden">Deps</span>
-            </TabsTrigger>
-            <TabsTrigger value="health" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Activity className="w-3.5 h-3.5" />
-              <span>Health</span>
-            </TabsTrigger>
-            <TabsTrigger value="sync" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Cloud className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sync</span>
-              <span className="sm:hidden">Sync</span>
-            </TabsTrigger>
-            <TabsTrigger value="digital-me" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <BrainCircuit className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Digital Me</span>
-              <span className="sm:hidden">AI</span>
-            </TabsTrigger>
-            <TabsTrigger value="interests" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Heart className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">My Interests</span>
-              <span className="sm:hidden">Interests</span>
-            </TabsTrigger>
-            <TabsTrigger value="ai-models" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <BrainCircuit className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">AI Models</span>
-              <span className="sm:hidden">Models</span>
-            </TabsTrigger>
-            <TabsTrigger value="about" className="text-xs py-2 gap-1.5 flex-1 min-w-[80px]">
-              <Info className="w-3.5 h-3.5" />
-              <span>About</span>
-            </TabsTrigger>
-          </TabsList>
-
-          {/* -- Tab: Authors -- */}
-          <TabsContent value="authors" className="space-y-3">
-            <div className="mb-2">
-              <h2 className="text-sm font-semibold">Author Management</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Batch operations for all {AUTHORS.length} authors in the Google Drive + database.
-              </p>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-56 shrink-0 border-r bg-muted/30 overflow-y-auto py-4 px-2 space-y-5">
+          {anyRunning && (
+            <div className="mx-1 px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+              <span>Operations running…</span>
             </div>
-            <ActionCard
-              title="Enrich All Author Bios"
-              description={`Generate AI-powered bios and metadata for all ${AUTHORS.length} authors via Wikipedia + Perplexity. Already-enriched authors (within 30 days) are skipped.`}
-              icon={BookUser}
-              actionKey="enrich-bios"
-              state={enrichBiosState}
-              lastRun={getLastRun("enrich-bios")}
-              destructive
-              confirmTitle="Enrich all author bios?"
-              confirmDescription="This will call the AI enrichment pipeline for every author. Already-enriched authors (within 30 days) will be skipped. This may take several minutes."
-              onRun={handleEnrichBios}
-              buttonLabel="Enrich Bios"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Update All Author Links"
-              description="Research and update website, social media, podcast, blog, Substack, and newspaper article links for all authors via Perplexity."
-              icon={Link2}
-              actionKey="update-author-links"
-              state={updateLinksState}
-              lastRun={getLastRun("update-author-links")}
-              destructive
-              confirmTitle="Update all author links?"
-              confirmDescription="This will research and update links for all authors missing link data. Uses Perplexity web search. May take several minutes."
-              onRun={handleUpdateAllAuthorLinks}
-              buttonLabel="Update Links"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Generate Missing Avatars"
-              description="Use AI (Replicate Flux) to generate headshots for authors who don't have an avatar."
-              icon={Camera}
-              actionKey="generate-avatars"
-              state={portraitState}
-              lastRun={getLastRun("generate-avatars")}
-              destructive
-              confirmTitle="Generate AI avatars?"
-              confirmDescription="This will generate AI avatars for all authors missing an avatar. Each avatar takes 5-15 seconds. This may take a while for many authors."
-              onRun={handleGeneratePortraits}
-              buttonLabel="Generate Avatars"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Mirror Avatars to S3"
-              description="Copy external author avatar URLs to the S3 CDN for stable hosting."
-              icon={Upload}
-              actionKey="mirror-avatars"
-              state={mirrorAvatarsState}
-              lastRun={getLastRun("mirror-avatars")}
-              onRun={handleMirrorPhotos}
-              buttonLabel="Mirror Avatars"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Audit Avatar Backgrounds"
-              description="Use Gemini Vision to scan all author avatars and identify which ones do not have the canonical bokeh-gold background. Run this before Normalize All."
-              icon={Sparkles}
-              actionKey="audit-avatar-backgrounds"
-              state={auditBgState}
-              lastRun={getLastRun("audit-avatar-backgrounds")}
-              onRun={handleAuditAvatarBackgrounds}
-              buttonLabel="Audit Backgrounds"
-              disabled={anyRunning}
-            />
-            {bgMismatchList.length > 0 && (
-              <div className="px-3 py-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-xs">
-                <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">
-                  {bgMismatchList.length} avatars need background normalization:
-                </p>
-                <p className="text-amber-700 dark:text-amber-400 line-clamp-3 font-mono text-[10px]">
-                  {bgMismatchList.join(", ")}
-                </p>
+          )}
+          {navGroups.map((group) => (
+            <div key={group.label}>
+              <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <group.icon className="h-3 w-3" weight="bold" />
+                {group.label}
               </div>
-            )}
-            <ActionCard
-              title="Normalize All Avatar Backgrounds"
-              description={`Re-generate avatars for all authors identified by the audit (${bgMismatchList.length > 0 ? bgMismatchList.length + " queued" : "run audit first"}) using the current background color from AI Settings.`}
-              icon={Zap}
-              actionKey="normalize-avatar-backgrounds"
-              state={normalizeBgState}
-              lastRun={getLastRun("normalize-avatar-backgrounds")}
-              destructive
-              confirmTitle="Normalize all avatar backgrounds?"
-              confirmDescription={`This will re-generate AI avatars for ${bgMismatchList.length} authors using the current background setting. Each avatar takes 10-30 seconds. Run the audit first to populate the list.`}
-              onRun={handleNormalizeAvatarBackgrounds}
-              buttonLabel="Normalize All"
-              disabled={anyRunning || bgMismatchList.length === 0}
-            />
-          </TabsContent>
-
-          {/* -- Tab: Books -- */}
-          <TabsContent value="books" className="space-y-3">
-            <div className="mb-2">
-              <h2 className="text-sm font-semibold">Book Management</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Batch operations for all {BOOKS.length} books in the Google Drive + database.
-              </p>
+              <div className="space-y-0.5 mt-0.5">
+                {group.items.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    className={cn(
+                      "w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-md transition-all duration-150",
+                      activeSection === item.id
+                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                        : "hover:bg-muted text-foreground/80 hover:text-foreground"
+                    )}
+                  >
+                    <item.icon
+                      className="h-4 w-4 shrink-0"
+                      weight={activeSection === item.id ? "fill" : "regular"}
+                    />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <ActionCard
-              title="Enrich All Books"
-              description={`Generate summaries, ratings, and metadata for all ${BOOKS.length} books via Google Books + AI.`}
-              icon={BookOpen}
-              actionKey="enrich-books"
-              state={enrichBooksState}
-              lastRun={getLastRun("enrich-books")}
-              destructive
-              confirmTitle="Enrich all books?"
-              confirmDescription="This will call the AI enrichment pipeline for every book. Already-enriched books (within 30 days) will be skipped. This may take several minutes."
-              onRun={handleEnrichBooks}
-              buttonLabel="Enrich Books"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Update All Book Summaries"
-              description="Research and update summaries for all books missing one via Perplexity web search."
-              icon={FileText}
-              actionKey="update-book-summaries"
-              state={updateBookSummariesState}
-              lastRun={getLastRun("update-book-summaries")}
-              destructive
-              confirmTitle="Update all book summaries?"
-              confirmDescription="This will research and update summaries for all books missing one. Uses Perplexity web search. May take several minutes."
-              onRun={handleUpdateAllBookSummaries}
-              buttonLabel="Update Summaries"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Scrape Book Covers"
-              description={`Search Amazon for cover images for books missing one. ${scrapeStats ? `${scrapeStats.needsScrape} books need covers.` : ""}`}
-              icon={ImageIcon}
-              actionKey="scrape-covers"
-              state={scrapeState}
-              lastRun={getLastRun("scrape-covers")}
-              destructive
-              confirmTitle="Scrape covers from Amazon?"
-              confirmDescription="This will search Amazon for book covers one at a time. Each scrape includes a mirror step. This may take several minutes."
-              onRun={handleScrapeCovers}
-              buttonLabel="Scrape Covers"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Mirror Covers to S3"
-              description="Copy external cover image URLs to the S3 CDN for stable hosting."
-              icon={Upload}
-              actionKey="mirror-covers"
-              state={mirrorCoversState}
-              lastRun={getLastRun("mirror-covers")}
-              onRun={handleMirrorCovers}
-              buttonLabel="Mirror Covers"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Rebuild All Book Covers"
-              description="Upgrade all Amazon cover URLs to high-resolution (_SX600_), re-scrape failed covers, and re-mirror everything to S3. Cleans up bad data automatically."
-              icon={RefreshCw}
-              actionKey="rebuild-covers"
-              state={rebuildCoversState}
-              lastRun={getLastRun("rebuild-covers")}
-              destructive
-              confirmTitle="Rebuild all book covers?"
-              confirmDescription="This will upgrade all low-res Amazon URLs to _SX600_, re-scrape covers for books that failed, and re-mirror everything to S3. Existing S3 URLs will be replaced. This may take 2-5 minutes."
-              onRun={handleRebuildCovers}
-              buttonLabel="Rebuild Covers"
-              disabled={anyRunning}
-            />
-          </TabsContent>
+          ))}
+        </aside>
 
-          {/* -- Tab 1: Data Pipeline -- */}
-          <TabsContent value="pipeline" className="space-y-3">
-            <ActionCard
-              title="Regenerate Database"
-              description="Re-scan Google Drive and rebuild the entire library (authors, books, audiobooks)."
-              icon={RefreshCw}
-              actionKey="regenerate"
-              state={regenerateState}
-              lastRun={getLastRun("regenerate")}
-              destructive
-              confirmTitle="Regenerate the entire database?"
-              confirmDescription="This will re-scan Google Drive and rebuild all library data. The operation takes 30-60 seconds and will replace existing data."
-              onRun={handleRegenerate}
-              buttonLabel="Regenerate"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich All Author Bios"
-              description={`Generate AI-powered bios, social links, and metadata for all ${AUTHORS.length} authors via Wikipedia + Perplexity.`}
-              icon={Sparkles}
-              actionKey="enrich-bios"
-              state={enrichBiosState}
-              lastRun={getLastRun("enrich-bios")}
-              destructive
-              confirmTitle="Enrich all author bios?"
-              confirmDescription="This will call the AI enrichment pipeline for every author. Already-enriched authors (within 30 days) will be skipped. This may take several minutes."
-              onRun={handleEnrichBios}
-              buttonLabel="Enrich Bios"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich All Books"
-              description={`Generate summaries, ratings, and metadata for all ${BOOKS.length} books via Google Books + AI.`}
-              icon={BookOpen}
-              actionKey="enrich-books"
-              state={enrichBooksState}
-              lastRun={getLastRun("enrich-books")}
-              destructive
-              confirmTitle="Enrich all books?"
-              confirmDescription="This will call the AI enrichment pipeline for every book. Already-enriched books (within 30 days) will be skipped. This may take several minutes."
-              onRun={handleEnrichBooks}
-              buttonLabel="Enrich Books"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Discover Author Platforms"
-              description="Use Perplexity to discover YouTube, Twitter/X, LinkedIn, Substack, Instagram, TikTok, GitHub, and other platform presence for up to 20 authors at a time."
-              icon={Globe}
-              actionKey="discover-platforms"
-              state={discoverPlatformsState}
-              lastRun={getLastRun("discover-platforms")}
-              confirmTitle="Discover platform presence?"
-              confirmDescription="This will query Perplexity for each author's official social media profiles. Authors enriched within the last 7 days will be skipped. Processes 20 authors per run."
-              onRun={handleDiscoverPlatforms}
-              buttonLabel="Discover Platforms"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich Social Stats"
-              description="Fetch live stats from GitHub (followers/stars), Wikipedia (page views), Substack (post count), YouTube (subscribers), CNN, Y Combinator, and — with a RapidAPI key — LinkedIn, CNBC, Yahoo Finance, and Seeking Alpha."
-              icon={BarChart2}
-              actionKey="enrich-social-stats"
-              state={enrichSocialStatsState}
-              lastRun={getLastRun("enrich-social-stats")}
-              confirmTitle="Enrich social stats for all authors?"
-              confirmDescription="This will call up to 10 external APIs per author. Authors already enriched will be skipped. Processes 30 authors per run. May take several minutes."
-              onRun={handleEnrichSocialStats}
-              buttonLabel="Enrich Social Stats"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich Rich Author Bios"
-              description="Double-pass LLM enrichment: first pass researches the author's full professional history, second pass writes a structured bio with resume-style career entries, notable achievements, and personal background. Processes 10 authors per run."
-              icon={BrainCircuit}
-              actionKey="enrich-rich-bio"
-              state={enrichRichBioState}
-              lastRun={getLastRun("enrich-rich-bio")}
-              confirmTitle="Enrich rich author bios?"
-              confirmDescription="This runs two LLM calls per author (research pass + write pass). Authors with existing rich bios will be skipped. Processes 10 authors per run."
-              onRun={handleEnrichRichBio}
-              buttonLabel="Enrich Rich Bios"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich Rich Book Summaries"
-              description="Double-pass LLM enrichment: first pass researches the book's themes, reception, and related works, second pass writes a structured summary with key themes, notable quotes, similar books, and resource links. Processes 10 books per run."
-              icon={BookUser}
-              actionKey="enrich-rich-summary"
-              state={enrichRichSummaryState}
-              lastRun={getLastRun("enrich-rich-summary")}
-              confirmTitle="Enrich rich book summaries?"
-              confirmDescription="This runs two LLM calls per book (research pass + write pass). Books with existing rich summaries will be skipped. Processes 10 books per run."
-              onRun={handleEnrichRichSummary}
-              buttonLabel="Enrich Rich Summaries"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich Enterprise Impact"
-              description="Search SEC EDGAR full-text search for mentions of each author in corporate filings, earnings calls, and annual reports. Free API, no key needed. Processes 20 authors per run."
-              icon={Briefcase}
-              actionKey="enrich-enterprise-impact"
-              state={enrichEnterpriseState}
-              lastRun={getLastRun("enrich-enterprise-impact")}
-              confirmTitle="Enrich enterprise impact for all authors?"
-              confirmDescription="This will search SEC EDGAR for each author's mentions in corporate filings. Authors already enriched will be skipped. Processes 20 authors per run."
-              onRun={handleEnrichEnterprise}
-              buttonLabel="Enrich Enterprise"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Enrich Professional Profiles"
-              description="Fetch structured professional data from Wikidata (alma mater, employers, awards, board memberships) for each author. Free API, no key needed. Processes 20 authors per run."
-              icon={Users}
-              actionKey="enrich-professional-profile"
-              state={enrichProfessionalState}
-              lastRun={getLastRun("enrich-professional-profile")}
-              confirmTitle="Enrich professional profiles for all authors?"
-              confirmDescription="This will query Wikidata for each author's professional background. Authors already enriched will be skipped. Processes 20 authors per run."
-              onRun={handleEnrichProfessional}
-              buttonLabel="Enrich Profiles"
-              disabled={anyRunning}
-            />
-          </TabsContent>
+        {/* Main content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6 max-w-5xl mx-auto space-y-6">
 
-          {/* -- Tab 2: Media -- */}
-          <TabsContent value="media" className="space-y-3">
-            <ActionCard
-              title="Generate Missing Avatars"
-              description="Use AI (Replicate Flux) to generate headshots for authors who don't have an avatar."
-              icon={Camera}
-              actionKey="generate-avatars"
-              state={portraitState}
-              lastRun={getLastRun("generate-avatars")}
-              destructive
-              confirmTitle="Generate AI avatars?"
-              confirmDescription="This will generate AI avatars for all authors missing an avatar. Each avatar takes 5-15 seconds. This may take a while for many authors."
-              onRun={handleGeneratePortraits}
-              buttonLabel="Generate"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Scrape Book Covers"
-              description={`Search Amazon for cover images for books missing one. ${scrapeStats ? `${scrapeStats.needsScrape} books need covers.` : ""}`}
-              icon={ImageIcon}
-              actionKey="scrape-covers"
-              state={scrapeState}
-              lastRun={getLastRun("scrape-covers")}
-              destructive
-              confirmTitle="Scrape covers from Amazon?"
-              confirmDescription="This will search Amazon for book covers one at a time. Each scrape includes a mirror step. This may take several minutes."
-              onRun={handleScrapeCovers}
-              buttonLabel="Scrape"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Mirror Covers to S3"
-              description="Copy external cover image URLs to the S3 CDN for stable hosting."
-              icon={Upload}
-              actionKey="mirror-covers"
-              state={mirrorCoversState}
-              lastRun={getLastRun("mirror-covers")}
-              onRun={handleMirrorCovers}
-              buttonLabel="Mirror"
-              disabled={anyRunning}
-            />
-            <ActionCard
-              title="Mirror Avatars to S3"
-              description="Copy external author avatar URLs to the S3 CDN for stable hosting."
-              icon={Upload}
-              actionKey="mirror-avatars"
-              state={mirrorAvatarsState}
-              lastRun={getLastRun("mirror-avatars")}
-              onRun={handleMirrorPhotos}
-              buttonLabel="Mirror"
-              disabled={anyRunning}
-            />
-          </TabsContent>
+          {/* ── Authors ── */}
+          {activeSection === "authors" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10">
+                <UsersThree className="h-6 w-6 text-primary" weight="duotone" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Authors</h1>
+                <p className="text-muted-foreground text-sm">Manage author profiles, enrich bios, and generate AI portraits</p>
+              </div>
+              <Badge variant="secondary" className="ml-auto">{AUTHORS.length} authors</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ActionCard title="Enrich Author Bios" description={`AI-powered bios for all ${AUTHORS.length} authors via Wikipedia + Perplexity. Already-enriched (30 days) are skipped.`} icon={PencilSimple} actionKey="enrich-bios" state={enrichBiosState} lastRun={getLastRun("enrich-bios")} destructive confirmTitle="Enrich all author bios?" confirmDescription="This will call the AI enrichment pipeline for every author. Already-enriched authors (within 30 days) will be skipped." onRun={handleEnrichBios} buttonLabel="Enrich Bios" disabled={anyRunning} />
+              <ActionCard title="Update Author Links" description="Research and update website, social media, podcast, blog, Substack, and newspaper links for all authors." icon={Link} actionKey="update-author-links" state={updateLinksState} lastRun={getLastRun("update-author-links")} destructive confirmTitle="Update all author links?" confirmDescription="This will research and update links for all authors missing link data. Uses Perplexity web search." onRun={handleUpdateAllAuthorLinks} buttonLabel="Update Links" disabled={anyRunning} />
+              <ActionCard title="Generate AI Portraits" description="Use AI (Replicate Flux) to generate professional headshots for authors without an avatar." icon={Camera} actionKey="generate-avatars" state={portraitState} lastRun={getLastRun("generate-avatars")} destructive confirmTitle="Generate AI avatars?" confirmDescription="This will generate AI avatars for all authors missing an avatar. Each avatar takes 5-15 seconds." onRun={handleGeneratePortraits} buttonLabel="Generate Portraits" disabled={anyRunning} />
+              <ActionCard title="Mirror Avatars to CDN" description="Copy external author avatar URLs to the S3 CDN for stable hosting." icon={CloudArrowUp} actionKey="mirror-avatars" state={mirrorAvatarsState} lastRun={getLastRun("mirror-avatars")} onRun={handleMirrorPhotos} buttonLabel="Mirror Avatars" disabled={anyRunning} />
+              <ActionCard title="Enrich Rich Bios" description="Double-pass LLM enrichment: research pass + structured bio with career entries and achievements. Processes 10 authors per run." icon={MagicWand} actionKey="enrich-rich-bio" state={enrichRichBioState} lastRun={getLastRun("enrich-rich-bio")} confirmTitle="Enrich rich author bios?" confirmDescription="Two LLM calls per author (research + write). Authors with existing rich bios are skipped." onRun={handleEnrichRichBio} buttonLabel="Enrich Rich Bios" disabled={anyRunning} />
+              <ActionCard title="Discover Platforms" description="Discover YouTube, Twitter/X, LinkedIn, Substack, Instagram, TikTok, GitHub presence for up to 20 authors." icon={ShareNetwork} actionKey="discover-platforms" state={discoverPlatformsState} lastRun={getLastRun("discover-platforms")} confirmTitle="Discover platform presence?" confirmDescription="Queries Perplexity for each author's social profiles. Processes 20 authors per run." onRun={handleDiscoverPlatforms} buttonLabel="Discover Platforms" disabled={anyRunning} />
+              <ActionCard title="Enrich Social Stats" description="Fetch live stats from GitHub, Wikipedia, Substack, YouTube, LinkedIn, and more." icon={ChartBar} actionKey="enrich-social-stats" state={enrichSocialStatsState} lastRun={getLastRun("enrich-social-stats")} confirmTitle="Enrich social stats?" confirmDescription="Calls up to 10 external APIs per author. Processes 30 authors per run." onRun={handleEnrichSocialStats} buttonLabel="Enrich Stats" disabled={anyRunning} />
+              <ActionCard title="Enrich Enterprise Impact" description="Search SEC EDGAR for author mentions in corporate filings, earnings calls, and annual reports." icon={Buildings} actionKey="enrich-enterprise-impact" state={enrichEnterpriseState} lastRun={getLastRun("enrich-enterprise-impact")} confirmTitle="Enrich enterprise impact?" confirmDescription="Searches SEC EDGAR for each author's mentions in corporate filings. Processes 20 authors per run." onRun={handleEnrichEnterprise} buttonLabel="Enrich Enterprise" disabled={anyRunning} />
+              <ActionCard title="Enrich Professional Profiles" description="Fetch structured professional data from Wikidata: alma mater, employers, awards, board memberships." icon={Briefcase} actionKey="enrich-professional-profile" state={enrichProfessionalState} lastRun={getLastRun("enrich-professional-profile")} confirmTitle="Enrich professional profiles?" confirmDescription="Queries Wikidata for each author's professional background. Processes 20 authors per run." onRun={handleEnrichProfessional} buttonLabel="Enrich Profiles" disabled={anyRunning} />
+              <ActionCard title="Audit Avatar Backgrounds" description="Use Gemini Vision to scan all author avatars and identify non-standard backgrounds. Run before Normalize." icon={Palette} actionKey="audit-avatar-backgrounds" state={auditBgState} lastRun={getLastRun("audit-avatar-backgrounds")} onRun={handleAuditAvatarBackgrounds} buttonLabel="Audit Backgrounds" disabled={anyRunning} />
+              {bgMismatchList.length > 0 && (
+                <div className="col-span-full px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-sm">
+                  <p className="font-semibold text-amber-800 dark:text-amber-300 mb-1">{bgMismatchList.length} avatars need background normalization</p>
+                  <p className="text-amber-700 dark:text-amber-400 line-clamp-2 font-mono text-xs">{bgMismatchList.join(", ")}</p>
+                </div>
+              )}
+              <ActionCard title="Normalize Avatar Backgrounds" description={`Re-generate avatars for ${bgMismatchList.length > 0 ? bgMismatchList.length + " queued authors" : "authors identified by audit"} using the current background color.`} icon={Sparkle} actionKey="normalize-avatar-backgrounds" state={normalizeBgState} lastRun={getLastRun("normalize-avatar-backgrounds")} destructive confirmTitle="Normalize all avatar backgrounds?" confirmDescription={`Re-generates AI avatars for ${bgMismatchList.length} authors. Each takes 10-30 seconds. Run audit first.`} onRun={handleNormalizeAvatarBackgrounds} buttonLabel="Normalize All" disabled={anyRunning || bgMismatchList.length === 0} />
+            </div>
+          </div>
+          )}
 
-          {/* -- Tab 3: Research Cascade -- */}
-          <TabsContent value="cascade">
+          {/* ── Books ── */}
+          {activeSection === "books" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Books className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Books</h1>
+                <p className="text-muted-foreground text-sm">Manage book catalog, covers, and AI-generated summaries</p>
+              </div>
+              <Badge variant="secondary" className="ml-auto">{BOOKS.length} books</Badge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ActionCard title="Enrich All Books" description={`Generate summaries, ratings, and metadata for all ${BOOKS.length} books via Google Books + AI.`} icon={Books} actionKey="enrich-books" state={enrichBooksState} lastRun={getLastRun("enrich-books")} destructive confirmTitle="Enrich all books?" confirmDescription="Calls the AI enrichment pipeline for every book. Already-enriched books (within 30 days) are skipped." onRun={handleEnrichBooks} buttonLabel="Enrich Books" disabled={anyRunning} />
+              <ActionCard title="Update Book Summaries" description="Research and update summaries for all books missing one via Perplexity web search." icon={FileText} actionKey="update-book-summaries" state={updateBookSummariesState} lastRun={getLastRun("update-book-summaries")} destructive confirmTitle="Update all book summaries?" confirmDescription="Researches and updates summaries for all books missing one. Uses Perplexity web search." onRun={handleUpdateAllBookSummaries} buttonLabel="Update Summaries" disabled={anyRunning} />
+              <ActionCard title="Enrich Rich Summaries" description="Double-pass LLM enrichment: research pass + structured summary with themes, quotes, and similar books. 10 books per run." icon={MagicWand} actionKey="enrich-rich-summary" state={enrichRichSummaryState} lastRun={getLastRun("enrich-rich-summary")} confirmTitle="Enrich rich book summaries?" confirmDescription="Two LLM calls per book (research + write). Books with existing rich summaries are skipped." onRun={handleEnrichRichSummary} buttonLabel="Enrich Rich Summaries" disabled={anyRunning} />
+              <ActionCard title="Scrape Book Covers" description={`Search Amazon for cover images for books missing one.${scrapeStats ? ` ${scrapeStats.needsScrape} books need covers.` : ""}`} icon={ImageSquare} actionKey="scrape-covers" state={scrapeState} lastRun={getLastRun("scrape-covers")} destructive confirmTitle="Scrape covers from Amazon?" confirmDescription="Searches Amazon for book covers one at a time. Each scrape includes a mirror step." onRun={handleScrapeCovers} buttonLabel="Scrape Covers" disabled={anyRunning} />
+              <ActionCard title="Mirror Covers to CDN" description="Copy external cover image URLs to the S3 CDN for stable hosting." icon={CloudArrowUp} actionKey="mirror-covers" state={mirrorCoversState} lastRun={getLastRun("mirror-covers")} onRun={handleMirrorCovers} buttonLabel="Mirror Covers" disabled={anyRunning} />
+              <ActionCard title="Rebuild All Book Covers" description="Upgrade all Amazon cover URLs to high-resolution (_SX600_), re-scrape failed covers, and re-mirror to S3." icon={ArrowsClockwise} actionKey="rebuild-covers" state={rebuildCoversState} lastRun={getLastRun("rebuild-covers")} destructive confirmTitle="Rebuild all book covers?" confirmDescription="Upgrades all low-res Amazon URLs to _SX600_, re-scrapes failed covers, and re-mirrors to S3. This may take 2-5 minutes." onRun={handleRebuildCovers} buttonLabel="Rebuild Covers" disabled={anyRunning} />
+            </div>
+          </div>
+          )}
+
+          {/* ── Data Pipeline ── */}
+          {activeSection === "pipeline" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Database className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Data Pipeline</h1>
+                <p className="text-muted-foreground text-sm">Run cascade operations and manage data transformation workflows</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ActionCard title="Regenerate Database" description="Re-scan Google Drive and rebuild the entire library (authors, books, audiobooks)." icon={ArrowsClockwise} actionKey="regenerate" state={regenerateState} lastRun={getLastRun("regenerate")} destructive confirmTitle="Regenerate the entire database?" confirmDescription="Re-scans Google Drive and rebuilds all library data. Takes 30-60 seconds and replaces existing data." onRun={handleRegenerate} buttonLabel="Regenerate" disabled={anyRunning} />
+              <ActionCard title="Enrich Author Bios" description={`AI-powered bios for all ${AUTHORS.length} authors via Wikipedia + Perplexity.`} icon={PencilSimple} actionKey="enrich-bios" state={enrichBiosState} lastRun={getLastRun("enrich-bios")} destructive confirmTitle="Enrich all author bios?" confirmDescription="Calls the AI enrichment pipeline for every author. Already-enriched (within 30 days) are skipped." onRun={handleEnrichBios} buttonLabel="Enrich Bios" disabled={anyRunning} />
+              <ActionCard title="Enrich All Books" description={`Summaries, ratings, and metadata for all ${BOOKS.length} books via Google Books + AI.`} icon={Books} actionKey="enrich-books" state={enrichBooksState} lastRun={getLastRun("enrich-books")} destructive confirmTitle="Enrich all books?" confirmDescription="Calls the AI enrichment pipeline for every book. Already-enriched (within 30 days) are skipped." onRun={handleEnrichBooks} buttonLabel="Enrich Books" disabled={anyRunning} />
+              <ActionCard title="Discover Platforms" description="Discover YouTube, Twitter/X, LinkedIn, Substack, Instagram, TikTok, GitHub presence for up to 20 authors." icon={ShareNetwork} actionKey="discover-platforms" state={discoverPlatformsState} lastRun={getLastRun("discover-platforms")} confirmTitle="Discover platform presence?" confirmDescription="Queries Perplexity for each author's official social profiles. Processes 20 authors per run." onRun={handleDiscoverPlatforms} buttonLabel="Discover Platforms" disabled={anyRunning} />
+              <ActionCard title="Enrich Social Stats" description="Live stats from GitHub, Wikipedia, Substack, YouTube, LinkedIn, CNBC, Yahoo Finance, and more." icon={ChartBar} actionKey="enrich-social-stats" state={enrichSocialStatsState} lastRun={getLastRun("enrich-social-stats")} confirmTitle="Enrich social stats?" confirmDescription="Calls up to 10 external APIs per author. Processes 30 authors per run." onRun={handleEnrichSocialStats} buttonLabel="Enrich Social Stats" disabled={anyRunning} />
+              <ActionCard title="Enrich Rich Author Bios" description="Double-pass LLM: research pass + structured bio with career entries and achievements. 10 authors per run." icon={MagicWand} actionKey="enrich-rich-bio" state={enrichRichBioState} lastRun={getLastRun("enrich-rich-bio")} confirmTitle="Enrich rich author bios?" confirmDescription="Two LLM calls per author (research + write). Authors with existing rich bios are skipped." onRun={handleEnrichRichBio} buttonLabel="Enrich Rich Bios" disabled={anyRunning} />
+              <ActionCard title="Enrich Rich Book Summaries" description="Double-pass LLM: research pass + structured summary with themes, quotes, and similar books. 10 books per run." icon={FileText} actionKey="enrich-rich-summary" state={enrichRichSummaryState} lastRun={getLastRun("enrich-rich-summary")} confirmTitle="Enrich rich book summaries?" confirmDescription="Two LLM calls per book (research + write). Books with existing rich summaries are skipped." onRun={handleEnrichRichSummary} buttonLabel="Enrich Rich Summaries" disabled={anyRunning} />
+              <ActionCard title="Enrich Enterprise Impact" description="Search SEC EDGAR for author mentions in corporate filings, earnings calls, and annual reports." icon={Buildings} actionKey="enrich-enterprise-impact" state={enrichEnterpriseState} lastRun={getLastRun("enrich-enterprise-impact")} confirmTitle="Enrich enterprise impact?" confirmDescription="Searches SEC EDGAR for each author's mentions. Processes 20 authors per run." onRun={handleEnrichEnterprise} buttonLabel="Enrich Enterprise" disabled={anyRunning} />
+              <ActionCard title="Enrich Professional Profiles" description="Fetch structured professional data from Wikidata: alma mater, employers, awards, board memberships." icon={Briefcase} actionKey="enrich-professional-profile" state={enrichProfessionalState} lastRun={getLastRun("enrich-professional-profile")} confirmTitle="Enrich professional profiles?" confirmDescription="Queries Wikidata for each author's professional background. Processes 20 authors per run." onRun={handleEnrichProfessional} buttonLabel="Enrich Profiles" disabled={anyRunning} />
+            </div>
             <CascadeTab aStats={aStats} bStats={bStats} scrapeStats={scrapeStats} />
-          </TabsContent>
+          </div>
+          )}
 
-          {/* -- Tab 4: Settings -- */}
-          <TabsContent value="settings">
-            <SettingsTab settings={settings} updateSettings={updateSettings} />
-          </TabsContent>
+          {/* ── Media Assets ── */}
+          {activeSection === "media" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Image className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Media Assets</h1>
+                <p className="text-muted-foreground text-sm">Manage images, avatars, and media file operations</p>
+              </div>
+            </div>
+            {bgMismatchList.length > 0 && (
+              <Card className="border-orange-500/50 bg-orange-500/5 p-4">
+                <div className="flex items-start gap-3">
+                  <XCircle className="h-5 w-5 text-orange-500 mt-0.5" weight="duotone" />
+                  <div>
+                    <p className="font-medium text-orange-700 dark:text-orange-400">Background Mismatches Detected</p>
+                    <p className="text-sm text-muted-foreground mt-1">{bgMismatchList.length} avatar(s) have non-standard backgrounds</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ActionCard title="Generate Missing Avatars" description="Use AI (Replicate Flux) to generate professional headshots for authors without an avatar." icon={Camera} actionKey="generate-avatars" state={portraitState} lastRun={getLastRun("generate-avatars")} destructive confirmTitle="Generate AI avatars?" confirmDescription="Generates AI avatars for all authors missing one. Each takes 5-15 seconds." onRun={handleGeneratePortraits} buttonLabel="Generate Avatars" disabled={anyRunning} />
+              <ActionCard title="Mirror Avatars to CDN" description="Copy external author avatar URLs to the S3 CDN for stable hosting." icon={CloudArrowUp} actionKey="mirror-avatars" state={mirrorAvatarsState} lastRun={getLastRun("mirror-avatars")} onRun={handleMirrorPhotos} buttonLabel="Mirror Avatars" disabled={anyRunning} />
+              <ActionCard title="Audit Avatar Backgrounds" description="Use Gemini Vision to scan all avatars and detect non-standard background colors." icon={Palette} actionKey="audit-avatar-backgrounds" state={auditBgState} lastRun={getLastRun("audit-avatar-backgrounds")} onRun={handleAuditAvatarBackgrounds} buttonLabel="Audit Backgrounds" disabled={anyRunning} />
+              <ActionCard title="Normalize Avatar Backgrounds" description={`Standardize all avatar backgrounds to the default color scheme. ${bgMismatchList.length > 0 ? bgMismatchList.length + " queued." : "Run audit first."}`} icon={Sparkle} actionKey="normalize-avatar-backgrounds" state={normalizeBgState} lastRun={getLastRun("normalize-avatar-backgrounds")} destructive confirmTitle="Normalize all backgrounds?" confirmDescription={`Re-generates AI avatars for ${bgMismatchList.length} authors. Run audit first.`} onRun={handleNormalizeAvatarBackgrounds} buttonLabel="Normalize All" disabled={anyRunning || bgMismatchList.length === 0} />
+              <ActionCard title="Scrape Book Covers" description={`Search Amazon for cover images for books missing one.${scrapeStats ? ` ${scrapeStats.needsScrape} books need covers.` : ""}`} icon={ImageSquare} actionKey="scrape-covers" state={scrapeState} lastRun={getLastRun("scrape-covers")} destructive confirmTitle="Scrape covers from Amazon?" confirmDescription="Searches Amazon for book covers one at a time. Each scrape includes a mirror step." onRun={handleScrapeCovers} buttonLabel="Scrape Covers" disabled={anyRunning} />
+              <ActionCard title="Mirror Covers to CDN" description="Copy external cover image URLs to the S3 CDN for stable hosting." icon={CloudArrowUp} actionKey="mirror-covers" state={mirrorCoversState} lastRun={getLastRun("mirror-covers")} onRun={handleMirrorCovers} buttonLabel="Mirror Covers" disabled={anyRunning} />
+              <ActionCard title="Rebuild All Book Covers" description="Upgrade all Amazon cover URLs to high-resolution (_SX600_), re-scrape failed covers, and re-mirror to S3." icon={ArrowsClockwise} actionKey="rebuild-covers" state={rebuildCoversState} lastRun={getLastRun("rebuild-covers")} destructive confirmTitle="Rebuild all book covers?" confirmDescription="Upgrades all low-res Amazon URLs to _SX600_, re-scrapes failed covers, and re-mirrors to S3. Takes 2-5 minutes." onRun={handleRebuildCovers} buttonLabel="Rebuild Covers" disabled={anyRunning} />
+            </div>
+          </div>
+          )}
 
-          {/* -- Tab 5: AI -- */}
-          <TabsContent value="ai">
-            <AiTab settings={settings} updateSettings={updateSettings} />
-          </TabsContent>
-
-          {/* -- Tab: Information Tools -- */}
-          <TabsContent value="tools">
-            <InformationToolsTab settings={settings} updateSettings={updateSettings} />
-          </TabsContent>
-
-          {/* -- Tab: Scheduling -- */}
-          <TabsContent value="scheduling">
-            <SchedulingTab />
-          </TabsContent>
-          {/* -- Tab: Favorites -- */}
-          <TabsContent value="favorites">
-            <FavoritesTab />
-          </TabsContent>
-          {/* -- Tab: Dependencies -- */}
-          <TabsContent value="dependencies">
-            <DependenciesTab />
-          </TabsContent>
-          {/* -- Tab: Health -- */}
-          <TabsContent value="health">
-            <ToolHealthCheckTab />
-          </TabsContent>
-          {/* -- Tab: Sync Jobs -- */}
-          <TabsContent value="sync">
+          {/* ── Sync & Storage ── */}
+          {activeSection === "sync" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Cloud className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Sync & Storage</h1>
+                <p className="text-muted-foreground text-sm">Manage cloud storage connections and sync jobs</p>
+              </div>
+            </div>
             <SyncJobsTab />
-          </TabsContent>
-          {/* -- Tab: Digital Me -- */}
-          <TabsContent value="digital-me">
-            <DigitalMeTab />
-          </TabsContent>
-          {/* -- Tab: My Interests -- */}
-          <TabsContent value="interests">
-            <MyInterestsTab />
-          </TabsContent>
-          {/* -- Tab: AI Models -- */}
-          <TabsContent value="ai-models">
-            <AIModelConfigTab />
-          </TabsContent>
-          {/* -- Tab 6: About -- */}
-          <TabsContent value="about">
-            <AboutTab settings={settings} />
-          </TabsContent>
+          </div>
+          )}
 
-                </Tabs>
+          {/* ── Digital Me ── */}
+          {activeSection === "digital-me" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Robot className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Digital Me</h1>
+                <p className="text-muted-foreground text-sm">Manage AI personas and RAG profiles for authors</p>
+              </div>
+            </div>
+            <DigitalMeTab />
+          </div>
+          )}
+
+          {/* ── Research ── */}
+          {activeSection === "cascade" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><ChartBar className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Research</h1>
+                <p className="text-muted-foreground text-sm">Live enrichment stats and cascade pipeline status</p>
+              </div>
+            </div>
+            <CascadeTab aStats={aStats} bStats={bStats} scrapeStats={scrapeStats} />
+          </div>
+          )}
+
+          {/* ── AI Settings ── */}
+          {activeSection === "ai" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Cpu className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">AI Settings</h1>
+                <p className="text-muted-foreground text-sm">Configure AI generation parameters and prompts</p>
+              </div>
+            </div>
+            <AiTab settings={settings} updateSettings={updateSettings} />
+          </div>
+          )}
+
+          {/* ── AI Models ── */}
+          {activeSection === "ai-models" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><CircuitBoard className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">AI Models</h1>
+                <p className="text-muted-foreground text-sm">Select and configure LLM providers and models</p>
+              </div>
+            </div>
+            <AIModelConfigTab />
+          </div>
+          )}
+
+          {/* ── My Interests ── */}
+          {activeSection === "interests" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Heart className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">My Interests</h1>
+                <p className="text-muted-foreground text-sm">Manage your reading interests and preferences</p>
+              </div>
+            </div>
+            <MyInterestsTab />
+          </div>
+          )}
+
+          {/* ── Favorites ── */}
+          {activeSection === "favorites" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Star className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Favorites</h1>
+                <p className="text-muted-foreground text-sm">Your saved authors and books</p>
+              </div>
+            </div>
+            <FavoritesTab />
+          </div>
+          )}
+
+          {/* ── Health ── */}
+          {activeSection === "health" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Heartbeat className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Health</h1>
+                <p className="text-muted-foreground text-sm">Tool function checks and service status</p>
+              </div>
+            </div>
+            <ToolHealthCheckTab />
+          </div>
+          )}
+
+          {/* ── Dependencies ── */}
+          {activeSection === "dependencies" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Package className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Dependencies</h1>
+                <p className="text-muted-foreground text-sm">Package versions and dependency status</p>
+              </div>
+            </div>
+            <DependenciesTab />
+          </div>
+          )}
+
+          {/* ── Schedules ── */}
+          {activeSection === "scheduling" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><CalendarCheck className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Schedules</h1>
+                <p className="text-muted-foreground text-sm">Manage automated task schedules</p>
+              </div>
+            </div>
+            <SchedulingTab />
+          </div>
+          )}
+
+          {/* ── Info Tools ── */}
+          {activeSection === "tools" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Lightning className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Info Tools</h1>
+                <p className="text-muted-foreground text-sm">Research utilities and information lookup tools</p>
+              </div>
+            </div>
+            <InformationToolsTab settings={settings} updateSettings={updateSettings} />
+          </div>
+          )}
+
+          {/* ── App Settings ── */}
+          {activeSection === "settings" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Gear className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">App Settings</h1>
+                <p className="text-muted-foreground text-sm">Theme, display, and application preferences</p>
+              </div>
+            </div>
+            <SettingsTab settings={settings} updateSettings={updateSettings} />
+          </div>
+          )}
+
+          {/* ── About ── */}
+          {activeSection === "about" && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-primary/10"><Info className="h-6 w-6 text-primary" weight="duotone" /></div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">About</h1>
+                <p className="text-muted-foreground text-sm">Application version, credits, and documentation</p>
+              </div>
+            </div>
+            <AboutTab settings={settings} />
+          </div>
+          )}
+
+        </div>
+        </main>
       </div>
     </div>
   );
