@@ -36,6 +36,9 @@ import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
 import { fireConfetti } from "@/hooks/useConfetti";
 import { useAppSettings } from "@/contexts/AppSettingsContext";
 import { useState as useStateLocal } from "react";
+import { TagPicker } from "@/components/TagPicker";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { normalizeTitleKey } from "@/hooks/useLibraryData";
 
 // ── Rich Summary types ────────────────────────────────────────────────────────
 interface RichTheme { theme: string; description: string; }
@@ -70,6 +73,7 @@ interface BookDetailPanelProps {
 }
 
 export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = false, open }: BookDetailPanelProps) {
+  const { isAuthenticated } = useAuth();
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarkedIcon;
@@ -352,6 +356,15 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
                 {[profile.publisher, profile.publishedDate?.slice(0, 4)].filter(Boolean).join(" - ")}
               </p>
             )}
+            {/* Tag picker */}
+            <div className="mt-2">
+              <TagPicker
+                entityType="book"
+                entityKey={normalizeTitleKey(book.name)}
+                currentTagSlugs={profile?.tagsJson ? (() => { try { return JSON.parse(profile.tagsJson as string); } catch { return []; } })() : []}
+                showApplied={true}
+              />
+            </div>
           </div>
         </div>
       </DialogHeader>

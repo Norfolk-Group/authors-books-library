@@ -2484,3 +2484,11 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] "Recently Tagged" strip on home page (shows up to 8 recently tagged entities with avatar, A/B type badge, tag color pills; hidden when filters active)
 - [x] Tag badges + inline tag picker on AuthorBioPanel (TagPicker below header, shows applied tags as color pills, admin can add/remove tags via popover)
 - [x] Run tests — 492 tests, 34 files, all passing, 0 TypeScript errors
+
+## Session Apr 2, 2026 — Next 5 Tasks (Bulk Tags + Book Tags + AI Model Config)
+- [x] Add bulk tag assignment to Admin Authors list (BulkTagAssignment component: scrollable author list with checkboxes, tag dropdown, Apply/Remove buttons)
+- [x] Add "Recently Tagged" strip to Books tab (mirrors Authors tab strip, shows up to 8 recently tagged books with cover thumbnail + tag pills)
+- [x] Fix Taxonomy Matrix book toggle (applyToEntity already supports both author and book entity types — verified working)
+- [x] Add tag badges + TagPicker to BookDetailPanel (TagPicker below publisher/date row in full variant header, shows applied tags + admin can add/remove)
+- [x] AI Model Config section in Admin (AIModelConfigTab already fully implemented — 421 lines, 3-column layout, primary/secondary LLM, all major vendors, seeded Google/Gemini 2.5 Pro)
+- [x] Run tests — 491/492 passing (1 network test fails due to sandbox restriction, not a code issue), 0 TypeScript errors

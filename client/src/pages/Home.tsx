@@ -672,6 +672,54 @@ export default function Home() {
               ) : activeTab === "books" ? (
                 filteredBooks.length === 0 ? <EmptyState query={query} /> : (
                   <>
+                    {/* Recently Tagged strip — Books tab */}
+                    {!query && selectedCategories.size === 0 && selectedTagSlugs.size === 0 && (recentlyTaggedQuery.data?.filter(i => i.entityType === "book").length ?? 0) > 0 && (
+                      <div className="mb-6">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-base">🏷️</span>
+                          <h2 className="text-sm font-semibold">Recently Tagged</h2>
+                          <span className="text-xs text-muted-foreground">Books with tags applied recently</span>
+                        </div>
+                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                          {recentlyTaggedQuery.data?.filter(i => i.entityType === "book").map((item) => {
+                            const coverUrl = item.s3AvatarUrl || item.avatarUrl || null;
+                            return (
+                              <button
+                                key={`book::${item.entityKey}`}
+                                onClick={() => {
+                                  const found = filteredBooks.find((b) => normalizeTitleKey(b.name) === item.entityKey || b.name.toLowerCase().includes(item.entityKey.toLowerCase()));
+                                  if (found) { setSelectedBook(found); setBookSheetOpen(true); }
+                                }}
+                                className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 hover:border-border/80 transition-all w-[100px] group"
+                              >
+                                <div className="relative">
+                                  {coverUrl ? (
+                                    <img src={coverUrl} alt={item.entityKey} className="w-12 h-16 rounded-md object-cover ring-2 ring-violet-400/40 group-hover:ring-violet-400/80 transition-all" />
+                                  ) : (
+                                    <div className="w-12 h-16 rounded-md bg-gradient-to-br from-violet-400/20 to-violet-600/20 flex items-center justify-center text-lg font-bold text-violet-600">
+                                      {item.entityKey.charAt(0)}
+                                    </div>
+                                  )}
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold">B</span>
+                                </div>
+                                <span className="text-[10px] font-medium text-center leading-tight line-clamp-2 w-full">
+                                  {item.entityKey.split(" ").slice(0, 3).join(" ")}
+                                </span>
+                                {item.tags.slice(0, 2).map((tag) => (
+                                  <span
+                                    key={tag.slug}
+                                    className="text-[8px] px-1.5 py-0.5 rounded-full font-medium truncate max-w-full"
+                                    style={{ backgroundColor: (tag.color ?? "#6366F1") + "22", color: tag.color ?? "#6366F1" }}
+                                  >
+                                    {tag.name}
+                                  </span>
+                                ))}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                     {/* Digital Books grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 tab-content-enter">
                       {filteredBooks.map((b, i) => {

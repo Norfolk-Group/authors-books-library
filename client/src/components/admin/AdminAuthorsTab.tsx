@@ -20,6 +20,7 @@ import {
   XCircle,
 } from "@phosphor-icons/react";
 import type { ActionState } from "@/hooks/useAdminActions";
+import { BulkTagAssignment } from "@/components/admin/BulkTagAssignment";
 
 interface AdminAuthorsTabProps {
   anyRunning: boolean;
@@ -245,6 +246,9 @@ export function AdminAuthorsTab({
           disabled={anyRunning || bgMismatchList.length === 0}
         />
       </div>
+
+      {/* Bulk Tag Assignment */}
+      <BulkTagAssignment />
     </div>
   );
 }
