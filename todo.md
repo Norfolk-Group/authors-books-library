@@ -2405,3 +2405,4 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Fix 15 author entries using em-dash (–) instead of hyphen (-) causing false author card splits
 - [x] Fix sidebar/stat cards colliding with author cards — fixed w-[--sidebar-width] to w-[var(--sidebar-width)] for Tailwind 4 compatibility
 - [x] Install shadcn components: accordion, avatar, collapsible, table, tooltip
+- [x] Fix tRPC returning HTML instead of JSON — reverted to httpBatchLink with methodOverride: 'POST'

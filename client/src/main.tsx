@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchStreamLink, TRPCClientError } from "@trpc/client";
+import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
@@ -38,13 +38,15 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
-// httpBatchStreamLink always uses POST, eliminating URL length limits entirely.
+// Use httpBatchLink with methodOverride: "POST" to force all queries to use POST.
+// This eliminates URL length limits (the old "Input is too big" 414 error).
 // The server has allowMethodOverride: true so POST queries are accepted.
 const trpcClient = trpc.createClient({
   links: [
-    httpBatchStreamLink({
+    httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
+      methodOverride: "POST",
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),
