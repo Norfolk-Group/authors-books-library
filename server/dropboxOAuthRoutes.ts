@@ -27,8 +27,11 @@ export function registerDropboxOAuthRoutes(app: Express): void {
    */
   app.get("/api/dropbox/connect", (req: Request, res: Response) => {
     try {
-      // Build the redirect URI using the request origin
-      const origin = `${req.protocol}://${req.get("host")}`;
+      // Always use https:// for the redirect URI — Dropbox rejects http:// for non-localhost URIs.
+      // The x-forwarded-proto header may say 'http' behind a proxy, so we force https.
+      const host = req.get("host") ?? "localhost";
+      const protocol = host.includes("localhost") ? "http" : "https";
+      const origin = `${protocol}://${host}`;
       const redirectUri = `${origin}/api/dropbox/callback`;
 
       const authUrl = getAuthorizationUrl(redirectUri, "ncg-library");
@@ -62,7 +65,9 @@ export function registerDropboxOAuthRoutes(app: Express): void {
     }
 
     try {
-      const origin = `${req.protocol}://${req.get("host")}`;
+      const host = req.get("host") ?? "localhost";
+      const protocol = host.includes("localhost") ? "http" : "https";
+      const origin = `${protocol}://${host}`;
       const redirectUri = `${origin}/api/dropbox/callback`;
 
       const { accountEmail } = await exchangeCodeForTokens(code, redirectUri);

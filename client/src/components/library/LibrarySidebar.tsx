@@ -286,6 +286,13 @@ export function LibrarySidebar({
           </div>
         </div>
 
+        {/* Legal links */}
+        <div className="mt-2 flex items-center justify-center">
+          <a href="/privacy" className="text-[10px] text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2">
+            Privacy Policy
+          </a>
+        </div>
+
         {/* Norfolk AI branding */}
         <div className="mt-3 pt-3 border-t border-border/30">
           <a href="https://norfolkai.com" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 hover:opacity-90 transition-opacity norfolk-logo-pulse" title="Powered by Norfolk AI">

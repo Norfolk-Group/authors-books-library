@@ -2378,3 +2378,16 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Generate Digital Me RAG profiles for 6 more authors: Malcolm Gladwell (3333w), Daniel Kahneman (4758w), Cal Newport (4441w), Chris Voss (5160w), Seth Godin (6343w), Morgan Housel (3797w) — total now 10 authors
 - [x] Dropbox already connected via static token (ricardo@cidale.com) — UI shows 'Upgrade to Permanent' button for OAuth 2 refresh token
 - [x] Run tests and save checkpoint (492 tests passing, 34 files)
+
+## Session Apr 2, 2026 — Dropbox Permanent Token Upgrade
+- [ ] Upgrade Dropbox from static token to OAuth 2 permanent refresh token
+- [ ] Verify refresh token stored in DB (app_settings table)
+- [ ] Confirm Admin → Sync shows "Permanent Token" badge
+- [ ] Save checkpoint
+
+## Session Apr 2, 2026 — Privacy Policy + Dropbox Fix
+
+- [x] Fix Dropbox connect route to force https:// redirect URI (not http://)
+- [x] Create privacy policy page at /privacy route
+- [x] Add privacy policy footer link to main page
+- [x] Complete Dropbox permanent token OAuth flow (refresh token stored, connected as ricardo@cidale.com)
