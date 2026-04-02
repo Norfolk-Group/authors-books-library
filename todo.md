@@ -2441,3 +2441,10 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] Add tag filter to sidebar and search
 - [ ] Split Home.tsx (814L) into focused sub-components
 - [ ] Split Admin.tsx (1696L) into focused tab components
+## Session Apr 2, 2026 — Next 5 Tasks (Post-Admin Split)
+- [x] Split Admin.tsx (1713L → 621L): extract useAdminActions hook + AdminAuthorsTab, AdminBooksTab, AdminMediaTab, AdminPipelineTab
+- [x] Split llmCatalogue.ts (899L → 74L barrel): llmTypes.ts + llmVendorData.ts + llmScoring.ts + llmCatalogue.ts
+- [x] Commit all changes to GitHub (local commit done; remote push requires user credentials)
+- [x] Build tag management UI (TagManagement.tsx in Admin → Tags section — create, rename, color, delete)
+- [x] Add inline tag picker on author cards (TagPicker.tsx wired into FlowbiteAuthorCard Zone 4)
+- [x] Add tag filter to sidebar and search (selectedTagSlugs passed to useLibraryData; getAllAuthorTagSlugs + getAllBookTagSlugs procedures added; filteredAuthors + filteredBooks now filter by selected tags)

@@ -189,6 +189,35 @@ export const tagsRouter = router({
     }),
 
   /**
+   * Get all author → tag slugs map (for client-side tag filtering).
+   * Returns { authorName: string; tagSlugs: string[] }[]
+   */
+  getAllAuthorTagSlugs: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({ authorName: authorProfiles.authorName, tagsJson: authorProfiles.tagsJson })
+      .from(authorProfiles);
+    return rows
+      .filter((r) => r.tagsJson && r.tagsJson !== "[]")
+      .map((r) => ({ authorName: r.authorName, tagSlugs: parseTagsJson(r.tagsJson) }));
+  }),
+
+  /**
+   * Get all book → tag slugs map (for client-side tag filtering).
+   */
+  getAllBookTagSlugs: publicProcedure.query(async () => {
+    const db = await getDb();
+    if (!db) return [];
+    const rows = await db
+      .select({ bookTitle: bookProfiles.bookTitle, tagsJson: bookProfiles.tagsJson })
+      .from(bookProfiles);
+    return rows
+      .filter((r) => r.tagsJson && r.tagsJson !== "[]")
+      .map((r) => ({ bookTitle: r.bookTitle, tagSlugs: parseTagsJson(r.tagsJson) }));
+  }),
+
+  /**
    * Get tags for a specific entity.
    */
   getForEntity: publicProcedure

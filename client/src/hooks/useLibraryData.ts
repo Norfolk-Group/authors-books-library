@@ -53,6 +53,8 @@ interface UseLibraryDataParams {
   bookSort: BookSort;
   enrichFilter: BookEnrichmentLevel | "all";
   possessionFilter?: string;
+  /** Tag slugs to filter by — only show entities that have ALL selected tags */
+  selectedTagSlugs?: Set<string>;
 }
 
 export function useLibraryData({
@@ -63,6 +65,7 @@ export function useLibraryData({
   authorSort,
   bookSort,
   enrichFilter,
+  selectedTagSlugs = new Set<string>(),
 }: UseLibraryDataParams) {
   const { isAuthenticated } = useAuth();
 
@@ -226,6 +229,26 @@ export function useLibraryData({
     return { data, isLoading: allFavoritesQuery.isLoading };
   }, [allFavoritesQuery.data, allFavoritesQuery.isLoading]);
 
+  // ── Tag filtering ──────────────────────────────────────────────────────
+  const authorTagsQuery = trpc.tags.getAllAuthorTagSlugs.useQuery(undefined, { staleTime: 5 * 60_000 });
+  const bookTagsQuery = trpc.tags.getAllBookTagSlugs.useQuery(undefined, { staleTime: 5 * 60_000 });
+
+  const authorTagsMap = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const row of authorTagsQuery.data ?? []) {
+      map.set(row.authorName.toLowerCase(), new Set(row.tagSlugs));
+    }
+    return map;
+  }, [authorTagsQuery.data]);
+
+  const bookTagsMap = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    for (const row of bookTagsQuery.data ?? []) {
+      map.set(row.bookTitle.toLowerCase(), new Set(row.tagSlugs));
+    }
+    return map;
+  }, [bookTagsQuery.data]);
+
   const dbAvatarMap = useMemo(() => {
     const map = new Map<string, string>();
     const splitSep = /\s+(?:and|&)\s+/i;
@@ -298,7 +321,13 @@ export function useLibraryData({
     return deduped.filter((a) => {
       const matchesCat = selectedCategories.size === 0 || selectedCategories.has(a.category);
       const matchesQ = !q || a.name.toLowerCase().includes(q) || a.category.toLowerCase().includes(q) || a.books.some((b) => b.name.toLowerCase().includes(q));
-      return matchesCat && matchesQ;
+      // Tag filter: author must have ALL selected tags
+      const matchesTags = selectedTagSlugs.size === 0 || (() => {
+        const authorTags = authorTagsMap.get(canonicalName(a.name).toLowerCase());
+        if (!authorTags) return false;
+        return Array.from(selectedTagSlugs).every((slug) => authorTags.has(slug));
+      })();
+      return matchesCat && matchesQ && matchesTags;
     }).sort((a, b) => {
       switch (authorSort) {
         case "name-asc": return a.name.localeCompare(b.name);
@@ -336,7 +365,7 @@ export function useLibraryData({
         default: return a.name.localeCompare(b.name);
       }
     });
-  }, [query, selectedCategories, authorSort, researchQualityMap, authorFavoritesQuery.data, platformLinksMap]);
+  }, [query, selectedCategories, authorSort, researchQualityMap, authorFavoritesQuery.data, platformLinksMap, selectedTagSlugs, authorTagsMap]);
 
   const filteredBooks = useMemo(() => {
     const q = query.toLowerCase();
@@ -363,7 +392,13 @@ export function useLibraryData({
       // Possession/format filter
       const bookInfo = bookInfoMap.get(tk);
       const matchesPossession = possessionFilter === "all" || bookInfo?.possessionStatus === possessionFilter;
-      return matchesCat && matchesQ && matchesEnrich && matchesPossession;
+      // Tag filter: book must have ALL selected tags
+      const matchesTags = selectedTagSlugs.size === 0 || (() => {
+        const bookTags = bookTagsMap.get(tk);
+        if (!bookTags) return false;
+        return Array.from(selectedTagSlugs).every((slug) => bookTags.has(slug));
+      })();
+      return matchesCat && matchesQ && matchesEnrich && matchesPossession && matchesTags;
     }).sort((a, b) => {
       switch (bookSort) {
         case "name-asc": return a.name.localeCompare(b.name);
@@ -393,7 +428,7 @@ export function useLibraryData({
         default: return a.name.localeCompare(b.name);
       }
     });
-  }, [query, selectedCategories, bookSort, enrichFilter, possessionFilter, bookCoversQuery.data, bookFavoritesQuery.data, bookInfoMap]);
+  }, [query, selectedCategories, bookSort, enrichFilter, possessionFilter, bookCoversQuery.data, bookFavoritesQuery.data, bookInfoMap, selectedTagSlugs, bookTagsMap]);
 
   const filteredAudio = useMemo(() => {
     const q = query.toLowerCase();

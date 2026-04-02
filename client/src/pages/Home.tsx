@@ -181,7 +181,7 @@ export default function Home() {
   }, [_setSelectedCategoriesAndPersist, setEnrichFilter]);
 
   // ── Data ────────────────────────────────────────────────────────────────
-  const data = useLibraryData({ query, selectedCategories, authorSort, bookSort, enrichFilter, possessionFilter });
+  const data = useLibraryData({ query, selectedCategories, authorSort, bookSort, enrichFilter, possessionFilter, selectedTagSlugs });
   const {
     authorAvatarMapQuery, authorFavoritesQuery, bookFavoritesQuery, recentlyEnrichedQuery,
     enrichedSet, enrichedTitlesSet, bookCoverMap, amazonUrlMap, goodreadsUrlMap, wikipediaUrlMap,
