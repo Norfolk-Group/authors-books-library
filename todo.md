@@ -2509,3 +2509,11 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Add format filter chips (physical / digital / audiobook) to Books tab — wired to useLibraryData formatFilter param, persisted in localStorage
 - [x] Add "Show favorites only" heart toggle to Authors and Books tabs — persisted in localStorage, filters filteredAuthors and filteredBooks
 - [x] Build Media tab UI with sub-filters (All | Written | Audio & Video | Courses | Film & TV | Other) backed by new contentItems tRPC router
+
+## Session Apr 2, 2026 — Claude Opus Replan (5 tasks)
+
+- [x] Split Home.tsx: extracted BookFilterBar component (possession/format/enrichment filter chips) — Home.tsx reduced from 1006 → 911 lines
+- [x] FlowbiteAuthorCard suspicious name warning badge — already implemented with @shared/authorNameValidator + AlertTriangle tooltip badge in Zone 3
+- [x] Admin Sync Manager panel — already implemented as SyncJobsTab (352 lines, trigger/history/cancel/credentials)
+- [x] Run All cascade button in AdminPipelineTab — already implemented with 4-step cascade + AlertDialog confirmation
+- [x] Cover image upload in MediaItemFormDialog — added uploadCoverImage tRPC procedure (S3 storage), file picker button, base64 upload, and cover preview thumbnail

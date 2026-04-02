@@ -57,6 +57,8 @@ import { TagPicker } from "@/components/TagPicker";
 import { WhyThisAuthor } from "@/components/library/WhyThisAuthor";
 import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "@/components/library/FreshnessDot";
 import { ICON_MAP } from "@/components/library/libraryConstants";
+import { isLikelyAuthorName } from "@shared/authorNameValidator";
+import { AlertTriangle } from "lucide-react";
 
 // -- Shared LucideIcon type ---------------------------------------------------
 type LucideIcon = React.FC<{
@@ -208,6 +210,9 @@ export function FlowbiteAuthorCard({
     };
     return cfg[confidence] ?? null;
   }, [researchQualityMap, displayName]);
+
+  // Suspicious name detection
+  const isSuspiciousName = useMemo(() => !isLikelyAuthorName(displayName), [displayName]);
 
   // Overall freshness
   const overallFreshness = useMemo(
@@ -395,12 +400,27 @@ export function FlowbiteAuthorCard({
           ═══════════════════════════════════════════════════════════ */}
           <div className="px-3 h-[80px] flex-shrink-0 flex flex-col justify-start gap-0.5 border-t border-border/50 pt-2 pb-1">
             {/* Name — HOTSPOT 1 */}
-            <h3
-              className="text-sm font-bold text-card-foreground leading-tight tracking-tight line-clamp-1 cursor-pointer hover:text-primary transition-colors"
-              onClick={handleAvatarClick}
-            >
-              <Highlight text={displayName} query={query} />
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3
+                className="text-sm font-bold text-card-foreground leading-tight tracking-tight line-clamp-1 cursor-pointer hover:text-primary transition-colors flex-1 min-w-0"
+                onClick={handleAvatarClick}
+              >
+                <Highlight text={displayName} query={query} />
+              </h3>
+              {isSuspiciousName && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="flex-shrink-0 inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-semibold bg-amber-500/15 text-amber-600 border border-amber-500/30 cursor-help">
+                      <AlertTriangle className="w-2.5 h-2.5" />
+                      ??
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    This name may be a book title or topic phrase rather than a person. Check the Drive folder and delete if incorrect.
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
             {/* Specialty */}
             {specialty && (
               <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed">

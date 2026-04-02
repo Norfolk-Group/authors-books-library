@@ -49,6 +49,7 @@ import { LibrarySidebar, type TabType } from "@/components/library/LibrarySideba
 import { LibraryHeader } from "@/components/library/LibraryHeader";
 import { TagGroupHeader, groupByFirstTag } from "@/components/library/TagGroupHeader";
 import { MediaTab } from "@/components/library/MediaTab";
+import { BookFilterBar } from "@/components/library/BookFilterBar";
 import { useLibraryCrud } from "@/hooks/useLibraryCrud";
 import { PlusCircle } from "lucide-react";
 import {
@@ -453,114 +454,19 @@ export default function Home() {
               )}
             </div>
 
-            {/* Possession/format filter chips — Books tab */}
+            {/* Books filter bar — Status / Format / Enrichment chips */}
             {activeTab === "books" && (
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-xs text-muted-foreground font-medium">Status:</span>
-                {([
-                  { value: "all",       label: "All Books",     icon: "📚" },
-                  { value: "owned",     label: "Owned",         icon: "✅" },
-                  { value: "read",      label: "Read",          icon: "📖" },
-                  { value: "reading",   label: "Reading",       icon: "🔖" },
-                  { value: "unread",    label: "Unread",        icon: "📕" },
-                  { value: "wishlist",  label: "Wishlist",      icon: "⭐" },
-                  { value: "reference", label: "Reference",     icon: "🔍" },
-                  { value: "borrowed",  label: "Borrowed",      icon: "🤝" },
-                ] as const).map(({ value, label, icon }) => {
-                  const isActive = possessionFilter === value;
-                  return (
-                    <button
-                      key={value}
-                      onClick={() => setPossessionFilter(value)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all"
-                      style={{
-                        backgroundColor: isActive ? "hsl(var(--primary) / 0.12)" : "transparent",
-                        color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                        borderColor: isActive ? "hsl(var(--primary))" : "hsl(var(--border))",
-                      }}
-                    >
-                      <span>{icon}</span> {label}
-                    </button>
-                  );
-                })}
-                {possessionFilter !== "all" && (
-                  <button onClick={() => setPossessionFilter("all")} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1">
-                    Clear
-                  </button>
-                )}
-              </div>
+              <BookFilterBar
+                possessionFilter={possessionFilter}
+                setPossessionFilter={setPossessionFilter}
+                formatFilter={formatFilter}
+                setFormatFilter={setFormatFilter}
+                enrichFilter={enrichFilter}
+                setEnrichFilter={setEnrichFilter}
+              />
             )}
 
-            {/* Format filter chips — Books tab */}
-            {activeTab === "books" && (
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="text-xs text-muted-foreground font-medium">Format:</span>
-                {([
-                  { value: "all",      label: "All Formats",  icon: "📦" },
-                  { value: "physical", label: "Physical",      icon: "📗" },
-                  { value: "digital",  label: "Digital / eBook", icon: "💻" },
-                  { value: "audio",    label: "Audiobook",     icon: "🎧" },
-                ] as const).map(({ value, label, icon }) => {
-                  const isActive = formatFilter === value;
-                  return (
-                    <button
-                      key={value}
-                      onClick={() => setFormatFilter(value)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all"
-                      style={{
-                        backgroundColor: isActive ? "hsl(var(--primary) / 0.12)" : "transparent",
-                        color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                        borderColor: isActive ? "hsl(var(--primary))" : "hsl(var(--border))",
-                      }}
-                    >
-                      <span>{icon}</span> {label}
-                    </button>
-                  );
-                })}
-                {formatFilter !== "all" && (
-                  <button onClick={() => setFormatFilter("all")} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1">
-                    Clear
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Enrichment filter chips — Books tab */}
-            {activeTab === "books" && (
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <span className="text-xs text-muted-foreground font-medium">Enrichment:</span>
-                {([
-                  { value: "all",      label: "All",              color: "hsl(var(--muted-foreground))",  bg: "hsl(var(--muted))" },
-                  { value: "complete", label: "Fully Enriched",   color: "#d97706",                       bg: "#fef3c7" },
-                  { value: "enriched", label: "Well Enriched",    color: "#059669",                       bg: "#d1fae5" },
-                  { value: "basic",    label: "Partially Enriched",color: "#0284c7",                      bg: "#e0f2fe" },
-                  { value: "none",     label: "Basic",            color: "#6b7280",                       bg: "#f3f4f6" },
-                ] as const).map(({ value, label, color, bg }) => {
-                  const isActive = enrichFilter === value;
-                  return (
-                    <button
-                      key={value}
-                      onClick={() => setEnrichFilter(value)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all"
-                      style={{
-                        backgroundColor: isActive ? bg : "transparent",
-                        color: isActive ? color : "hsl(var(--muted-foreground))",
-                        borderColor: isActive ? color : "hsl(var(--border))",
-                      }}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-                {enrichFilter !== "all" && (
-                  <button onClick={() => setEnrichFilter("all")} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 ml-1">
-                    Clear
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Featured: Recently Enriched Authors */}
+                        {/* Featured: Recently Enriched Authors */}
             {activeTab === "authors" && !query && selectedCategories.size === 0 && (recentlyEnrichedQuery.data?.length ?? 0) > 0 && (
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">

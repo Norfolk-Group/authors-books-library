@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { eq, and, like, desc, asc, sql, inArray } from "drizzle-orm";
 import { getDb } from "../db";
+import { storagePut } from "../storage";
 import { contentItems, authorContentLinks } from "../../drizzle/schema";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
@@ -259,6 +260,86 @@ export const contentItemsRouter = router({
       }
 
       return { id: newId };
+    }),
+
+  /**
+   * Update a content item (admin only).
+   */
+  update: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        contentType: contentTypeEnum.optional(),
+        title: z.string().min(1).max(512).optional(),
+        subtitle: z.string().max(512).nullish(),
+        description: z.string().nullish(),
+        url: z.string().url().nullish(),
+        coverImageUrl: z.string().url().nullish(),
+        publishedDate: z.string().nullish(),
+        language: z.string().nullish(),
+        metadataJson: z.string().nullish(),
+        includedInLibrary: z.number().min(0).max(1).optional(),
+        authorNames: z.array(z.string()).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+
+      const { id, authorNames, ...rest } = input;
+      const updateData = Object.fromEntries(
+        Object.entries(rest).filter(([, v]) => v !== undefined)
+      );
+
+      if (Object.keys(updateData).length > 0) {
+        await db.update(contentItems).set(updateData).where(eq(contentItems.id, id));
+      }
+
+      if (authorNames !== undefined) {
+        // Replace all author links
+        await db.delete(authorContentLinks).where(eq(authorContentLinks.contentItemId, id));
+        if (authorNames.length > 0) {
+          await db.insert(authorContentLinks).values(
+            authorNames.map((name, i) => ({
+              contentItemId: id,
+              authorName: name,
+              role: "primary" as const,
+              displayOrder: i,
+            }))
+          );
+        }
+      }
+
+      return { success: true };
+    }),
+
+  /**
+   * Upload a cover image for a content item.
+   * Accepts a base64-encoded image, stores it in S3, and updates the DB row.
+   */
+  uploadCoverImage: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        imageBase64: z.string().min(1),
+        mimeType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+      const buffer = Buffer.from(input.imageBase64, "base64");
+      if (buffer.byteLength > 5 * 1024 * 1024) {
+        throw new Error("Image too large \u2014 maximum 5 MB");
+      }
+      const ext = input.mimeType.split("/")[1] ?? "jpg";
+      const key = `content-items/covers/${input.id}-${Date.now()}.${ext}`;
+      const { url } = await storagePut(key, buffer, input.mimeType);
+      await db
+        .update(contentItems)
+        .set({ s3CoverUrl: url, s3CoverKey: key, coverImageUrl: url })
+        .where(eq(contentItems.id, input.id));
+      return { url };
     }),
 
   /**

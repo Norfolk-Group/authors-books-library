@@ -3,10 +3,12 @@
  * Media tab content for the Home page.
  * Shows content_items (non-book) with sub-filter chips and a card grid.
  * Sub-filters: All | Written | Audio & Video | Courses | Film & TV | Other
+ * Features: favorites-only toggle, admin create/edit/delete actions.
  */
 import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useAuth } from "@/_core/hooks/useAuth";
 import {
   FileText,
   Headphones,
@@ -19,6 +21,10 @@ import {
   Calendar,
   Globe,
   Loader2,
+  Heart,
+  Plus,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import {
   Select,
@@ -27,7 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { MediaItemFormDialog } from "@/components/library/MediaItemFormDialog";
 
 // ── Sub-filter config ─────────────────────────────────────────────────────────
 const MEDIA_GROUPS = [
@@ -96,25 +104,31 @@ const CONTENT_TYPE_COLORS: Record<string, string> = {
 };
 
 // ── MediaItemCard ─────────────────────────────────────────────────────────────
+interface MediaItemData {
+  id: number;
+  contentType: string;
+  title: string;
+  subtitle?: string | null;
+  description?: string | null;
+  url?: string | null;
+  coverImageUrl?: string | null;
+  s3CoverUrl?: string | null;
+  publishedDate?: string | null;
+  rating?: string | null;
+  ratingCount?: number | null;
+  language?: string | null;
+  authors: string[];
+}
 interface MediaItemCardProps {
-  item: {
-    id: number;
-    contentType: string;
-    title: string;
-    subtitle?: string | null;
-    description?: string | null;
-    url?: string | null;
-    coverImageUrl?: string | null;
-    s3CoverUrl?: string | null;
-    publishedDate?: string | null;
-    rating?: string | null;
-    ratingCount?: number | null;
-    language?: string | null;
-    authors: string[];
-  };
+  item: MediaItemData;
+  isAdmin?: boolean;
+  onEdit?: (item: MediaItemData) => void;
+  onDelete?: (id: number) => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: number) => void;
 }
 
-function MediaItemCard({ item }: MediaItemCardProps) {
+function MediaItemCard({ item, isAdmin, onEdit, onDelete, isFavorite, onToggleFavorite }: MediaItemCardProps) {
   const coverUrl = item.s3CoverUrl || item.coverImageUrl || null;
   const typeLabel = CONTENT_TYPE_LABELS[item.contentType] ?? item.contentType;
   const typeColor = CONTENT_TYPE_COLORS[item.contentType] ?? "#6b7280";
@@ -147,19 +161,53 @@ function MediaItemCard({ item }: MediaItemCardProps) {
         >
           {typeLabel}
         </span>
-        {/* External link */}
-        {item.url && (
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center transition-colors"
-            title="Open link"
+        {/* Action buttons (top-right) */}
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {/* Favorite toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(item.id); }}
+            className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+              isFavorite
+                ? "bg-rose-500/90 hover:bg-rose-600"
+                : "bg-black/40 hover:bg-black/70"
+            }`}
+            title={isFavorite ? "Remove from favorites" : "Add to favorites"}
           >
-            <ExternalLink className="w-3 h-3 text-white" />
-          </a>
-        )}
+            <Heart className={`w-3 h-3 ${isFavorite ? "fill-white stroke-white" : "text-white"}`} />
+          </button>
+          {/* External link */}
+          {item.url && (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="w-6 h-6 rounded-full bg-black/40 hover:bg-black/70 flex items-center justify-center transition-colors"
+              title="Open link"
+            >
+              <ExternalLink className="w-3 h-3 text-white" />
+            </a>
+          )}
+          {/* Admin edit/delete (visible on hover) */}
+          {isAdmin && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit?.(item); }}
+                className="w-6 h-6 rounded-full bg-black/40 hover:bg-blue-600/90 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                title="Edit"
+              >
+                <Pencil className="w-3 h-3 text-white" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete?.(item.id); }}
+                className="w-6 h-6 rounded-full bg-black/40 hover:bg-destructive/90 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete"
+              >
+                <Trash2 className="w-3 h-3 text-white" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content */}
@@ -212,10 +260,19 @@ interface MediaTabProps {
 }
 
 export function MediaTab({ query }: MediaTabProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+
   const [activeGroup, setActiveGroup] = useLocalStorage<MediaGroup>("lib:mediaGroup", "all");
   const [sort, setSort] = useLocalStorage<SortOption>("lib:mediaSort", "newest");
   const [offset, setOffset] = useState(0);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useLocalStorage<boolean>("lib:mediaFavoritesOnly", false);
+  const [mediaFavorites, setMediaFavorites] = useLocalStorage<number[]>("lib:mediaFavorites", []);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editItem, setEditItem] = useState<MediaItemData | null>(null);
+
   const PAGE_SIZE = 48;
+  const utils = trpc.useUtils();
 
   const groupCountsQuery = trpc.contentItems.getGroupCounts.useQuery(undefined, {
     staleTime: 2 * 60_000,
@@ -233,14 +290,44 @@ export function MediaTab({ query }: MediaTabProps) {
     { staleTime: 60_000 }
   );
 
+  const deleteMutation = trpc.contentItems.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Media item deleted");
+      utils.contentItems.list.invalidate();
+      utils.contentItems.getGroupCounts.invalidate();
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   const handleGroupChange = useCallback((g: MediaGroup) => {
     setActiveGroup(g);
     setOffset(0);
   }, [setActiveGroup]);
 
+  const handleToggleFavorite = useCallback((id: number) => {
+    setMediaFavorites((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, [setMediaFavorites]);
+
+  const handleEdit = useCallback((item: MediaItemData) => {
+    setEditItem(item);
+    setFormOpen(true);
+  }, []);
+
+  const handleDelete = useCallback((id: number) => {
+    if (!confirm("Delete this media item? This cannot be undone.")) return;
+    deleteMutation.mutate({ id });
+  }, [deleteMutation]);
+
   const counts = groupCountsQuery.data;
-  const items = data?.items ?? [];
+  const allItems = data?.items ?? [];
   const total = data?.total ?? 0;
+
+  // Apply favorites filter client-side
+  const items = showFavoritesOnly
+    ? allItems.filter((item) => mediaFavorites.includes(item.id))
+    : allItems;
 
   return (
     <div className="space-y-4">
@@ -276,8 +363,37 @@ export function MediaTab({ query }: MediaTabProps) {
             </button>
           );
         })}
-        {/* Sort control */}
+
+        {/* Right-side controls */}
         <div className="ml-auto flex items-center gap-2">
+          {/* Favorites toggle */}
+          <button
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+              showFavoritesOnly
+                ? "bg-rose-500/10 text-rose-600 border-rose-400"
+                : "bg-transparent text-muted-foreground border-border hover:border-rose-300 hover:text-rose-500"
+            }`}
+            title={showFavoritesOnly ? "Showing favorites only — click to show all" : "Show favorites only"}
+          >
+            <Heart className={`w-3 h-3 transition-all ${showFavoritesOnly ? "fill-rose-500 stroke-rose-500" : ""}`} />
+            Favorites
+          </button>
+
+          {/* Admin: New item button */}
+          {isAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => { setEditItem(null); setFormOpen(true); }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              New Item
+            </Button>
+          )}
+
+          {/* Sort */}
           <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
             <SelectTrigger className="h-7 text-xs w-[140px] bg-background">
               <SelectValue />
@@ -297,9 +413,9 @@ export function MediaTab({ query }: MediaTabProps) {
       {!isLoading && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>
-            {total === 0
-              ? "No media items found"
-              : `${total.toLocaleString()} item${total !== 1 ? "s" : ""}`}
+            {items.length === 0
+              ? showFavoritesOnly ? "No favorited items" : "No media items found"
+              : `${items.length.toLocaleString()} item${items.length !== 1 ? "s" : ""}${showFavoritesOnly ? " (favorites)" : ""}`}
           </span>
           {isFetching && <Loader2 className="w-3 h-3 animate-spin" />}
         </div>
@@ -324,11 +440,24 @@ export function MediaTab({ query }: MediaTabProps) {
       {!isLoading && items.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
           <Film className="w-12 h-12 text-muted-foreground/30" />
-          <p className="text-lg font-semibold text-muted-foreground">No media items yet</p>
-          <p className="text-sm text-muted-foreground/70 max-w-md">
-            Articles, papers, podcasts, videos, courses, films, and other non-book content will
-            appear here. Use the Admin Console to add media content items.
+          <p className="text-lg font-semibold text-muted-foreground">
+            {showFavoritesOnly ? "No favorites yet" : "No media items yet"}
           </p>
+          <p className="text-sm text-muted-foreground/70 max-w-md">
+            {showFavoritesOnly
+              ? "Click the heart icon on any media card to add it to your favorites."
+              : "Articles, papers, podcasts, videos, courses, films, and other non-book content will appear here."}
+          </p>
+          {isAdmin && !showFavoritesOnly && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => { setEditItem(null); setFormOpen(true); }}
+            >
+              <Plus className="w-3.5 h-3.5" /> Add First Item
+            </Button>
+          )}
         </div>
       )}
 
@@ -336,13 +465,21 @@ export function MediaTab({ query }: MediaTabProps) {
       {!isLoading && items.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {items.map((item) => (
-            <MediaItemCard key={item.id} item={item} />
+            <MediaItemCard
+              key={item.id}
+              item={item}
+              isAdmin={isAdmin}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              isFavorite={mediaFavorites.includes(item.id)}
+              onToggleFavorite={handleToggleFavorite}
+            />
           ))}
         </div>
       )}
 
-      {/* Pagination */}
-      {!isLoading && total > PAGE_SIZE && (
+      {/* Pagination (only when not filtering favorites) */}
+      {!isLoading && !showFavoritesOnly && total > PAGE_SIZE && (
         <div className="flex items-center justify-center gap-3 pt-4">
           <button
             onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
@@ -363,6 +500,24 @@ export function MediaTab({ query }: MediaTabProps) {
           </button>
         </div>
       )}
+
+      {/* Create / Edit dialog */}
+      <MediaItemFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        editItem={editItem ? {
+          id: editItem.id,
+          contentType: editItem.contentType,
+          title: editItem.title,
+          subtitle: editItem.subtitle,
+          description: editItem.description,
+          url: editItem.url,
+          coverImageUrl: editItem.coverImageUrl,
+          publishedDate: editItem.publishedDate,
+          language: editItem.language,
+          authorNames: editItem.authors,
+        } : null}
+      />
     </div>
   );
 }
