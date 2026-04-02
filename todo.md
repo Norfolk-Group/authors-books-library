@@ -1895,8 +1895,8 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Sync manus.md to match claude.md exactly (exact copy, 776 lines)
 
 ## Feature: Add Context7 to Dependencies Tab (March 25, 2026)
-- [ ] Add Context7 card to DependenciesTab third-party section (MCP-based, no API key needed)
-- [ ] Add Context7 health check to healthCheck.router.ts (ping resolve-library-id)
+- [x] Add Context7 card to DependenciesTab third-party section (MCP-based, no API key needed)
+- [x] Add Context7 health check to healthCheck.router.ts (ping resolve-library-id)
 - [ ] Update claude.md and manus.md dependency contracts table
 
 ## Execute Suggestions Sprint (March 25, 2026)
@@ -1908,13 +1908,13 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Update avatar-photo-recency SKILL.md: no authorProfiles.router.ts refs found — already clean
 
 ### Suggestion 2: Regenerate libraryData.ts from Fresh Drive Scan
-- [ ] Trigger Drive rescan via tRPC library.regenerate procedure
-- [ ] Verify new author/book counts in the sidebar match DB counts
+- [x] Trigger Drive rescan via tRPC library.regenerate procedure
+- [x] Verify new author/book counts in the sidebar match DB counts
 
 ### Suggestion 3: Add Context7 to Dependencies Tab
-- [ ] Add Context7 card to DependenciesTab third-party section (MCP-based, no API key)
-- [ ] Add Context7 health check to healthCheck.router.ts (calls checkContext7Health from context7.ts)
-- [ ] Wire context7 health check key into DependenciesTab healthCheckKey field
+- [x] Add Context7 card to DependenciesTab third-party section (MCP-based, no API key)
+- [x] Add Context7 health check to healthCheck.router.ts (calls checkContext7Health from context7.ts)
+- [x] Wire context7 health check key into DependenciesTab healthCheckKey field
 
 ## Feature: Substack & Medium Support (March 25, 2026)
 
@@ -1968,29 +1968,29 @@ Live URL: https://authlib-ehsrgokn.manus.space
 ## Session March 26, 2026 — Expanded Content Model
 
 ### Immediate Fix
-- [ ] Remove "active listening" and any other non-person/non-entity entries from author_profiles DB
-- [ ] Add Drive scan validation: folder name must look like a person or entity name (not a topic/content title) before creating an author record
-- [ ] Audit all author_profiles rows for other false positives (topics, book titles, generic phrases)
+- [x] Remove "active listening" and any other non-person/non-entity entries from author_profiles DB
+- [x] Add Drive scan validation: folder name must look like a person or entity name (not a topic/content title) before creating an author record
+- [x] Audit all author_profiles rows for other false positives (topics, book titles, generic phrases)
 
 ### Phase 1 — CRUD for Authors and Books
-- [ ] Add Create Author form (name, bio, category, avatar upload, links)
-- [ ] Add Edit Author form (all fields editable inline or via modal)
-- [ ] Add Delete Author action (confirmation dialog, cascade to content)
-- [ ] Add Create Book/Content form (title, author, URL, cover upload)
-- [ ] Add Edit Book/Content form
-- [ ] Add Delete Book/Content action
+- [x] Add Create Author form (name, bio, category, avatar upload, links)
+- [x] Add Edit Author form (all fields editable inline or via modal)
+- [x] Add Delete Author action (confirmation dialog, cascade to content)
+- [x] Add Create Book/Content form (title, author, URL, cover upload)
+- [x] Add Edit Book/Content form
+- [x] Add Delete Book/Content action
 
 ### Phase 2 — Tagging System
-- [ ] Add tags table to schema (id, name, slug, color, usageCount)
-- [ ] Add tagsJson column to author_profiles
+- [x] Add tags table to schema (id, name, slug, color, usageCount) — migration 0033 applied
+- [x] Add tagsJson column to author_profiles — migration 0033 applied
 - [ ] Add tagsJson column to book_profiles
 - [ ] Build tag management UI (create, rename, delete tags)
 - [ ] Add inline tag picker on author and book cards
 - [ ] Add tag filter to sidebar and search
 
 ### Phase 3 — content_items Table
-- [ ] Design and add content_items table to schema (22 content types)
-- [ ] Run db:push migration
+- [x] Design and add content_items table to schema (22 content types)
+- [x] Run db:push migration
 - [ ] Migrate existing book_profiles rows into content_items
 - [ ] Update all existing book-related tRPC procedures to use content_items
 - [ ] Update UI to read books from content_items
@@ -2021,9 +2021,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 ### Phase 2 — Unified Books Tab
 - [x] Merge audiobooks into Books tab (remove separate Books Audio tab)
-- [ ] Add format field to book_profiles (physical, digital, audio, combos, none)
-- [ ] Add possessionStatus field to book_profiles (owned, wishlist, reference, borrowed, gifted)
-- [ ] Add format badges on book cards (speaker/document/book icons)
+- [x] Add format field to book_profiles (physical, digital, audio, combos, none)
+- [x] Add possessionStatus field to book_profiles (owned, wishlist, reference, borrowed, gifted)
+- [x] Add format badges on book cards (speaker/document/book icons)
 - [ ] Add format and possession filters within Books tab
 
 ### Phase 3 — Per-Tab Favorites Toggle
@@ -2032,30 +2032,30 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] Add "Show favorites only" heart toggle inside Media tab
 
 ### Phase 4 — Media Tab
-- [ ] Design and add content_items table to schema (all non-book content types)
-- [ ] Run db:push migration
+- [x] Design and add content_items table to schema (all non-book content types)
+- [x] Run db:push migration
 - [ ] Build Media tab UI with sub-filters (Written, Audio & Video, Courses, Film & TV)
 - [ ] Add content type cards with appropriate icons
 
 ### Phase 5 — Author Detail Page Link Hub
-- [ ] Build dedicated author detail page (/author/:id)
-- [ ] Show all platform links with recognizable logos/icons (Twitter, LinkedIn, YouTube, Substack, Medium, etc.)
-- [ ] Show all content items grouped by type (books, articles, podcasts, etc.)
-- [ ] Show all reference links (Wikipedia, Amazon, Goodreads)
+- [x] Build dedicated author detail page (/author/:id)
+- [x] Show all platform links with recognizable logos/icons (Twitter, LinkedIn, YouTube, Substack, Medium, etc.)
+- [x] Show all content items grouped by type (books, articles, podcasts, etc.)
+- [x] Show all reference links (Wikipedia, Amazon, Goodreads)
 
 ### Phase 6 — Book Detail View Link Hub
-- [ ] Build book detail view with purchase/read links (Amazon, Goodreads, publisher) with logos
-- [ ] Show library file links with format icons (PDF, EPUB, audio)
-- [ ] Show related links (Wikipedia, author page, similar books)
+- [x] Build book detail view with purchase/read links (Amazon, Goodreads, publisher) with logos
+- [x] Show library file links with format icons (PDF, EPUB, audio)
+- [x] Show related links (Wikipedia, author page, similar books)
 
 ### Phase 7 — CRUD Forms
-- [ ] Add Create/Edit/Delete Author forms
-- [ ] Add Create/Edit/Delete Book forms
+- [x] Add Create/Edit/Delete Author forms
+- [x] Add Create/Edit/Delete Book forms
 - [ ] Add Create/Edit/Delete Media content forms
 
 ## Session March 26, 2026 — Three Improvements
 - [x] Remove false-positive non-person entries (e.g. "active listening") from libraryData.ts — confirmed DB is clean, no false positives
-- [ ] Add Drive scan validation to reject folder names that are not person/entity names
+- [x] Add Drive scan validation to reject folder names that are not person/entity names
 - [x] Add format field to book_profiles (physical, digital, audio, both, none)
 - [x] Add possessionStatus field to book_profiles (owned, wishlist, reference, borrowed, gifted)
 - [x] Add format/possession badges on book cards
@@ -2110,39 +2110,39 @@ Live URL: https://authlib-ehsrgokn.manus.space
 ## Session March 28, 2026 — Author Name Guardrails
 
 ### Audit
-- [ ] Identify all current false-positive author records in DB (book titles, content types, topic phrases)
-- [ ] Trace entry points: Drive scanner, manual createAuthor, libraryData.ts generation
+- [x] Identify all current false-positive author records in DB (book titles, content types, topic phrases)
+- [x] Trace entry points: Drive scanner, manual createAuthor, libraryData.ts generation
 
 ### Validator
-- [ ] Create shared/authorNameValidator.ts with isLikelyAuthorName() + KNOWN_BAD_AUTHOR_NAMES blocklist
-- [ ] Rules: min 2 words, no content-type keywords (PDF, Transcript, Audio, etc.), no topic phrases, no single common nouns
-- [ ] Write vitest tests for the validator (valid names, edge cases, known bad examples)
+- [x] Create shared/authorNameValidator.ts with isLikelyAuthorName() + KNOWN_BAD_AUTHOR_NAMES blocklist
+- [x] Rules: min 2 words, no content-type keywords (PDF, Transcript, Audio, etc.), no topic phrases, no single common nouns
+- [x] Write vitest tests for the validator (valid names, edge cases, known bad examples)
 
 ### Drive Scanner Guardrail
-- [ ] Apply isLikelyAuthorName() in library.router.ts before emitting an author entry
-- [ ] Log/skip entries that fail validation with a warning
+- [x] Apply isLikelyAuthorName() in library.router.ts before emitting an author entry
+- [x] Log/skip entries that fail validation with a warning
 
 ### DB Write Guardrail
-- [ ] Apply isLikelyAuthorName() in authorProfiles.router.ts createAuthor procedure
-- [ ] Return a typed error if name fails validation (with bypass flag for admin overrides)
+- [x] Apply isLikelyAuthorName() in authorProfiles.router.ts createAuthor procedure
+- [x] Return a typed error if name fails validation (with bypass flag for admin overrides)
 
 ### UI Guardrail
 - [ ] Show warning badge on author cards where name looks suspicious (client-side check)
-- [ ] Add validation to the Add Author form with inline error message
+- [x] Add validation to the Add Author form with inline error message
 
 ### Cleanup
-- [ ] Delete confirmed false-positive author_profiles rows from DB
-- [ ] Remove corresponding entries from libraryData.ts / authorAliases.ts if present
+- [x] Delete confirmed false-positive author_profiles rows from DB
+- [x] Remove corresponding entries from libraryData.ts / authorAliases.ts if present
 
 ### Documentation
-- [ ] Update claude.md with validator architecture and guardrail entry points
+- [x] Update claude.md with validator architecture and guardrail entry points
 
 ## Session Apr 1, 2026 — Platform Redesign (New Requirements)
 
 ### S3-to-Dropbox/Drive One-Way Sync
-- [ ] Design sync engine: S3 → Dropbox with author-based folder structure (NCG Knowledge Library/{Author}/{ContentType}/{Title}/)
-- [ ] Build `syncJobs` table: tracks sync runs, files synced, skipped, errors
-- [ ] Build Dropbox OAuth token refresh flow (server-side)
+- [x] Design sync engine: S3 → Dropbox with author-based folder structure (NCG Knowledge Library/{Author}/{ContentType}/{Title}/)
+- [x] Build `syncJobs` table: tracks sync runs, files synced, skipped, errors
+- [x] Build Dropbox OAuth token refresh flow (server-side)
 - [ ] Implement stream-based S3 → Dropbox transfer (no memory buffering for large audio)
 - [ ] Add `_metadata.json` sidecar per book folder (title, authors, ISBN, rating, summary, S3 URL)
 - [ ] Build Admin → Sync Manager panel: status, Sync Now, schedule toggle, scope selector, Clean Up Mirrors
@@ -2150,76 +2150,76 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] Write vitest tests for sync engine
 
 ### Aggressive Author Biographical Research
-- [ ] Build `authorBioResearch.ts` — 8-source waterfall: Wikipedia → Wikidata → Perplexity → Tavily → Google Knowledge Graph → LinkedIn scrape → Amazon author page → LLM synthesis
-- [ ] Extract: full name, birth date/place, education, career timeline, awards, nationality, languages spoken, family background, physical description, personality traits, known ideologies, causes championed, political/religious leanings (if public), favorite subjects, intellectual influences, notable controversies
-- [ ] Store all raw source responses in `authorBioSourcesJson` column for auditability
-- [ ] Build `bioCompleteness` score (0–100) based on populated fields
-- [ ] Add "Deep Research" button on author modal — triggers full 8-source pipeline
-- [ ] Add "Bio Completeness" badge on author cards (color-coded: red <40, amber 40–70, green >70)
-- [ ] Batch "Research All Authors" action in Admin Console
+- [x] Build `authorBioResearch.ts` — 8-source waterfall: Wikipedia → Wikidata → Perplexity → Tavily → Google Knowledge Graph → LinkedIn scrape → Amazon author page → LLM synthesis
+- [x] Extract: full name, birth date/place, education, career timeline, awards, nationality, languages spoken, family background, physical description, personality traits, known ideologies, causes championed, political/religious leanings (if public), favorite subjects, intellectual influences, notable controversies
+- [x] Store all raw source responses in `authorBioSourcesJson` column for auditability
+- [x] Build `bioCompleteness` score (0–100) based on populated fields
+- [x] Add "Deep Research" button on author modal — triggers full 8-source pipeline
+- [x] Add "Bio Completeness" badge on author cards (color-coded: red <40, amber 40–70, green >70)
+- [x] Batch "Research All Authors" action in Admin Console
 
 ### Digital Author RAG Pipeline
-- [ ] Design `author_rag_profiles` table: ragFileUrl (S3), ragFileKey, ragVersion, ragGeneratedAt, ragWordCount, ragModel, ragStatus (pending/generating/ready/stale)
-- [ ] Build RAG synthesis pipeline: N+1 LLM calls — one per content item chunk + one final synthesis call
-- [ ] RAG file sections: Identity & Biography, Voice & Writing Style, Core Ideology & Worldview, Favorite Subjects & Themes, Personality & Behavioral Traits, Physical Presence & Brand, Causes & Advocacy, Intellectual Influences, Signature Phrases & Rhetorical Patterns, Content Catalog Summary
-- [ ] Store RAG file as structured Markdown in S3 (human-readable + machine-parseable)
-- [ ] Add `ragStatus` indicator on author cards (gray=none, amber=generating, green=ready)
+- [x] Design `author_rag_profiles` table: ragFileUrl (S3), ragFileKey, ragVersion, ragGeneratedAt, ragWordCount, ragModel, ragStatus (pending/generating/ready/stale)
+- [x] Build RAG synthesis pipeline: N+1 LLM calls — one per content item chunk + one final synthesis call
+- [x] RAG file sections: Identity & Biography, Voice & Writing Style, Core Ideology & Worldview, Favorite Subjects & Themes, Personality & Behavioral Traits, Physical Presence & Brand, Causes & Advocacy, Intellectual Influences, Signature Phrases & Rhetorical Patterns, Content Catalog Summary
+- [x] Store RAG file as structured Markdown in S3 (human-readable + machine-parseable)
+- [x] Add `ragStatus` indicator on author cards (gray=none, amber=generating, green=ready)
 - [ ] Build "Generate Digital Me" button on author detail page
-- [ ] Build "Regenerate" button (triggered when new content is added or bio is updated)
-- [ ] Batch "Generate All RAG Files" action in Admin Console with progress bar
-- [ ] Write vitest tests for RAG pipeline
+- [x] Build "Regenerate" button (triggered when new content is added or bio is updated)
+- [x] Batch "Generate All RAG Files" action in Admin Console with progress bar
+- [x] Write vitest tests for RAG pipeline
 
 ### Author Impersonation Chatbot
-- [ ] Build `AuthorChatbot.tsx` page — full-screen chat UI, author avatar in header, "Speaking as {Author Name}" badge
-- [ ] Wire chatbot to RAG file via system prompt injection (RAG file loaded as context)
-- [ ] Add "Chat with {Author}" button on every author card and author detail page
-- [ ] Support multi-turn conversation with conversation history
-- [ ] Add "Reset conversation" button
-- [ ] Show disclaimer: "This is an AI simulation based on {Author}'s published works"
-- [ ] Write vitest tests for chatbot router
+- [x] Build `AuthorChatbot.tsx` page — full-screen chat UI, author avatar in header, "Speaking as {Author Name}" badge
+- [x] Wire chatbot to RAG file via system prompt injection (RAG file loaded as context)
+- [x] Add "Chat with {Author}" button on every author card and author detail page
+- [x] Support multi-turn conversation with conversation history
+- [x] Add "Reset conversation" button
+- [x] Show disclaimer: "This is an AI simulation based on {Author}'s published works"
+- [x] Write vitest tests for chatbot router
 
 ### Schema Migration (prerequisite for all above)
-- [ ] Add `author_rag_profiles` table to drizzle/schema.ts
-- [ ] Add `content_items` table (universal content model)
-- [ ] Add `author_content_links` join table (M:M authors ↔ content)
-- [ ] Add `content_files` table (S3 file tracking per content item)
-- [ ] Add `ingest_sources` table (tracks where content came from)
-- [ ] Add `author_subscriptions` table (periodic refresh subscriptions)
-- [ ] Add `syncJobs` table (Dropbox/Drive sync tracking)
-- [ ] Run pnpm db:push and verify migration
+- [x] Add `author_rag_profiles` table to drizzle/schema.ts
+- [x] Add `content_items` table (universal content model)
+- [x] Add `author_content_links` join table (M:M authors ↔ content)
+- [x] Add `content_files` table (S3 file tracking per content item)
+- [x] Add `ingest_sources` table (tracks where content came from)
+- [x] Add `author_subscriptions` table (periodic refresh subscriptions)
+- [x] Add `syncJobs` table (Dropbox/Drive sync tracking)
+- [x] Run pnpm db:push and verify migration
 
 ### Author Contextual Intelligence (feeds Digital Me personality)
-- [ ] **Geography layer**: birthplace, childhood city, formative cities lived in, current base, countries visited/lived in, cultural regions of influence — sourced from Wikipedia, Wikidata P19/P20/P551, Perplexity
-- [ ] **Historical/era context**: decade born, major world events during formative years (wars, movements, recessions, tech shifts), cultural era they grew up in — used by LLM to explain worldview anchors
-- [ ] **Family & upbringing**: parents' professions, socioeconomic background, siblings, spouse/partner, children, family nationality/religion — sourced from Wikipedia, Perplexity, author's own books/interviews
-- [ ] **Associations & networks**: mentors, proteges, frequent collaborators, intellectual rivals, organizations belonged to (YPO, WEF, TED, Aspen Ideas, etc.), universities attended, fraternities/sororities, religious affiliations, political party (if public)
-- [ ] **Intellectual lineage**: who they cite most, whose ideas they built on, which schools of thought they belong to (e.g., behavioral economics, stoicism, positive psychology), academic advisors
-- [ ] **Formative experiences**: known traumas, pivotal career moments, near-death or transformative experiences mentioned in interviews/books — sourced from Perplexity + book content analysis
-- [ ] Store all contextual layers in `authorContextJson` column (structured JSON with source citations per field)
-- [ ] Feed all contextual layers into RAG file under "Formative Context" section
-- [ ] RAG synthesis prompt must explicitly instruct LLM to use geographic/historical/family context to shape tone, references, and worldview of the Digital Me persona
+- [x] **Geography layer**: birthplace, childhood city, formative cities lived in, current base, countries visited/lived in, cultural regions of influence — sourced from Wikipedia, Wikidata P19/P20/P551, Perplexity
+- [x] **Historical/era context**: decade born, major world events during formative years (wars, movements, recessions, tech shifts), cultural era they grew up in — used by LLM to explain worldview anchors
+- [x] **Family & upbringing**: parents' professions, socioeconomic background, siblings, spouse/partner, children, family nationality/religion — sourced from Wikipedia, Perplexity, author's own books/interviews
+- [x] **Associations & networks**: mentors, proteges, frequent collaborators, intellectual rivals, organizations belonged to (YPO, WEF, TED, Aspen Ideas, etc.), universities attended, fraternities/sororities, religious affiliations, political party (if public)
+- [x] **Intellectual lineage**: who they cite most, whose ideas they built on, which schools of thought they belong to (e.g., behavioral economics, stoicism, positive psychology), academic advisors
+- [x] **Formative experiences**: known traumas, pivotal career moments, near-death or transformative experiences mentioned in interviews/books — sourced from Perplexity + book content analysis
+- [x] Store all contextual layers in `authorContextJson` column (structured JSON with source citations per field)
+- [x] Feed all contextual layers into RAG file under "Formative Context" section
+- [x] RAG synthesis prompt must explicitly instruct LLM to use geographic/historical/family context to shape tone, references, and worldview of the Digital Me persona
 
 ### User Interest Graph & RAG Contrast Engine
-- [ ] **`user_interests` table**: id, userId, topic (text), description (optional), weight (1–5 priority), color (for UI), createdAt, updatedAt
-- [ ] **Admin → My Interests panel**: full CRUD UI — add interest with name + optional description + priority weight, edit inline, delete with confirmation, drag-to-reorder by priority
-- [ ] **Interest categories**: allow grouping interests into clusters (e.g., "Leadership", "Neuroscience", "Business Strategy") — stored as `category` field on interest record
-- [ ] **RAG Contrast Engine** (`server/lib/ragContrast.ts`):
+- [x] **`user_interests` table**: id, userId, topic (text), description (optional), weight (1–5 priority), color (for UI), createdAt, updatedAt
+- [x] **Admin → My Interests panel**: full CRUD UI — add interest with name + optional description + priority weight, edit inline, delete with confirmation, drag-to-reorder by priority
+- [x] **Interest categories**: allow grouping interests into clusters (e.g., "Leadership", "Neuroscience", "Business Strategy") — stored as `category` field on interest record
+- [x] **RAG Contrast Engine** (`server/lib/ragContrast.ts`):
   - For each author with a ready RAG file, run an LLM call: "Given these user interests: [{list}], score this author's alignment on each interest from 0–10 and explain why in one sentence per interest"
   - Store results in `author_interest_scores` table: authorId, interestId, score (0–10), rationale (text), computedAt
   - Re-compute scores automatically when: (a) a new interest is added/edited, (b) an author's RAG file is regenerated
-- [ ] **Interest Alignment view on Author cards**: show top 2–3 matching interests as colored pills with score bars
-- [ ] **Author Discovery by Interest**: in sidebar/filter, allow filtering authors by interest alignment (e.g., "Show authors scoring >7 on Leadership")
-- [ ] **Interest Heatmap in Admin**: matrix view — rows = authors, columns = interests, cells = color-coded score (red=low, green=high) — sortable by column
-- [ ] **Group contrast**: select 2–5 authors and compare their RAG files against a chosen interest — LLM produces a comparative analysis ("How do Adam Grant and Carol Dweck each approach Growth Mindset?")
-- [ ] **Interest-to-Content mapping**: for each interest, surface the top 5 most relevant books/articles/podcasts across all authors (LLM semantic search over RAG files)
-- [ ] **"Why this author?" explainer**: on author card, a button that generates a 3-sentence explanation of why this author is relevant to the user's current interests
-- [ ] Write vitest tests for interest CRUD and contrast scoring
+- [x] **Interest Alignment view on Author cards**: show top 2–3 matching interests as colored pills with score bars
+- [x] **Author Discovery by Interest**: in sidebar/filter, allow filtering authors by interest alignment (e.g., "Show authors scoring >7 on Leadership")
+- [x] **Interest Heatmap in Admin**: matrix view — rows = authors, columns = interests, cells = color-coded score (red=low, green=high) — sortable by column
+- [x] **Group contrast**: select 2–5 authors and compare their RAG files against a chosen interest — LLM produces a comparative analysis ("How do Adam Grant and Carol Dweck each approach Growth Mindset?")
+- [x] **Interest-to-Content mapping**: for each interest, surface the top 5 most relevant books/articles/podcasts across all authors (LLM semantic search over RAG files)
+- [x] **"Why this author?" explainer**: on author card, a button that generates a 3-sentence explanation of why this author is relevant to the user's current interests
+- [x] Write vitest tests for interest CRUD and contrast scoring
 
 ### LLM Model Configuration
-- [ ] Use Claude Opus (claude-opus-4-5 or latest available) as default model for all complex synthesis tasks: contextual intelligence enrichment, Digital Me RAG generation, RAG contrast scoring, group author comparisons
-- [ ] Wire `ANTHROPIC_API_KEY` into all pipeline entry points; use `claude-opus-4-5` model string
-- [ ] Keep Gemini 2.5 Pro as secondary/fallback model where Anthropic is unavailable
-- [ ] Update Admin AI Model config to seed Claude Opus as primary, Gemini 2.5 Pro as secondary
+- [x] Use Claude Opus (claude-opus-4-5 or latest available) as default model for all complex synthesis tasks: contextual intelligence enrichment, Digital Me RAG generation, RAG contrast scoring, group author comparisons
+- [x] Wire `ANTHROPIC_API_KEY` into all pipeline entry points; use `claude-opus-4-5` model string
+- [x] Keep Gemini 2.5 Pro as secondary/fallback model where Anthropic is unavailable
+- [x] Update Admin AI Model config to seed Claude Opus as primary, Gemini 2.5 Pro as secondary
 
 ## Session Apr 1, 2026 — Digital Me RAG Pipeline & Intelligence Features
 
@@ -2243,25 +2243,25 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Push to GitHub and save checkpoint
 
 ### Pending (next session)
-- [ ] Wire Dropbox credentials via Admin → Settings (DROPBOX_ACCESS_TOKEN)
-- [ ] Wire Google Drive credentials via Admin → Settings (GOOGLE_DRIVE_PARENT_FOLDER_ID)
-- [ ] Interest alignment pills on author cards (show top 2–3 matching interests with score bars)
-- [ ] Author Discovery by Interest: sidebar filter by interest alignment score
-- [ ] Interest Heatmap in Admin: matrix view (authors × interests, color-coded scores)
-- [ ] Group contrast: compare 2–5 authors against a chosen interest
-- [ ] "Why this author?" explainer button on author cards
-- [ ] Aggressive biographical research: newspaper archives, oral histories, podcast transcripts
+- [x] Wire Dropbox credentials via Admin → Settings (DROPBOX_ACCESS_TOKEN)
+- [x] Wire Google Drive credentials via Admin → Settings (GOOGLE_DRIVE_PARENT_FOLDER_ID)
+- [x] Interest alignment pills on author cards (show top 2–3 matching interests with score bars)
+- [x] Author Discovery by Interest: sidebar filter by interest alignment score
+- [x] Interest Heatmap in Admin: matrix view (authors × interests, color-coded scores)
+- [x] Group contrast: compare 2–5 authors against a chosen interest
+- [x] "Why this author?" explainer button on author cards
+- [x] Aggressive biographical research: newspaper archives, oral histories, podcast transcripts
 
 ## Session Apr 1, 2026 — Dropbox OAuth 2 Refresh Flow
-- [ ] Add DROPBOX_APP_KEY and DROPBOX_APP_SECRET secrets
-- [ ] Build server/dropboxAuth.ts: exchange refresh token for access token, cache with TTL
-- [ ] Add /api/dropbox/connect endpoint (generates Dropbox authorization URL)
-- [ ] Add /api/dropbox/callback endpoint (exchanges code for refresh token, stores in DB)
-- [ ] Update syncJobs.router.ts to use dropboxAuth helper for all Dropbox API calls
-- [ ] Add Dropbox Connect button in Admin → Sync tab with live connection status
-- [ ] Wire InterestHeatmap and GroupContrast routes into App.tsx
-- [ ] Add navigation links to heatmap and group contrast from sidebar/admin
-- [ ] Admin AI Model config tab: vendor selector, primary/secondary model, renew buttons
+- [x] Add DROPBOX_APP_KEY and DROPBOX_APP_SECRET secrets
+- [x] Build server/dropboxAuth.ts: exchange refresh token for access token, cache with TTL
+- [x] Add /api/dropbox/connect endpoint (generates Dropbox authorization URL)
+- [x] Add /api/dropbox/callback endpoint (exchanges code for refresh token, stores in DB)
+- [x] Update syncJobs.router.ts to use dropboxAuth helper for all Dropbox API calls
+- [x] Add Dropbox Connect button in Admin → Sync tab with live connection status
+- [x] Wire InterestHeatmap and GroupContrast routes into App.tsx
+- [x] Add navigation links to heatmap and group contrast from sidebar/admin
+- [x] Admin AI Model config tab: vendor selector, primary/secondary model, renew buttons
 
 ## Session Apr 1, 2026 — Dropbox OAuth 2 Refresh Flow (Completed)
 - [x] Added DROPBOX_APP_KEY and DROPBOX_APP_SECRET secrets
@@ -2297,11 +2297,11 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] 492 tests passing (34 test files)
 
 ## Session Apr 1, 2026 — Execute All Suggestions
-- [ ] Seed 8 default personal interests into the database
-- [ ] Activate Digital Me for Adam Grant (trigger RAG generation pipeline)
-- [ ] Improve Dropbox OAuth 2 UX: one-click connect with clear redirect and token status
-- [ ] Wire interest scores to author cards in Home.tsx via useLibraryData hook
-- [ ] Add Heatmap and Group Contrast navigation links in sidebar
+- [x] Seed 8 default personal interests into the database
+- [x] Activate Digital Me for Adam Grant (trigger RAG generation pipeline)
+- [x] Improve Dropbox OAuth 2 UX: one-click connect with clear redirect and token status
+- [x] Wire interest scores to author cards in Home.tsx via useLibraryData hook
+- [x] Add Heatmap and Group Contrast navigation links in sidebar
 
 ## Session Apr 1, 2026 — Suggestions Execution Complete
 
@@ -2313,19 +2313,19 @@ Live URL: https://authlib-ehsrgokn.manus.space
 
 ## Session Apr 1, 2026 — Digital Me Batch Generation
 
-- [ ] Generate Digital Me for Simon Sinek (Start With Why, Leaders Eat Last, Infinite Game)
-- [ ] Generate Digital Me for James Clear (Atomic Habits)
-- [ ] Generate Digital Me for Brené Brown (Daring Greatly, Braving the Wilderness)
-- [ ] Run interest scoring for all 4 authors against 8 seeded interests
-- [ ] Verify Interest Heatmap and Group Contrast pages with populated data
+- [x] Generate Digital Me for Simon Sinek (Start With Why, Leaders Eat Last, Infinite Game)
+- [x] Generate Digital Me for James Clear (Atomic Habits)
+- [x] Generate Digital Me for Brené Brown (Daring Greatly, Braving the Wilderness)
+- [x] Run interest scoring for all 4 authors against 8 seeded interests
+- [x] Verify Interest Heatmap and Group Contrast pages with populated data
 
 ## Session Apr 1, 2026 — Flowbite Integration
 
-- [ ] Install flowbite + flowbite-react packages
-- [ ] Wire Flowbite CSS import to index.css (Tailwind v4 CSS-first)
-- [ ] Add flowbite-react Vite plugin to vite.config.ts
-- [ ] Verify coexistence with shadcn/ui (no ThemeProvider conflict)
-- [ ] Restart dev server and confirm no build errors
+- [x] Install flowbite + flowbite-react packages
+- [x] Wire Flowbite CSS import to index.css (Tailwind v4 CSS-first)
+- [x] Add flowbite-react Vite plugin to vite.config.ts
+- [x] Verify coexistence with shadcn/ui (no ThemeProvider conflict)
+- [x] Restart dev server and confirm no build errors
 
 ## Session Apr 1, 2026 — Digital Me + Interest Scoring Execution
 - [x] Digital Me generated for Simon Sinek (Claude Opus, ~2000 words)
@@ -2342,10 +2342,10 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] 492 tests passing (34 test files)
 
 ## Session Apr 1, 2026 — Author DB Audit (False Positives)
-- [ ] Pull all author names from DB and classify with Claude Opus (person vs non-person)
-- [ ] Present flagged non-person entries to user for review
-- [ ] Delete confirmed bad records and all linked data (book_profiles, author_rag_profiles, author_interest_scores)
-- [ ] Add server-side guardrail to prevent future false-positive author creation
+- [x] Pull all author names from DB and classify with Claude Opus (person vs non-person)
+- [x] Present flagged non-person entries to user for review
+- [x] Delete confirmed bad records and all linked data (book_profiles, author_rag_profiles, author_interest_scores)
+- [x] Add server-side guardrail to prevent future false-positive author creation
 - [x] Run tests and save checkpoint (492 tests passing, 34 files)
 
 ## Session Apr 1, 2026 — Author Card Grid Redesign
@@ -2380,9 +2380,9 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Run tests and save checkpoint (492 tests passing, 34 files)
 
 ## Session Apr 2, 2026 — Dropbox Permanent Token Upgrade
-- [ ] Upgrade Dropbox from static token to OAuth 2 permanent refresh token
-- [ ] Verify refresh token stored in DB (app_settings table)
-- [ ] Confirm Admin → Sync shows "Permanent Token" badge
+- [x] Upgrade Dropbox from static token to OAuth 2 permanent refresh token
+- [x] Verify refresh token stored in DB (app_settings table)
+- [x] Confirm Admin → Sync shows "Permanent Token" badge
 - [ ] Save checkpoint
 
 ## Session Apr 2, 2026 — Privacy Policy + Dropbox Fix
@@ -2406,3 +2406,31 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Fix sidebar/stat cards colliding with author cards — fixed w-[--sidebar-width] to w-[var(--sidebar-width)] for Tailwind 4 compatibility
 - [x] Install shadcn components: accordion, avatar, collapsible, table, tooltip
 - [x] Fix tRPC returning HTML instead of JSON — reverted to httpBatchLink with methodOverride: 'POST'
+
+## Session Apr 2, 2026 — Implement First 5 Open Items
+- [x] Update claude.md dependency contracts table with all current services
+- [x] Update manus.md dependency contracts table with all current services
+- [x] Update claude.md with validator architecture and guardrail entry points
+- [x] Add tags table to schema (id, name, slug, color, usageCount) — migration 0033 applied
+- [x] Add tagsJson column to author_profiles — migration 0033 applied
+## Session Apr 2, 2026 — Large File Optimization
+- [x] Audit all source files by size — top candidates: libraryData.ts (4571L), Admin.tsx (1696L), bookProfiles.router.ts (975L), schema.ts (984L), llmCatalogue.ts (899L)
+- [x] Split libraryData.ts (4571L) into libraryAuthors.ts (2970L) + libraryBooks.ts (1597L) + barrel (17L)
+- [x] Split bookProfiles.router.ts (975L) into bookCrud/coverHandlers/enrichmentHandlers via Claude Opus (router now 202L)
+- [x] Run db:push migration for tags table + tagsJson columns (migration 0033_lucky_mindworm.sql)
+- [x] Run tests — 492 tests, 34 files, all passing
+- [ ] Split client/src/pages/Home.tsx into focused sub-components
+- [ ] Split Admin.tsx (1696L) into focused tab components
+- [ ] Split llmCatalogue.ts (899L) into vendor data + scoring + recommendations
+- [ ] Commit and push all changes to GitHub
+
+## Session Apr 2, 2026 — Large File Optimization
+- [x] Audit all source files by size — top candidates: libraryData.ts (4571L), Admin.tsx (1696L), bookProfiles.router.ts (975L), schema.ts (984L), llmCatalogue.ts (899L)
+- [x] Split libraryData.ts (4571L) into libraryAuthors.ts (2970L) + libraryBooks.ts (1597L) + barrel (17L)
+- [x] Split bookProfiles.router.ts (975L) into handler files via Claude Opus (router now 202L)
+- [x] Run db:push migration for tags table + tagsJson columns (migration 0033_lucky_mindworm.sql)
+- [x] Run tests — 492 tests, 34 files, all passing
+- [ ] Split client/src/pages/Home.tsx into focused sub-components
+- [ ] Split Admin.tsx (1696L) into focused tab components
+- [ ] Split llmCatalogue.ts (899L) into vendor data + scoring + recommendations
+- [ ] Commit and push all changes to GitHub

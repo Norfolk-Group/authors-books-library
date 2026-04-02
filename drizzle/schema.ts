@@ -167,6 +167,11 @@ export const authorProfiles = mysqlTable("author_profiles", {
   /** Google Drive folder ID for this author's folder in 02 — Knowledge Library / 01 — Authors */
   driveFolderId: varchar("driveFolderId", { length: 128 }),
   /**
+   * JSON array of tag slugs applied to this author, e.g. ["must-read", "leadership", "favorite"].
+   * Tags are defined in the `tags` table; this column is a denormalized cache for fast filtering.
+   */
+  tagsJson: text("tagsJson"),
+  /**
    * JSON object with structured media presence data across platforms.
    * Shape: {
    *   youtube?: { channelId, channelUrl, subscriberCount, videoCount, totalViews, fetchedAt },
@@ -403,6 +408,11 @@ export const bookProfiles = mysqlTable("book_profiles", {
   possessionStatus: mysqlEnum("possessionStatus", ["owned", "wishlist", "reference", "borrowed", "gifted", "read", "reading", "unread"]),
   /** Google Drive folder ID for this book's folder in 02 — Knowledge Library / 02 — Books by Category */
   driveFolderId: varchar("driveFolderId", { length: 128 }),
+  /**
+   * JSON array of tag slugs applied to this book, e.g. ["must-read", "leadership", "favorite"].
+   * Tags are defined in the `tags` table; this column is a denormalized cache for fast filtering.
+   */
+  tagsJson: text("tagsJson"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -930,6 +940,35 @@ export const authorInterestScores = mysqlTable("author_interest_scores", {
 
 export type AuthorInterestScore = typeof authorInterestScores.$inferSelect;
 export type InsertAuthorInterestScore = typeof authorInterestScores.$inferInsert;
+
+// ── Tags ─────────────────────────────────────────────────────────────────────
+/**
+ * tags — user-defined labels for organizing authors and books.
+ * Tags are displayed as colored pills on cards and can be used for filtering.
+ * The tagsJson column on author_profiles and book_profiles caches the applied slugs.
+ */
+export const tags = mysqlTable("tags", {
+  id: int("id").autoincrement().primaryKey(),
+  /** URL-safe slug, e.g. "must-read", "leadership", "ai-related" */
+  slug: varchar("slug", { length: 128 }).notNull().unique(),
+  /** Display name, e.g. "Must Read", "Leadership", "AI Related" */
+  name: varchar("name", { length: 128 }).notNull(),
+  /** Hex color for the tag pill, e.g. "#3B82F6" */
+  color: varchar("color", { length: 7 }).notNull().default("#6366F1"),
+  /** How many authors + books currently have this tag (denormalized counter) */
+  usageCount: int("usageCount").notNull().default(0),
+  /** Optional description of what this tag means */
+  description: text("description"),
+  /** Display order (for drag-to-reorder in tag manager) */
+  displayOrder: int("displayOrder").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  slugIdx: index("tags_slug_idx").on(table.slug),
+}));
+
+export type Tag = typeof tags.$inferSelect;
+export type InsertTag = typeof tags.$inferInsert;
 
 // ── App Settings ─────────────────────────────────────────────────────────────
 /**

@@ -232,6 +232,13 @@
       "when": 1775083424286,
       "tag": "0032_chunky_green_goblin",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1775115452558,
+      "tag": "0033_lucky_mindworm",
+      "breakpoints": true
     }
   ]
 }

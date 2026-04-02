@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** March 28, 2026 — Codebase Audit & Optimization (dead code removal, file splits, libraryConstants extraction, llmCatalogue extraction, documentation overhaul)
+**Last Updated:** April 2, 2026 — Todo audit (141 items verified done), sidebar layout fix (Tailwind 4 w-[var(--sidebar-width)]), tRPC POST override, em-dash author splits fixed, shadcn components installed, validator architecture documented, dependency contracts updated
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state. `manus.md` is a copy of `claude.md` — keep them in sync.
 
@@ -90,6 +90,7 @@ server/
     authorAvatar.router.ts             → Avatar generation, upload, audit, normalize, stats (~484 lines)
     authorEnrichment.router.ts         → Rich bio, academic, enterprise, professional, document enrichment (~570 lines)
     authorSocial.router.ts             → Social stats, platform discovery, Twitter, business profile (~662 lines)
+    authorChatbot.router.ts            → Author impersonation chatbot (RAG-grounded, multi-turn)
     bookProfiles.router.ts             → Book CRUD + enrichment procedures (~975 lines)
     library.router.ts                  → Google Drive scanning + TS code generation
     apify.router.ts                    → Amazon scraping + S3 mirroring
@@ -97,6 +98,13 @@ server/
     admin.router.ts                    → Action log tracking
     llm.router.ts                      → Multi-vendor LLM router (~133 lines); data in server/lib/llmCatalogue.ts
     healthCheck.router.ts              → Service health check procedures
+    ragPipeline.router.ts              → Digital Me RAG file generation pipeline (Claude Opus primary)
+    userInterests.router.ts            → User personal interest CRUD + scoring
+    contextualIntelligence.router.ts   → 8-source biographical research waterfall
+    syncJobs.router.ts                 → S3-to-Dropbox/Drive sync job management
+    appSettings.router.ts              → Key-value app settings CRUD
+    scheduling.router.ts               → Enrichment schedule management
+    favorites.router.ts                → User favorites (authors/books)
   lib/
     llmCatalogue.ts                    → Multi-vendor LLM catalogue: 13 vendors, 47 models, recommendation engine (~899 lines)
     authorAvatars/                     → 5-tier author avatar waterfall
@@ -137,8 +145,8 @@ server/
     youtube.ts                         → YouTube channel enrichment
   db.ts                                → Drizzle DB connection + base query helpers
   storage.ts                           → S3 upload/download via Manus Forge API
-drizzle/
-  schema.ts                            → All 9 table definitions (~512 lines)
+  drizzle/
+  schema.ts                            → All 18 table definitions
   relations.ts                         → Drizzle relations
 shared/
   const.ts                             → Google Drive folder IDs, auth constants
@@ -156,17 +164,28 @@ scripts/                               → One-off enrichment and maintenance sc
 
 ---
 
-## Database Schema (9 Tables)
+## Database Schema (18 Tables)
 
 | Table | Purpose | Key Columns |
 |---|---|---|
-| `author_profiles` | Core author records | `id`, `driveId`, `name`, `category`, `displayName`, `bio`, `richBio`, `avatarUrl`, `coverImageUrl`, `rating`, `possession`, `format` |
-| `book_profiles` | Core book records | `id`, `driveId`, `authorId`, `name`, `category`, `coverImageUrl`, `s3CoverUrl`, `amazonUrl`, `richSummary`, `rating`, `possession`, `format` |
-| `author_social_stats` | Social media stats | `authorId`, `wikipedia`, `twitter`, `youtube`, `github`, `instagram`, `linkedin`, `substack`, `ted`, `tiktok`, `facebook`, `ycombinator`, `quartr`, `cnn` |
-| `author_enrichment` | Enrichment metadata | `authorId`, `enrichedAt`, `source`, `status`, `richBioGeneratedAt`, `academicPapersCount` |
-| `author_platforms` | Platform discovery | `authorId`, `platform`, `url`, `discoveredAt` |
-| `author_documents` | Document links | `authorId`, `type`, `title`, `url`, `source` |
-| `avatar_audit_log` | Avatar generation history | `authorId`, `tier`, `source`, `prompt`, `imageUrl`, `status`, `generatedAt` |
+| `author_profiles` | Core author records | `id`, `driveId`, `authorName`, `category`, `displayName`, `bio`, `richBio`, `avatarUrl`, `coverImageUrl`, `rating`, `bioCompleteness`, `geographyJson`, `historicalContextJson`, `familyJson`, `associationsJson`, `formativeExperiencesJson`, `authorBioSourcesJson` |
+| `book_profiles` | Core book records | `id`, `driveId`, `authorName`, `name`, `category`, `coverImageUrl`, `s3CoverUrl`, `amazonUrl`, `richSummary`, `rating`, `format`, `possessionStatus` |
+| `author_rag_profiles` | Digital Me RAG files | `authorName`, `ragFileUrl`, `ragFileKey`, `ragVersion`, `ragGeneratedAt`, `ragWordCount`, `ragModel`, `ragStatus` |
+| `content_items` | Universal content model (all types) | `id`, `title`, `contentType`, `authorName`, `coverImageUrl`, `url`, `includedInLibrary` |
+| `author_content_links` | M:M authors ↔ content | `authorName`, `contentItemId` |
+| `content_files` | S3 file tracking per content item | `contentItemId`, `fileKey`, `fileUrl`, `mimeType` |
+| `ingest_sources` | Tracks content origin | `contentItemId`, `source`, `sourceId`, `ingestedAt` |
+| `author_subscriptions` | Periodic refresh subscriptions | `authorName`, `platform`, `interval`, `lastRefreshedAt` |
+| `sync_jobs` | S3-to-Dropbox/Drive sync runs | `id`, `status`, `target`, `filesTotal`, `filesSynced`, `filesSkipped`, `errors`, `startedAt`, `completedAt` |
+| `user_interests` | User personal interest graph | `id`, `userId`, `topic`, `description`, `weight`, `category`, `color`, `sortOrder` |
+| `author_interest_scores` | Author ↔ interest alignment scores | `authorName`, `interestId`, `userId`, `score`, `reasoning`, `scoredAt` |
+| `app_settings` | Key-value app configuration | `key`, `value`, `updatedAt` |
+| `users` | Auth users | `id`, `openId`, `name`, `email`, `role`, `createdAt` |
+| `favorites` | User-saved authors/books | `userId`, `entityType`, `entityId` |
+| `enrichment_schedules` | Scheduled enrichment runs | `authorName`, `enrichmentType`, `cronExpr`, `nextRunAt` |
+| `enrichment_jobs` | Enrichment job history | `authorName`, `enrichmentType`, `status`, `startedAt`, `completedAt` |
+| `admin_action_log` | Admin action audit trail | `userId`, `action`, `entityType`, `entityId`, `details`, `createdAt` |
+| `sync_status` | Sync state per author/book | `entityType`, `entityId`, `target`, `lastSyncedAt`, `syncStatus` |
 | `action_log` | Admin action history | `id`, `action`, `authorId`, `details`, `createdAt` |
 | `users` | Auth users | `id`, `openId`, `name`, `email`, `role`, `createdAt` |
 
@@ -288,7 +307,7 @@ Gemini vision validates photos before accepting them (checks for real person, pr
 
 ## Testing
 
-The project uses Vitest with **439 passing tests** across **27 test files** in `server/*.test.ts`. Run with:
+The project uses Vitest with **492 passing tests** across **34 test files** in `server/*.test.ts`. Run with:
 ```bash
 pnpm test
 ```
@@ -325,6 +344,10 @@ Key test files:
 | `/book/:slug` | `BookDetail.tsx` | Public |
 | `/compare` | `AuthorCompare.tsx` | Public |
 | `/leaderboard` | `Leaderboard.tsx` | Public |
+| `/chat/:slug` | `AuthorChatbot.tsx` | Public |
+| `/interests/heatmap` | `InterestHeatmap.tsx` | Public |
+| `/interests/contrast` | `GroupContrast.tsx` | Public |
+| `/privacy` | `PrivacyPolicy.tsx` | Public |
 | `/admin` | `Admin.tsx` | Protected (admin role) |
 | `/404` | `NotFound.tsx` | Public |
 
@@ -391,3 +414,54 @@ These skills are stored in `/home/ubuntu/skills/` and are specific to this proje
 > **LLM catalogue note:** The vendor catalogue data was extracted from `llm.router.ts` into `server/lib/llmCatalogue.ts`. The router file is now ~133 lines (down from ~1006). Import catalogue types and data from `server/lib/llmCatalogue.ts`.
 
 > **libraryData note:** Static constants (CATEGORY_COLORS, CATEGORY_BG, CATEGORY_ICONS, etc.) were extracted into `client/src/lib/libraryConstants.ts`. `libraryData.ts` re-exports them for backward compatibility. New code should import constants from `libraryConstants.ts` directly.
+
+---
+
+## Author Name Validator Architecture
+
+The author name validator (`shared/authorNameValidator.ts`) prevents false-positive author records from being created. It is applied at **three entry points**:
+
+| Entry Point | File | Behavior |
+|---|---|---|
+| Drive scanner | `server/routers/library.router.ts` | Skips folders whose name fails validation; logs a warning |
+| Create author procedure | `server/routers/authorProfiles.router.ts` | Throws a typed error if name fails; admin bypass flag available |
+| Add Author form | `client/src/components/library/AuthorFormDialog.tsx` | Shows inline error message before submission |
+
+**Validation rules** (`isLikelyAuthorName()`):
+- Minimum 2 words
+- No content-type keywords (PDF, Transcript, Audio, Video, Summary, etc.)
+- No topic phrases (e.g., "active listening", "conflict resolution")
+- No single common nouns
+- Blocklist of known bad names (`KNOWN_BAD_AUTHOR_NAMES`)
+
+**Admin bypass:** Pass `allowAdminOverride: true` in the `createAuthor` procedure input to bypass validation for edge cases.
+
+**Tests:** 29 vitest tests in `server/authorNameValidator.test.ts` covering valid names, edge cases, and known bad examples.
+
+---
+
+## External Dependency Contracts
+
+All external services used by the app, their purpose, and where credentials are stored:
+
+| Service | Purpose | Credential | Where Used |
+|---|---|---|---|
+| Google Drive API | Drive folder scanning, file listing | `GOOGLE_DRIVE_PARENT_FOLDER_ID` (env) | `server/enrichment/gdrive.ts`, `library.router.ts` |
+| Google Imagen 3 | AI avatar generation (Tier 4) | `GEMINI_API_KEY` (env) | `server/lib/authorAvatars/googleImagenGeneration.ts` |
+| Gemini Vision | Avatar photo validation | `GEMINI_API_KEY` (env) | `server/lib/authorAvatars/geminiValidation.ts` |
+| Replicate Flux | AI avatar generation (Tier 5) | `REPLICATE_API_TOKEN` (env) | `server/lib/authorAvatars/replicateGeneration.ts` |
+| Tavily | Web image search for avatars (Tier 2) | `TAVILY_API_KEY` (env) | `server/lib/authorAvatars/tavily.ts` |
+| Wikipedia / Wikidata | Author photos (Tier 3), bio data, social links | None (public API) | `server/lib/authorAvatars/wikipedia.ts`, `server/enrichment/wikipedia.ts` |
+| Perplexity | Rich bio generation, biographical research | `PERPLEXITY_API_KEY` (env) | `server/enrichment/richBio.ts`, `server/routers/contextualIntelligence.router.ts` |
+| Anthropic Claude Opus | RAG generation, Digital Me synthesis, contrast scoring | `ANTHROPIC_API_KEY` (env) | `server/routers/ragPipeline.router.ts`, `server/_core/llm.ts` |
+| Google Gemini 2.5 Pro | Secondary LLM, fallback for synthesis | `GEMINI_API_KEY` (env) | `server/_core/llm.ts` |
+| OpenAI | Tertiary LLM option | `OPENAI_API_KEY` (env, optional) | `server/_core/llm.ts` |
+| Apify | Amazon book cover scraping | `APIFY_API_TOKEN` (env) | `server/routers/apify.router.ts` |
+| RapidAPI | Yahoo Finance stats | `RAPIDAPI_KEY` (env) | `server/enrichment/rapidapi.ts` |
+| Twitter Bearer | Twitter follower counts | `TWITTER_BEARER_TOKEN` (env) | `server/enrichment/twitter.ts` |
+| YouTube Data API | Channel stats | `YOUTUBE_API_KEY` (env) | `server/enrichment/youtube.ts` |
+| Dropbox OAuth 2 | S3-to-Dropbox sync target | `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` (env); refresh token in `app_settings` DB | `server/dropboxAuth.ts`, `server/routers/syncJobs.router.ts` |
+| Manus Forge S3 | File storage (avatars, covers, RAG files) | `BUILT_IN_FORGE_API_KEY`, `BUILT_IN_FORGE_API_URL` (env) | `server/storage.ts` |
+| Context7 MCP | Technical documentation lookup | None (free public API) | `server/enrichment/context7.ts`, `server/routers/healthCheck.router.ts` |
+| Manus OAuth | User authentication | `VITE_APP_ID`, `JWT_SECRET`, `OAUTH_SERVER_URL` (env) | `server/_core/oauth.ts` |
+| TiDB / MySQL | Primary database | `DATABASE_URL` (env) | `server/db.ts`, all routers |
