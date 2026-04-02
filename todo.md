@@ -2393,7 +2393,7 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Complete Dropbox permanent token OAuth flow (refresh token stored, connected as ricardo@cidale.com)
 
 ## Session Apr 2, 2026 — Admin Console Enhancements
-- [ ] Fix tRPC 414 error permanently (enable POST for queries on server side)
+- [x] Fix tRPC 414 error permanently (switched to httpBatchStreamLink which uses POST by default)
 - [ ] Add "Run All" cascade button to Data Pipeline section
 - [ ] Add sidebar badge counts and running indicators
 - [ ] Add search/filter bar to Admin sidebar
@@ -2403,3 +2403,5 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Remove "Active Listening" from author_profiles DB table if present (not needed - was a UI bug from em-dash)
 - [x] Delete unused team-switcher.tsx to fix TypeScript errors
 - [x] Fix 15 author entries using em-dash (–) instead of hyphen (-) causing false author card splits
+- [x] Fix sidebar/stat cards colliding with author cards — fixed w-[--sidebar-width] to w-[var(--sidebar-width)] for Tailwind 4 compatibility
+- [x] Install shadcn components: accordion, avatar, collapsible, table, tooltip
