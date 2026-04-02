@@ -5,6 +5,7 @@
  */
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { InlineTagSelector } from "@/components/InlineTagSelector";
 import {
   Dialog,
   DialogContent,
@@ -109,6 +110,10 @@ export function BookFormDialog({
     possessionStatus: (initialData?.possessionStatus as PossessionStatus) ?? "",
   }));
 
+  const [selectedTagSlugs, setSelectedTagSlugs] = useState<string[]>([]);
+
+  const applyTagMutation = trpc.tags.applyToEntity.useMutation();
+
   const enrichBookMutation = trpc.bookProfiles.enrich.useMutation({
     onSuccess: (data) => {
       if (!data?.skipped) {
@@ -123,17 +128,27 @@ export function BookFormDialog({
   });
 
   const createMutation = trpc.bookProfiles.createBook.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(`"${data?.bookTitle}" added to your library.`, {
         description: "Enrichment running in background — cover and summary will populate shortly.",
       });
       utils.bookProfiles.getMany.invalidate();
       utils.library.getStats.invalidate();
+      // Apply selected tags after creation
+      for (const slug of selectedTagSlugs) {
+        applyTagMutation.mutate({
+          entityType: "book",
+          entityKey: form.bookTitle,
+          tagSlug: slug,
+          action: "add",
+        });
+      }
       // Fire-and-forget enrichment
       enrichBookMutation.mutate({ bookTitle: form.bookTitle, authorName: form.authorName || undefined });
       onSuccess?.(form.bookTitle);
       onOpenChange(false);
       setForm(EMPTY);
+      setSelectedTagSlugs([]);
     },
     onError: (err) => {
       toast.error(err.message);
@@ -141,10 +156,20 @@ export function BookFormDialog({
   });
 
   const updateMutation = trpc.bookProfiles.updateBook.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(`"${form.bookTitle}" saved successfully.`);
+      // Apply any newly selected tags
+      for (const slug of selectedTagSlugs) {
+        applyTagMutation.mutate({
+          entityType: "book",
+          entityKey: form.bookTitle,
+          tagSlug: slug,
+          action: "add",
+        });
+      }
       utils.bookProfiles.get.invalidate({ bookTitle: form.bookTitle });
       utils.bookProfiles.getMany.invalidate();
+      utils.tags.getAllBookTagSlugs.invalidate();
       onSuccess?.(form.bookTitle);
       onOpenChange(false);
     },
@@ -279,6 +304,15 @@ export function BookFormDialog({
                     placeholder="Brief description of the book…"
                     rows={3}
                     className="bg-[#12122a] border-[#2a2a4a] text-[#e8e8f0] placeholder:text-[#4a4a6a] focus:border-[#c9b96e] resize-none"
+                  />
+                </div>
+
+                {/* Tags */}
+                <div className="space-y-1.5">
+                  <InlineTagSelector
+                    selectedSlugs={selectedTagSlugs}
+                    onChange={setSelectedTagSlugs}
+                    dark
                   />
                 </div>
 

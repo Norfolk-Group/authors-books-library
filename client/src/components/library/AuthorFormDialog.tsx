@@ -5,6 +5,7 @@
  */
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { InlineTagSelector } from "@/components/InlineTagSelector";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ import { validateAuthorName } from "../../../../shared/authorNameValidator";
 
 interface AuthorFormData {
   authorName: string;
+  selectedTagSlugs?: string[];
   category: string;
   bio: string;
   avatarUrl: string;
@@ -60,6 +62,7 @@ interface AuthorFormDialogProps {
 
 const EMPTY: AuthorFormData = {
   authorName: "",
+  selectedTagSlugs: [],
   category: "",
   bio: "",
   avatarUrl: "",
@@ -107,12 +110,18 @@ export function AuthorFormDialog({
 }: AuthorFormDialogProps) {
   const isEdit = !!initialData;
 
- const utils = trpc.useUtils();
+  const utils = trpc.useUtils();
 
   const [form, setForm] = useState<AuthorFormData>(() => ({
     ...EMPTY,
     ...initialData,
   }));
+
+  const [selectedTagSlugs, setSelectedTagSlugs] = useState<string[]>(
+    initialData?.selectedTagSlugs ?? []
+  );
+
+  const applyTagMutation = trpc.tags.applyToEntity.useMutation();
 
   const enrichMutation = trpc.authorProfiles.enrich.useMutation({
     onSuccess: (data) => {
@@ -128,17 +137,27 @@ export function AuthorFormDialog({
   });
 
   const createMutation = trpc.authorProfiles.createAuthor.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(`"${data?.authorName}" added to your library.`, {
         description: "Enrichment running in background — bio and links will populate shortly.",
       });
       utils.authorProfiles.getMany.invalidate();
       utils.library.getStats.invalidate();
+      // Apply selected tags after creation
+      for (const slug of selectedTagSlugs) {
+        applyTagMutation.mutate({
+          entityType: "author",
+          entityKey: form.authorName,
+          tagSlug: slug,
+          action: "add",
+        });
+      }
       // Fire-and-forget enrichment
       enrichMutation.mutate({ authorName: form.authorName });
       onSuccess?.(form.authorName);
       onOpenChange(false);
       setForm(EMPTY);
+      setSelectedTagSlugs([]);
     },
     onError: (err) => {
       toast.error(err.message);
@@ -146,10 +165,20 @@ export function AuthorFormDialog({
   });
 
   const updateMutation = trpc.authorProfiles.updateAuthor.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(`"${form.authorName}" saved successfully.`);
+      // Apply any newly selected tags (add only — removals handled via TagPicker on the card)
+      for (const slug of selectedTagSlugs) {
+        applyTagMutation.mutate({
+          entityType: "author",
+          entityKey: form.authorName,
+          tagSlug: slug,
+          action: "add",
+        });
+      }
       utils.authorProfiles.get.invalidate({ authorName: form.authorName });
       utils.authorProfiles.getMany.invalidate();
+      utils.tags.getAllAuthorTagSlugs.invalidate();
       onSuccess?.(form.authorName);
       onOpenChange(false);
     },
@@ -254,6 +283,15 @@ export function AuthorFormDialog({
                     className="bg-[#12122a] border-[#2a2a4a] text-[#e8e8f0] placeholder:text-[#4a4a6a] focus:border-[#c9b96e] resize-none"
                   />
                 </div>
+              </div>
+
+              {/* Tags */}
+              <div className="space-y-1.5">
+                <InlineTagSelector
+                  selectedSlugs={selectedTagSlugs}
+                  onChange={setSelectedTagSlugs}
+                  dark
+                />
               </div>
 
               {/* Platform links */}

@@ -83,15 +83,54 @@ export const tagsRouter = router({
     .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database unavailable");
+
+      // Fetch the current tag so we know the old slug before renaming
+      const [current] = await db.select().from(tags).where(eq(tags.id, input.id)).limit(1);
+      if (!current) throw new Error("Tag not found");
+      const oldSlug = current.slug;
+
       const updates: Partial<typeof tags.$inferInsert> = {};
+      let newSlug: string | undefined;
       if (input.name !== undefined) {
         updates.name = input.name;
-        updates.slug = slugify(input.name);
+        newSlug = slugify(input.name);
+        updates.slug = newSlug;
       }
       if (input.color !== undefined) updates.color = input.color;
       if (input.description !== undefined) updates.description = input.description;
       if (input.displayOrder !== undefined) updates.displayOrder = input.displayOrder;
       await db.update(tags).set(updates).where(eq(tags.id, input.id));
+
+      // ── Cascade slug rename to all tagsJson arrays ──────────────────────
+      if (newSlug && newSlug !== oldSlug) {
+        // Update author_profiles
+        const authorRows = await db
+          .select({ authorName: authorProfiles.authorName, tagsJson: authorProfiles.tagsJson })
+          .from(authorProfiles)
+          .where(sql`JSON_SEARCH(${authorProfiles.tagsJson}, 'one', ${oldSlug}) IS NOT NULL`);
+        for (const row of authorRows) {
+          const slugs = parseTagsJson(row.tagsJson);
+          const renamed = slugs.map((s) => (s === oldSlug ? newSlug! : s));
+          await db
+            .update(authorProfiles)
+            .set({ tagsJson: JSON.stringify(renamed) })
+            .where(eq(authorProfiles.authorName, row.authorName));
+        }
+        // Update book_profiles
+        const bookRows = await db
+          .select({ bookTitle: bookProfiles.bookTitle, tagsJson: bookProfiles.tagsJson })
+          .from(bookProfiles)
+          .where(sql`JSON_SEARCH(${bookProfiles.tagsJson}, 'one', ${oldSlug}) IS NOT NULL`);
+        for (const row of bookRows) {
+          const slugs = parseTagsJson(row.tagsJson);
+          const renamed = slugs.map((s) => (s === oldSlug ? newSlug! : s));
+          await db
+            .update(bookProfiles)
+            .set({ tagsJson: JSON.stringify(renamed) })
+            .where(eq(bookProfiles.bookTitle, row.bookTitle));
+        }
+      }
+
       const [updated] = await db.select().from(tags).where(eq(tags.id, input.id)).limit(1);
       return updated;
     }),
