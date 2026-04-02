@@ -17,11 +17,8 @@ import { BackToTop } from "@/components/BackToTop";
 import {
   SidebarProvider,
   SidebarInset,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -48,6 +45,7 @@ import { StatCard, EmptyState } from "@/components/library/LibraryPrimitives";
 import { FloatingBooks } from "@/components/FloatingBooks";
 import { STATS, type BookEnrichmentLevel } from "@/components/library/libraryConstants";
 import { LibrarySidebar, type TabType } from "@/components/library/LibrarySidebar";
+import { LibraryHeader } from "@/components/library/LibraryHeader";
 import { useLibraryCrud } from "@/hooks/useLibraryCrud";
 import { PlusCircle } from "lucide-react";
 import {
@@ -59,17 +57,15 @@ import {
 import { trpc } from "@/lib/trpc";
 
 import {
-  Search,
   BookOpen,
   Users,
   LayoutGrid,
-  ChevronRight,
-  X,
   Headphones,
   ArrowUpDown,
   Heart,
   Sparkles,
   Film,
+  X,
 } from "lucide-react";
 
 // ── Enrichment label config ───────────────────────────────────────────────────
@@ -96,16 +92,24 @@ export default function Home() {
   const [bookSort, setBookSort] = useLocalStorage<BookSort>("lib:bookSort", "name-asc");
   const [enrichFilter, setEnrichFilter] = useLocalStorage<BookEnrichmentLevel | "all">("lib:enrichFilter", "all");
   const [possessionFilter, setPossessionFilter] = useLocalStorage<string>("lib:possessionFilter", "all");
-  const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set());
-  const toggleTagSlug = useCallback((slug: string) => {
+  const [_savedTagSlugs, _setSavedTagSlugs] = useLocalStorage<string[]>("lib:selectedTagSlugs", []);
+  const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(() => new Set(_savedTagSlugs));
+  const _setSelectedTagSlugsAndPersist = useCallback((updater: Set<string> | ((prev: Set<string>) => Set<string>)) => {
     setSelectedTagSlugs((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      _setSavedTagSlugs(Array.from(next));
+      return next;
+    });
+  }, [_setSavedTagSlugs]);
+  const toggleTagSlug = useCallback((slug: string) => {
+    _setSelectedTagSlugsAndPersist((prev) => {
       const next = new Set(prev);
       if (next.has(slug)) next.delete(slug);
       else next.add(slug);
       return next;
     });
-  }, []);
-  const clearTagFilters = useCallback(() => setSelectedTagSlugs(new Set()), []);
+  }, [_setSelectedTagSlugsAndPersist]);
+  const clearTagFilters = useCallback(() => _setSelectedTagSlugsAndPersist(new Set()), [_setSelectedTagSlugsAndPersist]);
 
   // Modal state
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorEntry | null>(null);
@@ -188,10 +192,11 @@ export default function Home() {
     richSummarySet, richBioSet, dbAvatarMap, researchQualityMap, platformLinksMap, bookInfoMap,
     authorFreshnessMap, bookFreshnessMap,
     filteredAuthors, filteredBooks, filteredAudio, authorCounts, bookCounts,
+    bookTagsMap,
     getBio, isAuthenticated,
   } = data;
 
-  const hasFilters = selectedCategories.size > 0 || query.length > 0 || enrichFilter !== "all";
+  const hasFilters = selectedCategories.size > 0 || query.length > 0 || enrichFilter !== "all" || selectedTagSlugs.size > 0;
 
   // Compute category counts for the active tab
   const categoryCounts = activeTab === "authors" ? authorCounts : bookCounts;
@@ -230,35 +235,13 @@ export default function Home() {
 
         {/* -- Main Content -- */}
         <SidebarInset className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border px-3 sm:px-6 py-3 flex items-center gap-2 sm:gap-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="h-5" />
-            <div className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">Ricardo Cidale's Library</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-              <span className="capitalize">{tabDisplayName(activeTab)}</span>
-              {selectedCategories.size > 0 && (
-                <>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                  <span>{selectedCategories.size} filter{selectedCategories.size > 1 ? "s" : ""}</span>
-                </>
-              )}
-            </div>
-            <div className="ml-auto relative w-full sm:w-64 max-w-xs search-glow rounded-md border border-transparent">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Search authors, books, topics..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-9 pr-8 h-8 text-sm bg-background"
-              />
-              {query && (
-                <button onClick={() => setQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          </header>
+          <LibraryHeader
+            activeTab={activeTab}
+            tabDisplayName={tabDisplayName}
+            selectedCategoriesSize={selectedCategories.size}
+            query={query}
+            setQuery={setQuery}
+          />
 
           <main ref={mainRef} className="flex-1 px-3 sm:px-6 py-4 sm:py-6 overflow-auto">
             {/* Stats strip */}
@@ -302,6 +285,16 @@ export default function Home() {
                     </Badge>
                   ) : null;
                 })()}
+                {Array.from(selectedTagSlugs).map((slug) => {
+                  const tag = (data.allTags ?? []).find((t: { slug: string; name: string; color: string }) => t.slug === slug);
+                  if (!tag) return null;
+                  return (
+                    <Badge key={slug} variant="secondary" className="gap-1 text-xs" style={{ borderColor: tag.color, color: tag.color, backgroundColor: tag.color + "22" }}>
+                      {tag.name}
+                      <button onClick={() => toggleTagSlug(slug)}><X className="w-3 h-3" /></button>
+                    </Badge>
+                  );
+                })}
                 <button onClick={clearFilters} className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2">Clear all</button>
               </div>
             )}
@@ -604,6 +597,7 @@ export default function Home() {
                               possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
                               onEditClick={isAuthenticated ? () => openEditBook(titleKey) : undefined}
                               onDeleteClick={isAuthenticated ? () => openDeleteBook(titleKey) : undefined}
+                              currentTagSlugs={Array.from(bookTagsMap.get(tk) ?? [])}
                             />
                           </div>
                         );
@@ -729,6 +723,7 @@ export default function Home() {
                                     possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
                                     onEditClick={isAuthenticated ? () => openEditBook(titleKey) : undefined}
                                     onDeleteClick={isAuthenticated ? () => openDeleteBook(titleKey) : undefined}
+                                    currentTagSlugs={Array.from(bookTagsMap.get(tk) ?? [])}
                                   />
                                 </div>
                               );

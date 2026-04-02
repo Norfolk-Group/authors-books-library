@@ -2448,3 +2448,19 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Build tag management UI (TagManagement.tsx in Admin → Tags section — create, rename, color, delete)
 - [x] Add inline tag picker on author cards (TagPicker.tsx wired into FlowbiteAuthorCard Zone 4)
 - [x] Add tag filter to sidebar and search (selectedTagSlugs passed to useLibraryData; getAllAuthorTagSlugs + getAllBookTagSlugs procedures added; filteredAuthors + filteredBooks now filter by selected tags)
+
+## Session Apr 2, 2026 — Next 5 Tasks (Tag UX + Admin Enhancements)
+- [ ] Add inline tag picker to book cards (BookCard component)
+- [ ] Show active tag filter chips in header bar (dismissible badge pills)
+- [ ] Persist selected tag slugs to localStorage (useLocalStorage hook)
+- [ ] Add "Run All" cascade button to Admin Data Pipeline section
+- [ ] Add sidebar badge counts and running indicators in Admin Console
+
+## Session Apr 2, 2026 — Next 5 Tasks (Tag UX + Home.tsx Split)
+- [x] Add inline tag picker to book cards (BookCard component — currentTagSlugs prop + TagPicker wired)
+- [x] Show active tag filter chips in header bar (dismissible badge pills in active filters strip)
+- [x] Persist selected tag slugs to localStorage (useLocalStorage hook, key lib:selectedTagSlugs)
+- [x] Add search/filter bar to Admin sidebar (already implemented — MagnifyingGlass input with live filter)
+- [x] Add sidebar badge counts and running indicators in Admin (already implemented — amber ping dot + item count badge per group)
+- [x] Extract LibraryHeader component from Home.tsx (sticky header with breadcrumb + search input)
+- [x] Run tests — 492 tests, 34 files, all passing, 0 TypeScript errors

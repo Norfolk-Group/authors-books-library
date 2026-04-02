@@ -36,6 +36,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { BookEnrichmentBadge } from "@/components/BookEnrichmentBadge";
 import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "@/components/library/FreshnessDot";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
+import { TagPicker } from "@/components/TagPicker";
 import { Link } from "wouter";
 
 function slugifyBook(name: string) {
@@ -85,6 +86,8 @@ interface BookCardProps {
   onEditClick?: () => void;
   /** Called when Delete Book is selected from the card menu */
   onDeleteClick?: () => void;
+  /** Current tag slugs applied to this book (for TagPicker) */
+  currentTagSlugs?: string[];
 }
 
 export function BookCard({
@@ -111,6 +114,7 @@ export function BookCard({
   possessionStatus,
   onEditClick,
   onDeleteClick,
+  currentTagSlugs = [],
 }: BookCardProps) {
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
@@ -475,6 +479,16 @@ export function BookCard({
             </div>
           </div>
         )}
+
+        {/* ── Row 4: Tag picker ────────────────────────────────────────── */}
+        <div className="px-4 py-1.5 relative z-10" onClick={(e) => e.stopPropagation()}>
+          <TagPicker
+            entityType="book"
+            entityKey={displayTitle}
+            currentTagSlugs={currentTagSlugs}
+            showApplied
+          />
+        </div>
 
         {/* Discreet link — View Full Book Profile */}
         <div className="px-4 pb-3 pt-1 relative z-10" onClick={(e) => e.stopPropagation()}>

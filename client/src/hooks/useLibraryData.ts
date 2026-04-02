@@ -230,6 +230,7 @@ export function useLibraryData({
   }, [allFavoritesQuery.data, allFavoritesQuery.isLoading]);
 
   // ── Tag filtering ──────────────────────────────────────────────────────
+  const allTagsQuery = trpc.tags.list.useQuery(undefined, { staleTime: 5 * 60_000 });
   const authorTagsQuery = trpc.tags.getAllAuthorTagSlugs.useQuery(undefined, { staleTime: 5 * 60_000 });
   const bookTagsQuery = trpc.tags.getAllBookTagSlugs.useQuery(undefined, { staleTime: 5 * 60_000 });
 
@@ -485,6 +486,11 @@ export function useLibraryData({
     filteredAudio,
     authorCounts,
     bookCounts,
+    // tag maps (for inline pickers)
+    bookTagsMap,
+    authorTagsMap,
+    // all tags list (for filter chip labels)
+    allTags: allTagsQuery.data ?? [],
     // helpers
     getBio,
     isAuthenticated,
