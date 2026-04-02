@@ -999,7 +999,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Jefferson Fisher – Conflict resolution and confident communication",
+    "name": "Jefferson Fisher - Conflict resolution and confident communication",
     "id": "1aL3qSo-dq37o5tHssXqKplsDUKiM_4VK",
     "category": "Leadership & Management",
     "books": [
@@ -1178,8 +1178,7 @@ export const AUTHORS: AuthorEntry[] = [
       }
     ]
   },
-  {
-    "name": "Al Ries – Positioning strategy and brand differentiation",
+  {"name": "Al Ries - Positioning strategy and brand differentiation",
     "id": "17CC2rbrC989kw3gT5Vr6ZSYpouh86J1I",
     "category": "Strategy & Economics",
     "books": [
@@ -1318,7 +1317,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Emma Leigh Weber – Empathic communication and active listening",
+    "name": "Emma Leigh Weber - Empathic communication and active listening",
     "id": "1TEJqldgiRikqhaxAWcxVOPZhBigB5yfj",
     "category": "Communication & Storytelling",
     "books": [
@@ -1460,7 +1459,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Jim Camp – Decision-based negotiation and assertive strategy",
+    "name": "Jim Camp - Decision-based negotiation and assertive strategy",
     "id": "1wSB35OEZh9PGeYhNy4OzeGYpUjQUru4a",
     "category": "Sales & Negotiation",
     "books": [
@@ -1580,7 +1579,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Jeb Blount – Sales acceleration and prospecting mastery",
+    "name": "Jeb Blount - Sales acceleration and prospecting mastery",
     "id": "1klsK3ynbxq6mtM0JscZgFx6ir9YXaGiN",
     "category": "Sales & Negotiation",
     "books": [
@@ -1676,7 +1675,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Sean Ellis – Growth hacking and startup scaling",
+    "name": "Sean Ellis - Growth hacking and startup scaling",
     "id": "1fUkvtxhiKuc4lEvlzlMpMOu09ubQ53gI",
     "category": "Sales & Negotiation",
     "books": [
@@ -1805,7 +1804,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Ray Kurzweil – Futurism, AI, and human longevity",
+    "name": "Ray Kurzweil - Futurism, AI, and human longevity",
     "id": "10R1G4tc2m7dPIZ79rdcvgPG3ceAshmK8",
     "category": "Technology & Futurism",
     "books": [
@@ -1848,7 +1847,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Ezra Klein – Political polarization and institutional reform",
+    "name": "Ezra Klein - Political polarization and institutional reform",
     "id": "1io5fu6D0KHCuTnI3fgvhEk_qsraLfIqW",
     "category": "Technology & Futurism",
     "books": [
@@ -1890,7 +1889,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Eric Topol – Digital health, AI, and longevity",
+    "name": "Eric Topol - Digital health, AI, and longevity",
     "id": "1cymfhwhwkK_uHBa8LRKjuUZJ1qDcfoXg",
     "category": "Technology & Futurism",
     "books": []
@@ -1944,7 +1943,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Dan Harris – Mindfulness advocacy and practical meditation",
+    "name": "Dan Harris - Mindfulness advocacy and practical meditation",
     "id": "1XNMVAmqlJWlOVe-luTWKMVNS-pgx30Nh",
     "category": "Self-Help & Productivity",
     "books": [
@@ -1958,7 +1957,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Darrell Huff – Statistical skepticism and data literacy",
+    "name": "Darrell Huff - Statistical skepticism and data literacy",
     "id": "1yoSNT17sJBphreJQzeOEP8lDrvIFZPhn",
     "category": "Self-Help & Productivity",
     "books": [
@@ -2014,7 +2013,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Cal Newport – Deep work and sustainable productivity",
+    "name": "Cal Newport - Deep work and sustainable productivity",
     "id": "1qFB0DQo1h1Kq_ULEcmHnkseWutNt_KNS",
     "category": "Self-Help & Productivity",
     "books": [
@@ -2225,7 +2224,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Alison Wood Brooks – Behavioral science and conversational mastery",
+    "name": "Alison Wood Brooks - Behavioral science and conversational mastery",
     "id": "1esRx92MFt9Oyv6Gq-sqIlSfOhN4iC2Xd",
     "category": "Behavioral Science & Psychology",
     "books": [
@@ -2304,8 +2303,7 @@ export const AUTHORS: AuthorEntry[] = [
       }
     ]
   },
-  {
-    "name": "Rhea Orion – Consensual nonmonogamy and relationship therapy",
+  {"name": "Rhea Orion - Consensual nonmonogamy and relationship therapy",
     "id": "1TuZEuNGDyuiXe9BXx3IWhJ0R3EfJHoep",
     "category": "Behavioral Science & Psychology",
     "books": [
@@ -2365,8 +2363,7 @@ export const AUTHORS: AuthorEntry[] = [
       }
     ]
   },
-  {
-    "name": "Martin Lindstrom – Branding psychology and consumer behavior expert",
+  {"name": "Martin Lindstrom - Branding psychology and consumer behavior expert",
     "id": "1u1nzujnjJlPyNTxNxxdrHdZYv2RoaAdJ",
     "category": "Behavioral Science & Psychology",
     "books": [
@@ -2797,7 +2794,7 @@ export const AUTHORS: AuthorEntry[] = [
     ]
   },
   {
-    "name": "Uri Levine – Startup disruption and problem-centric innovation",
+    "name": "Uri Levine - Startup disruption and problem-centric innovation",
     "id": "1712BfrR_uJUk69PEed0Zz1m7W1CQ2vMg",
     "category": "Business & Entrepreneurship",
     "books": [

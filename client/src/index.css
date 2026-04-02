@@ -870,7 +870,6 @@
 .book-card-tilt, .audio-card-tilt { transition: box-shadow 250ms ease; transform-style: preserve-3d; will-change: transform; }
 .tilt-shadow-active { box-shadow: 0 16px 48px -8px rgba(0,0,0,0.18), 0 6px 16px -4px rgba(0,0,0,0.1); }
 
-
 /* ═══════════════════════════════════════════════════════════════════════════
    NOIR DARK THEME — Component-level overrides
    Ensures true monochrome: no category colours leak through.

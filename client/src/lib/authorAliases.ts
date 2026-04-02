@@ -41,6 +41,8 @@ export const AUTHOR_ALIASES: Record<string, string> = {
   "Sue Hawkes - Leadership and organizational performance": "Sue Hawkes",
   "David Brooks - political commentary, social psychology, and cultural analysis - communication":
     "David Brooks",
+  "Emma Leigh Weber - Empathic communication and active listening": "Emma Leigh Weber",
+  "Emma Leigh Weber \u2013 Empathic communication and active listening": "Emma Leigh Weber",
 
   // -- Middle-initial / abbreviated name aliases --------------------------------
   "Stephen Covey": "Stephen R. Covey",

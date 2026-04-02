@@ -76,9 +76,36 @@ import {
   Heartbeat,
   ArrowSquareOut,
   Cpu as CircuitBoard,
+  MagnifyingGlass,
+  Play,
+  Queue,
 } from "@phosphor-icons/react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronRight } from "lucide-react";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 // Alias for semantic clarity
 const CheckCircle2 = CheckCircle;
 const AlertCircle = XCircle;
@@ -1035,6 +1062,66 @@ export default function Admin() {
   const scrapeStats = batchScrapeStats.data;
 
   const [activeSection, setActiveSection] = useState("authors");
+  const [sidebarSearch, setSidebarSearch] = useState("");
+
+  // -- Run All Cascade state --
+  const [cascadeRunning, setCascadeRunning] = useState(false);
+  const [cascadeStep, setCascadeStep] = useState(0);
+  const [cascadeTotalSteps] = useState(4);
+  const cascadeStepLabels = ["Regenerate DB", "Enrich Bios", "Enrich Books", "Discover Platforms"];
+
+  const handleRunAllCascade = useCallback(async () => {
+    if (cascadeRunning || anyRunning) return;
+    setCascadeRunning(true);
+    setCascadeStep(0);
+    try {
+      // Step 1: Regenerate
+      setCascadeStep(1);
+      toast.info("Cascade Step 1/4: Regenerating database...");
+      await handleRegenerate();
+
+      // Step 2: Enrich Bios
+      setCascadeStep(2);
+      toast.info("Cascade Step 2/4: Enriching author bios...");
+      await handleEnrichBios();
+
+      // Step 3: Enrich Books
+      setCascadeStep(3);
+      toast.info("Cascade Step 3/4: Enriching books...");
+      await handleEnrichBooks();
+
+      // Step 4: Discover Platforms
+      setCascadeStep(4);
+      toast.info("Cascade Step 4/4: Discovering platforms...");
+      await handleDiscoverPlatforms();
+
+      toast.success("Full cascade pipeline completed!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Cascade failed at step ${cascadeStep}: ${msg}`);
+    } finally {
+      setCascadeRunning(false);
+      setCascadeStep(0);
+    }
+  }, [cascadeRunning, anyRunning, handleRegenerate, handleEnrichBios, handleEnrichBooks, handleDiscoverPlatforms, cascadeStep]);
+
+  // -- Running states per group for sidebar badges --
+  const groupRunningMap: Record<string, boolean> = {
+    Content: [
+      enrichBiosState, enrichBooksState, regenerateState, updateLinksState,
+      enrichRichBioState, discoverPlatformsState, enrichSocialStatsState,
+      enrichEnterpriseState, enrichProfessionalState, updateBookSummariesState,
+      enrichRichSummaryState, rebuildCoversState,
+    ].some(s => s.status === "running"),
+    Media: [
+      portraitState, mirrorAvatarsState, auditBgState, normalizeBgState,
+      scrapeState, mirrorCoversState, rebuildCoversState,
+    ].some(s => s.status === "running"),
+    Intelligence: false,
+    Personalization: false,
+    System: false,
+    Configuration: false,
+  };
 
   type NavItem = { id: string; label: string; icon: PhosphorIcon };
   type NavGroup = { label: string; icon: PhosphorIcon; items: NavItem[] };
@@ -1095,52 +1182,144 @@ export default function Admin() {
     },
   ];
 
+  // Track which groups are expanded in the accordion
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    // Start with all groups expanded
+    const initial: Record<string, boolean> = {};
+    ["Content", "Media", "Intelligence", "Personalization", "System", "Configuration"].forEach(g => { initial[g] = true; });
+    return initial;
+  });
+
+  const toggleGroup = useCallback((label: string) => {
+    setExpandedGroups(prev => ({ ...prev, [label]: !prev[label] }));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <PageHeader crumbs={[{ label: "Admin Console" }]} />
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-56 shrink-0 border-r bg-muted/30 overflow-y-auto py-4 px-2 space-y-5">
-          {anyRunning && (
-            <div className="mx-1 px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
-              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
-              <span>Operations running…</span>
+      <SidebarProvider defaultOpen={true}>
+        <Sidebar collapsible="icon" className="border-r">
+          <SidebarHeader className="p-3">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg" asChild>
+                  <div className="flex items-center gap-3 cursor-default">
+                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                      <Gear className="size-4" weight="bold" />
+                    </div>
+                    <div className="flex flex-col gap-0.5 leading-none">
+                      <span className="font-semibold text-sm">Admin Console</span>
+                      <span className="text-[10px] text-muted-foreground">Manage operations</span>
+                    </div>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+            {/* Search bar */}
+            <div className="relative mt-2 group-data-[collapsible=icon]:hidden">
+              <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search sections…"
+                value={sidebarSearch}
+                onChange={(e) => setSidebarSearch(e.target.value)}
+                className="w-full h-8 pl-8 pr-3 text-xs rounded-md border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              />
             </div>
-          )}
-          {navGroups.map((group) => (
-            <div key={group.label}>
-              <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                <group.icon className="h-3 w-3" weight="bold" />
-                {group.label}
+            {anyRunning && (
+              <div className="mt-2 px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400 group-data-[collapsible=icon]:hidden">
+                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                <span>Operations running…</span>
               </div>
-              <div className="space-y-0.5 mt-0.5">
-                {group.items.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    className={cn(
-                      "w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-md transition-all duration-150",
-                      activeSection === item.id
-                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                        : "hover:bg-muted text-foreground/80 hover:text-foreground"
-                    )}
-                  >
-                    <item.icon
-                      className="h-4 w-4 shrink-0"
-                      weight={activeSection === item.id ? "fill" : "regular"}
-                    />
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </aside>
+            )}
+          </SidebarHeader>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6 max-w-5xl mx-auto space-y-6">
+          <SidebarContent>
+            {navGroups.map((group) => {
+              const filteredItems = sidebarSearch.trim()
+                ? group.items.filter(item =>
+                    item.label.toLowerCase().includes(sidebarSearch.toLowerCase()) ||
+                    group.label.toLowerCase().includes(sidebarSearch.toLowerCase())
+                  )
+                : group.items;
+              if (filteredItems.length === 0) return null;
+              const isGroupRunning = groupRunningMap[group.label] ?? false;
+              const isExpanded = expandedGroups[group.label] ?? true;
+
+              return (
+                <Collapsible
+                  key={group.label}
+                  open={isExpanded}
+                  onOpenChange={() => toggleGroup(group.label)}
+                  className="group/collapsible"
+                >
+                  <SidebarGroup>
+                    <SidebarGroupLabel asChild>
+                      <CollapsibleTrigger className="flex w-full items-center gap-2 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors">
+                        <group.icon className="h-4 w-4 shrink-0" weight="duotone" />
+                        <span className="flex-1 text-left group-data-[collapsible=icon]:hidden">{group.label}</span>
+                        <span className="flex items-center gap-1.5 group-data-[collapsible=icon]:hidden">
+                          {isGroupRunning && (
+                            <span className="relative flex h-2 w-2">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
+                            </span>
+                          )}
+                          <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-normal">
+                            {filteredItems.length}
+                          </Badge>
+                        </span>
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                      </CollapsibleTrigger>
+                    </SidebarGroupLabel>
+                    <CollapsibleContent>
+                      <SidebarGroupContent>
+                        <SidebarMenu>
+                          {filteredItems.map((item) => (
+                            <SidebarMenuItem key={item.id}>
+                              <SidebarMenuButton
+                                isActive={activeSection === item.id}
+                                onClick={() => { setActiveSection(item.id); setSidebarSearch(""); }}
+                                tooltip={item.label}
+                                className="transition-all duration-150"
+                              >
+                                <item.icon
+                                  className="h-4 w-4 shrink-0"
+                                  weight={activeSection === item.id ? "fill" : "regular"}
+                                />
+                                <span>{item.label}</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          ))}
+                        </SidebarMenu>
+                      </SidebarGroupContent>
+                    </CollapsibleContent>
+                  </SidebarGroup>
+                </Collapsible>
+              );
+            })}
+          </SidebarContent>
+          <SidebarRail />
+        </Sidebar>
+
+        <SidebarInset>
+          {/* Breadcrumb header with sidebar trigger */}
+          <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="h-4 w-px bg-border" />
+            <span className="text-sm text-muted-foreground">
+              {navGroups.find(g => g.items.some(i => i.id === activeSection))?.label}
+            </span>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-sm font-medium">
+              {navGroups.flatMap(g => g.items).find(i => i.id === activeSection)?.label}
+            </span>
+          </header>
+
+          {/* Main content */}
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6 max-w-5xl mx-auto space-y-6">
 
           {/* ── Authors ── */}
           {activeSection === "authors" && (
@@ -1208,7 +1387,76 @@ export default function Admin() {
                 <h1 className="text-2xl font-bold tracking-tight">Data Pipeline</h1>
                 <p className="text-muted-foreground text-sm">Run cascade operations and manage data transformation workflows</p>
               </div>
+              <div className="ml-auto">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      disabled={cascadeRunning || anyRunning}
+                      className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md"
+                    >
+                      {cascadeRunning ? (
+                        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Step {cascadeStep}/{cascadeTotalSteps}</>
+                      ) : (
+                        <><Play className="w-3.5 h-3.5" weight="fill" /> Run All</>
+                      )}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2">
+                        <Queue className="h-5 w-5 text-violet-600" weight="duotone" />
+                        Run Full Cascade Pipeline?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <span className="block mb-3">This will execute 4 operations in sequence:</span>
+                        <span className="space-y-1.5 block">
+                          {cascadeStepLabels.map((label, i) => (
+                            <span key={i} className="flex items-center gap-2 text-sm">
+                              <span className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 flex items-center justify-center text-xs font-semibold">{i + 1}</span>
+                              {label}
+                            </span>
+                          ))}
+                        </span>
+                        <span className="block mt-3 text-amber-600 dark:text-amber-400">This may take 10-30 minutes depending on library size. Do not close the browser.</span>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleRunAllCascade} className="bg-violet-600 hover:bg-violet-700">Start Cascade</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
+            {/* Cascade progress indicator */}
+            {cascadeRunning && (
+              <Card className="border-violet-500/30 bg-violet-500/5">
+                <CardContent className="py-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Loader2 className="w-4 h-4 animate-spin text-violet-600" />
+                    <span className="text-sm font-medium">Cascade Pipeline Running</span>
+                    <Badge variant="secondary" className="ml-auto">Step {cascadeStep} of {cascadeTotalSteps}</Badge>
+                  </div>
+                  <div className="flex gap-1">
+                    {cascadeStepLabels.map((label, i) => (
+                      <div key={i} className="flex-1">
+                        <div className={cn(
+                          "h-2 rounded-full transition-all duration-500",
+                          i + 1 < cascadeStep ? "bg-green-500" :
+                          i + 1 === cascadeStep ? "bg-violet-500 animate-pulse" :
+                          "bg-muted"
+                        )} />
+                        <span className={cn(
+                          "text-[9px] mt-1 block text-center",
+                          i + 1 === cascadeStep ? "text-violet-600 font-medium" : "text-muted-foreground"
+                        )}>{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ActionCard title="Regenerate Database" description="Re-scan Google Drive and rebuild the entire library (authors, books, audiobooks)." icon={ArrowsClockwise} actionKey="regenerate" state={regenerateState} lastRun={getLastRun("regenerate")} destructive confirmTitle="Regenerate the entire database?" confirmDescription="Re-scans Google Drive and rebuilds all library data. Takes 30-60 seconds and replaces existing data." onRun={handleRegenerate} buttonLabel="Regenerate" disabled={anyRunning} />
               <ActionCard title="Enrich Author Bios" description={`AI-powered bios for all ${AUTHORS.length} authors via Wikipedia + Perplexity.`} icon={PencilSimple} actionKey="enrich-bios" state={enrichBiosState} lastRun={getLastRun("enrich-bios")} destructive confirmTitle="Enrich all author bios?" confirmDescription="Calls the AI enrichment pipeline for every author. Already-enriched (within 30 days) are skipped." onRun={handleEnrichBios} buttonLabel="Enrich Bios" disabled={anyRunning} />
@@ -1440,8 +1688,9 @@ export default function Admin() {
           )}
 
         </div>
-        </main>
-      </div>
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
     </div>
   );
 }
