@@ -369,6 +369,7 @@ export default function Home() {
                         <SelectItem value="quality-desc">Research Quality</SelectItem>
                         <SelectItem value="most-popular">Most Popular</SelectItem>
                         {isAuthenticated && <SelectItem value="favorites-first">Favorites First</SelectItem>}
+                        <SelectItem value="tags">Group by Tag</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (
@@ -381,6 +382,7 @@ export default function Home() {
                         <SelectItem value="content-desc">Most Content</SelectItem>
                         <SelectItem value="enrich-desc">Enrichment Level</SelectItem>
                         {isAuthenticated && <SelectItem value="favorites-first">Favorites First</SelectItem>}
+                        <SelectItem value="tags">Group by Tag</SelectItem>
                       </SelectContent>
                     </Select>
                   )}

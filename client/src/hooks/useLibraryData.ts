@@ -25,8 +25,8 @@ import { STATS } from "@/components/library/libraryConstants";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category" | "quality-desc" | "favorites-first" | "most-popular";
-export type BookSort = "name-asc" | "name-desc" | "author" | "content-desc" | "enrich-desc" | "favorites-first";
+export type AuthorSort = "name-asc" | "name-desc" | "books-desc" | "category" | "quality-desc" | "favorites-first" | "most-popular" | "tags";
+export type BookSort = "name-asc" | "name-desc" | "author" | "content-desc" | "enrich-desc" | "favorites-first" | "tags";
 
 // ── Module-level constants ────────────────────────────────────────────────────
 
@@ -363,6 +363,14 @@ export function useLibraryData({
           };
           return getPopScore(b) - getPopScore(a);
         }
+        case "tags": {
+          // Group by first tag slug alphabetically; authors with no tags go last
+          const aTags = authorTagsMap.get(canonicalName(a.name).toLowerCase());
+          const bTags = authorTagsMap.get(canonicalName(b.name).toLowerCase());
+          const aFirst = aTags && aTags.size > 0 ? Array.from(aTags).sort()[0] : "\uFFFF";
+          const bFirst = bTags && bTags.size > 0 ? Array.from(bTags).sort()[0] : "\uFFFF";
+          return aFirst.localeCompare(bFirst) || a.name.localeCompare(b.name);
+        }
         default: return a.name.localeCompare(b.name);
       }
     });
@@ -425,6 +433,16 @@ export function useLibraryData({
           const aFav = (bookFavoritesQuery.data ?? {})[tkA] ? 0 : 1;
           const bFav = (bookFavoritesQuery.data ?? {})[tkB] ? 0 : 1;
           return aFav !== bFav ? aFav - bFav : a.name.localeCompare(b.name);
+        }
+        case "tags": {
+          // Group by first tag slug alphabetically; books with no tags go last
+          const tkA = normalizeTitleKey(a.name);
+          const tkB = normalizeTitleKey(b.name);
+          const aBookTags = bookTagsMap.get(tkA);
+          const bBookTags = bookTagsMap.get(tkB);
+          const aFirst = aBookTags && aBookTags.size > 0 ? Array.from(aBookTags).sort()[0] : "\uFFFF";
+          const bFirst = bBookTags && bBookTags.size > 0 ? Array.from(bBookTags).sort()[0] : "\uFFFF";
+          return aFirst.localeCompare(bFirst) || a.name.localeCompare(b.name);
         }
         default: return a.name.localeCompare(b.name);
       }

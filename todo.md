@@ -2464,3 +2464,10 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Add sidebar badge counts and running indicators in Admin (already implemented — amber ping dot + item count badge per group)
 - [x] Extract LibraryHeader component from Home.tsx (sticky header with breadcrumb + search input)
 - [x] Run tests — 492 tests, 34 files, all passing, 0 TypeScript errors
+
+## Session Apr 2, 2026 — Next 5 Tasks (Digital Me + Tag Cloud + Home Split)
+- [x] Build "Generate Digital Me" button on author detail page (AuthorBioPanel — RAG status, Generate/Regenerate for admins, auto-refresh every 5s, link to RAG file)
+- [x] Add Tag Cloud view to LibrarySidebar (usage counts on pills, font-size scaling 10–14px, sorted by most-used first)
+- [x] Add "Group by Tag" sort option to author sort dropdown
+- [x] Add "Group by Tag" sort option to book sort dropdown
+- [x] Run tests — 492 tests, 34 files, all passing, 0 TypeScript errors

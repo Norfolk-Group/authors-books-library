@@ -340,9 +340,15 @@ function TagFilterSection({
 }) {
   const { data: allTags = [] } = trpc.tags.list.useQuery();
 
-  const selectedTags = useMemo(
-    () => allTags.filter((t) => selectedTagSlugs.has(t.slug)),
-    [allTags, selectedTagSlugs]
+  // Sort by usageCount desc so most-used tags appear first (Tag Cloud ordering)
+  const sortedTags = useMemo(
+    () => [...allTags].sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0)),
+    [allTags]
+  );
+
+  const maxCount = useMemo(
+    () => Math.max(1, ...sortedTags.map((t) => t.usageCount ?? 0)),
+    [sortedTags]
   );
 
   if (allTags.length === 0 || !toggleTagSlug) return null;
@@ -352,7 +358,8 @@ function TagFilterSection({
       <div className="flex items-center justify-between px-2 py-1">
         <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
           <Tag className="w-3 h-3" />
-          Tags
+          Tag Cloud
+          <span className="text-[10px] text-muted-foreground/60 font-normal">({allTags.length})</span>
         </p>
         {selectedTagSlugs.size > 0 && clearTagFilters && (
           <button
@@ -365,8 +372,11 @@ function TagFilterSection({
         )}
       </div>
       <div className="flex flex-wrap gap-1.5 px-2 py-1">
-        {allTags.map((tag) => {
+        {sortedTags.map((tag) => {
           const isSelected = selectedTagSlugs.has(tag.slug);
+          const count = tag.usageCount ?? 0;
+          // Scale font size between 10px (min) and 14px (max) based on usage
+          const fontSize = count > 0 ? Math.round(10 + (count / maxCount) * 4) : 10;
           return (
             <button
               key={tag.slug}
@@ -375,39 +385,24 @@ function TagFilterSection({
                 backgroundColor: isSelected ? tag.color + "22" : "transparent",
                 color: isSelected ? tag.color : "var(--muted-foreground)",
                 borderColor: isSelected ? tag.color + "44" : "var(--border)",
+                fontSize: `${fontSize}px`,
               }}
-              className="text-xs px-2 py-0.5 rounded border transition-all hover:scale-105 font-medium"
-              title={`Filter by ${tag.name}`}
+              className="px-2 py-0.5 rounded border transition-all hover:scale-105 font-medium leading-snug"
+              title={`Filter by ${tag.name}${count > 0 ? ` (${count} items)` : ""}`}
             >
               {tag.name}
+              {count > 0 && (
+                <span
+                  style={{ color: isSelected ? tag.color + "99" : "var(--muted-foreground)" }}
+                  className="ml-1 text-[9px] font-normal"
+                >
+                  {count}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
-      {selectedTags.length > 0 && (
-        <div className="flex flex-wrap gap-1 px-2 py-1 mt-1 border-t border-border/50">
-          <p className="text-[10px] text-muted-foreground w-full mb-0.5">Active:</p>
-          {selectedTags.map((tag) => (
-            <span
-              key={tag.slug}
-              style={{ backgroundColor: tag.color + "22", color: tag.color, borderColor: tag.color + "44" }}
-              className="text-xs px-2 py-0.5 rounded border font-medium flex items-center gap-1"
-            >
-              {tag.name}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleTagSlug(tag.slug);
-                }}
-                className="hover:opacity-70 transition-opacity"
-                title="Remove filter"
-              >
-                <X className="w-2.5 h-2.5" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </SidebarGroup>
   );
 }
