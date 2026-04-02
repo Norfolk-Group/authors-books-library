@@ -107,37 +107,79 @@ function ProfessionalEntryCard({ entry }: { entry: ProfessionalEntry }) {
 // ── Digital Me Chat Button ──────────────────────────────────────────────────────
 function DigitalMeChatButton({ authorName }: { authorName: string }) {
   const [, navigate] = useLocation();
-  const { data: ragInfo } = trpc.ragPipeline.getStatus.useQuery(
+  const utils = trpc.useUtils();
+  const { data: ragInfo, isLoading: ragLoading } = trpc.ragPipeline.getStatus.useQuery(
     { authorName },
-    { staleTime: 60_000 }
+    {
+      staleTime: 30_000,
+      // Poll every 3 s while generating so the UI updates automatically
+      refetchInterval: (q) => q.state.data?.ragStatus === "generating" ? 3000 : false,
+    }
   );
 
+  const generateMutation = trpc.ragPipeline.generate.useMutation({
+    onSuccess: () => {
+      utils.ragPipeline.getStatus.invalidate({ authorName });
+      toast.success("Digital Me generation started — this takes ~30 seconds.");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   const isReady = ragInfo?.ragStatus === "ready";
+  const isGenerating = ragInfo?.ragStatus === "generating" || generateMutation.isPending;
   const slug = encodeURIComponent(authorName);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
+      {/* Chat button — always shown, disabled when not ready */}
       <button
         onClick={() => navigate(`/chat/${slug}`)}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+        disabled={!isReady}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all active:translate-y-px ${
           isReady
             ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-            : "bg-muted text-muted-foreground hover:bg-muted/80"
+            : "bg-muted text-muted-foreground cursor-not-allowed opacity-60"
         }`}
       >
         <MessageSquare className="w-3.5 h-3.5" />
         Chat with {authorName.split(" ")[0]}
       </button>
-      {isReady && (
+
+      {/* Status indicator */}
+      {isReady ? (
         <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
           <Brain className="w-3 h-3" />
           Digital Me Active
         </span>
-      )}
-      {!isReady && ragInfo && (
-        <span className="text-[10px] text-muted-foreground">
-          Digital Me not generated
+      ) : isGenerating ? (
+        <span className="flex items-center gap-1 text-[10px] text-amber-500 font-medium animate-pulse">
+          <RefreshCw className="w-3 h-3 animate-spin" />
+          Generating…
         </span>
+      ) : !ragLoading ? (
+        /* Generate button when no RAG file exists yet */
+        <button
+          onClick={() => generateMutation.mutate({ authorName, force: false })}
+          disabled={generateMutation.isPending}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-300/40 transition-all active:translate-y-px shadow-sm"
+          title="Generate the Digital Me RAG knowledge file for this author"
+        >
+          <Brain className="w-3.5 h-3.5" />
+          Generate Digital Me
+        </button>
+      ) : null}
+
+      {/* Regenerate button when already ready */}
+      {isReady && (
+        <button
+          onClick={() => generateMutation.mutate({ authorName, force: true })}
+          disabled={generateMutation.isPending}
+          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+          title="Regenerate Digital Me knowledge file"
+        >
+          <RefreshCw className="w-3 h-3" />
+          Regenerate
+        </button>
       )}
     </div>
   );

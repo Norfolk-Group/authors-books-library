@@ -42,7 +42,7 @@ import {
   Tag,
   Cpu as CircuitBoard,
 } from "@phosphor-icons/react";
-import { Loader2, ChevronRight } from "lucide-react";
+import { Loader2, ChevronRight, Link } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -86,6 +86,7 @@ import { InformationToolsTab } from "@/components/admin/InformationToolsTab";
 import { SettingsTab } from "@/components/admin/SettingsTab";
 import { AboutTab } from "@/components/admin/AboutTab";
 import { SyncJobsTab } from "@/components/admin/SyncJobsTab";
+import { BulkUrlImportPanel } from "@/components/admin/BulkUrlImportPanel";
 
 // Hook
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -111,6 +112,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Image,
     items: [
       { id: "media", label: "Media Assets", icon: Image },
+      { id: "content-items", label: "Content Items", icon: Globe },
       { id: "sync", label: "Sync & Storage", icon: Cloud },
     ],
   },
@@ -599,6 +601,20 @@ export default function Admin() {
                     </div>
                   </div>
                   <SettingsTab settings={settings} updateSettings={updateSettings} />
+                </div>
+              )}
+
+              {/* ── Content Items ── */}
+              {activeSection === "content-items" && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-primary/10"><Globe className="h-6 w-6 text-primary" weight="duotone" /></div>
+                    <div>
+                      <h1 className="text-2xl font-bold tracking-tight">Content Items</h1>
+                      <p className="text-muted-foreground text-sm">Import and manage media content items (YouTube, podcasts, articles)</p>
+                    </div>
+                  </div>
+                  <BulkUrlImportPanel />
                 </div>
               )}
 

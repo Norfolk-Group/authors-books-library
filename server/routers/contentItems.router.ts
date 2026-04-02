@@ -9,6 +9,7 @@ import { getDb } from "../db";
 import { storagePut } from "../storage";
 import { contentItems, authorContentLinks } from "../../drizzle/schema";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
+import { ENV } from "../_core/env";
 
 // ── Content type groupings for the Media tab sub-filters ────────────────────
 export const MEDIA_GROUPS = {
@@ -352,5 +353,184 @@ export const contentItemsRouter = router({
       if (!db) throw new Error("DB unavailable");
       await db.delete(contentItems).where(eq(contentItems.id, input.id));
       return { success: true };
+    }),
+
+  /**
+   * Enrich a content item from a YouTube video or channel URL.
+   * Fetches title, description, thumbnail, channel name, and publish date
+   * from the YouTube Data API v3.
+   */
+  enrichFromYouTube: adminProcedure
+    .input(
+      z.object({
+        /** YouTube video or channel URL */
+        url: z.string().url(),
+        /** Optional: link to an existing content item to update */
+        contentItemId: z.number().optional(),
+        /** Author names to link */
+        authorNames: z.array(z.string()).default([]),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const apiKey = ENV.youtubeApiKey;
+      if (!apiKey) throw new Error("YOUTUBE_API_KEY is not configured");
+
+      // Detect video vs channel
+      const videoMatch = input.url.match(/(?:v=|youtu\.be\/)([\w-]{11})/);
+      const channelMatch = input.url.match(/(?:channel\/|@)([\w-]+)/);
+
+      let title = "";
+      let description = "";
+      let thumbnailUrl: string | null = null;
+      let publishedDate: string | null = null;
+      let url = input.url;
+      let contentType: "youtube_video" | "youtube_channel" = "youtube_video";
+      let channelName: string | null = null;
+
+      if (videoMatch) {
+        const videoId = videoMatch[1];
+        const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error(`YouTube API error: ${res.status}`);
+        const data = await res.json() as { items?: Array<{ snippet: { title: string; description: string; thumbnails?: { high?: { url: string } }; publishedAt?: string; channelTitle?: string } }> };
+        const item = data.items?.[0];
+        if (!item) throw new Error("Video not found on YouTube");
+        title = item.snippet.title;
+        description = item.snippet.description?.slice(0, 1000) ?? "";
+        thumbnailUrl = item.snippet.thumbnails?.high?.url ?? null;
+        publishedDate = item.snippet.publishedAt?.slice(0, 10) ?? null;
+        channelName = item.snippet.channelTitle ?? null;
+        url = `https://www.youtube.com/watch?v=${videoId}`;
+        contentType = "youtube_video";
+      } else if (channelMatch) {
+        const handle = channelMatch[1];
+        // Try forHandle first, fall back to search
+        const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=snippet&forHandle=${handle}&key=${apiKey}`;
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error(`YouTube API error: ${res.status}`);
+        const data = await res.json() as { items?: Array<{ id: string; snippet: { title: string; description: string; thumbnails?: { high?: { url: string } }; publishedAt?: string } }> };
+        const item = data.items?.[0];
+        if (!item) throw new Error("Channel not found on YouTube");
+        title = item.snippet.title;
+        description = item.snippet.description?.slice(0, 1000) ?? "";
+        thumbnailUrl = item.snippet.thumbnails?.high?.url ?? null;
+        publishedDate = item.snippet.publishedAt?.slice(0, 10) ?? null;
+        url = `https://www.youtube.com/channel/${item.id}`;
+        contentType = "youtube_channel";
+      } else {
+        throw new Error("Could not extract a YouTube video ID or channel handle from the URL");
+      }
+
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+
+      if (input.contentItemId) {
+        // Update existing item
+        await db.update(contentItems).set({
+          title,
+          description: description || undefined,
+          coverImageUrl: thumbnailUrl ?? undefined,
+          publishedDate: publishedDate ?? undefined,
+          url,
+          contentType,
+          updatedAt: new Date(),
+        }).where(eq(contentItems.id, input.contentItemId));
+        return { success: true, id: input.contentItemId, title, thumbnailUrl, contentType };
+      } else {
+        // Create new item
+        const [inserted] = await db.insert(contentItems).values({
+          title,
+          subtitle: channelName ?? undefined,
+          description: description || undefined,
+          coverImageUrl: thumbnailUrl ?? undefined,
+          publishedDate: publishedDate ?? undefined,
+          url,
+          contentType,
+          includedInLibrary: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        const newId = (inserted as unknown as { insertId: number }).insertId;
+        if (input.authorNames.length > 0 && newId) {
+          await db.insert(authorContentLinks).values(
+            input.authorNames.map((name, i) => ({
+              contentItemId: newId,
+              authorName: name,
+              role: "primary" as const,
+              displayOrder: i,
+            }))
+          );
+        }
+        return { success: true, id: newId, title, thumbnailUrl, contentType };
+      }
+    }),
+
+  /**
+   * Enrich a content item from a podcast search query.
+   * Uses the iTunes Search API (no key required) to find podcast episodes.
+   */
+  enrichFromPodcast: adminProcedure
+    .input(
+      z.object({
+        /** Search query: podcast name + episode title or author name */
+        query: z.string().min(2),
+        /** Optional: link to an existing content item to update */
+        contentItemId: z.number().optional(),
+        /** Author names to link */
+        authorNames: z.array(z.string()).default([]),
+        /** Max results to return for selection */
+        limit: z.number().min(1).max(10).default(5),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const encoded = encodeURIComponent(input.query);
+      const apiUrl = `https://itunes.apple.com/search?term=${encoded}&media=podcast&entity=podcastEpisode&limit=${input.limit}`;
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error(`iTunes API error: ${res.status}`);
+      const data = await res.json() as {
+        results?: Array<{
+          trackName?: string;
+          collectionName?: string;
+          description?: string;
+          artworkUrl600?: string;
+          releaseDate?: string;
+          trackViewUrl?: string;
+          episodeUrl?: string;
+          shortDescription?: string;
+        }>
+      };
+      const results = (data.results ?? []).map((r) => ({
+        title: r.trackName ?? "",
+        podcastName: r.collectionName ?? "",
+        description: r.description ?? r.shortDescription ?? "",
+        thumbnailUrl: r.artworkUrl600 ?? null,
+        publishedDate: r.releaseDate ? r.releaseDate.slice(0, 10) : null,
+        url: r.trackViewUrl ?? r.episodeUrl ?? null,
+      }));
+
+      if (results.length === 0) {
+        return { success: false, results: [], message: "No podcast episodes found for this query" };
+      }
+
+      // If contentItemId provided, auto-apply the first result
+      if (input.contentItemId && results[0]) {
+        const r = results[0];
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        await db.update(contentItems).set({
+          title: r.title,
+          subtitle: r.podcastName || undefined,
+          description: r.description || undefined,
+          coverImageUrl: r.thumbnailUrl ?? undefined,
+          publishedDate: r.publishedDate ?? undefined,
+          url: r.url ?? undefined,
+          contentType: "podcast_episode",
+          updatedAt: new Date(),
+        }).where(eq(contentItems.id, input.contentItemId));
+        return { success: true, results, applied: results[0] };
+      }
+
+      // Otherwise return results for the caller to pick from
+      return { success: true, results };
     }),
 });

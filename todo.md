@@ -2517,3 +2517,19 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [x] Admin Sync Manager panel — already implemented as SyncJobsTab (352 lines, trigger/history/cancel/credentials)
 - [x] Run All cascade button in AdminPipelineTab — already implemented with 4-step cascade + AlertDialog confirmation
 - [x] Cover image upload in MediaItemFormDialog — added uploadCoverImage tRPC procedure (S3 storage), file picker button, base64 upload, and cover preview thumbnail
+
+## Session Apr 2, 2026 — 5 Tasks (Set 3)
+
+- [x] Add "Generate Digital Me" trigger button to AuthorDetail page (amber button → spinner → Chat/Regenerate)
+- [x] Add Books Count and Tag Count metric tabs to Leaderboard page
+- [x] Add YouTube enrichment procedure to contentItems router (YouTube Data API v3)
+- [x] Add Podcast enrichment procedure to contentItems router (iTunes Search API, no key required)
+- [x] Add BulkUrlImportPanel to Admin → Content Items tab (paste URLs → auto-import YouTube/generic)
+
+## Session Apr 2, 2026 — 5 Tasks (Set 3)
+
+- [x] Add Generate Digital Me trigger button to AuthorDetail page (amber button spinner Chat/Regenerate)
+- [x] Add Books Count and Tag Count metric tabs to Leaderboard page
+- [x] Add YouTube enrichment procedure to contentItems router (YouTube Data API v3)
+- [x] Add Podcast enrichment procedure to contentItems router (iTunes Search API no key required)
+- [x] Add BulkUrlImportPanel to Admin Content Items tab (paste URLs auto-import YouTube/generic)

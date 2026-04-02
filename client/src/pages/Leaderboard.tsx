@@ -33,6 +33,8 @@ import {
   GitFork,
   Trophy,
   BarChart,
+  BookOpen,
+  Tag,
 } from "lucide-react";
 import { Link } from "wouter";
 import type { SocialStatsResult } from "../../../server/enrichment/socialStats";
@@ -54,9 +56,10 @@ interface LeaderboardEntry {
   rawStats: SocialStatsResult | null;
   platformCount: number;
   bookCount: number;
+  tagCount: number;
 }
 
-type MetricKey = "wikipedia" | "substack" | "githubFollowers" | "githubStars" | "platforms";
+type MetricKey = "wikipedia" | "substack" | "githubFollowers" | "githubStars" | "platforms" | "books" | "tags";
 
 interface MetricDef {
   key: MetricKey;
@@ -101,6 +104,20 @@ const METRICS: MetricDef[] = [
     icon: <Globe className="w-4 h-4" />,
     description: "Number of social/media platforms with a confirmed link",
     getValue: (_s, platformCount) => platformCount,
+  },
+  {
+    key: "books",
+    label: "Books Count",
+    icon: <BookOpen className="w-4 h-4" />,
+    description: "Number of books in the library for this author",
+    getValue: () => 0, // overridden in leaderboard useMemo
+  },
+  {
+    key: "tags",
+    label: "Tag Count",
+    icon: <Tag className="w-4 h-4" />,
+    description: "Number of tags applied to this author's profile",
+    getValue: () => 0, // overridden in leaderboard useMemo
   },
 ];
 
@@ -197,6 +214,11 @@ export default function Leaderboard() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Fetch per-author tag slugs for tag count metric
+  const authorTagSlugsQuery = trpc.tags.getAllAuthorTagSlugs.useQuery(undefined, {
+    staleTime: 5 * 60 * 1000,
+  });
+
   const platformCountMap = useMemo(() => {
     const map = new Map<string, number>();
     for (const row of platformLinksQuery.data ?? []) {
@@ -223,24 +245,41 @@ export default function Leaderboard() {
 
   const metric = METRICS.find((m) => m.key === activeMetric)!;
 
+  // Build per-author tag count map
+  const authorTagCountMap = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const row of authorTagSlugsQuery.data ?? []) {
+      map.set(canonicalName(row.authorName), row.tagSlugs.length);
+    }
+    return map;
+  }, [authorTagSlugsQuery.data]);
+
   const leaderboard = useMemo((): LeaderboardEntry[] => {
     const entries: LeaderboardEntry[] = AUTHORS.map((author) => {
       const canonical = canonicalName(author.name);
       const stats = socialStatsMap.get(canonical) ?? null;
       const platformCount = platformCountMap.get(canonical) ?? 0;
+      const bookCount = author.books.length;
+      const tagCount = authorTagCountMap.get(canonical) ?? 0;
+      // Override getValue for book/tag metrics since they don't use socialStats
+      let value: number;
+      if (activeMetric === "books") value = bookCount;
+      else if (activeMetric === "tags") value = tagCount;
+      else value = metric.getValue(stats, platformCount);
       return {
         authorName: author.name,
-        value: metric.getValue(stats, platformCount),
+        value,
         rawStats: stats,
         platformCount,
-        bookCount: author.books.length,
+        bookCount,
+        tagCount,
       };
     });
     return entries
       .filter((e) => e.value > 0)
       .sort((a, b) => b.value - a.value)
       .slice(0, 20);
-  }, [socialStatsMap, platformCountMap, metric]);
+  }, [socialStatsMap, platformCountMap, authorTagCountMap, metric, activeMetric]);
 
   const maxValue = leaderboard[0]?.value ?? 1;
   const isLoading = socialStatsQuery.isLoading || platformLinksQuery.isLoading;
