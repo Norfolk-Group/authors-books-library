@@ -126,9 +126,9 @@ Last cleaned: Apr 2, 2026
 
 - [x] `BookFilterBar` extracted from `Home.tsx` (possession, format, enrichment chip rows)
 - [x] `useLibraryCrud` hook for CRUD dialog orchestration
-- [ ] Split `bookProfiles.router.ts` — extract book CRUD into `bookCrud.router.ts`
-- [ ] Split `Home.tsx` further — extract `AuthorsTabContent` and `BooksTabContent`
-- [ ] Update `claude.md` and `manus.md` dependency contracts table
+- [x] Split `bookProfiles.router.ts` — extracted book CRUD (createBook, updateBook, deleteBook) into `bookCrud.router.ts` (52L); bookProfiles.router.ts now 203L
+- [x] Split `Home.tsx` further — extracted `AuthorsTabContent` and `BooksTabContent` (969L → 734L); recently-enriched/tagged strips moved into AuthorsTabContent; books grid + audiobooks moved into BooksTabContent
+- [x] Updated `claude.md` and `manus.md` dependency contracts table with all new components, router splits, and line counts; manus.md synced as copy of claude.md
 - [ ] Commit and push all changes to GitHub (via Management UI → Settings → GitHub)
 
 ---

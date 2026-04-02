@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** April 2, 2026 — Todo audit (141 items verified done), sidebar layout fix (Tailwind 4 w-[var(--sidebar-width)]), tRPC POST override, em-dash author splits fixed, shadcn components installed, validator architecture documented, dependency contracts updated
+**Last Updated:** April 2, 2026 — Code Quality refactoring: Home.tsx split into AuthorsTabContent + BooksTabContent (969L → 734L), Admin.tsx split into 15 focused wrapper tab components (643L → 447L), bookProfiles.router.ts CRUD extracted into bookCrud.router.ts, Content Items enrichment (TED/OpenAlex/OMDB/Substack), FlowbiteAuthorCard 4-zone redesign (96px avatar, category-tinted glass, 3D buttons)
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state. `manus.md` is a copy of `claude.md` — keep them in sync.
 
@@ -26,8 +26,8 @@ This is a personal knowledge library application that catalogues business books 
 client/                                → React 19 SPA (Vite)
   src/
     pages/
-      Home.tsx                         → Main library UI orchestrator (~814 lines)
-      Admin.tsx                        → Admin Console orchestrator (~1493 lines)
+      Home.tsx                         → Main library UI orchestrator (~734 lines, thin shell)
+      Admin.tsx                        → Admin Console orchestrator (~447 lines, thin shell)
       AuthorDetail.tsx                 → Author detail page (~728 lines)
       BookDetail.tsx                   → Book detail page (~563 lines)
       AuthorCompare.tsx                → Author comparison page (~383 lines)
@@ -39,9 +39,26 @@ client/                                → React 19 SPA (Vite)
         BookCard.tsx                   → Single book card with cover thumbnail (~492 lines)
         AudioCard.tsx                  → Single audio book card (~102 lines)
         AuthorCard.tsx                 → Author card for library view (~285 lines)
+        AuthorsTabContent.tsx          → Authors tab grid + recently-enriched/tagged strips (extracted from Home.tsx)
+        BooksTabContent.tsx            → Books tab grid + audiobooks + recently-tagged strip (extracted from Home.tsx)
         AuthorBioPanel.tsx             → Author bio slide-over panel (~659 lines)
         BookDetailPanel.tsx            → Book detail slide-over panel (~575 lines)
       admin/                           → Admin tab components
+        AdminTagsTab.tsx               → Tags section wrapper (TagStatisticsCard + TagManagement + TagTaxonomyMatrix)
+        AdminSyncTab.tsx               → Sync & Storage section wrapper (SyncJobsTab)
+        AdminDigitalMeTab.tsx          → Digital Me section wrapper (DigitalMeTab)
+        AdminResearchTab.tsx           → Research section wrapper (CascadeTab, self-contained stats fetch)
+        AdminAiSettingsTab.tsx         → AI Settings section wrapper (AiTab)
+        AdminAiModelsTab.tsx           → AI Models section wrapper (AIModelConfigTab)
+        AdminInterestsTab.tsx          → My Interests section wrapper (MyInterestsTab)
+        AdminFavoritesTab.tsx          → Favorites section wrapper (FavoritesTab)
+        AdminHealthTab.tsx             → Health section wrapper (ToolHealthCheckTab)
+        AdminDependenciesTab.tsx       → Dependencies section wrapper (DependenciesTab)
+        AdminSchedulesTab.tsx          → Schedules section wrapper (SchedulingTab)
+        AdminInfoToolsTab.tsx          → Info Tools section wrapper (InformationToolsTab)
+        AdminAppSettingsTab.tsx        → App Settings section wrapper (SettingsTab)
+        AdminContentItemsTab.tsx       → Content Items section wrapper (BulkUrlImportPanel + BookMigrationPanel)
+        AdminAboutTab.tsx              → About section wrapper (AboutTab)
         AiTab.tsx                      → AI model selection tab (~203 lines, slim orchestrator)
         ModelSelector.tsx              → Vendor/model selector with Auto-Recommend button (~606 lines)
         BackgroundSelector.tsx         → Avatar background color picker (~159 lines)
@@ -91,7 +108,8 @@ server/
     authorEnrichment.router.ts         → Rich bio, academic, enterprise, professional, document enrichment (~570 lines)
     authorSocial.router.ts             → Social stats, platform discovery, Twitter, business profile (~662 lines)
     authorChatbot.router.ts            → Author impersonation chatbot (RAG-grounded, multi-turn)
-    bookProfiles.router.ts             → Book CRUD + enrichment procedures (~975 lines)
+    bookProfiles.router.ts             → Book enrichment procedures (~203 lines, CRUD extracted)
+    bookCrud.router.ts                 → Book CRUD (createBook, updateBook, deleteBook) — 52 lines
     library.router.ts                  → Google Drive scanning + TS code generation
     apify.router.ts                    → Amazon scraping + S3 mirroring
     cascade.router.ts                  → Research cascade stats

@@ -7,7 +7,7 @@
 import { z } from "zod";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 
-// CRUD handlers
+/// CRUD handlers
 import {
   handleGet,
   handleGetMany,
@@ -156,6 +156,7 @@ export const bookProfilesRouter = router({
     }))
     .mutation(({ input }) => handleEnrichTechnicalReferencesBatch(input)),
 
+  // ── Book CRUD (create / update / delete) ─────────────────────────────────
   createBook: adminProcedure
     .input(z.object({
       bookTitle: z.string().min(1).max(512),

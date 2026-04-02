@@ -49,6 +49,8 @@ import { LibrarySidebar, type TabType } from "@/components/library/LibrarySideba
 import { LibraryHeader } from "@/components/library/LibraryHeader";
 import { TagGroupHeader, groupByFirstTag } from "@/components/library/TagGroupHeader";
 import { MediaTab } from "@/components/library/MediaTab";
+import { AuthorsTabContent } from "@/components/library/AuthorsTabContent";
+import { BooksTabContent } from "@/components/library/BooksTabContent";
 import { BookFilterBar } from "@/components/library/BookFilterBar";
 import { useLibraryCrud } from "@/hooks/useLibraryCrud";
 import { PlusCircle } from "lucide-react";
@@ -520,300 +522,64 @@ export default function Home() {
               />
             )}
 
-                        {/* Featured: Recently Enriched Authors */}
-            {activeTab === "authors" && !query && selectedCategories.size === 0 && (recentlyEnrichedQuery.data?.length ?? 0) > 0 && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <h2 className="text-sm font-semibold">Recently Enriched</h2>
-                  <span className="text-xs text-muted-foreground">Authors with fresh research data</span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                  {recentlyEnrichedQuery.data?.map((author) => {
-                    const avatarUrl = author.s3AvatarUrl || author.avatarUrl || null;
-                    return (
-                      <button
-                        key={author.authorName}
-                        onClick={() => {
-                          const found = AUTHORS.find((a) => canonicalName(a.name).toLowerCase() === author.authorName.toLowerCase());
-                          if (found) { setSelectedAuthor(found); setBioSheetOpen(true); }
-                        }}
-                        className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 hover:border-border/80 transition-all w-[90px] group"
-                      >
-                        <div className="relative">
-                          {avatarUrl ? (
-                            <img src={avatarUrl} alt={author.authorName} className="w-12 h-12 rounded-full object-cover ring-2 ring-amber-400/40 group-hover:ring-amber-400/80 transition-all" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-600/20 flex items-center justify-center text-lg font-bold text-amber-600">
-                              {author.authorName.charAt(0)}
-                            </div>
-                          )}
-                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
-                            <Sparkles className="w-2.5 h-2.5 text-amber-900" />
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-medium text-center leading-tight line-clamp-2 w-full">
-                          {author.authorName.split(" ").slice(0, 2).join(" ")}
-                        </span>
-                        {author.enrichedAt && (
-                          <span className="text-[9px] text-muted-foreground">
-                            {new Date(author.enrichedAt).toLocaleDateString([], { month: "short", day: "numeric" })}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Recently Tagged strip */}
-            {activeTab === "authors" && !query && selectedCategories.size === 0 && selectedTagSlugs.size === 0 && (recentlyTaggedQuery.data?.length ?? 0) > 0 && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-base">🏷️</span>
-                  <h2 className="text-sm font-semibold">Recently Tagged</h2>
-                  <span className="text-xs text-muted-foreground">Entities with tags applied recently</span>
-                </div>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                  {recentlyTaggedQuery.data?.map((item) => {
-                    const avatarUrl = item.s3AvatarUrl || item.avatarUrl || null;
-                    return (
-                      <button
-                        key={`${item.entityType}::${item.entityKey}`}
-                        onClick={() => {
-                          if (item.entityType === "author") {
-                            const found = AUTHORS.find((a) => canonicalName(a.name).toLowerCase() === item.entityKey.toLowerCase());
-                            if (found) { setSelectedAuthor(found); setBioSheetOpen(true); }
-                          }
-                        }}
-                        className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 hover:border-border/80 transition-all w-[100px] group"
-                      >
-                        <div className="relative">
-                          {avatarUrl ? (
-                            <img src={avatarUrl} alt={item.entityKey} className="w-12 h-12 rounded-full object-cover ring-2 ring-violet-400/40 group-hover:ring-violet-400/80 transition-all" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-400/20 to-violet-600/20 flex items-center justify-center text-lg font-bold text-violet-600">
-                              {item.entityKey.charAt(0)}
-                            </div>
-                          )}
-                          <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold">
-                            {item.entityType === "author" ? "A" : "B"}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-medium text-center leading-tight line-clamp-2 w-full">
-                          {item.entityKey.split(" ").slice(0, 2).join(" ")}
-                        </span>
-                        {item.tags.slice(0, 2).map((tag) => (
-                          <span
-                            key={tag.slug}
-                            className="text-[8px] px-1.5 py-0.5 rounded-full font-medium truncate max-w-full"
-                            style={{ backgroundColor: (tag.color ?? "#6366F1") + "22", color: tag.color ?? "#6366F1" }}
-                          >
-                            {tag.name}
-                          </span>
-                        ))}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Card grid */}
             <div className="relative">
               {activeTab === "authors" ? (
-                filteredAuthors.length === 0 ? <EmptyState query={query} /> : (
-                  authorSort === "tags" ? (
-                    // Tag-group view: insert sticky section headers between groups
-                    <div className="space-y-0">
-                      {groupByFirstTag(
-                        filteredAuthors,
-                        (a) => {
-                          const tags = authorTagsMap.get(canonicalName(a.name).toLowerCase());
-                          return tags && tags.size > 0 ? Array.from(tags).sort()[0] : null;
-                        },
-                        allTags
-                      ).map((group) => (
-                        <div key={group.tagSlug ?? "__untagged__"} className="mb-6">
-                          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <TagGroupHeader tagName={group.tagName} tagColor={group.tagColor} count={group.items.length} />
-                            {group.items.map((a, i) => (
-                              <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                                <FlowbiteAuthorCard
-                                  author={a}
-                                  query={query}
-                                  onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }}
-                                  isEnriched={enrichedSet.has(a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name)}
-                                  bio={getBio(a)}
-                                  coverMap={bookCoverMap}
-                                  dbAvatarMap={dbAvatarMap}
-                                  researchQualityMap={researchQualityMap}
-                                  bookInfoMap={bookInfoMap}
-                                  onNavigateToBook={navigateToBook}
-                                  isHighlighted={highlightedAuthorName === canonicalName(a.name).toLowerCase()}
-                                  isFavorite={(authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()] ?? false}
-                                  hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
-                                  platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
-                                  freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
-                                  cardRef={(el) => {
-                                    const key = canonicalName(a.name).toLowerCase();
-                                    if (el) authorCardRefs.current.set(key, el);
-                                    else authorCardRefs.current.delete(key);
-                                  }}
-                                  currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
-                                  onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
-                                  onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 tab-content-enter">
-                    {filteredAuthors.map((a, i) => (
-                      <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                        <FlowbiteAuthorCard
-                          author={a}
-                          query={query}
-                          onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }}
-                          isEnriched={enrichedSet.has(a.name.includes(" - ") ? a.name.slice(0, a.name.indexOf(" - ")) : a.name)}
-                          bio={getBio(a)}
-                          coverMap={bookCoverMap}
-                          dbAvatarMap={dbAvatarMap}
-                          researchQualityMap={researchQualityMap}
-                          bookInfoMap={bookInfoMap}
-                          onNavigateToBook={navigateToBook}
-                          isHighlighted={highlightedAuthorName === canonicalName(a.name).toLowerCase()}
-                          isFavorite={(authorFavoritesQuery.data ?? {})[canonicalName(a.name).toLowerCase()] ?? false}
-                          hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
-                          platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
-                          freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
-                          cardRef={(el) => {
-                            const key = canonicalName(a.name).toLowerCase();
-                            if (el) authorCardRefs.current.set(key, el);
-                            else authorCardRefs.current.delete(key);
-                          }}
-                          currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
-                          onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
-                          onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  )
-                )
+                <AuthorsTabContent
+                  query={query}
+                  selectedCategories={selectedCategories}
+                  selectedTagSlugs={selectedTagSlugs}
+                  authorSort={authorSort}
+                  isAuthenticated={isAuthenticated}
+                  filteredAuthors={filteredAuthors}
+                  enrichedSet={enrichedSet}
+                  richBioSet={richBioSet}
+                  bookCoverMap={bookCoverMap}
+                  dbAvatarMap={dbAvatarMap}
+                  researchQualityMap={researchQualityMap}
+                  bookInfoMap={bookInfoMap}
+                  platformLinksMap={platformLinksMap}
+                  authorFreshnessMap={authorFreshnessMap}
+                  authorTagsMap={authorTagsMap}
+                  authorFavoritesData={authorFavoritesQuery.data}
+                  recentlyEnrichedData={recentlyEnrichedQuery.data}
+                  recentlyTaggedData={recentlyTaggedQuery.data}
+                  allTags={allTags}
+                  highlightedAuthorName={highlightedAuthorName}
+                  authorCardRefs={authorCardRefs}
+                  getBio={getBio}
+                  onBioClick={(author) => { setSelectedAuthor(author); setBioSheetOpen(true); }}
+                  onNavigateToBook={navigateToBook}
+                  onEditAuthor={openEditAuthor}
+                  onDeleteAuthor={openDeleteAuthor}
+                />
               ) : activeTab === "books" ? (
-                filteredBooks.length === 0 ? <EmptyState query={query} /> : (
-                  <>
-                    {/* Recently Tagged strip — Books tab */}
-                    {!query && selectedCategories.size === 0 && selectedTagSlugs.size === 0 && (recentlyTaggedQuery.data?.filter(i => i.entityType === "book").length ?? 0) > 0 && (
-                      <div className="mb-6">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-base">🏷️</span>
-                          <h2 className="text-sm font-semibold">Recently Tagged</h2>
-                          <span className="text-xs text-muted-foreground">Books with tags applied recently</span>
-                        </div>
-                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                          {recentlyTaggedQuery.data?.filter(i => i.entityType === "book").map((item) => {
-                            const coverUrl = item.s3AvatarUrl || item.avatarUrl || null;
-                            return (
-                              <button
-                                key={`book::${item.entityKey}`}
-                                onClick={() => {
-                                  const found = filteredBooks.find((b) => normalizeTitleKey(b.name) === item.entityKey || b.name.toLowerCase().includes(item.entityKey.toLowerCase()));
-                                  if (found) { setSelectedBook(found); setBookSheetOpen(true); }
-                                }}
-                                className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 hover:border-border/80 transition-all w-[100px] group"
-                              >
-                                <div className="relative">
-                                  {coverUrl ? (
-                                    <img src={coverUrl} alt={item.entityKey} className="w-12 h-16 rounded-md object-cover ring-2 ring-violet-400/40 group-hover:ring-violet-400/80 transition-all" />
-                                  ) : (
-                                    <div className="w-12 h-16 rounded-md bg-gradient-to-br from-violet-400/20 to-violet-600/20 flex items-center justify-center text-lg font-bold text-violet-600">
-                                      {item.entityKey.charAt(0)}
-                                    </div>
-                                  )}
-                                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold">B</span>
-                                </div>
-                                <span className="text-[10px] font-medium text-center leading-tight line-clamp-2 w-full">
-                                  {item.entityKey.split(" ").slice(0, 3).join(" ")}
-                                </span>
-                                {item.tags.slice(0, 2).map((tag) => (
-                                  <span
-                                    key={tag.slug}
-                                    className="text-[8px] px-1.5 py-0.5 rounded-full font-medium truncate max-w-full"
-                                    style={{ backgroundColor: (tag.color ?? "#6366F1") + "22", color: tag.color ?? "#6366F1" }}
-                                  >
-                                    {tag.name}
-                                  </span>
-                                ))}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                    {/* Digital Books grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 tab-content-enter">
-                      {filteredBooks.map((b, i) => {
-                        const titleKey = b.name.split(" - ")[0].trim().replace(/[?!.,;:]+$/, "");
-                        const tk = normalizeTitleKey(b.name);
-                        return (
-                          <div key={b.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}
-                            ref={(el) => { if (el) bookCardRefs.current.set(tk, el); else bookCardRefs.current.delete(tk); }}
-                          >
-                            <BookCard
-                              book={b} query={query}
-                              onDetailClick={(book) => { setSelectedBook(book); setBookSheetOpen(true); }}
-                              coverImageUrl={bookCoverMap.get(titleKey)}
-                              isEnriched={enrichedTitlesSet.has(titleKey)}
-                              amazonUrl={amazonUrlMap.get(titleKey)}
-                              goodreadsUrl={goodreadsUrlMap.get(titleKey)}
-                              wikipediaUrl={wikipediaUrlMap.get(titleKey)}
-                              onCoverClick={(url, title, color) => setLightboxCover({ url, title, color })}
-                              onAuthorClick={navigateToAuthor}
-                              isHighlighted={highlightedBookTitle === tk}
-                              rating={bookInfoMap.get(tk)?.rating}
-                              ratingCount={bookInfoMap.get(tk)?.ratingCount}
-                              publishedDate={bookInfoMap.get(tk)?.publishedDate}
-                              keyThemes={bookInfoMap.get(tk)?.keyThemes}
-                              summary={bookInfoMap.get(tk)?.summary}
-                              isFavorite={(bookFavoritesQuery.data ?? {})[tk] ?? false}
-                              hasRichSummary={richSummarySet.has(titleKey)}
-                              freshnessDimensions={bookFreshnessMap.get(tk)}
-                              format={bookInfoMap.get(tk)?.format ?? null}
-                              possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
-                              onEditClick={isAuthenticated ? () => openEditBook(titleKey) : undefined}
-                              onDeleteClick={isAuthenticated ? () => openDeleteBook(titleKey) : undefined}
-                              currentTagSlugs={Array.from(bookTagsMap.get(tk) ?? [])}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Audiobooks section within Books tab */}
-                    {filteredAudio.length > 0 && (
-                      <div className="mt-8">
-                        <div className="flex items-center gap-2 mb-4">
-                          <Headphones className="w-4 h-4 text-muted-foreground" />
-                          <h2 className="text-base font-semibold">Audiobooks</h2>
-                          <span className="text-xs text-muted-foreground">({filteredAudio.length})</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                          {filteredAudio.map((a, i) => (
-                            <div key={a.id + i} style={{ animationDelay: `${Math.min(i * 30, 400)}ms` }}>
-                              <AudioCard audio={a} query={query} />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )
+                <BooksTabContent
+                  query={query}
+                  selectedCategories={selectedCategories}
+                  selectedTagSlugs={selectedTagSlugs}
+                  isAuthenticated={isAuthenticated}
+                  filteredBooks={filteredBooks}
+                  filteredAudio={filteredAudio}
+                  enrichedTitlesSet={enrichedTitlesSet}
+                  richSummarySet={richSummarySet}
+                  bookCoverMap={bookCoverMap}
+                  amazonUrlMap={amazonUrlMap}
+                  goodreadsUrlMap={goodreadsUrlMap}
+                  wikipediaUrlMap={wikipediaUrlMap}
+                  bookInfoMap={bookInfoMap}
+                  bookFreshnessMap={bookFreshnessMap}
+                  bookTagsMap={bookTagsMap}
+                  bookFavoritesData={bookFavoritesQuery.data}
+                  recentlyTaggedData={recentlyTaggedQuery.data}
+                  highlightedBookTitle={highlightedBookTitle}
+                  bookCardRefs={bookCardRefs}
+                  onDetailClick={(book) => { setSelectedBook(book); setBookSheetOpen(true); }}
+                  onCoverClick={(url, title, color) => setLightboxCover({ url, title, color })}
+                  onAuthorClick={navigateToAuthor}
+                  onEditBook={openEditBook}
+                  onDeleteBook={openDeleteBook}
+                />
               ) : activeTab === "media" ? (
                 <MediaTab query={query} />
               ) : activeTab === "favorites" ? (
