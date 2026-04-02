@@ -661,6 +661,7 @@ export default function Home() {
                                     if (el) authorCardRefs.current.set(key, el);
                                     else authorCardRefs.current.delete(key);
                                   }}
+                                  currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
                                   onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
                                   onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
                                 />
@@ -695,6 +696,7 @@ export default function Home() {
                             if (el) authorCardRefs.current.set(key, el);
                             else authorCardRefs.current.delete(key);
                           }}
+                          currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
                           onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
                           onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
                         />
@@ -853,6 +855,7 @@ export default function Home() {
                                   hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
                                   platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
                                   freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
+                                  currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
                                   onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
                                   onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
                                 />

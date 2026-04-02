@@ -49,8 +49,16 @@ Last cleaned: Apr 2, 2026
   - [x] Badges zone: category pill, quality badge, platform icons — right of avatar, top-aligned
   - [x] Info zone: author name, specialty, bio snippet — full-width middle strip
   - [x] Content shelf: book covers strip — full-width bottom, fixed height
-  - [x] Card background: light theme-aware glass/frosted effect (bg-card/85 backdrop-blur-xl)
+  - [x] Card background: Apple fluid glass (bg-card/85 backdrop-blur-xl) + category-tinted gradient overlay
   - [x] All cards identical structure regardless of data density
+  - [x] Quality/Rich/Digital Me badges redesigned as pill-style with icons (Brain, Cpu) and ring borders
+  - [x] Avatar placeholder uses category-tinted gradient instead of plain bg-muted
+  - [x] Book cover placeholder uses category-tinted gradient with title text
+  - [x] Actions bar: 3D buttons with shadow-[0_2px_0] style + hover/active effects
+  - [x] currentTagSlugs wired from authorTagsMap at all 3 call sites in Home.tsx
+  - [x] Specialty text styled italic + muted/80 for visual hierarchy
+  - [x] Book count badge uses category color (tinted background + category text)
+  - [x] Category watermark icon increased to w-16 h-16 with 3% opacity
 
 ---
 
