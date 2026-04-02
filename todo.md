@@ -2434,3 +2434,10 @@ Live URL: https://authlib-ehsrgokn.manus.space
 - [ ] Split Admin.tsx (1696L) into focused tab components
 - [ ] Split llmCatalogue.ts (899L) into vendor data + scoring + recommendations
 - [ ] Commit and push all changes to GitHub
+
+## Session Apr 2, 2026 — Next 5 Tasks Implementation
+- [ ] Build tag management UI (create, rename, delete tags)
+- [ ] Add inline tag picker on author and book cards
+- [ ] Add tag filter to sidebar and search
+- [ ] Split Home.tsx (814L) into focused sub-components
+- [ ] Split Admin.tsx (1696L) into focused tab components

@@ -28,8 +28,10 @@ import {
   Film,
   Flame,
   GitCompare,
+  Tag,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { STATS } from "@/components/library/libraryConstants";
@@ -52,6 +54,10 @@ interface LibrarySidebarProps {
   favoriteCount: number;
   isAuthenticated: boolean;
   authorAvatarData: { avatarUrl?: string | null }[] | undefined;
+  /** Currently selected tag slugs for filtering */
+  selectedTagSlugs?: Set<string>;
+  toggleTagSlug?: (slug: string) => void;
+  clearTagFilters?: () => void;
 }
 
 export function LibrarySidebar({
@@ -67,6 +73,9 @@ export function LibrarySidebar({
   favoriteCount,
   isAuthenticated,
   authorAvatarData,
+  selectedTagSlugs = new Set(),
+  toggleTagSlug,
+  clearTagFilters,
 }: LibrarySidebarProps) {
   const { settings: { colorMode: appTheme } } = useAppSettings();
 
@@ -172,6 +181,13 @@ export function LibrarySidebar({
             />
           </SidebarGroup>
         )}
+
+        {/* Tag filter */}
+        <TagFilterSection
+          selectedTagSlugs={selectedTagSlugs}
+          toggleTagSlug={toggleTagSlug}
+          clearTagFilters={clearTagFilters}
+        />
       </SidebarContent>
 
       <SidebarFooter className="px-4 py-3 border-t border-sidebar-border group-data-[collapsible=icon]:hidden">
@@ -309,5 +325,89 @@ export function LibrarySidebar({
         </div>
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+// ── Tag Filter Section ────────────────────────────────────────────────────────
+function TagFilterSection({
+  selectedTagSlugs,
+  toggleTagSlug,
+  clearTagFilters,
+}: {
+  selectedTagSlugs: Set<string>;
+  toggleTagSlug?: (slug: string) => void;
+  clearTagFilters?: () => void;
+}) {
+  const { data: allTags = [] } = trpc.tags.list.useQuery();
+
+  const selectedTags = useMemo(
+    () => allTags.filter((t) => selectedTagSlugs.has(t.slug)),
+    [allTags, selectedTagSlugs]
+  );
+
+  if (allTags.length === 0 || !toggleTagSlug) return null;
+
+  return (
+    <SidebarGroup className="group-data-[collapsible=icon]:hidden px-2">
+      <div className="flex items-center justify-between px-2 py-1">
+        <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+          <Tag className="w-3 h-3" />
+          Tags
+        </p>
+        {selectedTagSlugs.size > 0 && clearTagFilters && (
+          <button
+            onClick={clearTagFilters}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            title="Clear tag filters"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <div className="flex flex-wrap gap-1.5 px-2 py-1">
+        {allTags.map((tag) => {
+          const isSelected = selectedTagSlugs.has(tag.slug);
+          return (
+            <button
+              key={tag.slug}
+              onClick={() => toggleTagSlug(tag.slug)}
+              style={{
+                backgroundColor: isSelected ? tag.color + "22" : "transparent",
+                color: isSelected ? tag.color : "var(--muted-foreground)",
+                borderColor: isSelected ? tag.color + "44" : "var(--border)",
+              }}
+              className="text-xs px-2 py-0.5 rounded border transition-all hover:scale-105 font-medium"
+              title={`Filter by ${tag.name}`}
+            >
+              {tag.name}
+            </button>
+          );
+        })}
+      </div>
+      {selectedTags.length > 0 && (
+        <div className="flex flex-wrap gap-1 px-2 py-1 mt-1 border-t border-border/50">
+          <p className="text-[10px] text-muted-foreground w-full mb-0.5">Active:</p>
+          {selectedTags.map((tag) => (
+            <span
+              key={tag.slug}
+              style={{ backgroundColor: tag.color + "22", color: tag.color, borderColor: tag.color + "44" }}
+              className="text-xs px-2 py-0.5 rounded border font-medium flex items-center gap-1"
+            >
+              {tag.name}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTagSlug(tag.slug);
+                }}
+                className="hover:opacity-70 transition-opacity"
+                title="Remove filter"
+              >
+                <X className="w-2.5 h-2.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </SidebarGroup>
   );
 }

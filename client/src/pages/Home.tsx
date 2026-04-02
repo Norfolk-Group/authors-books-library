@@ -48,11 +48,7 @@ import { StatCard, EmptyState } from "@/components/library/LibraryPrimitives";
 import { FloatingBooks } from "@/components/FloatingBooks";
 import { STATS, type BookEnrichmentLevel } from "@/components/library/libraryConstants";
 import { LibrarySidebar, type TabType } from "@/components/library/LibrarySidebar";
-import { AuthorFormDialog } from "@/components/library/AuthorFormDialog";
-import { DeleteAuthorDialog } from "@/components/library/DeleteAuthorDialog";
-import { BookFormDialog } from "@/components/library/BookFormDialog";
-import { DeleteBookDialog } from "@/components/library/DeleteBookDialog";
-import { PhysicalBookQuickAddDialog } from "@/components/library/PhysicalBookQuickAddDialog";
+import { useLibraryCrud } from "@/hooks/useLibraryCrud";
 import { PlusCircle } from "lucide-react";
 import {
   useLibraryData,
@@ -100,6 +96,16 @@ export default function Home() {
   const [bookSort, setBookSort] = useLocalStorage<BookSort>("lib:bookSort", "name-asc");
   const [enrichFilter, setEnrichFilter] = useLocalStorage<BookEnrichmentLevel | "all">("lib:enrichFilter", "all");
   const [possessionFilter, setPossessionFilter] = useLocalStorage<string>("lib:possessionFilter", "all");
+  const [selectedTagSlugs, setSelectedTagSlugs] = useState<Set<string>>(new Set());
+  const toggleTagSlug = useCallback((slug: string) => {
+    setSelectedTagSlugs((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  }, []);
+  const clearTagFilters = useCallback(() => setSelectedTagSlugs(new Set()), []);
 
   // Modal state
   const [selectedAuthor, setSelectedAuthor] = useState<AuthorEntry | null>(null);
@@ -108,14 +114,12 @@ export default function Home() {
   const [bookSheetOpen, setBookSheetOpen] = useState(false);
   const [lightboxCover, setLightboxCover] = useState<{ url: string | null; title: string; author?: string; color?: string; amazonUrl?: string } | null>(null);
 
-  // CRUD dialog state
-  const [addAuthorOpen, setAddAuthorOpen] = useState(false);
-  const [editAuthorData, setEditAuthorData] = useState<{ authorName: string } | null>(null);
-  const [deleteAuthorName, setDeleteAuthorName] = useState<string | null>(null);
-  const [addBookOpen, setAddBookOpen] = useState(false);
-  const [physicalBookOpen, setPhysicalBookOpen] = useState(false);
-  const [editBookData, setEditBookData] = useState<{ bookTitle: string } | null>(null);
-  const [deleteBookTitle, setDeleteBookTitle] = useState<string | null>(null);
+  // CRUD dialog orchestration
+  const {
+    openAddAuthor, openEditAuthor, openDeleteAuthor,
+    openAddBook, openPhysicalBook, openEditBook, openDeleteBook,
+    CrudDialogs,
+  } = useLibraryCrud();
 
   // Live DB stats (falls back to static STATS if DB unavailable)
   const liveStatsQuery = trpc.library.getStats.useQuery(undefined, { staleTime: 5 * 60_000 });
@@ -219,6 +223,9 @@ export default function Home() {
           favoriteCount={Object.values(authorFavoritesQuery.data ?? {}).filter(Boolean).length + Object.values(bookFavoritesQuery.data ?? {}).filter(Boolean).length}
           isAuthenticated={isAuthenticated}
           authorAvatarData={authorAvatarMapQuery.data as { avatarUrl?: string | null }[] | undefined}
+          selectedTagSlugs={selectedTagSlugs}
+          toggleTagSlug={toggleTagSlug}
+          clearTagFilters={clearTagFilters}
         />
 
         {/* -- Main Content -- */}
@@ -317,7 +324,7 @@ export default function Home() {
                   {/* Add Author / Add Book button — admin only */}
                   {isAuthenticated && activeTab === "authors" && (
                     <button
-                      onClick={() => setAddAuthorOpen(true)}
+                      onClick={openAddAuthor}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-[#c9b96e]/50 text-[#c9b96e] bg-[#c9b96e]/5 hover:bg-[#c9b96e]/15 hover:border-[#c9b96e] shadow-[0_2px_0_#8a7a3a] hover:shadow-[0_1px_0_#8a7a3a] hover:translate-y-[1px] active:shadow-none active:translate-y-[2px] transition-all"
                     >
                       <PlusCircle className="w-3.5 h-3.5" />
@@ -327,7 +334,7 @@ export default function Home() {
                   {isAuthenticated && activeTab === "books" && (
                     <>
                       <button
-                        onClick={() => setPhysicalBookOpen(true)}
+                        onClick={openPhysicalBook}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-amber-500/50 text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 hover:border-amber-500 shadow-[0_2px_0_#92400e] hover:shadow-[0_1px_0_#92400e] hover:translate-y-[1px] active:shadow-none active:translate-y-[2px] transition-all"
                         title="Quick-add a physical book you own"
                       >
@@ -335,7 +342,7 @@ export default function Home() {
                         Physical
                       </button>
                       <button
-                        onClick={() => setAddBookOpen(true)}
+                        onClick={openAddBook}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border border-[#c9b96e]/50 text-[#c9b96e] bg-[#c9b96e]/5 hover:bg-[#c9b96e]/15 hover:border-[#c9b96e] shadow-[0_2px_0_#8a7a3a] hover:shadow-[0_1px_0_#8a7a3a] hover:translate-y-[1px] active:shadow-none active:translate-y-[2px] transition-all"
                       >
                         <PlusCircle className="w-3.5 h-3.5" />
@@ -555,8 +562,8 @@ export default function Home() {
                             if (el) authorCardRefs.current.set(key, el);
                             else authorCardRefs.current.delete(key);
                           }}
-                          onEditClick={isAuthenticated ? () => setEditAuthorData({ authorName: canonicalName(a.name) }) : undefined}
-                          onDeleteClick={isAuthenticated ? () => setDeleteAuthorName(canonicalName(a.name)) : undefined}
+                          onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
+                          onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
                         />
                       </div>
                     ))}
@@ -595,8 +602,8 @@ export default function Home() {
                               freshnessDimensions={bookFreshnessMap.get(tk)}
                               format={bookInfoMap.get(tk)?.format ?? null}
                               possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
-                              onEditClick={isAuthenticated ? () => setEditBookData({ bookTitle: titleKey }) : undefined}
-                              onDeleteClick={isAuthenticated ? () => setDeleteBookTitle(titleKey) : undefined}
+                              onEditClick={isAuthenticated ? () => openEditBook(titleKey) : undefined}
+                              onDeleteClick={isAuthenticated ? () => openDeleteBook(titleKey) : undefined}
                             />
                           </div>
                         );
@@ -671,8 +678,8 @@ export default function Home() {
                                   hasRichBio={richBioSet.has(canonicalName(a.name).toLowerCase())}
                                   platformLinks={platformLinksMap.get(canonicalName(a.name).toLowerCase()) ?? null}
                                   freshnessDimensions={authorFreshnessMap.get(canonicalName(a.name).toLowerCase())}
-                                  onEditClick={isAuthenticated ? () => setEditAuthorData({ authorName: canonicalName(a.name) }) : undefined}
-                                  onDeleteClick={isAuthenticated ? () => setDeleteAuthorName(canonicalName(a.name)) : undefined}
+                                  onEditClick={isAuthenticated ? () => openEditAuthor(canonicalName(a.name)) : undefined}
+                                  onDeleteClick={isAuthenticated ? () => openDeleteAuthor(canonicalName(a.name)) : undefined}
                                 />
                               </div>
                             ))}
@@ -720,8 +727,8 @@ export default function Home() {
                                     freshnessDimensions={bookFreshnessMap.get(tk)}
                                     format={bookInfoMap.get(tk)?.format ?? null}
                                     possessionStatus={bookInfoMap.get(tk)?.possessionStatus ?? null}
-                                    onEditClick={isAuthenticated ? () => setEditBookData({ bookTitle: titleKey }) : undefined}
-                                    onDeleteClick={isAuthenticated ? () => setDeleteBookTitle(titleKey) : undefined}
+                                    onEditClick={isAuthenticated ? () => openEditBook(titleKey) : undefined}
+                                    onDeleteClick={isAuthenticated ? () => openDeleteBook(titleKey) : undefined}
                                   />
                                 </div>
                               );
@@ -776,39 +783,7 @@ export default function Home() {
     <BackToTop scrollContainerRef={mainRef} />
 
     {/* ── CRUD Dialogs ─────────────────────────────────────────────────────── */}
-    <AuthorFormDialog
-      open={addAuthorOpen || !!editAuthorData}
-      onOpenChange={(v) => { if (!v) { setAddAuthorOpen(false); setEditAuthorData(null); } }}
-      initialData={editAuthorData ?? undefined}
-      onSuccess={() => { setAddAuthorOpen(false); setEditAuthorData(null); }}
-    />
-
-    <DeleteAuthorDialog
-      open={!!deleteAuthorName}
-      onOpenChange={(v) => { if (!v) setDeleteAuthorName(null); }}
-      authorName={deleteAuthorName ?? ""}
-      onSuccess={() => setDeleteAuthorName(null)}
-    />
-
-    <BookFormDialog
-      open={addBookOpen || !!editBookData}
-      onOpenChange={(v) => { if (!v) { setAddBookOpen(false); setEditBookData(null); } }}
-      initialData={editBookData ?? undefined}
-      onSuccess={() => { setAddBookOpen(false); setEditBookData(null); }}
-    />
-
-    <DeleteBookDialog
-      open={!!deleteBookTitle}
-      onOpenChange={(v) => { if (!v) setDeleteBookTitle(null); }}
-      bookTitle={deleteBookTitle ?? ""}
-      onSuccess={() => setDeleteBookTitle(null)}
-    />
-
-    <PhysicalBookQuickAddDialog
-      open={physicalBookOpen}
-      onOpenChange={setPhysicalBookOpen}
-      onSuccess={() => setPhysicalBookOpen(false)}
-    />
+    <CrudDialogs />
     </>
   );
 }

@@ -53,6 +53,7 @@ import { AuthorCardActions } from "@/components/AuthorCardActions";
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { PlatformPills } from "@/components/library/PlatformPills";
 import { InterestAlignmentPills } from "@/components/library/InterestAlignmentPills";
+import { TagPicker } from "@/components/TagPicker";
 import { WhyThisAuthor } from "@/components/library/WhyThisAuthor";
 import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "@/components/library/FreshnessDot";
 import { ICON_MAP } from "@/components/library/libraryConstants";
@@ -444,7 +445,15 @@ export function FlowbiteAuthorCard({
             className="px-3 h-[32px] flex-shrink-0 flex items-center border-t border-border/50"
             onClick={(e) => e.stopPropagation()}
           >
-            <InterestAlignmentPills authorName={displayName} maxPills={4} />
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <InterestAlignmentPills authorName={displayName} maxPills={4} />
+              <TagPicker
+                entityType="author"
+                entityKey={displayName}
+                currentTagSlugs={[]}
+                showApplied
+              />
+            </div>
           </div>
 
           {/* ═══════════════════════════════════════════════════════════
