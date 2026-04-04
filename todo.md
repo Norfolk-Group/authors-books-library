@@ -154,3 +154,5 @@ Last cleaned: Apr 2, 2026
 - [ ] Set VITE_APP_LOGO in Management UI → Settings → General (manual step — paste CDN URL: https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Logo04256x256_4ba6138d.png)
 - [x] Apply subtle warm amber tint to main library sidebar header background (amber-100 → orange-50 → amber-50/30 gradient)
 - [x] Apply subtle warm amber tint to Admin Console sidebar header background (matching gradient)
+- [x] Roll back amber tint from sidebar headers
+- [x] Redesign main library sidebar header: centered 64px logo above wordmark + user identity row (clean, no background tint)

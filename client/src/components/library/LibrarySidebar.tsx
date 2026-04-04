@@ -111,24 +111,24 @@ export function LibrarySidebar({
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border">
-      <SidebarHeader className="px-4 py-4 border-b border-sidebar-border bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50/30 dark:from-amber-950/40 dark:via-orange-950/20 dark:to-transparent">
-        {/* App logo — shown when sidebar is expanded */}
-        <div className="flex items-center gap-2 mb-3 group-data-[collapsible=icon]:hidden">
+      <SidebarHeader className="px-4 pt-5 pb-4 border-b border-sidebar-border">
+        {/* Expanded: centered logo + wordmark + user identity */}
+        <div className="group-data-[collapsible=icon]:hidden flex flex-col items-center gap-1 mb-3">
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Logo04256x256_4ba6138d.png"
             alt="Library Logo"
-            className="w-8 h-8 object-contain flex-shrink-0"
+            className="w-16 h-16 object-contain"
           />
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/80 leading-none">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-foreground/60 leading-none mt-0.5">
             Personal Library
           </p>
         </div>
-        {/* App logo icon — shown when sidebar is collapsed */}
-        <div className="hidden group-data-[collapsible=icon]:flex justify-center mb-2">
+        {/* Collapsed: centered small logo icon */}
+        <div className="hidden group-data-[collapsible=icon]:flex justify-center mb-3">
           <img
             src="https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Logo0464x64_b5df2d76.png"
             alt="Library Logo"
-            className="w-7 h-7 object-contain"
+            className="w-8 h-8 object-contain"
           />
         </div>
         {/* User identity */}
