@@ -30,6 +30,7 @@ import {
   GitCompare,
   Tag,
   X,
+  TrendingUp,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
@@ -249,6 +250,11 @@ export function LibrarySidebar({
 
         {/* Footer links */}
         <div className="mt-3 pt-3 border-t border-border/50">
+          <a href="/stats" className="w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/60">
+            <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" />
+            Reading Stats
+            <ChevronRight className="w-3 h-3 ml-auto opacity-50" />
+          </a>
           <a href="/leaderboard" className="w-full flex items-center gap-2 text-xs px-2 py-1.5 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/60">
             <Trophy className="w-3.5 h-3.5 flex-shrink-0" />
             Leaderboard

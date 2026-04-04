@@ -381,6 +381,20 @@ export const bookProfiles = mysqlTable("book_profiles", {
   readingNotesJson: text("readingNotesJson"),
   /** When readingNotesJson was last synced from Notion */
   readingNotesSyncedAt: timestamp("readingNotesSyncedAt"),
+  /**
+   * Reading progress as a percentage (0–100).
+   * Updated manually by the user via the BookDetail page progress slider.
+   */
+  readingProgressPercent: int("readingProgressPercent"),
+  /** Date the user started reading this book (UTC) */
+  readingStartedAt: timestamp("readingStartedAt"),
+  /** Date the user finished reading this book (UTC) */
+  readingFinishedAt: timestamp("readingFinishedAt"),
+  /**
+   * Personal reading notes JSON.
+   * Shape: { notes: string, updatedAt: string }
+   */
+  personalNotesJson: text("personalNotesJson"),
   enrichedAt: timestamp("enrichedAt"),
   /**
    * Physical/digital format(s) the user owns.

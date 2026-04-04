@@ -17,6 +17,7 @@ const GroupContrast = lazy(() => import("./pages/GroupContrast"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
+const ReadingStats = lazy(() => import("./pages/ReadingStats"));
 const Login = lazy(() => import("./pages/Login"));
 
 const PageLoader = () => (
@@ -85,6 +86,11 @@ function Router() {
       <Route path={"/cookies"}>
         <Suspense fallback={<PageLoader />}>
           <CookiePolicy />
+        </Suspense>
+      </Route>
+      <Route path={"/stats"}>
+        <Suspense fallback={<PageLoader />}>
+          <ReadingStats />
         </Suspense>
       </Route>
       <Route path={"/admin"}>

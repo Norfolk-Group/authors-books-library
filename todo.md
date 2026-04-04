@@ -168,3 +168,30 @@ Last cleaned: Apr 2, 2026
 - [x] Move user avatar + name from sidebar header to sidebar footer (with "Library Owner" subtitle)
 - [x] Sidebar header: logo (80px) + "Ricardo Cidale's Library" two-line wordmark, centered, no tint
 - [x] Add Terms of Service and Cookie Policy links to sidebar footer (Privacy · Terms · Cookies)
+
+## RapidAPI Integration
+
+- [x] RAPIDAPI_KEY confirmed available in server environment (50-char key injected via platform secrets)
+- [x] server/enrichment/rapidapi.ts already exists with full typed helpers: Yahoo Finance, CNBC, LinkedIn, Seeking Alpha stub
+- [x] RapidAPI endpoints in use: yahoo-finance15 (stock quotes), cnbc (news feeds), linkedin-data-api (profile stats)
+- [x] tRPC procedures using RapidAPI: authorSocial.router.ts (fetchCNBCAuthorProfile, fetchYahooFinanceStats)
+- [x] Vitest tests passing: 568 tests across 36 test files (including cnbc.test.ts, socialStats.test.ts, dependencies.test.ts)
+
+---
+
+## Next 10 Backlog Features (Apr 4, 2026)
+
+- [x] Reading progress tracker on BookDetail page (% complete slider + start/finish date pickers, persisted via updateReadingProgress mutation; schema: readingProgressPercent, readingStartedAt, readingFinishedAt)
+- [x] Reading notes UI on BookDetail page (personal notes textarea, persisted to readingNotesJson via updateReadingProgress mutation)
+- [x] Author media section on AuthorDetail page (list author's TED talks, podcasts, papers, YouTube videos with type icons and direct links — getByAuthor query via authorContentLinks join)
+- [x] getByAuthor tRPC procedure added to contentItems router
+- [x] updateReadingProgress tRPC mutation added to bookProfiles router
+- [x] getReadingStats tRPC query added to bookProfiles router (byStatus, byFormat, avgRating, readDates, books list)
+- [x] Reading Stats dashboard page (/stats) — KPI cards, status bars, format bars, in-progress list with progress bars, books-by-year timeline, recently finished list
+- [x] /stats route registered in App.tsx and Reading Stats link added to sidebar footer (TrendingUp icon)
+- [ ] CNBC "In the News" badge on author cards (show article count from socialStatsJson.cnbc if > 0) — deferred
+- [ ] LinkedIn follower count display on author cards and AuthorDetail page — deferred
+- [ ] Similar books recommendations panel on BookDetail page — deferred
+- [ ] Global keyboard shortcut (Cmd/Ctrl+K) command palette for fast author/book search and navigation — deferred
+- [ ] Author "In the News" section on AuthorDetail page (CNBC articles) — deferred
+- [ ] Book ISBN barcode display on BookDetail page — deferred

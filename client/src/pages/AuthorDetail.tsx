@@ -42,6 +42,10 @@ import {
   Presentation,
   Brain,
   MessageSquare,
+  Video,
+  Headphones,
+  Newspaper,
+  Play,
 } from "lucide-react";
 import { AUTHORS, CATEGORY_COLORS } from "@/lib/libraryData";
 import { canonicalName } from "@/lib/authorAliases";
@@ -54,6 +58,95 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import type { SocialStatsResult } from "../../../server/enrichment/socialStats";
 import type { RichBioResult, ProfessionalEntry } from "../../../server/enrichment/richBio";
 import AcademicResearchPanel from "@/components/AcademicResearchPanel";
+
+// ── Author Media Section ─────────────────────────────────────────────────────
+
+const CONTENT_TYPE_ICON: Record<string, React.ReactNode> = {
+  ted_talk: <Play className="w-3.5 h-3.5" />,
+  youtube_video: <Video className="w-3.5 h-3.5" />,
+  youtube_channel: <Video className="w-3.5 h-3.5" />,
+  podcast: <Headphones className="w-3.5 h-3.5" />,
+  podcast_episode: <Headphones className="w-3.5 h-3.5" />,
+  article: <Newspaper className="w-3.5 h-3.5" />,
+  paper: <FileText className="w-3.5 h-3.5" />,
+  masterclass: <Mic className="w-3.5 h-3.5" />,
+  online_course: <Mic className="w-3.5 h-3.5" />,
+  interview: <Mic className="w-3.5 h-3.5" />,
+  speech: <Presentation className="w-3.5 h-3.5" />,
+};
+
+const CONTENT_TYPE_LABEL: Record<string, string> = {
+  ted_talk: "TED Talk",
+  youtube_video: "YouTube",
+  youtube_channel: "YouTube Channel",
+  podcast: "Podcast",
+  podcast_episode: "Podcast Episode",
+  article: "Article",
+  paper: "Research Paper",
+  masterclass: "Masterclass",
+  online_course: "Course",
+  interview: "Interview",
+  speech: "Speech",
+  other: "Other",
+};
+
+function AuthorMediaSection({ authorName }: { authorName: string }) {
+  const { data: items, isLoading } = trpc.contentItems.getByAuthor.useQuery(
+    { authorName },
+    { staleTime: 300_000 }
+  );
+
+  if (isLoading) return null;
+  if (!items || items.length === 0) return null;
+
+  return (
+    <section>
+      <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+        Media & Resources ({items.length})
+      </h2>
+      <div className="space-y-2">
+        {items.map((item) => {
+          const icon = CONTENT_TYPE_ICON[item.contentType] ?? <Globe className="w-3.5 h-3.5" />;
+          const label = CONTENT_TYPE_LABEL[item.contentType] ?? item.contentType;
+          const cover = item.s3CoverUrl ?? item.coverImageUrl;
+          return (
+            <a
+              key={item.id}
+              href={item.url ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-sm transition-all group"
+            >
+              {/* Thumbnail */}
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
+                {cover ? (
+                  <img src={cover} alt={item.title} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-muted-foreground">{icon}</span>
+                )}
+              </div>
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+                  {item.title}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                    {icon}{label}
+                  </span>
+                  {item.publishedDate && (
+                    <span className="text-[10px] text-muted-foreground">{item.publishedDate.slice(0, 4)}</span>
+                  )}
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary flex-shrink-0" />
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -788,6 +881,9 @@ export default function AuthorDetail() {
             </div>
           </section>
         )}
+
+        {/* ── Media & Resources ── */}
+        <AuthorMediaSection authorName={displayName} />
 
         {/* ── Footer ── */}
         <div className="flex gap-3 pt-2 pb-8">

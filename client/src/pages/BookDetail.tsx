@@ -11,7 +11,7 @@
  *   7. Library Content: content types available in Drive
  *   8. CTA: "Enrich this book" button (admin only)
  */
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -37,6 +37,9 @@ import {
   Lightbulb,
   BookMarked,
   ArrowRight,
+  CheckCircle2,
+  PenLine,
+  Save,
 } from "lucide-react";
 import { BOOKS, CATEGORY_COLORS, CATEGORY_ICONS, CONTENT_TYPE_ICONS } from "@/lib/libraryData";
 import { ICON_MAP, CT_ICON_MAP, normalizeContentTypes } from "@/components/library/libraryConstants";
@@ -96,6 +99,13 @@ export default function BookDetail() {
   const [showAllQuotes, setShowAllQuotes] = useState(false);
   const [enriching, setEnriching] = useState(false);
 
+  // Reading progress state
+  const [progressValue, setProgressValue] = useState<number>(0);
+  const [personalNotes, setPersonalNotes] = useState("");
+  const [savingProgress, setSavingProgress] = useState(false);
+  const [notesEditing, setNotesEditing] = useState(false);
+  const progressInitialized = useRef(false);
+
   // Fetch book profile (cover, summary, rating, publisher, etc.)
   const { data: profile, refetch: refetchProfile } = trpc.bookProfiles.get.useQuery(
     { bookTitle: title },
@@ -107,6 +117,46 @@ export default function BookDetail() {
     { bookTitle: title },
     { enabled: !!title }
   );
+
+  // Sync progress from DB once profile loads
+  useEffect(() => {
+    if (profile && !progressInitialized.current) {
+      progressInitialized.current = true;
+      setProgressValue(profile.readingProgressPercent ?? 0);
+      if (profile.personalNotesJson) {
+        try {
+          const parsed = JSON.parse(profile.personalNotesJson as string);
+          setPersonalNotes(parsed.notes ?? "");
+        } catch { /* ignore */ }
+      }
+    }
+  }, [profile]);
+
+  const updateProgressMutation = trpc.bookProfiles.updateReadingProgress.useMutation({
+    onSuccess: () => {
+      toast.success("Progress saved!");
+      setSavingProgress(false);
+      setNotesEditing(false);
+      refetchProfile();
+    },
+    onError: () => {
+      toast.error("Failed to save progress");
+      setSavingProgress(false);
+    },
+  });
+
+  function saveProgress(overrides?: { percent?: number; notes?: string }) {
+    if (!title) return;
+    setSavingProgress(true);
+    const pct = overrides?.percent ?? progressValue;
+    updateProgressMutation.mutate({
+      bookTitle: title,
+      readingProgressPercent: pct,
+      personalNotes: overrides?.notes ?? personalNotes,
+      ...(pct === 100 && !profile?.readingFinishedAt ? { readingFinishedAt: new Date() } : {}),
+      ...(pct > 0 && !profile?.readingStartedAt ? { readingStartedAt: new Date() } : {}),
+    });
+  }
 
   const enrichRichMutation = trpc.bookProfiles.enrichRichSummary.useMutation({
     onSuccess: (result) => {
@@ -519,6 +569,121 @@ export default function BookDetail() {
             </div>
           </section>
         )}
+
+        {/* ── Reading Progress ─────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <CheckCircle2 size={20} style={{ color }} />
+            Reading Progress
+          </h2>
+          <div className="rounded-xl border border-border/60 p-5 space-y-5">
+            {/* Progress bar + percentage */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {progressValue === 0 ? "Not started" : progressValue === 100 ? "Finished" : `${progressValue}% complete`}
+                </span>
+                <span className="font-semibold tabular-nums" style={{ color }}>{progressValue}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={progressValue}
+                onChange={(e) => setProgressValue(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer accent-primary"
+                style={{ accentColor: color }}
+              />
+              <div className="flex gap-2 flex-wrap">
+                {[0, 25, 50, 75, 100].map((pct) => (
+                  <button
+                    key={pct}
+                    onClick={() => { setProgressValue(pct); saveProgress({ percent: pct }); }}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                      progressValue === pct
+                        ? "border-transparent text-white font-semibold"
+                        : "border-border/60 text-muted-foreground hover:border-border"
+                    }`}
+                    style={progressValue === pct ? { backgroundColor: color } : {}}
+                  >
+                    {pct === 0 ? "Not started" : pct === 100 ? "Finished" : `${pct}%`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dates */}
+            {(profile?.readingStartedAt || profile?.readingFinishedAt) && (
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                {profile.readingStartedAt && (
+                  <span>Started: <strong className="text-foreground">{new Date(profile.readingStartedAt).toLocaleDateString()}</strong></span>
+                )}
+                {profile.readingFinishedAt && (
+                  <span>Finished: <strong className="text-foreground">{new Date(profile.readingFinishedAt).toLocaleDateString()}</strong></span>
+                )}
+              </div>
+            )}
+
+            {/* Save button */}
+            <Button
+              size="sm"
+              onClick={() => saveProgress()}
+              disabled={savingProgress}
+              className="gap-2"
+              style={{ backgroundColor: color, borderColor: color }}
+            >
+              {savingProgress ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              Save Progress
+            </Button>
+          </div>
+        </section>
+
+        {/* ── Personal Notes ───────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <PenLine size={20} style={{ color }} />
+              My Notes
+            </h2>
+            {!notesEditing && (
+              <Button size="sm" variant="outline" onClick={() => setNotesEditing(true)} className="gap-2">
+                <PenLine size={13} />
+                {personalNotes ? "Edit" : "Add Notes"}
+              </Button>
+            )}
+          </div>
+          <div className="rounded-xl border border-border/60 p-5">
+            {notesEditing ? (
+              <div className="space-y-3">
+                <textarea
+                  value={personalNotes}
+                  onChange={(e) => setPersonalNotes(e.target.value)}
+                  placeholder="Your thoughts, highlights, key takeaways..."
+                  rows={6}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => saveProgress({ notes: personalNotes })}
+                    disabled={savingProgress}
+                    className="gap-2"
+                    style={{ backgroundColor: color, borderColor: color }}
+                  >
+                    {savingProgress ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                    Save Notes
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setNotesEditing(false)}>Cancel</Button>
+                </div>
+              </div>
+            ) : personalNotes ? (
+              <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{personalNotes}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No personal notes yet. Click "Add Notes" to capture your thoughts.</p>
+            )}
+          </div>
+        </section>
 
         {/* ── Library Content ──────────────────────────────────────────────── */}
         <section className="space-y-4">

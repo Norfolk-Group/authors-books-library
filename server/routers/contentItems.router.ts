@@ -1238,4 +1238,40 @@ export const contentItemsRouter = router({
       // Otherwise return results for the caller to pick from
       return { success: true, results };
     }),
+
+  /** Get all non-book content items linked to a specific author */
+  getByAuthor: publicProcedure
+    .input(z.object({ authorName: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      const rows = await db
+        .select({
+          id: contentItems.id,
+          contentType: contentItems.contentType,
+          title: contentItems.title,
+          subtitle: contentItems.subtitle,
+          description: contentItems.description,
+          url: contentItems.url,
+          coverImageUrl: contentItems.coverImageUrl,
+          s3CoverUrl: contentItems.s3CoverUrl,
+          publishedDate: contentItems.publishedDate,
+          rating: contentItems.rating,
+        })
+        .from(contentItems)
+        .innerJoin(
+          authorContentLinks,
+          eq(authorContentLinks.contentItemId, contentItems.id)
+        )
+        .where(
+          and(
+            eq(authorContentLinks.authorName, input.authorName),
+            sql`${contentItems.contentType} != 'book'`,
+            eq(contentItems.includedInLibrary, 1)
+          )
+        )
+        .orderBy(desc(contentItems.createdAt))
+        .limit(50);
+      return rows;
+    }),
 });

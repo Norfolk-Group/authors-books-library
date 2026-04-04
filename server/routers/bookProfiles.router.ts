@@ -200,4 +200,90 @@ export const bookProfilesRouter = router({
   deleteBook: adminProcedure
     .input(z.object({ bookTitle: z.string().min(1) }))
     .mutation(({ input }) => handleDeleteBook(input)),
+
+  /** Update reading progress for a book (public — single user app) */
+  updateReadingProgress: publicProcedure
+    .input(z.object({
+      bookTitle: z.string().min(1),
+      readingProgressPercent: z.number().min(0).max(100).nullable().optional(),
+      readingStartedAt: z.date().nullable().optional(),
+      readingFinishedAt: z.date().nullable().optional(),
+      personalNotes: z.string().nullable().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const { getDb } = await import("../db");
+      const { bookProfiles } = await import("../../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+      const updates: Record<string, unknown> = { updatedAt: new Date() };
+      if (input.readingProgressPercent !== undefined) updates.readingProgressPercent = input.readingProgressPercent;
+      if (input.readingStartedAt !== undefined) updates.readingStartedAt = input.readingStartedAt;
+      if (input.readingFinishedAt !== undefined) updates.readingFinishedAt = input.readingFinishedAt;
+      if (input.personalNotes !== undefined) {
+        updates.personalNotesJson = input.personalNotes
+          ? JSON.stringify({ notes: input.personalNotes, updatedAt: new Date().toISOString() })
+          : null;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await db.update(bookProfiles).set(updates as any).where(eq(bookProfiles.bookTitle, input.bookTitle));
+      return { success: true };
+    }),
+
+  /** Get reading stats across all books (for the Stats dashboard) */
+  getReadingStats: publicProcedure
+    .query(async () => {
+      const { getDb } = await import("../db");
+      const { bookProfiles } = await import("../../drizzle/schema");
+      const db = await getDb();
+      if (!db) return null;
+      const books = await db
+        .select({
+          bookTitle: bookProfiles.bookTitle,
+          authorName: bookProfiles.authorName,
+          possessionStatus: bookProfiles.possessionStatus,
+          format: bookProfiles.format,
+          rating: bookProfiles.rating,
+          readingProgressPercent: bookProfiles.readingProgressPercent,
+          readingStartedAt: bookProfiles.readingStartedAt,
+          readingFinishedAt: bookProfiles.readingFinishedAt,
+          enrichedAt: bookProfiles.enrichedAt,
+          publishedDate: bookProfiles.publishedDate,
+          tagsJson: bookProfiles.tagsJson,
+        })
+        .from(bookProfiles);
+      const byStatus: Record<string, number> = {};
+      const byFormat: Record<string, number> = {};
+      let totalRating = 0, ratingCount = 0;
+      const readDates: Date[] = [];
+      for (const b of books) {
+        const s = b.possessionStatus ?? "unknown";
+        byStatus[s] = (byStatus[s] ?? 0) + 1;
+        const f = b.format ?? "unknown";
+        byFormat[f] = (byFormat[f] ?? 0) + 1;
+        if (b.rating) { totalRating += parseFloat(b.rating); ratingCount++; }
+        if (b.readingFinishedAt) readDates.push(b.readingFinishedAt);
+      }
+      return {
+        total: books.length,
+        byStatus,
+        byFormat,
+        avgRating: ratingCount > 0 ? Math.round((totalRating / ratingCount) * 10) / 10 : null,
+        readCount: (byStatus["read"] ?? 0),
+        readingCount: (byStatus["reading"] ?? 0),
+        wishlistCount: (byStatus["wishlist"] ?? 0),
+        readDates: readDates.sort((a, b) => a.getTime() - b.getTime()),
+        books: books.map(b => ({
+          bookTitle: b.bookTitle,
+          authorName: b.authorName,
+          possessionStatus: b.possessionStatus,
+          format: b.format,
+          rating: b.rating ? parseFloat(b.rating) : null,
+          readingProgressPercent: b.readingProgressPercent,
+          readingStartedAt: b.readingStartedAt,
+          readingFinishedAt: b.readingFinishedAt,
+          publishedDate: b.publishedDate,
+        })),
+      };
+    }),
 });
