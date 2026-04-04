@@ -111,7 +111,7 @@ export function LibrarySidebar({
 
   return (
     <Sidebar collapsible="offcanvas" className="border-r border-sidebar-border">
-      <SidebarHeader className="px-4 py-4 border-b border-sidebar-border">
+      <SidebarHeader className="px-4 py-4 border-b border-sidebar-border bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50/30 dark:from-amber-950/40 dark:via-orange-950/20 dark:to-transparent">
         {/* App logo — shown when sidebar is expanded */}
         <div className="flex items-center gap-2 mb-3 group-data-[collapsible=icon]:hidden">
           <img

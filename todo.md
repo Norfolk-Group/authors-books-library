@@ -152,3 +152,5 @@ Last cleaned: Apr 2, 2026
 - [x] Display logo in main library sidebar header (above user identity row, with "Personal Library" wordmark)
 - [x] Display logo in Admin Console sidebar header (replacing gear icon with book logo)
 - [ ] Set VITE_APP_LOGO in Management UI → Settings → General (manual step — paste CDN URL: https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Logo04256x256_4ba6138d.png)
+- [x] Apply subtle warm amber tint to main library sidebar header background (amber-100 → orange-50 → amber-50/30 gradient)
+- [x] Apply subtle warm amber tint to Admin Console sidebar header background (matching gradient)

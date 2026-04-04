@@ -196,7 +196,7 @@ export default function Admin() {
 
       <SidebarProvider defaultOpen={true}>
         <Sidebar collapsible="icon" className="border-r">
-          <SidebarHeader className="p-3">
+          <SidebarHeader className="p-3 bg-gradient-to-br from-amber-100 via-orange-50 to-amber-50/30 dark:from-amber-950/40 dark:via-orange-950/20 dark:to-transparent border-b border-sidebar-border">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton size="lg" asChild>
