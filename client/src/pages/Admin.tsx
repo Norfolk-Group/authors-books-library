@@ -37,6 +37,7 @@ import {
   Heartbeat,
   MagnifyingGlass,
   Tag,
+  Newspaper,
   Cpu as CircuitBoard,
 } from "@phosphor-icons/react";
 import { Loader2, ChevronRight } from "lucide-react";
@@ -89,6 +90,7 @@ import { AdminInfoToolsTab } from "@/components/admin/AdminInfoToolsTab";
 import { AdminAppSettingsTab } from "@/components/admin/AdminAppSettingsTab";
 import { AdminAboutTab } from "@/components/admin/AdminAboutTab";
 import { ApiManagementTab } from "@/components/admin/ApiManagementTab";
+import { AdminMagazineTab } from "@/components/admin/AdminMagazineTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -152,6 +154,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: "settings", label: "App Settings", icon: Gear },
       { id: "api-management", label: "API Management", icon: Globe },
+      { id: "magazine-feeds", label: "Magazine Feeds", icon: Newspaper },
       { id: "about", label: "About", icon: Info },
     ],
   },
@@ -443,6 +446,7 @@ export default function Admin() {
               {/* ── Configuration ── */}
               {activeSection === "settings" && <AdminAppSettingsTab />}
               {activeSection === "api-management" && <ApiManagementTab />}
+              {activeSection === "magazine-feeds" && <AdminMagazineTab />}
               {activeSection === "about" && <AdminAboutTab />}
 
             </div>

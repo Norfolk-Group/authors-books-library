@@ -339,3 +339,14 @@ Last cleaned: Apr 2, 2026
 - [x] Build `SubstackPostsPanel` component — shows latest 5 posts with title, date, excerpt, and link
 - [x] Wire `SubstackPostsPanel` into AuthorDetail page
 - [x] Write vitest tests for substack service
+
+## Implement All Suggestions (Apr 5, 2026)
+- [x] Seed Substack URLs for 40 known authors in the database (seedSubstackUrls.mjs)
+- [x] Add AdminMagazineTab to Admin Console — sync all 5 publication RSS feeds + Pinecone indexing
+- [x] Wire AdminMagazineTab into Admin.tsx nav under "Magazine Feeds" section
+- [x] Add vectorSearch.indexAllArticles procedure for global batch Pinecone indexing
+- [x] Create SemanticSearchDropdown component — Pinecone-powered overlay below search bar
+- [x] Update LibraryHeader to integrate SemanticSearchDropdown with debounce + keyboard navigation
+- [x] Pass onNavigateAuthor / onNavigateBook callbacks from Home.tsx to LibraryHeader
+- [x] Fix pre-existing magazine.test.ts failures (wrong export names: MAGAZINE_SOURCES → PUBLICATIONS, normalizeAuthorName → normalizeName)
+- [x] Write suggestions.test.ts — 11 tests covering all 3 features (schema, router shape, pure logic)

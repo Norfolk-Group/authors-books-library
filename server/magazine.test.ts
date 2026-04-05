@@ -3,7 +3,11 @@
  *
  * Unit tests for the magazine article pipeline service and router.
  * Tests cover RSS config validation, author name normalization,
- * article ID generation, and the vectorSearch router schema.
+ * and the vectorSearch router schema.
+ *
+ * Note: the magazine.service exports PUBLICATIONS (array), normalizeName, and
+ * matchArticlesToAuthor — not MAGAZINE_SOURCES, normalizeAuthorName, or
+ * generateArticleId.
  */
 
 import { describe, it, expect } from "vitest";
@@ -12,80 +16,72 @@ import { describe, it, expect } from "vitest";
 
 describe("Magazine service — RSS configs", () => {
   it("should have exactly 5 publication sources", async () => {
-    const { MAGAZINE_SOURCES } = await import("./services/magazine.service");
-    expect(Object.keys(MAGAZINE_SOURCES)).toHaveLength(5);
+    const { PUBLICATIONS } = await import("./services/magazine.service");
+    expect(PUBLICATIONS).toHaveLength(5);
   });
 
-  it("should include all required publication keys", async () => {
-    const { MAGAZINE_SOURCES } = await import("./services/magazine.service");
-    const keys = Object.keys(MAGAZINE_SOURCES);
-    expect(keys).toContain("the-atlantic");
-    expect(keys).toContain("the-new-yorker");
-    expect(keys).toContain("wired");
-    expect(keys).toContain("nyt");
-    expect(keys).toContain("washington-post");
+  it("should include all required publication source keys", async () => {
+    const { PUBLICATIONS } = await import("./services/magazine.service");
+    const sources = PUBLICATIONS.map((p) => p.source);
+    expect(sources).toContain("the-atlantic");
+    expect(sources).toContain("the-new-yorker");
+    expect(sources).toContain("wired");
+    expect(sources).toContain("nyt");
+    expect(sources).toContain("washington-post");
   });
 
-  it("each source should have a feedUrl and publicationName", async () => {
-    const { MAGAZINE_SOURCES } = await import("./services/magazine.service");
-    for (const [key, config] of Object.entries(MAGAZINE_SOURCES)) {
-      expect(config.feedUrl, `${key} missing feedUrl`).toBeTruthy();
-      expect(config.publicationName, `${key} missing publicationName`).toBeTruthy();
-      expect(config.feedUrl).toMatch(/^https?:\/\//);
+  it("each publication should have a name, source, and at least one feed URL", async () => {
+    const { PUBLICATIONS } = await import("./services/magazine.service");
+    for (const pub of PUBLICATIONS) {
+      expect(pub.source, `${pub.source} missing source`).toBeTruthy();
+      expect(pub.name, `${pub.source} missing name`).toBeTruthy();
+      expect(pub.feeds.length, `${pub.source} has no feeds`).toBeGreaterThan(0);
+      for (const feed of pub.feeds) {
+        expect(feed).toMatch(/^https?:\/\//);
+      }
     }
   });
 });
 
 describe("Magazine service — author name normalization", () => {
-  it("should normalize author names to lowercase with no accents", async () => {
-    const { normalizeAuthorName } = await import("./services/magazine.service");
-    expect(normalizeAuthorName("Adam Grant")).toBe("adam grant");
-    expect(normalizeAuthorName("Yuval Noah Harari")).toBe("yuval noah harari");
-    expect(normalizeAuthorName("  Derek  Thompson  ")).toBe("derek thompson");
+  it("should normalize author names to lowercase", async () => {
+    const { normalizeName } = await import("./services/magazine.service");
+    expect(normalizeName("Adam Grant")).toBe("adam grant");
+    expect(normalizeName("Yuval Noah Harari")).toBe("yuval noah harari");
+    expect(normalizeName("  Derek  Thompson  ")).toBe("derek thompson");
   });
 
-  it("should handle names with special characters", async () => {
-    const { normalizeAuthorName } = await import("./services/magazine.service");
+  it("should handle names with accented characters", async () => {
+    const { normalizeName } = await import("./services/magazine.service");
+    const result = normalizeName("José García");
     // Should strip accents and normalize
-    const result = normalizeAuthorName("José García");
     expect(result).toBe("jose garcia");
   });
 
   it("should return empty string for empty input", async () => {
-    const { normalizeAuthorName } = await import("./services/magazine.service");
-    expect(normalizeAuthorName("")).toBe("");
-    expect(normalizeAuthorName("   ")).toBe("");
+    const { normalizeName } = await import("./services/magazine.service");
+    expect(normalizeName("")).toBe("");
+    expect(normalizeName("   ")).toBe("");
   });
 });
 
-describe("Magazine service — article ID generation", () => {
-  it("should generate a deterministic article ID from source and URL", async () => {
-    const { generateArticleId } = await import("./services/magazine.service");
-    const id1 = generateArticleId("the-atlantic", "https://theatlantic.com/article/123");
-    const id2 = generateArticleId("the-atlantic", "https://theatlantic.com/article/123");
-    expect(id1).toBe(id2);
+describe("Magazine service — matchArticlesToAuthor", () => {
+  it("should export matchArticlesToAuthor function", async () => {
+    const { matchArticlesToAuthor } = await import("./services/magazine.service");
+    expect(typeof matchArticlesToAuthor).toBe("function");
   });
 
-  it("should generate different IDs for different sources", async () => {
-    const { generateArticleId } = await import("./services/magazine.service");
-    const id1 = generateArticleId("the-atlantic", "https://example.com/article");
-    const id2 = generateArticleId("wired", "https://example.com/article");
-    expect(id1).not.toBe(id2);
-  });
-
-  it("should generate different IDs for different URLs", async () => {
-    const { generateArticleId } = await import("./services/magazine.service");
-    const id1 = generateArticleId("nyt", "https://nytimes.com/article/1");
-    const id2 = generateArticleId("nyt", "https://nytimes.com/article/2");
-    expect(id1).not.toBe(id2);
-  });
-
-  it("should produce a non-empty string", async () => {
-    const { generateArticleId } = await import("./services/magazine.service");
-    const id = generateArticleId("wired", "https://wired.com/story/test");
-    expect(id).toBeTruthy();
-    expect(typeof id).toBe("string");
-    expect(id.length).toBeGreaterThan(0);
+  it("should match articles by normalised author name", async () => {
+    const { matchArticlesToAuthor } = await import("./services/magazine.service");
+    const articles = [
+      { authorNameNormalized: "adam grant", title: "A1" },
+      { authorNameNormalized: "james clear", title: "A2" },
+      { authorNameNormalized: "adam grant", title: "A3" },
+    ] as Parameters<typeof matchArticlesToAuthor>[0];
+    const matched = matchArticlesToAuthor(articles, "Adam Grant");
+    expect(matched).toHaveLength(2);
+    expect(matched.map((a) => a.title)).toContain("A1");
+    expect(matched.map((a) => a.title)).toContain("A3");
   });
 });
 

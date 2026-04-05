@@ -292,6 +292,8 @@ export default function Home() {
             selectedCategoriesSize={selectedCategories.size}
             query={query}
             setQuery={setQuery}
+            onNavigateAuthor={navigateToAuthor}
+            onNavigateBook={navigateToBook}
           />
 
           <main ref={mainRef} className="flex-1 px-3 sm:px-6 py-4 sm:py-6 overflow-auto">

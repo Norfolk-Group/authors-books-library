@@ -9,6 +9,7 @@
  *   vectorSearch.searchBooks      — semantic search in books namespace
  *   vectorSearch.indexArticle     — embed + upsert a single article
  *   vectorSearch.indexBatchArticles — embed + upsert unindexed articles for an author
+ *   vectorSearch.indexAllArticles  — embed + upsert ALL unindexed articles (global batch)
  *   vectorSearch.indexAuthor      — embed + upsert an author's bio
  *   vectorSearch.indexBook        — embed + upsert a book's description
  *   vectorSearch.getStats         — Pinecone index stats (vector counts per namespace)
@@ -201,6 +202,47 @@ export const vectorSearchRouter = router({
       }
 
       return { indexed, totalVectors, attempted: unindexed.length };
+    }),
+
+  /** Index ALL unindexed articles across all sources (global batch for Admin) */
+  indexAllArticles: adminProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(500).default(100),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const unindexed = await db
+        .select()
+        .from(magazineArticles)
+        .where(eq(magazineArticles.ragIndexed, false))
+        .limit(input.limit);
+      let totalVectors = 0;
+      let indexed = 0;
+      for (const article of unindexed) {
+        const text = article.fullText ?? article.summaryText ?? article.title;
+        if (!text || text.length < 50) continue;
+        try {
+          const vectors = await indexArticle({
+            articleId: article.articleId,
+            title: article.title,
+            authorName: article.authorName,
+            source: article.source,
+            url: article.url,
+            publishedAt: article.publishedAt,
+            text,
+          });
+          await db
+            .update(magazineArticles)
+            .set({ ragIndexed: true, ragIndexedAt: new Date(), updatedAt: new Date() })
+            .where(eq(magazineArticles.articleId, article.articleId));
+          totalVectors += vectors;
+          indexed++;
+        } catch {
+          // Continue with next article on error
+        }
+      }
+      return { indexed, totalVectors, remaining: unindexed.length - indexed };
     }),
 
   /** Embed and index an author's bio text */
