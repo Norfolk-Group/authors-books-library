@@ -96,15 +96,15 @@ Last cleaned: Apr 5, 2026
 
 ## Author & Book Cards — Tabbed Filing-Folder Layout
 
-- [ ] Redesign FlowbiteAuthorCard with tabbed layout (two filing-folder tabs: "Info" and "Books / Substack")
-  - [ ] Tab 1 (Info): avatar, badges, bio, platform pills — current default view
-  - [ ] Tab 2 (Books): book cover shelf + Substack latest posts preview
-  - [ ] Tab labels styled as folder tabs (rounded-t, active tab raised, inactive tab slightly behind)
-  - [ ] Animate tab switch with a smooth cross-fade
-- [ ] Redesign FlowbiteBookCard with tabbed layout (two filing-folder tabs: "Details" and "Notes")
-  - [ ] Tab 1 (Details): cover, title, author, format, possession, tags
-  - [ ] Tab 2 (Notes): reading progress bar, reading notes excerpt, start/finish dates
-  - [ ] Tab labels styled as folder tabs matching author card style
+- [x] Redesign FlowbiteAuthorCard with tabbed layout (two filing-folder tabs: "Info" and "Books / Substack")
+  - [x] Tab 1 (Info): avatar, badges, bio, platform pills — current default view
+  - [x] Tab 2 (Books): book cover shelf + Substack latest posts preview
+  - [x] Tab labels styled as folder tabs (rounded-t, active tab raised, inactive tab slightly behind)
+  - [x] Animate tab switch with a smooth cross-fade
+- [x] Redesign FlowbiteBookCard with tabbed layout (two filing-folder tabs: "Details" and "Notes")
+  - [x] Tab 1 (Details): cover, title, author, format, possession, tags
+  - [x] Tab 2 (Notes): reading progress bar, reading notes excerpt, start/finish dates
+  - [x] Tab labels styled as folder tabs matching author card style
 - [ ] Optimize card real estate: reduce vertical padding, tighten bio to 2 lines max, use compact platform pills
 
 ---

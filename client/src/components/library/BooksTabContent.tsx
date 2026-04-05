@@ -35,6 +35,9 @@ type BookInfo = {
   summary?: string | null;
   format?: string | null;
   possessionStatus?: string | null;
+  readingProgressPercent?: number | null;
+  readingStartedAt?: Date | null;
+  readingFinishedAt?: Date | null;
 };
 
 export interface BooksTabContentProps {
@@ -196,6 +199,9 @@ export function BooksTabContent({
                 freshnessDimensions={bookFreshnessMap.get(tk)}
                 format={info?.format ?? null}
                 possessionStatus={info?.possessionStatus ?? null}
+                readingProgressPercent={info?.readingProgressPercent ?? null}
+                readingStartedAt={info?.readingStartedAt ?? null}
+                readingFinishedAt={info?.readingFinishedAt ?? null}
                 onEditClick={isAuthenticated ? () => onEditBook(titleKey) : undefined}
                 onDeleteClick={isAuthenticated ? () => onDeleteBook(titleKey) : undefined}
                 currentTagSlugs={Array.from(bookTagsMap.get(tk) ?? [])}

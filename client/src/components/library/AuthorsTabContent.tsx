@@ -34,6 +34,7 @@ type RecentlyTaggedItem = {
 };
 
 type PlatformLinks = {
+  authorId?: number | null;
   websiteUrl?: string | null;
   businessWebsiteUrl?: string | null;
   youtubeUrl?: string | null;
@@ -49,7 +50,8 @@ type PlatformLinks = {
   newsletterUrl?: string | null;
   speakingUrl?: string | null;
   blogUrl?: string | null;
-  [key: string]: string | null | undefined;
+  socialStatsJson?: string | null;
+  authorName?: string | null;
 };
 
 export interface AuthorsTabContentProps {

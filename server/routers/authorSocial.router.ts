@@ -14,6 +14,7 @@ export const authorSocialRouter = router({
     if (!db) return [];
     const rows = await db
       .select({
+        authorId: authorProfiles.id,
         authorName: authorProfiles.authorName,
         websiteUrl: authorProfiles.websiteUrl,
         twitterUrl: authorProfiles.twitterUrl,

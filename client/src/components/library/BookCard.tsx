@@ -1,31 +1,31 @@
 /**
- * BookCard — individual book card for the Books tab.
+ * BookCard — filing-folder tabbed book card.
  *
- * -- DESIGN RULES (mirrors FlowbiteAuthorCard) --
- *   - Centered cover as the visual anchor (like the author avatar)
- *   - Category pill at top (same row layout as author cards)
- *   - Title + author name below cover
- *   - Content-type badges in lower section (moved here from author cards)
- *   - Zero hardcoded hex/rgb values — CSS variable tokens only
- *
- * -- INTERACTION MODEL --
- *   1. Cover image     → click opens cover lightbox (zoom)
- *   2. Author name     → click navigates to author card in Authors tab
- *   3. Card surface    → click opens BookDetailPanel
- *   4. Drive icon      → opens Google Drive folder
- *
- * -- ANIMATIONS (framer-motion, already installed) --
- *   - Card: whileHover scale-up + shadow lift, whileTap scale-down
- *   - Cover: hover scale-[1.08], active scale-[0.94] (press feel)
+ * ┌─────────────────────────────────────────────────────┐
+ * │  │ Details │  Notes ▸  │                            │  ← folder tabs
+ * ├─────────────────────────────────────────────────────┤
+ * │  TAB 1 — Details                                    │
+ * │    Cover · Title · Author · Rating                  │
+ * │    Enrichment badge · Key themes · Resource links   │
+ * │    Possession/format badges · Content-type badges   │
+ * │    Tag picker · View Full Profile link              │
+ * ├─────────────────────────────────────────────────────┤
+ * │  TAB 2 — Notes                                      │
+ * │    Reading progress bar · Status badge              │
+ * │    Start / Finish dates · Personal notes excerpt    │
+ * └─────────────────────────────────────────────────────┘
  */
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
   ExternalLink,
   BookMarked as BookMarkedIcon,
   Star,
   FileText,
+  CalendarDays,
+  CheckCircle2,
   type LucideIcon,
 } from "lucide-react";
 import { BookCardActions } from "./BookCardActions";
@@ -38,6 +38,8 @@ import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { TagPicker } from "@/components/TagPicker";
 import { Link } from "wouter";
+
+type CardTab = "details" | "notes";
 
 function slugifyBook(name: string) {
   return name
@@ -53,42 +55,45 @@ interface BookCardProps {
   coverImageUrl?: string;
   isEnriched?: boolean;
   amazonUrl?: string;
-  /** Goodreads URL for the book */
   goodreadsUrl?: string;
-  /** Wikipedia article URL for the book */
   wikipediaUrl?: string;
   onCoverClick?: (url: string, title: string, color: string) => void;
-  /** Called when user clicks the author name — navigates to author in Authors tab */
   onAuthorClick?: (authorName: string) => void;
-  /** Used for scroll-to highlight — set to true when this card is the navigation target */
   isHighlighted?: boolean;
-  /** Star rating string, e.g. "4.6" */
   rating?: string;
-  /** Number of ratings/reviews */
   ratingCount?: number;
-  /** Published date string, e.g. "2023-04-18" */
   publishedDate?: string;
-  /** Comma-separated key themes */
   keyThemes?: string;
-  /** Short summary for hover tooltip */
   summary?: string;
-  /** Whether this book is currently favorited by the logged-in user */
   isFavorite?: boolean;
-  /** Whether this book has a full double-pass LLM rich summary available */
   hasRichSummary?: boolean;
-  /** Freshness dimensions for this book (from getAllFreshness query) */
   freshnessDimensions?: FreshnessDimension[];
-  /** Physical/digital format(s) owned: physical | digital | audio | physical_digital | physical_audio | digital_audio | all | none */
   format?: string | null;
-  /** Possession/reading status: owned | wishlist | reference | borrowed | gifted | read | reading | unread */
   possessionStatus?: string | null;
-  /** Called when Edit Book is selected from the card menu */
+  readingProgressPercent?: number | null;
+  readingStartedAt?: Date | null;
+  readingFinishedAt?: Date | null;
   onEditClick?: () => void;
-  /** Called when Delete Book is selected from the card menu */
   onDeleteClick?: () => void;
-  /** Current tag slugs applied to this book (for TagPicker) */
   currentTagSlugs?: string[];
 }
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  read:      { label: "Read",      color: "#059669", bg: "#d1fae5" },
+  reading:   { label: "Reading",   color: "#0284c7", bg: "#e0f2fe" },
+  unread:    { label: "Unread",    color: "#6b7280", bg: "#f3f4f6" },
+  wishlist:  { label: "Wishlist",  color: "#d97706", bg: "#fef3c7" },
+  reference: { label: "Reference", color: "#7c3aed", bg: "#ede9fe" },
+  borrowed:  { label: "Borrowed",  color: "#db2777", bg: "#fce7f3" },
+  gifted:    { label: "Gifted",    color: "#9333ea", bg: "#f3e8ff" },
+  owned:     { label: "Owned",     color: "#2563eb", bg: "#dbeafe" },
+};
+
+const FORMAT_ICONS: Record<string, string> = {
+  physical: "📗", digital: "📱", audio: "🎧",
+  physical_digital: "📗📱", physical_audio: "📗🎧",
+  digital_audio: "📱🎧", all: "📗📱🎧",
+};
 
 export function BookCard({
   book,
@@ -112,10 +117,15 @@ export function BookCard({
   freshnessDimensions,
   format,
   possessionStatus,
+  readingProgressPercent,
+  readingStartedAt,
+  readingFinishedAt,
   onEditClick,
   onDeleteClick,
   currentTagSlugs = [],
 }: BookCardProps) {
+  const [activeTab, setActiveTab] = useState<CardTab>("details");
+
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = (ICON_MAP[iconName] ?? BookMarkedIcon) as LucideIcon;
@@ -125,7 +135,6 @@ export function BookCard({
   const bookAuthor = dashIdx !== -1 ? book.name.slice(dashIdx + 3) : "";
   const hasContent = Object.keys(book.contentTypes).length > 0;
 
-  // Compute enrichment level from available props
   const enrichmentLevel = getBookEnrichmentLevel(
     isEnriched
       ? {
@@ -139,6 +148,13 @@ export function BookCard({
       : null
   );
 
+  // Notes tab: has meaningful data?
+  const hasNotes =
+    readingProgressPercent != null ||
+    readingStartedAt != null ||
+    readingFinishedAt != null ||
+    (possessionStatus && possessionStatus !== "owned");
+
   const highlight = (text: string) => {
     if (!query) return <>{text}</>;
     const idx = text.toLowerCase().indexOf(query.toLowerCase());
@@ -150,6 +166,11 @@ export function BookCard({
         {text.slice(idx + query.length)}
       </>
     );
+  };
+
+  const formatDate = (d: Date | null | undefined) => {
+    if (!d) return null;
+    return new Date(d).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
   };
 
   return (
@@ -235,270 +256,373 @@ export function BookCard({
           </div>
         </div>
 
-        {/* ── Row 2: Cover (centered, like author avatar) ─────────────────── */}
-        <div className="flex flex-col items-center gap-3 px-4 pt-4 pb-3 flex-shrink-0">
-          {/* Cover image — HOTSPOT 1: click opens lightbox */}
-          <div className="relative flex-shrink-0">
-            {coverImageUrl ? (
-              <motion.div
-                className="cursor-zoom-in"
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.94 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        {/* ── Filing-folder tab strip ──────────────────────────────────────── */}
+        <div
+          className="flex items-end gap-0 px-4 pt-3 pb-0 flex-shrink-0"
+          onClick={(e) => e.stopPropagation()}
+          role="tablist"
+          aria-label="Book card sections"
+        >
+          {(["details", "notes"] as CardTab[]).map((tab) => {
+            const isActive = activeTab === tab;
+            const label = tab === "details" ? "Details" : "Notes";
+            const showDot = tab === "notes" && hasNotes && !isActive;
+            return (
+              <button
+                key={tab}
+                role="tab"
+                aria-selected={isActive}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onCoverClick?.(coverImageUrl, displayTitle, color);
+                  setActiveTab(tab);
                 }}
+                className={`
+                  relative flex items-center gap-1 px-3 py-1 text-[11px] font-semibold rounded-t-lg
+                  border border-b-0 transition-all duration-150 select-none
+                  ${isActive
+                    ? "bg-card text-foreground border-border z-10 -mb-px shadow-[0_-2px_4px_rgba(0,0,0,0.04)]"
+                    : "bg-muted/50 text-muted-foreground border-transparent hover:bg-muted hover:text-foreground"
+                  }
+                `}
               >
-                <img
-                  src={coverImageUrl}
-                  alt={displayTitle}
-                  className="
-                    h-[103px] w-[76px] object-cover rounded-lg shadow-md
-                    ring-2 ring-border ring-offset-2
-                  "
-                  loading="lazy"
-                />
+                {label}
+                {showDot && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Tab border line (sits under the tabs, above the content) ──── */}
+        <div className="mx-4 h-px bg-border flex-shrink-0" />
+
+        {/* ── Tab content ─────────────────────────────────────────────────── */}
+        <div className="flex-1 overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            {activeTab === "details" ? (
+              <motion.div
+                key="details"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.15 }}
+                className="flex flex-col items-stretch"
+              >
+                {/* Cover + title + author + rating */}
+                <div className="flex flex-col items-center gap-3 px-4 pt-4 pb-3 flex-shrink-0">
+                  {/* Cover image */}
+                  <div className="relative flex-shrink-0">
+                    {coverImageUrl ? (
+                      <motion.div
+                        className="cursor-zoom-in"
+                        whileHover={{ scale: 1.08 }}
+                        whileTap={{ scale: 0.94 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCoverClick?.(coverImageUrl, displayTitle, color);
+                        }}
+                      >
+                        <img
+                          src={coverImageUrl}
+                          alt={displayTitle}
+                          className="h-[103px] w-[76px] object-cover rounded-lg shadow-md ring-2 ring-border ring-offset-2"
+                          loading="lazy"
+                        />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        className="h-[103px] w-[76px] rounded-lg bg-muted shadow-md ring-2 ring-border ring-offset-2 flex items-center justify-center"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      >
+                        <BookOpen className="w-8 h-8 text-muted-foreground" />
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Title + author */}
+                  <div className="min-w-0 w-full text-center">
+                    <Tooltip delayDuration={400}>
+                      <TooltipTrigger asChild>
+                        <h3 className="text-sm font-bold text-card-foreground leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)] cursor-default">
+                          {highlight(displayTitle)}
+                        </h3>
+                      </TooltipTrigger>
+                      {summary && (
+                        <TooltipContent side="top" className="max-w-xs p-3 z-50">
+                          <p className="font-semibold text-xs mb-1">{displayTitle}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {summary.length > 160 ? summary.slice(0, 160) + "…" : summary}
+                          </p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                    {bookAuthor && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAuthorClick?.(bookAuthor);
+                        }}
+                        className="mt-1 text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline cursor-pointer leading-relaxed"
+                      >
+                        <span className="font-medium">by</span> {highlight(bookAuthor)}
+                        {publishedDate && (
+                          <span className="text-muted-foreground not-italic"> · {publishedDate.slice(0, 4)}</span>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Rating */}
+                  {rating ? (
+                    <div className="flex items-center justify-center gap-1 mt-0.5">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
+                      <span className="text-[11px] font-semibold text-foreground">{rating}</span>
+                      {ratingCount && (
+                        <span className="text-[10px] text-muted-foreground">({ratingCount.toLocaleString()})</span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
+                      <BookOpen className="w-3 h-3" />
+                      <span>Click for details</span>
+                    </div>
+                  )}
+
+                  {/* Enrichment + Rich badge */}
+                  <div className="flex items-center justify-center gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
+                    {enrichmentLevel !== 'none' && (
+                      <BookEnrichmentBadge level={enrichmentLevel} size="sm" />
+                    )}
+                    {hasRichSummary && (
+                      <span
+                        className="inline-flex items-center gap-1 rounded-full font-semibold cursor-default select-none px-1.5 py-0.5 text-[9px] bg-teal-500/15 text-teal-700 border border-teal-500/30 dark:bg-teal-500/20 dark:text-teal-300 dark:border-teal-500/40"
+                        title="Full AI-generated rich summary available"
+                      >
+                        <FileText className="w-2.5 h-2.5 flex-shrink-0 text-teal-600 dark:text-teal-400" />
+                        <span className="uppercase tracking-wider leading-none">Rich</span>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Key themes */}
+                  {keyThemes && (
+                    <div className="flex flex-wrap justify-center gap-1 px-2 mt-1">
+                      {keyThemes.split(",").slice(0, 2).map((t) => t.trim()).filter(Boolean).map((theme) => (
+                        <span key={theme} className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground">
+                          {theme}
+                        </span>
+                      ))}
+                      {keyThemes.split(",").length > 2 && (
+                        <span className="text-[9px] text-muted-foreground self-center">
+                          +{keyThemes.split(",").length - 2}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Resource links */}
+                  {(amazonUrl || goodreadsUrl || wikipediaUrl) && (
+                    <div className="flex items-center justify-center flex-wrap gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
+                      {amazonUrl && (
+                        <a href={amazonUrl} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          title="View on Amazon">
+                          <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13.958 10.09c0 1.232.029 2.256-.591 3.351-.502.891-1.301 1.438-2.186 1.438-1.214 0-1.922-.924-1.922-2.292 0-2.692 2.415-3.182 4.699-3.182v.685zm3.186 7.705c-.209.189-.512.201-.745.074-1.047-.872-1.234-1.276-1.814-2.106-1.734 1.767-2.962 2.297-5.209 2.297-2.66 0-4.731-1.641-4.731-4.925 0-2.565 1.391-4.309 3.37-5.164 1.715-.754 4.11-.891 5.942-1.099v-.41c0-.753.06-1.642-.384-2.294-.385-.579-1.124-.82-1.775-.82-1.205 0-2.277.618-2.54 1.897-.054.285-.261.567-.549.582l-3.061-.333c-.259-.056-.548-.266-.472-.66C6.265 1.862 9.316.5 12.073.5c1.407 0 3.245.374 4.354 1.44 1.407 1.312 1.273 3.063 1.273 4.969v4.5c0 1.353.561 1.948 1.089 2.678.186.261.226.574-.009.769l-1.636 1.939z"/>
+                          </svg>
+                          Amazon
+                        </a>
+                      )}
+                      {goodreadsUrl && (
+                        <a href={goodreadsUrl} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          title="View on Goodreads">
+                          <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.43 23.995c-3.608-.208-6.274-2.077-6.448-5.078.695.007 1.375-.013 2.07-.006.224 1.342 1.065 2.43 2.683 3.026 1.583.496 3.737.46 5.082-.174 1.351-.636 2.145-1.822 2.503-3.577.212-1.042.236-1.734.231-2.92l-.005-1.631h-.059c-1.245 2.564-3.315 3.53-5.59 3.475-5.74-.054-7.68-4.534-7.681-8.684-.001-4.906 2.763-8.958 7.925-8.948 2.216.033 4.1 1.04 5.24 3.022h.058V.736h2.055c.016 1.32.04 2.665.04 3.985v12.76c-.004 6.768-3.995 6.767-8.104 6.514zm.166-9.084c3.698-.04 5.576-2.903 5.553-6.27-.022-3.272-1.747-6.218-5.457-6.272-3.735-.054-5.634 2.95-5.634 6.271 0 3.272 1.673 6.313 5.538 6.271z"/>
+                          </svg>
+                          Goodreads
+                        </a>
+                      )}
+                      {wikipediaUrl && (
+                        <a href={wikipediaUrl} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          title="View on Wikipedia">
+                          <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.09 13.119c-.936 1.932-2.217 4.548-2.853 5.728-.616 1.074-1.127.931-1.532.029-1.406-3.321-4.293-9.144-5.651-12.409-.251-.601-.441-.987-.619-1.139-.181-.15-.554-.24-1.122-.271C.103 5.033 0 4.982 0 4.898v-.455l.052-.045c.924-.005 5.401 0 5.401 0l.051.045v.434c0 .084-.103.135-.2.157-.74.108-.835.361-.492 1.005 1.225 2.405 2.501 4.771 3.852 7.12l.828-1.569-2.947-5.542c-.238-.465-.557-.74-.927-.826-.127-.031-.198-.077-.198-.149v-.468l.055-.045h4.78l.05.045v.437c0 .084-.1.133-.198.157-.644.116-.834.361-.492 1.005l1.829 3.432 1.723-3.457c.353-.676.153-.93-.487-1.005-.1-.024-.199-.073-.199-.157v-.437l.05-.045h3.481l.05.045v.437c0 .084-.103.133-.199.157-.644.116-.834.361-.492 1.005l1.829 3.432 1.723-3.457c.353-.676.153-.93-.487-1.005-.1-.024-.199-.073-.199-.157v-.437l.05-.045h3.481l.05.045v.437c0 .084-.103.133-.199.157-.644.116-.834.361-.492 1.005l-4.147 8.334c-.617 1.074-1.127.931-1.532.029l-2.854-5.728z"/>
+                          </svg>
+                          Wikipedia
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Possession / Format badges */}
+                {(possessionStatus || format) && (
+                  <div className="px-4 pb-2 flex flex-wrap gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
+                    {possessionStatus && (() => {
+                      const cfg = STATUS_CONFIG[possessionStatus];
+                      return cfg ? (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold border"
+                          style={{ color: cfg.color, backgroundColor: cfg.bg, borderColor: cfg.color + "40" }}>
+                          {cfg.label}
+                        </span>
+                      ) : null;
+                    })()}
+                    {format && format !== "none" && (() => {
+                      const icon = FORMAT_ICONS[format] ?? "";
+                      return icon ? (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-muted text-muted-foreground border border-border"
+                          title={`Format: ${format.replace(/_/g, " + ")}`}>
+                          {icon}
+                        </span>
+                      ) : null;
+                    })()}
+                  </div>
+                )}
+
+                {/* Content-type badges */}
+                {hasContent && (
+                  <>
+                    <div className="mx-4 h-px bg-border flex-shrink-0" />
+                    <div className="px-4 py-3 relative z-10">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2 cursor-default">
+                        Resources
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {Object.entries(book.contentTypes).map(([type, count]) => (
+                          <ContentTypeBadge key={type} type={type} count={count} />
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Tag picker */}
+                <div className="px-4 py-1.5 relative z-10" onClick={(e) => e.stopPropagation()}>
+                  <TagPicker
+                    entityType="book"
+                    entityKey={displayTitle}
+                    currentTagSlugs={currentTagSlugs}
+                    showApplied
+                  />
+                </div>
+
+                {/* View Full Book Profile link */}
+                <div className="px-4 pb-3 pt-1 relative z-10" onClick={(e) => e.stopPropagation()}>
+                  <Link
+                    href={`/book/${slugifyBook(book.name)}`}
+                    className="flex items-center justify-center gap-1 w-full py-1.5 px-3 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-150 no-underline"
+                  >
+                    <BookOpen size={11} />
+                    View Full Book Profile
+                  </Link>
+                </div>
               </motion.div>
             ) : (
               <motion.div
-                className="
-                  h-[103px] w-[76px] rounded-lg bg-muted shadow-md
-                  ring-2 ring-border ring-offset-2
-                  flex items-center justify-center
-                "
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                key="notes"
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.15 }}
+                className="flex flex-col gap-4 px-4 py-4"
+                onClick={(e) => e.stopPropagation()}
               >
-                <BookOpen className="w-8 h-8 text-muted-foreground" />
+                {/* Reading progress bar */}
+                {readingProgressPercent != null ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[11px] font-semibold text-foreground">Reading Progress</span>
+                      <span className="text-[11px] font-bold text-foreground">{readingProgressPercent}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ backgroundColor: readingProgressPercent >= 100 ? "#059669" : "#3b82f6" }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${readingProgressPercent}%` }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                      />
+                    </div>
+                    {readingProgressPercent >= 100 && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Completed!</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-1 py-2">
+                    <div className="w-full h-2 rounded-full bg-muted" />
+                    <span className="text-[10px] text-muted-foreground">No progress tracked yet</span>
+                  </div>
+                )}
+
+                {/* Status badge */}
+                {possessionStatus && STATUS_CONFIG[possessionStatus] && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold text-muted-foreground">Status</span>
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border"
+                      style={{
+                        color: STATUS_CONFIG[possessionStatus].color,
+                        backgroundColor: STATUS_CONFIG[possessionStatus].bg,
+                        borderColor: STATUS_CONFIG[possessionStatus].color + "40",
+                      }}
+                    >
+                      {STATUS_CONFIG[possessionStatus].label}
+                    </span>
+                  </div>
+                )}
+
+                {/* Start / Finish dates */}
+                {(readingStartedAt || readingFinishedAt) && (
+                  <div className="flex flex-col gap-1.5">
+                    {readingStartedAt && (
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                        <span className="text-[10px] text-muted-foreground">Started</span>
+                        <span className="text-[10px] font-medium text-foreground ml-auto">{formatDate(readingStartedAt)}</span>
+                      </div>
+                    )}
+                    {readingFinishedAt && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0" />
+                        <span className="text-[10px] text-muted-foreground">Finished</span>
+                        <span className="text-[10px] font-medium text-foreground ml-auto">{formatDate(readingFinishedAt)}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Empty state */}
+                {!hasNotes && (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <BookOpen className="w-8 h-8 text-muted-foreground/40" />
+                    <p className="text-[11px] text-muted-foreground">No reading notes yet.</p>
+                    <p className="text-[10px] text-muted-foreground/70">Update reading progress from the book detail page.</p>
+                  </div>
+                )}
+
+                {/* Link to full profile for editing */}
+                <div className="mt-auto pt-2" onClick={(e) => e.stopPropagation()}>
+                  <Link
+                    href={`/book/${slugifyBook(book.name)}`}
+                    className="flex items-center justify-center gap-1 w-full py-1.5 px-3 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-150 no-underline"
+                  >
+                    <BookOpen size={11} />
+                    Update Reading Notes
+                  </Link>
+                </div>
               </motion.div>
             )}
-          </div>
-
-          {/* Title + author name */}
-          <div className="min-w-0 w-full text-center">
-            {/* Title — hover shows summary tooltip if available */}
-            <Tooltip delayDuration={400}>
-              <TooltipTrigger asChild>
-                <h3 className="text-sm font-bold text-card-foreground leading-snug tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)] cursor-default">
-                  {highlight(displayTitle)}
-                </h3>
-              </TooltipTrigger>
-              {summary && (
-                <TooltipContent side="top" className="max-w-xs p-3 z-50">
-                  <p className="font-semibold text-xs mb-1">{displayTitle}</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {summary.length > 160 ? summary.slice(0, 160) + "…" : summary}
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* HOTSPOT 2: author name + publication year */}
-            {bookAuthor && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAuthorClick?.(bookAuthor);
-                }}
-                className="
-                  mt-1 text-xs text-muted-foreground hover:text-foreground
-                  transition-colors underline-offset-2 hover:underline
-                  cursor-pointer leading-relaxed
-                "
-              >
-                <span className="font-medium">by</span> {highlight(bookAuthor)}
-                {publishedDate && (
-                  <span className="text-muted-foreground not-italic"> · {publishedDate.slice(0, 4)}</span>
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Star rating row — replaces the old "Cover ready" status line */}
-          {rating ? (
-            <div className="flex items-center justify-center gap-1 mt-0.5">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
-              <span className="text-[11px] font-semibold text-foreground">{rating}</span>
-              {ratingCount && (
-                <span className="text-[10px] text-muted-foreground">({ratingCount.toLocaleString()})</span>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
-              <BookOpen className="w-3 h-3" />
-              <span>Click for details</span>
-            </div>
-          )}
-
-          {/* Book enrichment level badge + Rich Summary indicator */}
-          <div className="flex items-center justify-center gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
-            {enrichmentLevel !== 'none' && (
-              <BookEnrichmentBadge level={enrichmentLevel} size="sm" />
-            )}
-            {hasRichSummary && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full font-semibold cursor-default select-none px-1.5 py-0.5 text-[9px] bg-teal-500/15 text-teal-700 border border-teal-500/30 dark:bg-teal-500/20 dark:text-teal-300 dark:border-teal-500/40"
-                title="Full AI-generated rich summary available on the book detail page"
-                aria-label="Rich summary available"
-              >
-                <FileText className="w-2.5 h-2.5 flex-shrink-0 text-teal-600 dark:text-teal-400" />
-                <span className="uppercase tracking-wider leading-none">Rich</span>
-              </span>
-            )}
-          </div>
-
-          {/* Key themes pills — shown when enriched */}
-          {keyThemes && (
-            <div className="flex flex-wrap justify-center gap-1 px-2 mt-1">
-              {keyThemes.split(",").slice(0, 2).map((t) => t.trim()).filter(Boolean).map((theme) => (
-                <span
-                  key={theme}
-                  className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-muted text-muted-foreground"
-                >
-                  {theme}
-                </span>
-              ))}
-              {keyThemes.split(",").length > 2 && (
-                <span className="text-[9px] text-muted-foreground self-center">
-                  +{keyThemes.split(",").length - 2}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Resource pills — Amazon, Goodreads, Wikipedia */}
-          {(amazonUrl || goodreadsUrl || wikipediaUrl) && (
-            <div className="flex items-center justify-center flex-wrap gap-1.5 mt-1" onClick={(e) => e.stopPropagation()}>
-              {amazonUrl && (
-                <a
-                  href={amazonUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  title="View on Amazon"
-                >
-                  {/* Amazon smile icon */}
-                  <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M13.958 10.09c0 1.232.029 2.256-.591 3.351-.502.891-1.301 1.438-2.186 1.438-1.214 0-1.922-.924-1.922-2.292 0-2.692 2.415-3.182 4.699-3.182v.685zm3.186 7.705c-.209.189-.512.201-.745.074-1.047-.872-1.234-1.276-1.814-2.106-1.734 1.767-2.962 2.297-5.209 2.297-2.66 0-4.731-1.641-4.731-4.925 0-2.565 1.391-4.309 3.37-5.164 1.715-.754 4.11-.891 5.942-1.099v-.41c0-.753.06-1.642-.384-2.294-.385-.579-1.124-.82-1.775-.82-1.205 0-2.277.618-2.54 1.897-.054.285-.261.567-.549.582l-3.061-.333c-.259-.056-.548-.266-.472-.66C6.265 1.862 9.316.5 12.073.5c1.407 0 3.245.374 4.354 1.44 1.407 1.312 1.273 3.063 1.273 4.969v4.5c0 1.353.561 1.948 1.089 2.678.186.261.226.574-.009.769l-1.636 1.939z"/>
-                  </svg>
-                  Amazon
-                </a>
-              )}
-              {goodreadsUrl && (
-                <a
-                  href={goodreadsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  title="View on Goodreads"
-                >
-                  {/* Goodreads G icon */}
-                  <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M11.43 23.995c-3.608-.208-6.274-2.077-6.448-5.078.695.007 1.375-.013 2.07-.006.224 1.342 1.065 2.43 2.683 3.026 1.583.496 3.737.46 5.082-.174 1.351-.636 2.145-1.822 2.503-3.577.212-1.042.236-1.734.231-2.92l-.005-1.631h-.059c-1.245 2.564-3.315 3.53-5.59 3.475-5.74-.054-7.68-4.534-7.681-8.684-.001-4.906 2.763-8.958 7.925-8.948 2.216.033 4.1 1.04 5.24 3.022h.058V.736h2.055c.016 1.32.04 2.665.04 3.985v12.76c-.004 6.768-3.995 6.767-8.104 6.514zm.166-9.084c3.698-.04 5.576-2.903 5.553-6.27-.022-3.272-1.747-6.218-5.457-6.272-3.735-.054-5.634 2.95-5.634 6.271 0 3.272 1.673 6.313 5.538 6.271z"/>
-                  </svg>
-                  Goodreads
-                </a>
-              )}
-              {wikipediaUrl && (
-                <a
-                  href={wikipediaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                  title="View on Wikipedia"
-                >
-                  {/* Wikipedia W icon */}
-                  <svg viewBox="0 0 24 24" className="w-2.5 h-2.5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.09 13.119c-.936 1.932-2.217 4.548-2.853 5.728-.616 1.074-1.127.931-1.532.029-1.406-3.321-4.293-9.144-5.651-12.409-.251-.601-.441-.987-.619-1.139-.181-.15-.554-.24-1.122-.271C.103 5.033 0 4.982 0 4.898v-.455l.052-.045c.924-.005 5.401 0 5.401 0l.051.045v.434c0 .084-.103.135-.2.157-.74.108-.835.361-.492 1.005 1.225 2.405 2.501 4.771 3.852 7.12l.828-1.569-2.947-5.542c-.238-.465-.557-.74-.927-.826-.127-.031-.198-.077-.198-.149v-.468l.055-.045h4.78l.05.045v.437c0 .084-.1.133-.198.157-.644.116-.834.361-.492 1.005l1.829 3.432 1.723-3.457c.353-.676.153-.93-.487-1.005-.1-.024-.199-.073-.199-.157v-.437l.05-.045h3.481l.05.045v.437c0 .084-.103.133-.199.157-.644.116-.834.361-.492 1.005l1.829 3.432 1.723-3.457c.353-.676.153-.93-.487-1.005-.1-.024-.199-.073-.199-.157v-.437l.05-.045h3.481l.05.045v.437c0 .084-.103.133-.199.157-.644.116-.834.361-.492 1.005l-4.147 8.334c-.617 1.074-1.127.931-1.532.029l-2.854-5.728z"/>
-                  </svg>
-                  Wikipedia
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ── Possession / Format badges ────────────────────────────────── */}
-        {(possessionStatus || format) && (
-          <div className="px-4 pb-2 flex flex-wrap gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
-            {possessionStatus && possessionStatus !== "owned" && (() => {
-              const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-                read:      { label: "Read",      color: "#059669", bg: "#d1fae5" },
-                reading:   { label: "Reading",   color: "#0284c7", bg: "#e0f2fe" },
-                unread:    { label: "Unread",    color: "#6b7280", bg: "#f3f4f6" },
-                wishlist:  { label: "Wishlist",  color: "#d97706", bg: "#fef3c7" },
-                reference: { label: "Reference", color: "#7c3aed", bg: "#ede9fe" },
-                borrowed:  { label: "Borrowed",  color: "#db2777", bg: "#fce7f3" },
-                gifted:    { label: "Gifted",    color: "#9333ea", bg: "#f3e8ff" },
-              };
-              const cfg = STATUS_CONFIG[possessionStatus];
-              return cfg ? (
-                <span
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold border"
-                  style={{ color: cfg.color, backgroundColor: cfg.bg, borderColor: cfg.color + "40" }}
-                >
-                  {cfg.label}
-                </span>
-              ) : null;
-            })()}
-            {format && format !== "none" && (() => {
-              const FORMAT_ICONS: Record<string, string> = {
-                physical: "📗", digital: "📱", audio: "🎧",
-                physical_digital: "📗📱", physical_audio: "📗🎧",
-                digital_audio: "📱🎧", all: "📗📱🎧",
-              };
-              const icon = FORMAT_ICONS[format] ?? "";
-              return icon ? (
-                <span
-                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-muted text-muted-foreground border border-border"
-                  title={`Format: ${format.replace(/_/g, " + ")}`}
-                >
-                  {icon}
-                </span>
-              ) : null;
-            })()}
-          </div>
-        )}
-
-        {/* ── Divider ─────────────────────────────────────────────────────── */}
-        {hasContent && <div className="mx-4 h-px bg-border flex-shrink-0" />}
-
-        {/* ── Row 3: Content-type badges (moved from Author card) ──────────── */}
-        {hasContent && (
-          <div className="px-4 py-3 relative z-10">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2 cursor-default">
-              Resources
-            </p>
-            <div className="flex flex-wrap gap-1">
-              {Object.entries(book.contentTypes).map(([type, count]) => (
-                <ContentTypeBadge key={type} type={type} count={count} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Row 4: Tag picker ────────────────────────────────────────── */}
-        <div className="px-4 py-1.5 relative z-10" onClick={(e) => e.stopPropagation()}>
-          <TagPicker
-            entityType="book"
-            entityKey={displayTitle}
-            currentTagSlugs={currentTagSlugs}
-            showApplied
-          />
-        </div>
-
-        {/* Discreet link — View Full Book Profile */}
-        <div className="px-4 pb-3 pt-1 relative z-10" onClick={(e) => e.stopPropagation()}>
-          <Link
-            href={`/book/${slugifyBook(book.name)}`}
-            className="flex items-center justify-center gap-1 w-full py-1.5 px-3 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors duration-150 no-underline"
-          >
-            <BookOpen size={11} />
-            View Full Book Profile
-          </Link>
+          </AnimatePresence>
         </div>
       </div>
     </motion.div>

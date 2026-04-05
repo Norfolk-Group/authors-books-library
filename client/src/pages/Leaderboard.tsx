@@ -127,7 +127,7 @@ interface LeaderRowProps {
   entry: LeaderboardEntry;
   maxValue: number;
   metric: MetricDef;
-  platformLinks: Record<string, string | null | undefined> | null;
+  platformLinks: { authorId?: number | null; [key: string]: string | number | null | undefined } | null;
   socialStats: SocialStatsResult | null;
 }
 

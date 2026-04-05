@@ -170,7 +170,7 @@ export function useLibraryData({
   }, [bookFreshnessQuery.data]);
 
   const bookInfoMap = useMemo(() => {
-    const map = new Map<string, { summary?: string; rating?: string; ratingCount?: number; publishedDate?: string; keyThemes?: string; format?: string | null; possessionStatus?: string | null }>();
+    const map = new Map<string, { summary?: string; rating?: string; ratingCount?: number; publishedDate?: string; keyThemes?: string; format?: string | null; possessionStatus?: string | null; readingProgressPercent?: number | null; readingStartedAt?: Date | null; readingFinishedAt?: Date | null }>();
     for (const p of bookCoversQuery.data ?? []) {
       const hasRating = p.rating && String(p.rating).trim() !== '' && parseFloat(String(p.rating)) > 0;
       map.set(p.bookTitle.replace(/[?!.,;:]+$/, "").toLowerCase(), {
@@ -181,6 +181,9 @@ export function useLibraryData({
         keyThemes: p.keyThemes ?? undefined,
         format: (p as { format?: string | null }).format ?? null,
         possessionStatus: (p as { possessionStatus?: string | null }).possessionStatus ?? null,
+        readingProgressPercent: (p as { readingProgressPercent?: number | null }).readingProgressPercent ?? null,
+        readingStartedAt: (p as { readingStartedAt?: Date | null }).readingStartedAt ?? null,
+        readingFinishedAt: (p as { readingFinishedAt?: Date | null }).readingFinishedAt ?? null,
       });
     }
     return map;
