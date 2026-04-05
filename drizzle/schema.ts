@@ -1,4 +1,4 @@
-import { decimal, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, decimal, index, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -1044,3 +1044,53 @@ export const apiRegistry = mysqlTable("api_registry", {
 
 export type ApiRegistry = typeof apiRegistry.$inferSelect;
 export type InsertApiRegistry = typeof apiRegistry.$inferInsert;
+
+// ── Magazine Articles ────────────────────────────────────────────────────────
+// Unified cache for articles from 5 publications:
+//   the-atlantic | the-new-yorker | wired | nyt | washington-post
+// Articles are matched to library authors by normalised author name.
+export const magazineArticles = mysqlTable("magazine_articles", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Stable ID: "{source}-{url-slug}" */
+  articleId: varchar("articleId", { length: 192 }).notNull().unique(),
+  /** Publication source key */
+  source: mysqlEnum("source", ["the-atlantic", "the-new-yorker", "wired", "nyt", "washington-post"]).notNull(),
+  /** Human-readable publication name */
+  publicationName: varchar("publicationName", { length: 128 }).notNull(),
+  /** Article headline */
+  title: text("title").notNull(),
+  /** Canonical article URL */
+  url: varchar("url", { length: 1024 }).notNull(),
+  /** Author name as returned by the RSS feed */
+  authorName: varchar("authorName", { length: 256 }),
+  /** Normalised author name for matching against library author profiles */
+  authorNameNormalized: varchar("authorNameNormalized", { length: 256 }),
+  /** ISO-8601 publish date */
+  publishedAt: timestamp("publishedAt"),
+  /** Short teaser text from RSS (up to 600 chars) */
+  summaryText: text("summaryText"),
+  /** Full article body text scraped via Apify (null until scraped) */
+  fullText: text("fullText"),
+  /** JSON array of category/tag strings */
+  categoriesJson: text("categoriesJson"),
+  /** Which RSS feed URL this article came from */
+  feedUrl: varchar("feedUrl", { length: 512 }),
+  /** When the full text was last scraped via Apify */
+  scrapedAt: timestamp("scrapedAt"),
+  /** Whether full-text scraping has been attempted */
+  scrapeAttempted: boolean("scrapeAttempted").notNull().default(false),
+  /** Whether this article has been indexed in Pinecone for RAG */
+  ragIndexed: boolean("ragIndexed").notNull().default(false),
+  /** When this article was indexed in Pinecone */
+  ragIndexedAt: timestamp("ragIndexedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  authorIdx: index("mag_author_idx").on(table.authorNameNormalized),
+  sourceIdx: index("mag_source_idx").on(table.source),
+  publishedIdx: index("mag_published_idx").on(table.publishedAt),
+  articleIdIdx: index("mag_article_id_idx").on(table.articleId),
+  ragIdx: index("mag_rag_idx").on(table.ragIndexed),
+}));
+export type MagazineArticleRow = typeof magazineArticles.$inferSelect;
+export type InsertMagazineArticle = typeof magazineArticles.$inferInsert;

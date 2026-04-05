@@ -58,6 +58,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import type { SocialStatsResult } from "../../../server/enrichment/socialStats";
 import type { RichBioResult, ProfessionalEntry } from "../../../server/enrichment/richBio";
 import AcademicResearchPanel from "@/components/AcademicResearchPanel";
+import { MagazineArticlesPanel } from "@/components/library/MagazineArticlesPanel";
 
 // ── Author Media Section ─────────────────────────────────────────────────────
 
@@ -862,6 +863,9 @@ export default function AuthorDetail() {
 
         {/* ── Academic Research Foundation ── */}
         <AcademicResearchPanel authorName={displayName} isAdmin={isAdmin} />
+
+        {/* ── Magazine Articles (Atlantic, New Yorker, Wired, NYT, WaPo) ── */}
+        <MagazineArticlesPanel authorName={displayName} />
 
         {/* ── Books ── */}
         {author && author.books.length > 0 && (

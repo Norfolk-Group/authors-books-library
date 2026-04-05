@@ -28,6 +28,8 @@ import { tagsRouter } from "./tags.router";
 import { contentItemsRouter } from "./contentItems.router";
 import { enrichmentRouter } from "./enrichment.router";
 import { apiRegistryRouter } from "./apiRegistry.router";
+import { magazineRouter } from "./magazine.router";
+import { vectorSearchRouter } from "./vectorSearch.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -62,6 +64,10 @@ export const appRouter = router({
   contentItems: contentItemsRouter,
   enrichment: enrichmentRouter,
   apiRegistry: apiRegistryRouter,
+  // ── Magazine article pipeline (Atlantic, New Yorker, Wired, NYT, WaPo) ──────
+  magazine: magazineRouter,
+  // ── Pinecone vector search + RAG indexing ─────────────────────────────────
+  vectorSearch: vectorSearchRouter,
 });
 
 export type AppRouter = typeof appRouter;

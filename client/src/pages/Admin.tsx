@@ -193,10 +193,10 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
       <PageHeader crumbs={[{ label: "Admin Console" }]} />
 
-      <SidebarProvider defaultOpen={true}>
+      <SidebarProvider defaultOpen={true} style={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
         <Sidebar collapsible="icon" className="border-r">
           <SidebarHeader className="p-3 border-b border-sidebar-border">
             <SidebarMenu>
@@ -303,7 +303,7 @@ export default function Admin() {
           <SidebarRail />
         </Sidebar>
 
-        <SidebarInset>
+        <SidebarInset className="flex flex-col min-w-0 overflow-hidden">
           {/* Breadcrumb header */}
           <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
@@ -317,7 +317,7 @@ export default function Admin() {
             </span>
           </header>
 
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto min-h-0">
             <div className="p-6 max-w-5xl mx-auto space-y-6">
 
               {/* ── Content ── */}

@@ -281,3 +281,50 @@ Last cleaned: Apr 2, 2026
   - [x] "Check All" button to ping all APIs and refresh status
 - [x] Register `ApiManagementTab` in Admin Console tabs
 - [x] Write vitest tests for apiRegistry router
+
+## Bug Fixes (Apr 5, 2026)
+
+- [ ] Fix Admin sidebar overlapping breadcrumb bar and page content (copy layout fix from home page)
+
+## Substack RSS Integration (Apr 5, 2026)
+
+- [ ] Install rss-parser and @aws-sdk/client-s3
+- [ ] Build server-side Substack RSS helper (fetch author's Substack feed by URL)
+- [ ] Add tRPC procedure: `author.getSubstackFeed(authorId)` 
+- [ ] Wire Substack feed panel into AuthorDetail page (latest 5 posts, publication name, subscribe link)
+- [ ] Write vitest tests for Substack helper
+
+## The Atlantic RSS Integration (Apr 5, 2026)
+
+- [ ] Save The Atlantic RSS scraper as server/services/atlantic.service.ts
+- [ ] Add tRPC procedure: `author.getAtlanticArticles(authorName)` — fetches + matches articles to author
+- [ ] Wire Atlantic articles panel into AuthorDetail page (latest articles, title, date, link)
+- [ ] Cache Atlantic feed results in DB to avoid re-fetching on every page load
+
+## Atlantic Full Article Pipeline (Apr 5, 2026)
+
+- [ ] Add `atlantic_articles` table to drizzle schema (articleId, title, url, authorName, publishedAt, summaryText, fullText, categories, feedUrl, scrapedAt)
+- [ ] Run pnpm db:push to migrate
+- [ ] Build `server/routers/atlantic.router.ts` with procedures: fetchFeed, scrapeArticle (Apify), getByAuthor
+- [ ] Wire Atlantic articles panel into AuthorDetail page (title, date, summary, expandable full text, link)
+- [ ] Write vitest tests for atlantic router
+
+## Magazine Article Pipeline — Atlantic, New Yorker, Wired (Apr 5, 2026)
+
+- [ ] Add shared `magazine_articles` table to drizzle schema (source: 'atlantic'|'new-yorker'|'wired', articleId, title, url, authorName, authorNameNormalized, publishedAt, summaryText, fullText, categoriesJson, feedUrl, scrapedAt, scrapeAttempted)
+- [ ] Run pnpm db:push to migrate
+- [ ] Build `server/services/magazine.service.ts` with RSS configs for all 3 sources
+- [ ] Build `server/routers/magazine.router.ts` with procedures: syncFeed, scrapeArticle, getByAuthor, getBySource
+- [ ] Wire magazine articles panel into AuthorDetail page (grouped by source, title, date, summary, expandable full text, link)
+- [ ] Write vitest tests for magazine router
+
+- [ ] Add NYT and Washington Post RSS feeds to magazine pipeline (5 total sources)
+
+## Pinecone RAG Integration (Apr 5, 2026)
+
+- [ ] Install @pinecone-database/pinecone SDK
+- [ ] Add PINECONE_API_KEY secret
+- [ ] Build server/services/pinecone.service.ts (upsert vectors, query by similarity)
+- [ ] Build RAG pipeline: chunk text (articles/books), embed via Gemini text-embedding-004, upsert to Pinecone
+- [ ] Add tRPC procedure: ragPipeline.indexArticle, ragPipeline.indexBook, ragPipeline.semanticSearch
+- [ ] Wire semantic search into author chatbot and author detail page
