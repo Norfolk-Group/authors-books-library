@@ -357,3 +357,7 @@ Last cleaned: Apr 2, 2026
 - [x] Add Keyword / AI search mode toggle to LibraryHeader (persisted to localStorage, pill toggle with Keyboard/Sparkles icons)
 - [x] SemanticSearchDropdown only fires in AI mode (keyword mode does instant local filter, AI mode uses Pinecone)
 - [x] Write suggestions2.test.ts with 15 passing tests covering all three features
+
+## Avatar Generation (Apr 5 2026)
+- [x] Generate missing avatars for all 24 authors using N+1 waterfall pipeline
+- [x] Verify 0 missing avatars in DB (169/169 authors have avatars)
