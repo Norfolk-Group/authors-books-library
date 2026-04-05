@@ -141,3 +141,49 @@ Last cleaned: Apr 5, 2026
 - [ ] Test RapidAPI access to NYT, Bloomberg, WSJ, BBC, CNN, Atlantic, MSNBC, WashPost (premium news outlets)
 - [ ] Test Spotify API via RapidAPI for author audiobook/podcast data
 - [ ] Test Instagram API via RapidAPI for author follower counts and recent posts
+
+---
+
+## S3 CDN Migration & Image Performance
+
+- [ ] Audit all avatar URLs — identify non-S3 sources (Wikipedia, Tavily, Replicate, Google Drive)
+- [ ] Re-upload all non-S3 avatars to S3 CDN and update author_profiles.avatar_url
+- [ ] Audit all book cover URLs — identify non-S3 sources
+- [ ] Re-upload all non-S3 book covers to S3 CDN and update book_profiles.s3_cover_url
+- [ ] Add blur placeholder + lazy loading to author avatar images in FlowbiteAuthorCard
+- [ ] Add blur placeholder + lazy loading to book cover images in BookCard
+- [ ] Add image preload hints for above-the-fold cards
+- [ ] Verify 100% of avatars and covers are on S3 CDN after migration
+
+---
+
+## Dropbox Content Ingestion Pipeline (Drop Zone)
+
+- [ ] Register Dropbox inbox folder path as secret: DROPBOX_INBOX_FOLDER = /Cidale Interests/Company/Norfolk AI/Apps/RC Library/Inbox
+- [ ] Build dropbox.service.ts: listDropboxInbox() — scan Inbox folder, return files not yet in DB
+- [ ] Build ingest.service.ts: PDF → S3 upload, LLM metadata extraction (title/authors), author profile creation, book profile creation, avatar generation
+- [ ] Add tRPC procedures: dropbox.scanInbox, dropbox.ingestFile, dropbox.ingestAll
+- [ ] Build AdminDropboxInboxTab UI: file list with status badges, ingest buttons, progress tracking
+- [ ] Implement guardrails: no duplicate authors/books, no book titles misidentified as authors
+- [ ] Support multi-author books: create separate author card per author
+- [ ] Auto-generate avatar for new authors (Wikipedia → Tavily → AI portrait fallback)
+- [ ] Auto-source book cover from Amazon/Google Books
+- [ ] Mark ingested files in Dropbox (move to Processed/ subfolder after successful ingest)
+- [ ] Write vitest tests for ingestion pipeline
+
+## Dropbox Inbox Ingestion Pipeline (completed)
+- [x] Permanent Dropbox refresh token (never expires) — authenticated as Ricardo Cidale
+- [x] Dropbox folder structure: /Cidale Interests/Company/Norfolk AI/Apps/RC Library/
+- [x] Inbox folder: /Cidale Interests/Company/Norfolk AI/Apps/RC Library/Inbox/
+- [x] Processed folder: /Cidale Interests/Company/Norfolk AI/Apps/RC Library/Inbox/Processed/
+- [x] dropbox.service.ts — listDropboxInbox, downloadDropboxFile, moveDropboxFile
+- [x] dropboxIngest.service.ts — PDF ingestion pipeline with LLM metadata extraction
+- [x] Guardrails: book titles never used as author names, multi-author support
+- [x] Author upsert: creates new author profile + triggers avatar waterfall
+- [x] Book upsert: creates book_profiles entry, links authors via author_content_links
+- [x] Amazon book cover scraping after ingest
+- [x] Moves processed PDFs to Inbox/Processed folder
+- [x] tRPC procedures: scanInbox, ingestFile, ingestAll (in dropbox.router.ts)
+- [x] AdminDropboxTab: Content Inbox section with scan, per-file ingest, ingest-all
+- [x] AdminDropboxTab: Backup section (avatars, covers, PDFs)
+- [x] LazyImage blur placeholder fix — all imageOptimization tests pass

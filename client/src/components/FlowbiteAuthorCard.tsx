@@ -45,6 +45,7 @@ import {
   Rss,
 } from "lucide-react";
 import { AvatarUpload } from "@/components/AvatarUpload";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { getAuthorAvatar } from "@/lib/authorAvatars";
 import { canonicalName } from "@/lib/authorAliases";
 import {
@@ -509,7 +510,7 @@ export function FlowbiteAuthorCard({
                     >
                       <AvatarUpload authorName={displayName} currentAvatarUrl={avatarUrl} size={96}>
                         {(url) => url ? (
-                          <img src={url} alt={displayName} className="w-full h-full object-cover" loading="lazy" />
+                          <LazyImage src={url} alt={displayName} className="w-full h-full object-cover" eager />
                         ) : (
                           <div
                             className="w-full h-full flex items-center justify-center text-3xl font-bold select-none"
@@ -791,7 +792,7 @@ export function FlowbiteAuthorCard({
                               }}
                             >
                               {coverUrl ? (
-                                <img src={coverUrl} alt={rawTitle.trim()} className="h-full w-full object-cover" loading="lazy" />
+                                <LazyImage src={coverUrl} alt={rawTitle.trim()} className="h-full w-full object-cover" />
                               ) : (
                                 <div
                                   className="h-full w-full flex flex-col items-center justify-center gap-1 px-1"

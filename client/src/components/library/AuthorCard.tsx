@@ -5,6 +5,7 @@
  */
 
 import { motion } from "framer-motion";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { useState } from "react";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -154,16 +155,15 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
                     transition: { type: "spring" as const, stiffness: 400, damping: 20 },
                   };
                   return url ? (
-                    <motion.img
-                      src={url}
-                      alt={displayName}
+                    <motion.div
                       {...springProps}
-                      className={`w-[120px] h-[120px] rounded-full object-cover ring-2 ring-offset-2 flex-shrink-0 origin-center cursor-pointer ${
+                      className={`w-[120px] h-[120px] rounded-full overflow-hidden ring-2 ring-offset-2 flex-shrink-0 origin-center cursor-pointer ${
                         avatarRegenerating ? "opacity-40 blur-[1px]" : ""
                       }`}
                       style={{ "--tw-ring-color": color + "55" } as React.CSSProperties}
-                      loading="lazy"
-                    />
+                    >
+                      <LazyImage src={url} alt={displayName} className="w-full h-full object-cover" eager />
+                    </motion.div>
                   ) : (
                     <motion.div
                       {...springProps}
@@ -252,12 +252,10 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
                           className="flex-shrink-0 group/cover cursor-pointer"
                         >
                           {coverUrl ? (
-                            <img
+                            <LazyImage
                               src={coverUrl}
                               alt={titleKey}
                               className="w-[90px] h-[123px] object-cover rounded shadow-sm ring-1 ring-border group-hover/cover:ring-2 transition-all duration-150"
-                              style={{ "--tw-ring-color": color + "55" } as React.CSSProperties}
-                              loading="lazy"
                             />
                           ) : (
                             <div
@@ -272,7 +270,7 @@ export function AuthorCard({ author, query, onBioClick, isEnriched, coverMap, on
                       <TooltipContent side="top" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none rounded-lg overflow-hidden">
                         <div className="flex flex-col items-center gap-1.5 p-2 bg-popover rounded-xl shadow-xl border border-border/60" style={{ backdropFilter: "blur(8px)" }}>
                           {coverUrl ? (
-                            <img src={coverUrl} alt={titleKey} className="w-[90px] h-[126px] object-cover rounded-md shadow-md" loading="lazy" />
+                            <LazyImage src={coverUrl} alt={titleKey} className="w-[90px] h-[126px] object-cover rounded-md shadow-md" />
                           ) : (
                             <div className="w-[90px] h-[126px] rounded-md shadow-md flex items-center justify-center" style={{ backgroundColor: color + "22" }}>
                               <BookOpen className="w-8 h-8" style={{ color, opacity: 0.5 }} />

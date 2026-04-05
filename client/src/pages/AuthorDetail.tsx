@@ -61,6 +61,7 @@ import AcademicResearchPanel from "@/components/AcademicResearchPanel";
 import { MagazineArticlesPanel } from "@/components/library/MagazineArticlesPanel";
 import { SubstackPostsPanel } from "@/components/library/SubstackPostsPanel";
 import { AuthorInTheNewsSection } from "@/components/library/AuthorInTheNewsSection";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 // ── Author Media Section ─────────────────────────────────────────────────────
 
@@ -123,7 +124,7 @@ function AuthorMediaSection({ authorName }: { authorName: string }) {
               {/* Thumbnail */}
               <div className="flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
                 {cover ? (
-                  <img src={cover} alt={item.title} className="w-full h-full object-cover" />
+                  <LazyImage src={cover} alt={item.title} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-muted-foreground">{icon}</span>
                 )}
@@ -315,7 +316,7 @@ function BookCard({ bookName, bookId, authorName }: BookCardProps) {
         {/* Cover */}
         <div className="flex-shrink-0 w-14 h-20 rounded-lg overflow-hidden bg-muted border border-border/50 flex items-center justify-center">
           {coverUrl ? (
-            <img
+            <LazyImage
               src={coverUrl}
               alt={cleanTitle}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -569,11 +570,12 @@ export default function AuthorDetail() {
             <AvatarUpload authorName={displayName} currentAvatarUrl={effectiveAvatarUrl} size={96}>
               {(url) =>
                 url ? (
-                  <img
+                  <LazyImage
                     src={url}
                     alt={displayName}
                     className="w-24 h-24 rounded-2xl object-cover ring-2 ring-offset-2 shadow-lg"
                     style={{ "--tw-ring-color": color + "66" } as React.CSSProperties}
+                    eager
                   />
                 ) : (
                   <div
@@ -659,13 +661,11 @@ export default function AuthorDetail() {
               <div className="flex gap-4 p-4">
                 {wiki.thumbnailUrl && (
                   <a href={wiki.pageUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                    <img
+                    <LazyImage
                       src={wiki.thumbnailUrl}
                       alt={`${displayName} on Wikipedia`}
                       className="w-20 h-20 rounded-xl object-cover ring-1 ring-border hover:ring-primary transition-all duration-200 hover:scale-105"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = "none";
-                      }}
+                      eager
                     />
                   </a>
                 )}

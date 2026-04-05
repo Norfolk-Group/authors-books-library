@@ -8,6 +8,7 @@ import {
   ChevronUp,
   ExternalLink,
 } from "lucide-react";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function AvatarDetailTable() {
   const [expanded, setExpanded] = useState(false);
@@ -97,7 +98,7 @@ export function AvatarDetailTable() {
                               className="inline-flex items-center gap-1 text-primary hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <img src={row.s3AvatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                              <LazyImage src={row.s3AvatarUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
                             </a>
                           ) : (
                             <span className="text-muted-foreground">—</span>
@@ -112,7 +113,7 @@ export function AvatarDetailTable() {
                               className="inline-flex items-center gap-1 text-primary hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <img src={row.bestReferencePhotoUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
+                              <LazyImage src={row.bestReferencePhotoUrl} alt="" className="w-6 h-6 rounded-full object-cover" />
                               <ExternalLink className="w-3 h-3 flex-shrink-0" />
                             </a>
                           ) : (

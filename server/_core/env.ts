@@ -26,4 +26,10 @@ export const ENV = {
   driveAvatarsFolderId: process.env.DRIVE_AVATARS_FOLDER_ID ?? "1_sTZD5m4dfP4byryghw9XgeDyPnYWNiH",
   // Feature flags
   enableDriveUpload: process.env.ENABLE_DRIVE_UPLOAD === "true",
+  // Dropbox credentials (permanent refresh token flow)
+  DROPBOX_APP_KEY: process.env.DROPBOX_APP_KEY ?? "",
+  DROPBOX_APP_SECRET: process.env.DROPBOX_APP_SECRET ?? "",
+  DROPBOX_REFRESH_TOKEN: process.env.DROPBOX_REFRESH_TOKEN ?? "",
+  DROPBOX_BACKUP_FOLDER: process.env.DROPBOX_BACKUP_FOLDER ?? "/Cidale Interests/Company/Norfolk AI/Apps/RC Library",
+  DROPBOX_INBOX_FOLDER: process.env.DROPBOX_INBOX_FOLDER ?? "/Cidale Interests/Company/Norfolk AI/Apps/RC Library/Inbox",
 };

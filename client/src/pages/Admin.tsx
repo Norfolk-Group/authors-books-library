@@ -91,6 +91,7 @@ import { AdminAppSettingsTab } from "@/components/admin/AdminAppSettingsTab";
 import { AdminAboutTab } from "@/components/admin/AdminAboutTab";
 import { ApiManagementTab } from "@/components/admin/ApiManagementTab";
 import { AdminMagazineTab } from "@/components/admin/AdminMagazineTab";
+import { AdminDropboxTab } from "@/components/admin/AdminDropboxTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -118,6 +119,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "media", label: "Media Assets", icon: Image },
       { id: "content-items", label: "Content Items", icon: Globe },
       { id: "sync", label: "Sync & Storage", icon: Cloud },
+      { id: "dropbox", label: "Dropbox Backup", icon: Cloud },
     ],
   },
   {
@@ -448,6 +450,7 @@ export default function Admin() {
               {activeSection === "api-management" && <ApiManagementTab />}
               {activeSection === "magazine-feeds" && <AdminMagazineTab />}
               {activeSection === "about" && <AdminAboutTab />}
+              {activeSection === "dropbox" && <AdminDropboxTab />}
 
             </div>
           </main>

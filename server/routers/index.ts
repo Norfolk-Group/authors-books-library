@@ -31,6 +31,7 @@ import { apiRegistryRouter } from "./apiRegistry.router";
 import { magazineRouter } from "./magazine.router";
 import { vectorSearchRouter } from "./vectorSearch.router";
 import { substackRouter } from "./substack.router";
+import { dropboxRouter } from "./dropbox.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -71,6 +72,8 @@ export const appRouter = router({
   vectorSearch: vectorSearchRouter,
   // ── Substack RSS feeds ─────────────────────────────────────────────────────
   substack: substackRouter,
+  // ── Dropbox backup service ─────────────────────────────────────────────────
+  dropbox: dropboxRouter,
 });
 
 export type AppRouter = typeof appRouter;

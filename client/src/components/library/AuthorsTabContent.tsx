@@ -9,6 +9,7 @@
  * single source of truth for state and data fetching.
  */
 import { FlowbiteAuthorCard } from "@/components/FlowbiteAuthorCard";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { EmptyState } from "@/components/library/LibraryPrimitives";
 import { TagGroupHeader, groupByFirstTag } from "@/components/library/TagGroupHeader";
 import { AUTHORS, type AuthorEntry } from "@/lib/libraryData";
@@ -143,7 +144,7 @@ export function AuthorsTabContent({
                 >
                   <div className="relative">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt={author.authorName} className="w-12 h-12 rounded-full object-cover ring-2 ring-amber-400/40 group-hover:ring-amber-400/80 transition-all" />
+                      <LazyImage src={avatarUrl} alt={author.authorName} className="w-12 h-12 rounded-full object-cover ring-2 ring-amber-400/40 group-hover:ring-amber-400/80 transition-all" eager />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400/20 to-amber-600/20 flex items-center justify-center text-lg font-bold text-amber-600">
                         {author.authorName.charAt(0)}
@@ -192,7 +193,7 @@ export function AuthorsTabContent({
                 >
                   <div className="relative">
                     {avatarUrl ? (
-                      <img src={avatarUrl} alt={item.entityKey} className="w-12 h-12 rounded-full object-cover ring-2 ring-violet-400/40 group-hover:ring-violet-400/80 transition-all" />
+                      <LazyImage src={avatarUrl} alt={item.entityKey} className="w-12 h-12 rounded-full object-cover ring-2 ring-violet-400/40 group-hover:ring-violet-400/80 transition-all" eager />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-400/20 to-violet-600/20 flex items-center justify-center text-lg font-bold text-violet-600">
                         {item.entityKey.charAt(0)}

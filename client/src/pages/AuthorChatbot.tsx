@@ -18,6 +18,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -56,7 +57,7 @@ function MessageBubble({ message, authorName, avatarUrl }: {
         {isUser ? (
           <User className="w-4 h-4 text-muted-foreground" />
         ) : avatarUrl ? (
-          <img src={avatarUrl} alt={authorName} className="w-full h-full object-cover" />
+          <LazyImage src={avatarUrl} alt={authorName} className="w-full h-full object-cover" eager />
         ) : (
           <Brain className="w-4 h-4 text-primary" />
         )}
@@ -238,7 +239,7 @@ export default function AuthorChatbot() {
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <div className="w-9 h-9 rounded-full overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
             {authorInfo.avatarUrl ? (
-              <img src={authorInfo.avatarUrl} alt={authorName} className="w-full h-full object-cover" />
+              <LazyImage src={authorInfo.avatarUrl} alt={authorName} className="w-full h-full object-cover" eager />
             ) : (
               <Brain className="w-5 h-5 text-primary" />
             )}
@@ -334,7 +335,7 @@ export default function AuthorChatbot() {
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                   {authorInfo.avatarUrl ? (
-                    <img src={authorInfo.avatarUrl} alt={authorName} className="w-full h-full object-cover rounded-full" />
+                    <LazyImage src={authorInfo.avatarUrl} alt={authorName} className="w-full h-full object-cover rounded-full" eager />
                   ) : (
                     <Brain className="w-4 h-4 text-primary" />
                   )}
