@@ -44,6 +44,10 @@ import {
 import { BOOKS, CATEGORY_COLORS, CATEGORY_ICONS, CONTENT_TYPE_ICONS } from "@/lib/libraryData";
 import { ICON_MAP, CT_ICON_MAP, normalizeContentTypes } from "@/components/library/libraryConstants";
 import { ISBNBarcode } from "@/components/library/ISBNBarcode";
+import {
+  LibraryAvailabilitySection,
+  FreeDigitalCopyBadge,
+} from "@/components/library/LibraryAvailabilitySection";
 import { toast } from "sonner";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -319,6 +323,13 @@ export default function BookDetail() {
               )}
             </div>
 
+            {/* Free Digital Copy badge */}
+            {profile?.isbn && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <FreeDigitalCopyBadge bookTitle={title} isbn={profile.isbn} />
+              </div>
+            )}
+
             {/* Content types in library */}
             {contentTypes.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -574,6 +585,14 @@ export default function BookDetail() {
             </div>
           </section>
         )}
+
+        {/* ── Library Availability ─────────────────────────────────────── */}
+        <LibraryAvailabilitySection
+          bookTitle={title}
+          authorName={authorName || undefined}
+          isbn={profile?.isbn ?? null}
+          accentColor={color}
+        />
 
         {/* ── Reading Progress ─────────────────────────────────────────────── */}
         <section className="space-y-4">

@@ -36,6 +36,43 @@ import {
   searchAuthorNews,
   searchBookNews,
 } from "../enrichment/newsSearch";
+import {
+  searchWorldCat,
+  getWorldCatByISBN,
+  getLibraryHoldingsCount,
+} from "../enrichment/worldcat";
+import {
+  searchDPLA,
+  getDPLAByISBN,
+  checkDPLAAvailability,
+  isDPLAConfigured,
+} from "../enrichment/dpla";
+import {
+  searchJSTOR,
+  getJSTORByDOI,
+  searchAcademicPapers,
+  searchBookAcademicCitations,
+} from "../enrichment/jstor";
+import {
+  searchSpotifyPodcasts,
+  getAuthorSpotifyPodcasts,
+  searchSpotifyAudiobooks,
+  getSpotifyBookAudiobook,
+} from "../enrichment/spotify";
+import {
+  searchBBCNews,
+  searchNYTNews,
+  searchAppleNews,
+  searchGuardianNews,
+  searchReutersNews,
+  searchAllOutlets,
+  getAuthorNewsFromOutlets,
+  getBBCTopStories,
+  getNYTTopStories,
+} from "../enrichment/newsOutlets";
+import { fetchCNNStats } from "../enrichment/cnn";
+import { fetchInstagramStats, extractInstagramUsername } from "../enrichment/instagram";
+import { ENV } from "../_core/env";
 
 // ─── Open Library ─────────────────────────────────────────────────────────────
 
@@ -200,11 +237,205 @@ const newsRouter = router({
     }),
 });
 
-// ─── Combined Router ──────────────────────────────────────────────────────────
+/// ─── WorldCat ─────────────────────────────────────────────────────────────────
 
+const worldCatRouter = router({
+  search: publicProcedure
+    .input(
+      z.object({
+        query: z.string().min(1).max(300),
+        limit: z.number().int().min(1).max(20).default(5),
+      })
+    )
+    .query(async ({ input }) => {
+      return searchWorldCat(input.query, input.limit);
+    }),
+  getByISBN: publicProcedure
+    .input(z.object({ isbn: z.string().min(10).max(17) }))
+    .query(async ({ input }) => {
+      return getWorldCatByISBN(input.isbn);
+    }),
+  getHoldingsCount: publicProcedure
+    .input(z.object({ isbn: z.string().min(10).max(17) }))
+    .query(async ({ input }) => {
+      return getLibraryHoldingsCount(input.isbn);
+    }),
+});
+
+// ─── DPLA ─────────────────────────────────────────────────────────────────────
+
+const dplaRouter = router({
+  isConfigured: publicProcedure.query(() => isDPLAConfigured()),
+  search: publicProcedure
+    .input(
+      z.object({
+        query: z.string().min(1).max(300),
+        limit: z.number().int().min(1).max(20).default(5),
+        type: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      return searchDPLA(input.query, { limit: input.limit, type: input.type });
+    }),
+  getByISBN: publicProcedure
+    .input(z.object({ isbn: z.string().min(10).max(17) }))
+    .query(async ({ input }) => {
+      return getDPLAByISBN(input.isbn);
+    }),
+  checkAvailability: publicProcedure
+    .input(
+      z.object({
+        title: z.string().min(1).max(300),
+        author: z.string().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      return checkDPLAAvailability(input.title, input.author);
+    }),
+});
+
+// ─── JSTOR / Academic ─────────────────────────────────────────────────────────
+
+const jstorRouter = router({
+  search: publicProcedure
+    .input(
+      z.object({
+        query: z.string().min(1).max(300),
+        limit: z.number().int().min(1).max(20).default(5),
+      })
+    )
+    .query(async ({ input }) => {
+      return searchJSTOR(input.query, input.limit);
+    }),
+  getByDOI: publicProcedure
+    .input(z.object({ doi: z.string().min(5).max(200) }))
+    .query(async ({ input }) => {
+      return getJSTORByDOI(input.doi);
+    }),
+  searchByAuthor: publicProcedure
+    .input(
+      z.object({
+        authorName: z.string().min(1).max(200),
+        limit: z.number().int().min(1).max(20).default(5),
+      })
+    )
+    .query(async ({ input }) => {
+      return searchAcademicPapers(input.authorName, input.limit);
+    }),
+  searchBookCitations: publicProcedure
+    .input(
+      z.object({
+        bookTitle: z.string().min(1).max(300),
+        limit: z.number().int().min(1).max(20).default(5),
+      })
+    )
+    .query(async ({ input }) => {
+      return searchBookAcademicCitations(input.bookTitle, input.limit);
+    }),
+});
+
+// ─── Spotify (iTunes-based) ───────────────────────────────────────────────────
+
+const spotifyRouter = router({
+  searchPodcasts: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchSpotifyPodcasts(input.query, input.limit)),
+
+  getAuthorPodcasts: publicProcedure
+    .input(z.object({ authorName: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => getAuthorSpotifyPodcasts(input.authorName, input.limit)),
+
+  searchAudiobooks: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchSpotifyAudiobooks(input.query, input.limit)),
+
+  getBookAudiobook: publicProcedure
+    .input(z.object({ bookTitle: z.string().min(1).max(300), authorName: z.string().optional() }))
+    .query(async ({ input }) => getSpotifyBookAudiobook(input.bookTitle, input.authorName)),
+});
+
+// ─── News Outlets (BBC, NYT, Apple News, Guardian, Reuters) ───────────────────
+
+const newsOutletsRouter = router({
+  searchBBC: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchBBCNews(input.query, input.limit)),
+
+  searchNYT: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchNYTNews(input.query, input.limit)),
+
+  searchAppleNews: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchAppleNews(input.query, input.limit)),
+
+  searchGuardian: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchGuardianNews(input.query, input.limit)),
+
+  searchReuters: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => searchReutersNews(input.query, input.limit)),
+
+  searchAll: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(10).default(3) }))
+    .query(async ({ input }) => searchAllOutlets(input.query, input.limit)),
+
+  getAuthorMentions: publicProcedure
+    .input(z.object({ authorName: z.string().min(1).max(200), limit: z.number().int().min(1).max(10).default(3) }))
+    .query(async ({ input }) => getAuthorNewsFromOutlets(input.authorName, input.limit)),
+
+  getBBCTop: publicProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(20).default(5) }))
+    .query(async ({ input }) => getBBCTopStories(input.limit)),
+
+  getNYTTop: publicProcedure
+    .input(z.object({
+      section: z.enum(["home", "business", "technology", "books", "arts"]).default("home"),
+      limit: z.number().int().min(1).max(20).default(5),
+    }))
+    .query(async ({ input }) => getNYTTopStories(input.section, input.limit)),
+});
+
+// ─── CNN ─────────────────────────────────────────────────────────────────────
+
+const cnnRouter = router({
+  searchAuthorMentions: publicProcedure
+    .input(z.object({ authorName: z.string().min(1).max(200) }))
+    .query(async ({ input }) => {
+      const token = ENV.apifyApiToken;
+      if (!token) return null;
+      return fetchCNNStats(input.authorName, token);
+    }),
+});
+
+// ─── Instagram ────────────────────────────────────────────────────────────────
+
+const instagramRouter = router({
+  getProfileStats: publicProcedure
+    .input(z.object({ instagramUrlOrHandle: z.string().min(1).max(200) }))
+    .query(async ({ input }) => {
+      const token = process.env.INSTAGRAM_ACCESS_TOKEN ?? "";
+      if (!token) return null;
+      return fetchInstagramStats(input.instagramUrlOrHandle, token);
+    }),
+
+  extractUsername: publicProcedure
+    .input(z.object({ input: z.string().min(1).max(200) }))
+    .query(async ({ input }) => extractInstagramUsername(input.input)),
+});
+
+// ─── Combined Router ──────────────────────────────────────────────────────────
 export const enrichmentRouter = router({
   openLibrary: openLibraryRouter,
   applePodcasts: applePodcastsRouter,
   hathiTrust: hathiTrustRouter,
   news: newsRouter,
+  worldCat: worldCatRouter,
+  dpla: dplaRouter,
+  jstor: jstorRouter,
+  spotify: spotifyRouter,
+  newsOutlets: newsOutletsRouter,
+  cnn: cnnRouter,
+  instagram: instagramRouter,
 });

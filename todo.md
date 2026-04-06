@@ -28,28 +28,28 @@ Last cleaned: Apr 5, 2026
 - [x] Add "In the News" section to AuthorDetail page (article cards with outlet badge, headline, date, link)
 - [ ] Add news article count badge to FlowbiteAuthorCard
 - [ ] Cache news results in `author_profiles.socialStatsJson` to avoid redundant API calls
-- [ ] Write vitest tests for newsOutlets helper
+- [x] Write vitest tests for newsOutlets helper
 
 ---
 
 ## Library Catalog APIs
 
-- [ ] Test and integrate Open Library API (free, no key) — book metadata, ISBNs, cover images, availability
-- [ ] Test and integrate WorldCat Search API (OCLC) — public library holdings across 10,000+ libraries
-- [ ] Test and integrate HathiTrust Data API — university library full-text availability and digital copies
-- [ ] Test and integrate DPLA (Digital Public Library of America) API — free digital collections
-- [ ] Test and integrate JSTOR API (if available) — academic citations and university library access
-- [ ] Add "Library Availability" section to BookDetail page (which public/university libraries hold this book)
-- [ ] Add "Free Digital Copy" badge to BookDetail when HathiTrust/DPLA has a free version
-- [ ] Add Apple Podcasts, Instagram, Spotify server-side helpers
-- [ ] Add Apple News, NYT, BBC, CNN server-side helpers (test which are accessible with RAPIDAPI_KEY)
+- [x] Test and integrate Open Library API (free, no key) — book metadata, ISBNs, cover images, availability
+- [x] Test and integrate WorldCat Search API (OCLC) — public library holdings across 10,000+ libraries
+- [x] Test and integrate HathiTrust Data API — university library full-text availability and digital copies
+- [x] Test and integrate DPLA (Digital Public Library of America) API — free digital collections
+- [x] Test and integrate JSTOR API (if available) — academic citations and university library access
+- [x] Add "Library Availability" section to BookDetail page (which public/university libraries hold this book)
+- [x] Add "Free Digital Copy" badge to BookDetail when HathiTrust/DPLA has a free version
+- [x] Add Apple Podcasts, Instagram, Spotify server-side helpers
+- [x] Add Apple News, NYT, BBC, CNN server-side helpers (test which are accessible with RAPIDAPI_KEY)
 
 ---
 
 ## External API Wiring — Author & Book Detail Pages
 
 ### BookDetail Page
-- [ ] Wire enrichment.hathiTrust.checkAvailability into BookDetail page (show "Free Digital Copy" badge when available)
+- [x] Wire enrichment.hathiTrust.checkAvailability into BookDetail page (show "Free Digital Copy" badge when available)
 - [ ] Open Library panel: show ISBN-13, publisher, publish date, page count, subjects from OL enrichment
 - [ ] HathiTrust availability badge: "Free Digital Copy" button when full-view copy exists (links to HathiTrust reader)
 - [ ] Open Library cover fallback: if no S3 cover, fetch cover from Open Library by ISBN
@@ -187,3 +187,13 @@ Last cleaned: Apr 5, 2026
 - [x] AdminDropboxTab: Content Inbox section with scan, per-file ingest, ingest-all
 - [x] AdminDropboxTab: Backup section (avatars, covers, PDFs)
 - [x] LazyImage blur placeholder fix — all imageOptimization tests pass
+
+---
+## Duplicate Detection System (Tasks 70-76)
+- [ ] Add content_hash column to content_files table (SHA-256 of file bytes) — push migration
+- [ ] Add duplicate_of_id column to book_profiles (self-referential FK for flagged duplicates)
+- [ ] Build duplicateDetection.service.ts: filename match, hash match, fuzzy title match (Levenshtein), ISBN match
+- [ ] Integrate duplicate detection into Dropbox ingestion pipeline: skip/flag/replace modes
+- [ ] Add Admin UI panel for reviewing flagged duplicates: side-by-side comparison, merge/keep/discard actions
+- [ ] Write vitest tests for duplicate detection service (all 4 detection layers)
+- [ ] Add duplicate detection summary to AdminDropboxTab scan results
