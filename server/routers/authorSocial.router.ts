@@ -39,7 +39,8 @@ export const authorSocialRouter = router({
       r.websiteUrl || r.twitterUrl || r.linkedinUrl || r.substackUrl ||
       r.youtubeUrl || r.facebookUrl || r.instagramUrl || r.tiktokUrl ||
       r.githubUrl || r.businessWebsiteUrl || r.newsletterUrl ||
-      r.speakingUrl || r.podcastUrl || r.blogUrl || r.socialStatsJson
+      r.speakingUrl || r.podcastUrl || r.blogUrl || r.socialStatsJson ||
+      r.newsCacheJson
     );
   }),
 

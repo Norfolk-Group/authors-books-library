@@ -52,6 +52,7 @@ type PlatformLinks = {
   speakingUrl?: string | null;
   blogUrl?: string | null;
   socialStatsJson?: string | null;
+  newsCacheJson?: string | null;
   authorName?: string | null;
 };
 

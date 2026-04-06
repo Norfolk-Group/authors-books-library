@@ -32,6 +32,7 @@ import { magazineRouter } from "./magazine.router";
 import { vectorSearchRouter } from "./vectorSearch.router";
 import { substackRouter } from "./substack.router";
 import { dropboxRouter } from "./dropbox.router";
+import { duplicateDetectionRouter } from "./duplicateDetection.router";
 import { libraryCacheRouter } from "./libraryCache.router";
 
 export const appRouter = router({
@@ -76,6 +77,7 @@ export const appRouter = router({
   // ── Dropbox backup service ─────────────────────────────────────────────────
   dropbox: dropboxRouter,
   // ── Library availability cache (OL, HathiTrust, WorldCat, news) ───────────
+  duplicateDetection: duplicateDetectionRouter,
   libraryCache: libraryCacheRouter,
 });
 

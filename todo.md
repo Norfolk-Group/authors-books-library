@@ -26,7 +26,7 @@ Last cleaned: Apr 5, 2026
 - [x] Build unified `server/enrichment/newsOutlets.ts` helper with typed per-outlet fetchers
 - [x] Add `fetchAuthorNews` tRPC procedure returning articles across all 8 outlets
 - [x] Add "In the News" section to AuthorDetail page (article cards with outlet badge, headline, date, link)
-- [ ] Add news article count badge to FlowbiteAuthorCard
+- [x] Add news article count badge to FlowbiteAuthorCard
 - [x] Cache news results in `author_profiles.socialStatsJson` to avoid redundant API calls
 - [x] Write vitest tests for newsOutlets helper
 
@@ -63,7 +63,7 @@ Last cleaned: Apr 5, 2026
 - [x] LinkedIn stats panel: follower count, headline, connection count (from socialStatsJson.linkedin if enriched)
 - [x] Wikipedia quick-facts panel: birth date, nationality, alma mater, awards (from socialStatsJson.wikipedia)
 - [x] Yahoo Finance panel: show company/stock data for author-linked companies (from businessProfileJson.yahooFinance)
-- [ ] Wire semantic search into author chatbot and author detail page
+- [x] Wire semantic search into author chatbot and author detail page
 
 ### Caching & Performance
 - [x] Cache news search results in author_profiles.socialStatsJson (TTL: 24h) to avoid redundant API calls
@@ -90,7 +90,7 @@ Last cleaned: Apr 5, 2026
 ## Pinecone / Semantic Search
 
 - [ ] Populate Pinecone index: run Admin Console → Magazine Feeds → "Sync All Feeds" then "Index All in Pinecone"
-- [ ] Wire semantic search into author chatbot and author detail page
+- [x] Wire semantic search into author chatbot and author detail page
 
 ---
 
@@ -105,13 +105,13 @@ Last cleaned: Apr 5, 2026
   - [x] Tab 1 (Details): cover, title, author, format, possession, tags
   - [x] Tab 2 (Notes): reading progress bar, reading notes excerpt, start/finish dates
   - [x] Tab labels styled as folder tabs matching author card style
-- [ ] Optimize card real estate: reduce vertical padding, tighten bio to 2 lines max, use compact platform pills
+- [x] Optimize card real estate: reduce vertical padding, tighten bio to 2 lines max, use compact platform pills
 
 ---
 
 ## Author Detail Page — Substack Tab
 
-- [ ] Add "Substack" tab to Author Detail page that lists the author's latest Substack posts
+- [x] Add "Substack" tab to Author Detail page that lists the author's latest Substack posts
   - [ ] Use existing `substack.getPostsByAuthor` procedure (already wired)
   - [ ] Show post title, date, excerpt, and "Read on Substack" link per post
   - [ ] Show "No Substack feed" empty state if substackUrl is null
@@ -128,7 +128,7 @@ Last cleaned: Apr 5, 2026
 
 ## Sidebar Footer — AI Search Status Indicator
 
-- [ ] Add "AI Search: active / inactive" indicator to sidebar footer
+- [x] Add "AI Search: active / inactive" indicator to sidebar footer
   - [ ] Shows green dot when Pinecone index has content, grey dot when empty
   - [ ] Links to Admin Console → Magazine Feeds page
   - [ ] Nudges users to index content when Pinecone index is empty
@@ -191,9 +191,9 @@ Last cleaned: Apr 5, 2026
 ---
 ## Duplicate Detection System (Tasks 70-76)
 - [ ] Add content_hash column to content_files table (SHA-256 of file bytes) — push migration
-- [ ] Add duplicate_of_id column to book_profiles (self-referential FK for flagged duplicates)
-- [ ] Build duplicateDetection.service.ts: filename match, hash match, fuzzy title match (Levenshtein), ISBN match
+- [x] Add duplicate_of_id column to book_profiles (self-referential FK for flagged duplicates)
+- [x] Build duplicateDetection.service.ts: filename match, hash match, fuzzy title match (Levenshtein), ISBN match
 - [ ] Integrate duplicate detection into Dropbox ingestion pipeline: skip/flag/replace modes
-- [ ] Add Admin UI panel for reviewing flagged duplicates: side-by-side comparison, merge/keep/discard actions
-- [ ] Write vitest tests for duplicate detection service (all 4 detection layers)
+- [x] Add Admin UI panel for reviewing flagged duplicates: side-by-side comparison, merge/keep/discard actions
+- [x] Write vitest tests for duplicate detection service (all 4 detection layers)
 - [ ] Add duplicate detection summary to AdminDropboxTab scan results

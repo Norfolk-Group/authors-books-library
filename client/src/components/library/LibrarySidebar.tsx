@@ -82,6 +82,8 @@ export function LibrarySidebar({
 
   // Live last-sync timestamp
   const lastSyncQuery = trpc.admin.getLastSync.useQuery(undefined, { staleTime: 5 * 60_000 });
+  // AI Search status (Pinecone vector count)
+  const aiSearchStatus = trpc.vectorSearch.getPublicStatus.useQuery(undefined, { staleTime: 10 * 60_000, retry: false });
 
   // Drive Sync (admin only)
   const utils = trpc.useUtils();
@@ -230,6 +232,24 @@ export function LibrarySidebar({
             <p className="text-[10px] text-muted-foreground mb-1" title={ts ? new Date(ts).toLocaleString() : undefined}>
               {label}
             </p>
+          );
+        })()}
+
+        {/* AI Search status indicator */}
+        {(() => {
+          const isActive = aiSearchStatus.data?.isActive;
+          const total = aiSearchStatus.data?.totalVectors ?? 0;
+          const loading = aiSearchStatus.isLoading;
+          return (
+            <div
+              className="flex items-center gap-1.5 mb-2 cursor-default"
+              title={loading ? "Checking AI Search…" : isActive ? `AI Search active — ${total.toLocaleString()} vectors indexed` : "AI Search index is empty — run indexing in Admin Console"}
+            >
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 transition-colors ${loading ? "bg-muted animate-pulse" : isActive ? "bg-green-500" : "bg-muted-foreground/40"}`} />
+              <span className="text-[10px] text-muted-foreground">
+                {loading ? "AI Search…" : isActive ? `AI Search · ${total.toLocaleString()} vectors` : "AI Search inactive"}
+              </span>
+            </div>
           );
         })()}
 

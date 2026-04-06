@@ -267,6 +267,13 @@
       "when": 1775435771083,
       "tag": "0037_panoramic_lila_cheney",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1775443538535,
+      "tag": "0038_orange_leper_queen",
+      "breakpoints": true
     }
   ]
 }

@@ -277,14 +277,14 @@ export function FlowbiteAuthorCard({
   const { ref } = useCardHover();
   const utils = trpc.useUtils();
 
-  // Bio snippet (first ~180 chars)
+  // Bio snippet (first ~120 chars — compact 2-line display)
   const bioSnippet = useMemo(() => {
     if (!bio || !isEnriched) return null;
     const trimmed = bio.trim();
-    if (trimmed.length <= 180) return trimmed;
-    const cut = trimmed.slice(0, 180);
+    if (trimmed.length <= 120) return trimmed;
+    const cut = trimmed.slice(0, 120);
     const lastDot = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
-    return lastDot > 60 ? trimmed.slice(0, lastDot + 1) : cut + '…';
+    return lastDot > 50 ? trimmed.slice(0, lastDot + 1) : cut + '…';
   }, [bio, isEnriched]);
 
   // Research quality badge

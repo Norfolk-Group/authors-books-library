@@ -467,6 +467,16 @@ export const bookProfiles = mysqlTable("book_profiles", {
   /** When worldcatCacheJson was last fetched */
   worldcatCachedAt: timestamp("worldcatCachedAt"),
 
+  // ── Duplicate Detection ────────────────────────────────────────────────────
+  /** ID of the canonical book this is a duplicate of (null = not a duplicate) */
+  duplicateOfId: int("duplicateOfId"),
+  /** How the duplicate was detected: isbn | fuzzy_title */
+  duplicateDetectionMethod: varchar("duplicateDetectionMethod", { length: 32 }),
+  /** Review status: pending | keep | discard | replace */
+  duplicateStatus: varchar("duplicateStatus", { length: 16 }),
+  /** When the duplicate flag was set */
+  duplicateFlaggedAt: timestamp("duplicateFlaggedAt"),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -812,6 +822,17 @@ export const contentFiles = mysqlTable("content_files", {
   driveFileId: varchar("driveFileId", { length: 128 }),
   /** When this file was last mirrored to Google Drive */
   driveSyncedAt: timestamp("driveSyncedAt"),
+  // ── Duplicate Detection ────────────────────────────────────────────────────
+  /** SHA-256 hash of the file content (for exact duplicate detection) */
+  contentHash: varchar("contentHash", { length: 64 }),
+  /** ID of the canonical file this is a duplicate of (null = not a duplicate) */
+  duplicateOfId: int("duplicateOfId"),
+  /** How the duplicate was detected: hash | filename */
+  duplicateDetectionMethod: varchar("duplicateDetectionMethod", { length: 32 }),
+  /** Review status: pending | keep | discard | replace */
+  duplicateStatus: varchar("duplicateStatus", { length: 16 }),
+  /** When the duplicate flag was set */
+  duplicateFlaggedAt: timestamp("duplicateFlaggedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

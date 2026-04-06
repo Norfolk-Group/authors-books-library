@@ -41,6 +41,17 @@ export const vectorSearchRouter = router({
     return { success: true, indexName: "library-rag" };
   }),
 
+  /** Public status check: returns total vector count (no admin required) */
+  getPublicStatus: publicProcedure.query(async () => {
+    try {
+      const stats = await getIndexStats();
+      const total = stats.totalRecordCount ?? 0;
+      return { isActive: total > 0, totalVectors: total };
+    } catch {
+      return { isActive: false, totalVectors: 0 };
+    }
+  }),
+
   /** Get Pinecone index stats (vector counts per namespace) */
   getStats: adminProcedure.query(async () => {
     try {

@@ -17,6 +17,7 @@ import { authorRagProfiles, authorProfiles } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { logger } from "../lib/logger";
+import { semanticSearch } from "../services/ragPipeline.service";
 
 const DEFAULT_CHAT_MODEL = "claude-opus-4-5";
 
@@ -101,8 +102,28 @@ export const authorChatbotRouter = router({
         };
       }
 
+      // Fetch semantic context from Pinecone for the last user message (RAG augmentation)
+      let semanticContext = "";
+      try {
+        const lastUserMsg = [...input.messages].reverse().find(m => m.role === "user");
+        if (lastUserMsg && typeof lastUserMsg.content === "string") {
+          const hits = await semanticSearch({
+            query: lastUserMsg.content,
+            filterAuthor: input.authorName,
+            topK: 5,
+          });
+          if (hits.length > 0) {
+            semanticContext = "\n\n---\nRELEVANT CONTEXT FROM INDEXED ARTICLES AND CONTENT:\n" +
+              hits.map((h, i) => `[${i + 1}] ${h.snippet}`).join("\n");
+            logger.info(`[authorChatbot] Injected ${hits.length} semantic hits for "${input.authorName}"`);
+          }
+        }
+      } catch (err) {
+        logger.warn(`[authorChatbot] Semantic search failed (non-fatal):`, err);
+      }
+
       // Build system prompt
-      const systemPrompt = buildSystemPrompt(input.authorName, ragContent);
+      const systemPrompt = buildSystemPrompt(input.authorName, ragContent + semanticContext);
 
       // Call LLM
       const response = await invokeLLM({

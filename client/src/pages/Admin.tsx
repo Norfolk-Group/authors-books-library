@@ -38,6 +38,7 @@ import {
   MagnifyingGlass,
   Tag,
   Newspaper,
+  CopySimple,
   Cpu as CircuitBoard,
 } from "@phosphor-icons/react";
 import { Loader2, ChevronRight } from "lucide-react";
@@ -93,6 +94,7 @@ import { ApiManagementTab } from "@/components/admin/ApiManagementTab";
 import { AdminMagazineTab } from "@/components/admin/AdminMagazineTab";
 import { AdminDropboxTab } from "@/components/admin/AdminDropboxTab";
 import { AdminPineconeTab } from "@/components/admin/AdminPineconeTab";
+import { AdminDuplicatesTab } from "@/components/admin/AdminDuplicatesTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -111,6 +113,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "books", label: "Books", icon: Books },
       { id: "tags", label: "Tags", icon: Tag },
       { id: "pipeline", label: "Data Pipeline", icon: Database },
+      { id: "duplicates", label: "Duplicates", icon: CopySimple },
     ],
   },
   {
@@ -454,6 +457,7 @@ export default function Admin() {
               {activeSection === "about" && <AdminAboutTab />}
               {activeSection === "dropbox" && <AdminDropboxTab />}
               {activeSection === "pinecone" && <AdminPineconeTab />}
+              {activeSection === "duplicates" && <AdminDuplicatesTab />}
 
             </div>
           </main>
