@@ -297,6 +297,22 @@ export const authorProfiles = mysqlTable("author_profiles", {
   /** When the contextual intelligence layer was last enriched */
   contextualIntelligenceEnrichedAt: timestamp("contextualIntelligenceEnrichedAt"),
 
+  // ── News Cache ──────────────────────────────────────────────────────────────
+  /**
+   * Cached news articles for this author from Google News RSS.
+   * Shape: [{ title, url, source, publishedAt, snippet }]
+   */
+  newsCacheJson: text("newsCacheJson"),
+  /** When newsCacheJson was last fetched */
+  newsCachedAt: timestamp("newsCachedAt"),
+  /**
+   * Cached CNBC mentions for this author.
+   * Shape: [{ title, url, source, publishedAt, snippet }]
+   */
+  cnbcMentionsCacheJson: text("cnbcMentionsCacheJson"),
+  /** When cnbcMentionsCacheJson was last fetched */
+  cnbcMentionsCachedAt: timestamp("cnbcMentionsCachedAt"),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -427,6 +443,30 @@ export const bookProfiles = mysqlTable("book_profiles", {
    * Tags are defined in the `tags` table; this column is a denormalized cache for fast filtering.
    */
   tagsJson: text("tagsJson"),
+
+  // ── Library Availability Cache ──────────────────────────────────────────────
+  /**
+   * Cached Open Library enrichment data.
+   * Shape: { olid, title, subjects, firstPublishYear, description, covers, links, cachedAt }
+   */
+  openLibraryCacheJson: text("openLibraryCacheJson"),
+  /** When openLibraryCacheJson was last fetched */
+  openLibraryCachedAt: timestamp("openLibraryCachedAt"),
+  /**
+   * Cached HathiTrust availability data.
+   * Shape: { totalItems, fullTextCount, fullTextUrl, rightsCode, cachedAt }
+   */
+  hathiTrustCacheJson: text("hathiTrustCacheJson"),
+  /** When hathiTrustCachedAt was last fetched */
+  hathiTrustCachedAt: timestamp("hathiTrustCachedAt"),
+  /**
+   * Cached WorldCat library availability data.
+   * Shape: { totalHoldings, oclcNumber, libraries: [{name, location}], cachedAt }
+   */
+  worldcatCacheJson: text("worldcatCacheJson"),
+  /** When worldcatCacheJson was last fetched */
+  worldcatCachedAt: timestamp("worldcatCachedAt"),
+
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -435,7 +475,6 @@ export const bookProfiles = mysqlTable("book_profiles", {
   /** Index for finding un-enriched books quickly */
   enrichedAtIdx: index("book_profiles_enrichedAt_idx").on(table.enrichedAt),
 }));
-
 export type BookProfile = typeof bookProfiles.$inferSelect;
 export type InsertBookProfile = typeof bookProfiles.$inferInsert;
 

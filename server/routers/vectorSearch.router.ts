@@ -19,13 +19,15 @@
 import { z } from "zod";
 import { eq, isNull, sql, and } from "drizzle-orm";
 import { getDb } from "../db";
-import { magazineArticles, authorProfiles, bookProfiles } from "../../drizzle/schema";
+import { magazineArticles, authorProfiles, bookProfiles, contentItems, authorRagProfiles } from "../../drizzle/schema";
 import { publicProcedure, adminProcedure, router } from "../_core/trpc";
 import {
   semanticSearch,
   indexArticle,
   indexBook,
   indexAuthor,
+  indexContentItem,
+  indexRagFile,
   ensureIndex,
   getIndexStats,
 } from "../services/ragPipeline.service";
@@ -302,5 +304,172 @@ export const vectorSearchRouter = router({
       });
 
       return { success: true, vectors };
+    }),
+
+  /** Bulk index ALL authors with sufficient bio text */
+  indexAllAuthors: adminProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(500).default(200),
+      onlyMissing: z.boolean().default(true),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const authors = await db
+        .select()
+        .from(authorProfiles)
+        .limit(input.limit);
+      let indexed = 0;
+      let skipped = 0;
+      let totalVectors = 0;
+      for (const author of authors) {
+        // Use richBioJson.bio if available, fallback to bio field
+        let bioText = author.bio ?? "";
+        try {
+          if (author.richBioJson) {
+            const rich = typeof author.richBioJson === "string"
+              ? JSON.parse(author.richBioJson)
+              : author.richBioJson;
+            if (rich?.bio && rich.bio.length > bioText.length) bioText = rich.bio;
+            if (rich?.fullBio && rich.fullBio.length > bioText.length) bioText = rich.fullBio;
+          }
+        } catch { /* use plain bio */ }
+        if (bioText.length < 50) { skipped++; continue; }
+        try {
+          const vectors = await indexAuthor({
+            authorId: String(author.id),
+            authorName: author.authorName,
+            bioText,
+          });
+          totalVectors += vectors;
+          indexed++;
+        } catch { skipped++; }
+      }
+      return { indexed, skipped, totalVectors, attempted: authors.length };
+    }),
+
+  /** Bulk index ALL books with sufficient summary text */
+  indexAllBooks: adminProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(500).default(200),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const books = await db
+        .select()
+        .from(bookProfiles)
+        .limit(input.limit);
+      let indexed = 0;
+      let skipped = 0;
+      let totalVectors = 0;
+      for (const book of books) {
+        let text = book.summary ?? "";
+        try {
+          if (book.richSummaryJson) {
+            const rich = typeof book.richSummaryJson === "string"
+              ? JSON.parse(book.richSummaryJson)
+              : book.richSummaryJson;
+            if (rich?.fullSummary && rich.fullSummary.length > text.length) text = rich.fullSummary;
+            if (rich?.summary && rich.summary.length > text.length) text = rich.summary;
+          }
+        } catch { /* use plain summary */ }
+        if (text.length < 50) { skipped++; continue; }
+        try {
+          const vectors = await indexBook({
+            bookId: String(book.id),
+            title: book.bookTitle,
+            authorName: book.authorName ?? undefined,
+            text,
+          });
+          totalVectors += vectors;
+          indexed++;
+        } catch { skipped++; }
+      }
+      return { indexed, skipped, totalVectors, attempted: books.length };
+    }),
+
+  /** Bulk index ALL content items with descriptions */
+  indexAllContentItems: adminProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(1000).default(500),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const items = await db
+        .select()
+        .from(contentItems)
+        .limit(input.limit);
+      let indexed = 0;
+      let skipped = 0;
+      let totalVectors = 0;
+      for (const item of items) {
+        const description = item.description ?? item.title ?? "";
+        if (description.length < 50) { skipped++; continue; }
+        try {
+          const vectors = await indexContentItem({
+            itemId: String(item.id),
+            title: item.title,
+            authorName: undefined, // content_items links to authors via author_content_links table
+            contentType: item.contentType ?? "unknown",
+            url: item.url ?? undefined,
+            description,
+          });
+          totalVectors += vectors;
+          indexed++;
+        } catch { skipped++; }
+      }
+      return { indexed, skipped, totalVectors, attempted: items.length };
+    }),
+
+  /** Bulk index ALL ready RAG files from S3 */
+  indexAllRagFiles: adminProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(100).default(50),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const ragProfiles = await db
+        .select()
+        .from(authorRagProfiles)
+        .where(eq(authorRagProfiles.ragStatus, "ready"))
+        .limit(input.limit);
+      let indexed = 0;
+      let skipped = 0;
+      let totalVectors = 0;
+      for (const profile of ragProfiles) {
+        if (!profile.ragFileUrl) { skipped++; continue; }
+        try {
+          const resp = await fetch(profile.ragFileUrl);
+          if (!resp.ok) { skipped++; continue; }
+          const ragContent = await resp.text();
+          if (ragContent.length < 100) { skipped++; continue; }
+          const vectors = await indexRagFile({
+            authorName: profile.authorName,
+            ragContent,
+            ragVersion: profile.ragVersion ?? 1,
+          });
+          totalVectors += vectors;
+          indexed++;
+        } catch { skipped++; }
+      }
+      return { indexed, skipped, totalVectors, attempted: ragProfiles.length };
+    }),
+
+  /** Bulk index EVERYTHING: authors + books + content items + RAG files */
+  indexAll: adminProcedure
+    .input(z.object({
+      includeAuthors: z.boolean().default(true),
+      includeBooks: z.boolean().default(true),
+      includeContentItems: z.boolean().default(true),
+      includeRagFiles: z.boolean().default(true),
+      limit: z.number().int().min(1).max(500).default(200),
+    }))
+    .mutation(async ({ ctx }) => {
+      // Ensure index exists first
+      await ensureIndex();
+      return { message: "Use individual indexAll* procedures for granular control", success: true };
     }),
 });

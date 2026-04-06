@@ -9,9 +9,11 @@
  *   - Serverless: AWS us-east-1
  *
  * Namespaces (logical partitions within the index):
- *   - "articles"   → magazine articles (Atlantic, New Yorker, Wired, NYT, WaPo)
- *   - "books"      → book summaries and chapter chunks
- *   - "authors"    → author bios and profile text
+ *   - "articles"      → magazine articles (Atlantic, New Yorker, Wired, NYT, WaPo)
+ *   - "books"         → book summaries and chapter chunks
+ *   - "authors"       → author bios and profile text
+ *   - "content_items" → content item descriptions (podcasts, videos, newsletters, etc.)
+ *   - "rag_files"     → full author RAG knowledge documents
  *
  * Each vector carries metadata for filtering and display:
  *   { contentType, sourceId, title, authorName, source, url, publishedAt, chunkIndex }
@@ -24,10 +26,10 @@ import { Pinecone } from "@pinecone-database/pinecone";
 export const PINECONE_INDEX_NAME = "library-rag";
 export const EMBEDDING_DIMENSION = 768; // Gemini text-embedding-004
 
-export type ContentNamespace = "articles" | "books" | "authors";
+export type ContentNamespace = "articles" | "books" | "authors" | "content_items" | "rag_files";
 
 export type VectorMetadata = {
-  contentType: "article" | "book" | "author";
+  contentType: "article" | "book" | "author" | "content_item" | "rag_file";
   sourceId: string;          // DB row ID or articleId
   title: string;
   authorName?: string;
@@ -171,7 +173,7 @@ export async function queryAllNamespaces(
   topK = 10,
   filter?: Record<string, unknown>
 ): Promise<QueryResult[]> {
-  const namespaces: ContentNamespace[] = ["articles", "books", "authors"];
+  const namespaces: ContentNamespace[] = ["articles", "books", "authors", "content_items", "rag_files"];
   const settled = await Promise.allSettled(
     namespaces.map(ns => queryVectors(queryEmbedding, ns, { topK, filter }))
   );
@@ -229,7 +231,7 @@ export function chunkText(
  * Generate a stable vector ID for a content chunk.
  */
 export function makeVectorId(
-  contentType: "article" | "book" | "author",
+  contentType: "article" | "book" | "author" | "content_item" | "rag_file",
   sourceId: string,
   chunkIndex: number
 ): string {

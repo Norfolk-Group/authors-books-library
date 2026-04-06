@@ -92,6 +92,7 @@ import { AdminAboutTab } from "@/components/admin/AdminAboutTab";
 import { ApiManagementTab } from "@/components/admin/ApiManagementTab";
 import { AdminMagazineTab } from "@/components/admin/AdminMagazineTab";
 import { AdminDropboxTab } from "@/components/admin/AdminDropboxTab";
+import { AdminPineconeTab } from "@/components/admin/AdminPineconeTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -120,6 +121,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "content-items", label: "Content Items", icon: Globe },
       { id: "sync", label: "Sync & Storage", icon: Cloud },
       { id: "dropbox", label: "Dropbox Backup", icon: Cloud },
+      { id: "pinecone", label: "Pinecone Index", icon: Database },
     ],
   },
   {
@@ -451,6 +453,7 @@ export default function Admin() {
               {activeSection === "magazine-feeds" && <AdminMagazineTab />}
               {activeSection === "about" && <AdminAboutTab />}
               {activeSection === "dropbox" && <AdminDropboxTab />}
+              {activeSection === "pinecone" && <AdminPineconeTab />}
 
             </div>
           </main>

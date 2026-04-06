@@ -250,6 +250,81 @@ export async function semanticSearch(
   }));
 }
 
+// ── Index Content Item ───────────────────────────────────────────────────────
+
+export type IndexContentItemInput = {
+  itemId: string;
+  title: string;
+  authorName?: string | null;
+  contentType: string; // podcast, video, newsletter, etc.
+  url?: string | null;
+  description: string;
+};
+
+/**
+ * Embed a content item's description and upsert to Pinecone.
+ */
+export async function indexContentItem(item: IndexContentItemInput): Promise<number> {
+  await ensureIndex();
+  const chunks = chunkText(item.description, 2000, 200);
+  if (chunks.length === 0) return 0;
+  const embeddings = await embedBatch(chunks);
+  const vectors: UpsertVectorInput[] = chunks.map((chunk, i) => ({
+    id: makeVectorId("content_item", item.itemId, i),
+    values: embeddings[i],
+    namespace: "content_items" as ContentNamespace,
+    metadata: {
+      contentType: "content_item",
+      sourceId: item.itemId,
+      title: item.title,
+      authorName: item.authorName ?? undefined,
+      source: item.contentType,
+      url: item.url ?? undefined,
+      chunkIndex: i,
+      chunkTotal: chunks.length,
+      text: chunk,
+    } satisfies VectorMetadata,
+  }));
+  await upsertVectors(vectors);
+  return vectors.length;
+}
+
+// ── Index RAG File ────────────────────────────────────────────────────────────
+
+export type IndexRagFileInput = {
+  authorName: string;
+  ragContent: string; // full markdown RAG document
+  ragVersion?: number;
+};
+
+/**
+ * Chunk and embed a full author RAG file, upsert to Pinecone rag_files namespace.
+ */
+export async function indexRagFile(input: IndexRagFileInput): Promise<number> {
+  await ensureIndex();
+  const chunks = chunkText(input.ragContent, 3000, 300);
+  if (chunks.length === 0) return 0;
+  const embeddings = await embedBatch(chunks);
+  const safeId = input.authorName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+  const vectors: UpsertVectorInput[] = chunks.map((chunk, i) => ({
+    id: makeVectorId("rag_file", safeId, i),
+    values: embeddings[i],
+    namespace: "rag_files" as ContentNamespace,
+    metadata: {
+      contentType: "rag_file",
+      sourceId: safeId,
+      title: input.authorName,
+      authorName: input.authorName,
+      source: "rag",
+      chunkIndex: i,
+      chunkTotal: chunks.length,
+      text: chunk,
+    } satisfies VectorMetadata,
+  }));
+  await upsertVectors(vectors);
+  return vectors.length;
+}
+
 // ── Convenience re-exports ────────────────────────────────────────────────────
 
 export { ensureIndex, getIndexStats } from "./pinecone.service";

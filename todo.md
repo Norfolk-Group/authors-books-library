@@ -22,12 +22,12 @@ Last cleaned: Apr 5, 2026
 
 ## Premium News Enrichment
 
-- [ ] Research and test RapidAPI access to NYT, Bloomberg, WSJ, BBC, CNN, Atlantic, MSNBC, WashPost APIs
-- [ ] Build unified `server/enrichment/newsOutlets.ts` helper with typed per-outlet fetchers
-- [ ] Add `fetchAuthorNews` tRPC procedure returning articles across all 8 outlets
+- [x] Research and test RapidAPI access to NYT, Bloomberg, WSJ, BBC, CNN, Atlantic, MSNBC, WashPost APIs
+- [x] Build unified `server/enrichment/newsOutlets.ts` helper with typed per-outlet fetchers
+- [x] Add `fetchAuthorNews` tRPC procedure returning articles across all 8 outlets
 - [x] Add "In the News" section to AuthorDetail page (article cards with outlet badge, headline, date, link)
 - [ ] Add news article count badge to FlowbiteAuthorCard
-- [ ] Cache news results in `author_profiles.socialStatsJson` to avoid redundant API calls
+- [x] Cache news results in `author_profiles.socialStatsJson` to avoid redundant API calls
 - [x] Write vitest tests for newsOutlets helper
 
 ---
@@ -50,40 +50,40 @@ Last cleaned: Apr 5, 2026
 
 ### BookDetail Page
 - [x] Wire enrichment.hathiTrust.checkAvailability into BookDetail page (show "Free Digital Copy" badge when available)
-- [ ] Open Library panel: show ISBN-13, publisher, publish date, page count, subjects from OL enrichment
-- [ ] HathiTrust availability badge: "Free Digital Copy" button when full-view copy exists (links to HathiTrust reader)
-- [ ] Open Library cover fallback: if no S3 cover, fetch cover from Open Library by ISBN
-- [ ] "Also available at" library count: show how many HathiTrust copies exist (search-only + full-view)
+- [x] Open Library panel: show ISBN-13, publisher, publish date, page count, subjects from OL enrichment
+- [x] HathiTrust availability badge: "Free Digital Copy" button when full-view copy exists (links to HathiTrust reader)
+- [x] Open Library cover fallback: if no S3 cover, fetch cover from Open Library by ISBN
+- [x] "Also available at" library count: show how many HathiTrust copies exist (search-only + full-view)
 
 ### AuthorDetail Page
-- [ ] Wire enrichment.applePodcasts.getAuthorPodcasts into AuthorDetail page
+- [x] Wire enrichment.applePodcasts.getAuthorPodcasts into AuthorDetail page
 - [x] Wire enrichment.news.searchAuthorNews into AuthorDetail "In the News" section
 - [x] "In the News" section: top 10 recent articles mentioning the author (CNBC + Google News RSS)
-- [ ] Apple Podcasts section: author's podcasts from iTunes — supplement existing content items
+- [x] Apple Podcasts section: author's podcasts from iTunes — supplement existing content items
 - [ ] LinkedIn stats panel: follower count, headline, connection count (from socialStatsJson.linkedin if enriched)
 - [ ] Wikipedia quick-facts panel: birth date, nationality, alma mater, awards (from socialStatsJson.wikipedia)
 - [ ] Yahoo Finance panel: show company/stock data for author-linked companies (from socialStatsJson.yahooFinance)
 - [ ] Wire semantic search into author chatbot and author detail page
 
 ### Caching & Performance
-- [ ] Cache news search results in author_profiles.socialStatsJson (TTL: 24h) to avoid redundant API calls
-- [ ] Cache Open Library enrichment in book_profiles (ISBN, publisher, OL cover URL) after first fetch
-- [ ] Cache HathiTrust availability in book_profiles (htAvailability field) after first check
+- [x] Cache news search results in author_profiles.socialStatsJson (TTL: 24h) to avoid redundant API calls
+- [x] Cache Open Library enrichment in book_profiles (ISBN, publisher, OL cover URL) after first fetch
+- [x] Cache HathiTrust availability in book_profiles (htAvailability field) after first check
 
 ---
 
 ## Atlantic / Magazine Pipeline
 
-- [ ] Save The Atlantic RSS scraper as server/services/atlantic.service.ts
-- [ ] Add tRPC procedure: `author.getAtlanticArticles(authorName)` — fetches + matches articles to author
-- [ ] Wire Atlantic articles panel into AuthorDetail page (latest articles, title, date, link)
-- [ ] Cache Atlantic feed results in DB to avoid re-fetching on every page load
-- [ ] Add `atlantic_articles` table to drizzle schema (articleId, title, url, authorName, publishedAt, summaryText, fullText, categories, feedUrl, scrapedAt)
-- [ ] Run pnpm db:push to migrate atlantic_articles
-- [ ] Build `server/routers/atlantic.router.ts` with procedures: fetchFeed, scrapeArticle (Apify), getByAuthor
-- [ ] Wire Atlantic articles panel into AuthorDetail page (title, date, summary, expandable full text, link)
-- [ ] Write vitest tests for atlantic router
-- [ ] Run pnpm db:push to migrate magazine_articles table
+- [x] Save The Atlantic RSS scraper as server/services/atlantic.service.ts
+- [x] Add tRPC procedure: `author.getAtlanticArticles(authorName)` — fetches + matches articles to author
+- [x] Wire Atlantic articles panel into AuthorDetail page (latest articles, title, date, link)
+- [x] Cache Atlantic feed results in DB to avoid re-fetching on every page load
+- [x] Add `atlantic_articles` table to drizzle schema (articleId, title, url, authorName, publishedAt, summaryText, fullText, categories, feedUrl, scrapedAt)
+- [x] Run pnpm db:push to migrate atlantic_articles
+- [x] Build `server/routers/atlantic.router.ts` with procedures: fetchFeed, scrapeArticle (Apify), getByAuthor
+- [x] Wire Atlantic articles panel into AuthorDetail page (title, date, summary, expandable full text, link)
+- [x] Write vitest tests for atlantic router
+- [x] Run pnpm db:push to migrate magazine_articles table
 
 ---
 
