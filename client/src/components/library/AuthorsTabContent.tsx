@@ -267,6 +267,7 @@ export function AuthorsTabContent({
                       currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
                       onEditClick={isAuthenticated ? () => onEditAuthor(canonicalName(a.name)) : undefined}
                       onDeleteClick={isAuthenticated ? () => onDeleteAuthor(canonicalName(a.name)) : undefined}
+                      priority={i < 4}
                     />
                   </div>
                 ))}
@@ -302,6 +303,7 @@ export function AuthorsTabContent({
                 currentTagSlugs={Array.from(authorTagsMap.get(canonicalName(a.name).toLowerCase()) ?? [])}
                 onEditClick={isAuthenticated ? () => onEditAuthor(canonicalName(a.name)) : undefined}
                 onDeleteClick={isAuthenticated ? () => onDeleteAuthor(canonicalName(a.name)) : undefined}
+                priority={i < 4}
               />
             </div>
           ))}

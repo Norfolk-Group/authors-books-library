@@ -140,6 +140,8 @@ export interface FlowbiteAuthorCardProps {
     /** Raw JSON string from newsCacheJson column — parsed for news article count */
     newsCacheJson?: string | null;
   } | null;
+  /** Whether this card is above the fold — enables fetchpriority="high" on avatar */
+  priority?: boolean;
 }
 
 // -- Tab type -----------------------------------------------------------------
@@ -235,6 +237,7 @@ export function FlowbiteAuthorCard({
   onEditClick,
   onDeleteClick,
   currentTagSlugs = [],
+  priority = false,
 }: FlowbiteAuthorCardProps) {
   const iconName = CATEGORY_ICONS[author.category] ?? "briefcase";
   const Icon = (ICON_MAP[iconName] ?? Briefcase) as LucideIcon;
@@ -522,7 +525,7 @@ export function FlowbiteAuthorCard({
                     >
                       <AvatarUpload authorName={displayName} currentAvatarUrl={avatarUrl} size={96}>
                         {(url) => url ? (
-                          <LazyImage src={url} alt={displayName} className="w-full h-full object-cover" eager />
+                          <LazyImage src={url} alt={displayName} className="w-full h-full object-cover" eager priority={priority} />
                         ) : (
                           <div
                             className="w-full h-full flex items-center justify-center text-3xl font-bold select-none"

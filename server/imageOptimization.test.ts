@@ -29,12 +29,13 @@ describe("Image Optimization — LazyImage Component", () => {
     expect(src).toContain("export function CircularLazyImage");
   });
 
-  it("LazyImage uses IntersectionObserver for lazy loading", () => {
+  it("LazyImage uses native lazy loading attribute", () => {
     const src = readFileSync(
       join(ROOT, "client/src/components/ui/LazyImage.tsx"),
       "utf-8"
     );
-    expect(src).toContain("IntersectionObserver");
+    // Uses native loading={...} attribute (modern browsers support this natively)
+    expect(src).toContain('loading={');
   });
 
   it("LazyImage has blur placeholder support", () => {

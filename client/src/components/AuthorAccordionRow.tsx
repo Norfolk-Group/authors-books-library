@@ -39,6 +39,7 @@ import {
   CT_ICON_MAP,
   normalizeContentTypes,
 } from "@/components/library/libraryConstants";
+import { LazyImage, CircularLazyImage } from "@/components/ui/LazyImage";
 
 // -- LucideIcon type ------------------------------------------------------------
 type LucideIcon = React.FC<{
@@ -184,27 +185,14 @@ export function AuthorAccordionRow({
             className="relative h-[84px] w-[84px] flex-shrink-0 cursor-pointer"
             onClick={handleAvatarClick}
           >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="
-                  h-[84px] w-[84px] rounded-full object-cover ring-2 ring-border ring-offset-1
-                  transition-transform duration-200 ease-out hover:scale-110 active:scale-95
-                  origin-center
-                "
-                loading="lazy"
-              />
-            ) : (
-              <div className="
-                h-[84px] w-[84px] rounded-full bg-muted ring-2 ring-border ring-offset-1
-                flex items-center justify-center text-2xl font-bold text-muted-foreground
-                transition-transform duration-200 ease-out hover:scale-110 active:scale-95
-                origin-center
-              ">
-                {displayName.charAt(0)}
-              </div>
-            )}
+            <CircularLazyImage
+              src={avatarUrl}
+              alt={displayName}
+              size={84}
+              fallbackText={displayName}
+              eager
+              className="ring-2 ring-border ring-offset-1 transition-transform duration-200 ease-out hover:scale-110 active:scale-95 origin-center"
+            />
           </div>
 
           {/* HOTSPOT 1: Name + specialty - click opens AuthorModal */}
@@ -287,9 +275,10 @@ export function AuthorAccordionRow({
                           onClick={(e) => handleBookCoverClick(e, bookMini)}
                         >
                           {coverUrl ? (
-                            <img
+                            <LazyImage
                               src={coverUrl}
                               alt={rawTitle.trim()}
+                              wrapperClassName="h-full w-full rounded"
                               className="
                                 h-full w-full rounded object-cover shadow-sm
                                 ring-1 ring-border
@@ -297,7 +286,6 @@ export function AuthorAccordionRow({
                                 hover:scale-[1.2]
                                 origin-center relative z-20
                               "
-                              loading="lazy"
                             />
                           ) : (
                             <div className="

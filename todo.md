@@ -137,7 +137,7 @@ Last cleaned: Apr 5, 2026
 
 ## Testing
 
-- [ ] Fix pre-existing Worker exited unexpectedly error in magazine.test.ts (not caused by our changes — investigate root cause)
+- [x] Fix pre-existing Worker exited unexpectedly error in magazine.test.ts (not caused by our changes — investigate root cause)
 - [x] Test RapidAPI access to NYT, Bloomberg, WSJ, BBC, CNN, Atlantic, MSNBC, WashPost (premium news outlets)
 - [x] Test Spotify API via RapidAPI for author audiobook/podcast data
 - [x] Test Instagram API via RapidAPI for author follower counts and recent posts
@@ -150,9 +150,9 @@ Last cleaned: Apr 5, 2026
 - [ ] Re-upload all non-S3 avatars to S3 CDN and update author_profiles.avatar_url
 - [ ] Audit all book cover URLs — identify non-S3 sources
 - [ ] Re-upload all non-S3 book covers to S3 CDN and update book_profiles.s3_cover_url
-- [ ] Add blur placeholder + lazy loading to author avatar images in FlowbiteAuthorCard
-- [ ] Add blur placeholder + lazy loading to book cover images in BookCard
-- [ ] Add image preload hints for above-the-fold cards
+- [x] Add blur placeholder + lazy loading to author avatar images in FlowbiteAuthorCard
+- [x] Add blur placeholder + lazy loading to book cover images in BookCard
+- [x] Add image preload hints for above-the-fold cards
 - [ ] Verify 100% of avatars and covers are on S3 CDN after migration
 
 ---

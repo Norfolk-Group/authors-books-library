@@ -24,6 +24,7 @@ import { CATEGORY_ICONS, type AuthorEntry } from "@/lib/libraryData";
 import { trpc } from "@/lib/trpc";
 import authorBios from "@/lib/authorBios.json";
 import { toast } from "sonner";
+import { CircularLazyImage } from "@/components/ui/LazyImage";
 
 // -- Icon map ------------------------------------------------------------------
 type LucideIcon = React.FC<{ className?: string; style?: React.CSSProperties }>;
@@ -135,18 +136,14 @@ export function AuthorModal({ author, avatarUrl: photoOverride, onClose }: Autho
               {/* Author header: avatar + category + specialty */}
               <div className="flex items-center gap-3">
                 <div className="relative flex-shrink-0">
-                  {resolvedPhoto ? (
-                    <img
-                      src={resolvedPhoto}
-                      alt={displayName}
-                      className="h-14 w-14 rounded-full object-cover shadow-sm ring-2 ring-border ring-offset-1"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center text-xl font-bold text-muted-foreground ring-2 ring-border ring-offset-1">
-                      {displayName.charAt(0)}
-                    </div>
-                  )}
+                  <CircularLazyImage
+                    src={resolvedPhoto}
+                    alt={displayName}
+                    size={56}
+                    fallbackText={displayName}
+                    eager
+                    className="shadow-sm ring-2 ring-border ring-offset-1"
+                  />
                   {/* Find Real Avatar button - small overlay on avatar */}
                   <button
                     onClick={() => scrapePhotoMutation.mutate({ authorName: displayName })}

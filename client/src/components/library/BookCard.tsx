@@ -38,6 +38,7 @@ import { FreshnessDot, type FreshnessDimension, computeOverallFreshness } from "
 import { FavoriteToggle } from "@/components/FavoriteToggle";
 import { TagPicker } from "@/components/TagPicker";
 import { Link } from "wouter";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 type CardTab = "details" | "notes";
 
@@ -324,11 +325,11 @@ export function BookCard({
                           onCoverClick?.(coverImageUrl, displayTitle, color);
                         }}
                       >
-                        <img
+                        <LazyImage
                           src={coverImageUrl}
                           alt={displayTitle}
                           className="h-[103px] w-[76px] object-cover rounded-lg shadow-md ring-2 ring-border ring-offset-2"
-                          loading="lazy"
+                          wrapperClassName="h-[103px] w-[76px] rounded-lg"
                         />
                       </motion.div>
                     ) : (

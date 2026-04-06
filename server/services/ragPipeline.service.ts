@@ -10,7 +10,6 @@
  *   - Author bios and profile text
  */
 
-import { GoogleGenAI } from "@google/genai";
 import {
   ensureIndex,
   upsertVectors,
@@ -25,14 +24,16 @@ import {
   type QueryResult,
 } from "./pinecone.service";
 
-// ── Gemini Embedding Client ───────────────────────────────────────────────────
+// ── Gemini Embedding Client (lazy import to avoid OOM in test workers) ────────────────────────────────────────────────────────────────────────────────────
 
-let _genai: GoogleGenAI | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _genai: any | null = null;
 
-function getGenAI(): GoogleGenAI {
+async function getGenAI() {
   if (!_genai) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY environment variable is not set");
+    const { GoogleGenAI } = await import("@google/genai");
     _genai = new GoogleGenAI({ apiKey });
   }
   return _genai;
@@ -45,7 +46,7 @@ const EMBEDDING_MODEL = "text-embedding-004";
  * Returns a 768-dimensional float array.
  */
 export async function embedText(text: string): Promise<number[]> {
-  const genai = getGenAI();
+  const genai = await getGenAI();
   const result = await genai.models.embedContent({
     model: EMBEDDING_MODEL,
     contents: text.slice(0, 8192), // Gemini max input

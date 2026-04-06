@@ -5,6 +5,7 @@
  *  - Smooth opacity fade-in on load
  *  - Error fallback (initials or generic icon)
  *  - Intersection Observer for above-the-fold eager loading
+ *  - fetchpriority="high" for LCP-critical images
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -18,6 +19,8 @@ interface LazyImageProps {
   fallbackText?: string;
   /** Whether this image is likely above the fold — loads eagerly if true */
   eager?: boolean;
+  /** Whether this is an LCP-critical image — adds fetchpriority="high" */
+  priority?: boolean;
   /** Aspect ratio class e.g. "aspect-square" or "aspect-[2/3]" */
   aspectClass?: string;
   /** Extra style for the wrapper div */
@@ -33,6 +36,7 @@ export function LazyImage({
   className,
   fallbackText,
   eager = false,
+  priority = false,
   aspectClass,
   wrapperClassName,
   onClick,
@@ -44,8 +48,6 @@ export function LazyImage({
 
   // If image is already cached the onLoad event fires before React mounts,
   // so we check .complete on mount.
-  // IntersectionObserver is used implicitly via the browser's native loading="lazy"
-  // attribute, which defers off-screen images until they enter the viewport.
   useEffect(() => {
     if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
       setLoaded(true);
@@ -91,8 +93,10 @@ export function LazyImage({
         ref={imgRef}
         src={src}
         alt={alt}
-        loading={eager ? "eager" : "lazy"}
-        decoding="async"
+        loading={eager || priority ? "eager" : "lazy"}
+        decoding={priority ? "sync" : "async"}
+        // @ts-ignore — fetchpriority is a valid HTML attribute not yet in React types
+        fetchpriority={priority ? "high" : undefined}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className={cn(
@@ -115,6 +119,7 @@ export function CircularLazyImage({
   size = 64,
   fallbackText,
   eager = false,
+  priority = false,
   className,
   onClick,
 }: {
@@ -123,6 +128,8 @@ export function CircularLazyImage({
   size?: number;
   fallbackText?: string;
   eager?: boolean;
+  /** Whether this is an LCP-critical image — adds fetchpriority="high" */
+  priority?: boolean;
   className?: string;
   onClick?: () => void;
 }) {
@@ -175,8 +182,10 @@ export function CircularLazyImage({
         ref={imgRef}
         src={src}
         alt={alt}
-        loading={eager ? "eager" : "lazy"}
-        decoding="async"
+        loading={eager || priority ? "eager" : "lazy"}
+        decoding={priority ? "sync" : "async"}
+        // @ts-ignore — fetchpriority is a valid HTML attribute not yet in React types
+        fetchpriority={priority ? "high" : undefined}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className={cn(
