@@ -42,6 +42,14 @@ import {
   sanitizeFilename,
   type InboxFile,
 } from "../dropbox.service";
+import {
+  flagBookDuplicate,
+  flagFileDuplicate,
+  normalizeTitle,
+  normalizeIsbn,
+  similarityScore,
+} from "./duplicateDetection.service";
+import crypto from "crypto";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -84,10 +92,19 @@ export interface AuthorIngestResult {
   error?: string;
 }
 
+export type DuplicateMode = "skip" | "flag" | "replace";
+
+export interface DuplicateInfo {
+  isDuplicate: boolean;
+  duplicateOfId?: number;
+  method?: "hash" | "filename" | "isbn" | "fuzzy_title";
+  similarity?: number;
+}
+
 export interface IngestFileResult {
   dropboxPath: string;
   filename: string;
-  status: "success" | "skipped" | "error";
+  status: "success" | "skipped" | "error" | "duplicate";
   reason?: string;
   metadata?: IngestMetadata;
   s3Url?: string;
@@ -95,6 +112,7 @@ export interface IngestFileResult {
   contentItemId?: number;
   authorResults?: AuthorIngestResult[];
   movedToProcessed?: boolean;
+  duplicateInfo?: DuplicateInfo;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -367,6 +385,9 @@ export async function ingestDropboxFile(
     // 2. Download PDF from Dropbox
     const { buffer, size } = await downloadDropboxFile(file.dropboxPath);
 
+    // 2a. Compute SHA-256 hash for duplicate detection
+    const contentHash = crypto.createHash("sha256").update(Buffer.from(buffer)).digest("hex");
+
     // 3. Upload to S3
     const safeTitle = sanitizeFilename(metadata.bookTitle);
     const s3Key = `pdfs/inbox/${safeTitle}-${Date.now()}.pdf`;
@@ -388,8 +409,8 @@ export async function ingestDropboxFile(
     });
     const contentItemId = (ciResult as unknown as { insertId: number }).insertId;
 
-    // 5. Create content_file record
-    await db.insert(contentFiles).values({
+    // 5. Create content_file record (with hash for duplicate detection)
+    const cfResult = await db.insert(contentFiles).values({
       contentItemId,
       s3Key,
       s3Url,
@@ -398,7 +419,22 @@ export async function ingestDropboxFile(
       mimeType: "application/pdf",
       fileSizeBytes: size,
       fileType: "pdf",
+      contentHash,
     });
+    const contentFileId = (cfResult as unknown as { insertId: number }).insertId;
+
+    // 5a. Check for duplicate files by hash
+    const existingByHash = await db
+      .select({ id: contentFiles.id })
+      .from(contentFiles)
+      .where(eq(contentFiles.contentHash, contentHash))
+      .limit(2);
+    if (existingByHash.length > 1) {
+      const canonicalId = existingByHash.find(r => r.id !== contentFileId)?.id;
+      if (canonicalId) {
+        await flagFileDuplicate(contentFileId, canonicalId, "hash");
+      }
+    }
 
     // 6. Upsert authors and link them to the content item
     const authorResults: AuthorIngestResult[] = [];
@@ -426,9 +462,10 @@ export async function ingestDropboxFile(
       }
     }
 
-    // 7. Upsert book profile
+    // 7. Upsert book profile with duplicate detection
     const primaryAuthor = metadata.authors[0] ?? "Unknown";
     let bookProfileId: number | undefined;
+    let duplicateInfo: DuplicateInfo = { isDuplicate: false };
 
     const existingBook = await db
       .select({ id: bookProfiles.id })
@@ -437,8 +474,29 @@ export async function ingestDropboxFile(
       .limit(1);
 
     if (existingBook.length > 0) {
+      // Exact title match — treat as existing book (not a new duplicate)
       bookProfileId = existingBook[0].id;
     } else {
+      // Check for fuzzy title or ISBN duplicates before inserting
+      const allBooks = await db
+        .select({ id: bookProfiles.id, bookTitle: bookProfiles.bookTitle, isbn: bookProfiles.isbn })
+        .from(bookProfiles)
+        .limit(2000);
+      const normalizedNew = normalizeTitle(metadata.bookTitle);
+      const newIsbn = metadata.isbn ? normalizeIsbn(metadata.isbn) : null;
+      let fuzzyMatch: { id: number; method: "isbn" | "fuzzy_title"; similarity: number } | null = null;
+      for (const existing of allBooks) {
+        if (newIsbn && existing.isbn && normalizeIsbn(existing.isbn) === newIsbn) {
+          fuzzyMatch = { id: existing.id, method: "isbn", similarity: 1.0 };
+          break;
+        }
+        const score = similarityScore(normalizedNew, normalizeTitle(existing.bookTitle));
+        if (score >= 0.85) {
+          fuzzyMatch = { id: existing.id, method: "fuzzy_title", similarity: score };
+          break;
+        }
+      }
+
       const bpResult = await db.insert(bookProfiles).values({
         bookTitle: metadata.bookTitle,
         authorName: primaryAuthor,
@@ -449,8 +507,14 @@ export async function ingestDropboxFile(
       });
       bookProfileId = (bpResult as unknown as { insertId: number }).insertId;
 
-      // 8. Fetch book cover from Amazon (async, non-blocking)
-      if (fetchBookCover && bookProfileId) {
+      // Flag as duplicate if fuzzy match found
+      if (fuzzyMatch && bookProfileId) {
+        await flagBookDuplicate(bookProfileId, fuzzyMatch.id, fuzzyMatch.method);
+        duplicateInfo = { isDuplicate: true, duplicateOfId: fuzzyMatch.id, method: fuzzyMatch.method, similarity: fuzzyMatch.similarity };
+      }
+
+      // 8. Fetch book cover from Amazon (async, non-blocking) — skip for duplicates
+      if (fetchBookCover && bookProfileId && !duplicateInfo.isDuplicate) {
         fetchAndMirrorBookCover(metadata.bookTitle, primaryAuthor, bookProfileId).catch(() => {});
       }
     }
@@ -470,13 +534,14 @@ export async function ingestDropboxFile(
     return {
       dropboxPath: file.dropboxPath,
       filename: file.name,
-      status: "success",
+      status: duplicateInfo.isDuplicate ? "duplicate" : "success",
       metadata,
       s3Url,
       bookProfileId,
       contentItemId,
       authorResults,
       movedToProcessed,
+      duplicateInfo,
     };
   } catch (err) {
     return {

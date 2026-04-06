@@ -40,6 +40,7 @@ import {
   Newspaper,
   CopySimple,
   Cpu as CircuitBoard,
+  CloudArrowUp,
 } from "@phosphor-icons/react";
 import { Loader2, ChevronRight } from "lucide-react";
 import {
@@ -95,6 +96,7 @@ import { AdminMagazineTab } from "@/components/admin/AdminMagazineTab";
 import { AdminDropboxTab } from "@/components/admin/AdminDropboxTab";
 import { AdminPineconeTab } from "@/components/admin/AdminPineconeTab";
 import { AdminDuplicatesTab } from "@/components/admin/AdminDuplicatesTab";
+import { AdminS3AuditTab } from "@/components/admin/AdminS3AuditTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -125,6 +127,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "sync", label: "Sync & Storage", icon: Cloud },
       { id: "dropbox", label: "Dropbox Backup", icon: Cloud },
       { id: "pinecone", label: "Pinecone Index", icon: Database },
+      { id: "s3-audit", label: "S3 CDN Audit", icon: CloudArrowUp },
     ],
   },
   {
@@ -458,6 +461,7 @@ export default function Admin() {
               {activeSection === "dropbox" && <AdminDropboxTab />}
               {activeSection === "pinecone" && <AdminPineconeTab />}
               {activeSection === "duplicates" && <AdminDuplicatesTab />}
+              {activeSection === "s3-audit" && <AdminS3AuditTab />}
 
             </div>
           </main>

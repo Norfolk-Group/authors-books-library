@@ -45,9 +45,16 @@ interface BackupResult {
   errors?: string[];
 }
 
+interface DuplicateInfo {
+  isDuplicate: boolean;
+  duplicateOfId?: number;
+  method?: "hash" | "filename" | "isbn" | "fuzzy_title";
+  similarity?: number;
+}
+
 interface IngestResult {
   filename: string;
-  status: "success" | "skipped" | "error";
+  status: "success" | "skipped" | "error" | "duplicate";
   reason?: string;
   metadata?: {
     bookTitle: string;
@@ -61,6 +68,7 @@ interface IngestResult {
     error?: string;
   }>;
   movedToProcessed?: boolean;
+  duplicateInfo?: DuplicateInfo;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -412,6 +420,15 @@ export function AdminDropboxTab() {
                     </p>
                   )}
                   {r.reason && <p className="text-muted-foreground">{r.reason}</p>}
+                  {r.duplicateInfo?.isDuplicate && (
+                    <p className="text-amber-600 dark:text-amber-400 mt-0.5">
+                      ⚠️ Duplicate detected ({r.duplicateInfo.method?.replace("_", " ")}
+                      {r.duplicateInfo.similarity !== undefined && r.duplicateInfo.similarity < 1
+                        ? ` — ${Math.round(r.duplicateInfo.similarity * 100)}% match`
+                        : ""}
+                      ) → flagged for review in Duplicates panel
+                    </p>
+                  )}
                   {r.movedToProcessed && <p className="text-green-600 dark:text-green-400">✓ Moved to Processed</p>}
                 </div>
               ))}

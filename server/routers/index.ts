@@ -33,6 +33,7 @@ import { vectorSearchRouter } from "./vectorSearch.router";
 import { substackRouter } from "./substack.router";
 import { dropboxRouter } from "./dropbox.router";
 import { duplicateDetectionRouter } from "./duplicateDetection.router";
+import { s3AuditRouter } from "./s3Audit.router";
 import { libraryCacheRouter } from "./libraryCache.router";
 
 export const appRouter = router({
@@ -78,6 +79,8 @@ export const appRouter = router({
   dropbox: dropboxRouter,
   // ── Library availability cache (OL, HathiTrust, WorldCat, news) ───────────
   duplicateDetection: duplicateDetectionRouter,
+  // ── S3 CDN audit & migration ───────────────────────────────────────────────
+  s3Audit: s3AuditRouter,
   libraryCache: libraryCacheRouter,
 });
 

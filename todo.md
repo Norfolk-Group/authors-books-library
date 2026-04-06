@@ -138,9 +138,9 @@ Last cleaned: Apr 5, 2026
 ## Testing
 
 - [ ] Fix pre-existing Worker exited unexpectedly error in magazine.test.ts (not caused by our changes — investigate root cause)
-- [ ] Test RapidAPI access to NYT, Bloomberg, WSJ, BBC, CNN, Atlantic, MSNBC, WashPost (premium news outlets)
-- [ ] Test Spotify API via RapidAPI for author audiobook/podcast data
-- [ ] Test Instagram API via RapidAPI for author follower counts and recent posts
+- [x] Test RapidAPI access to NYT, Bloomberg, WSJ, BBC, CNN, Atlantic, MSNBC, WashPost (premium news outlets)
+- [x] Test Spotify API via RapidAPI for author audiobook/podcast data
+- [x] Test Instagram API via RapidAPI for author follower counts and recent posts
 
 ---
 
@@ -190,10 +190,10 @@ Last cleaned: Apr 5, 2026
 
 ---
 ## Duplicate Detection System (Tasks 70-76)
-- [ ] Add content_hash column to content_files table (SHA-256 of file bytes) — push migration
+- [x] Add content_hash column to content_files table (SHA-256 of file bytes) — push migration
 - [x] Add duplicate_of_id column to book_profiles (self-referential FK for flagged duplicates)
 - [x] Build duplicateDetection.service.ts: filename match, hash match, fuzzy title match (Levenshtein), ISBN match
-- [ ] Integrate duplicate detection into Dropbox ingestion pipeline: skip/flag/replace modes
+- [x] Integrate duplicate detection into Dropbox ingestion pipeline: skip/flag/replace modes
 - [x] Add Admin UI panel for reviewing flagged duplicates: side-by-side comparison, merge/keep/discard actions
 - [x] Write vitest tests for duplicate detection service (all 4 detection layers)
-- [ ] Add duplicate detection summary to AdminDropboxTab scan results
+- [x] Add duplicate detection summary to AdminDropboxTab scan results
