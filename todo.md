@@ -281,3 +281,15 @@ Last cleaned: Apr 5, 2026
 - [x] Add "Run All Pipelines" button to Intelligence Dashboard header (blue CTA with Zap icon)
 - [x] Add "Run All Pipelines Now" button to empty-state job monitor (first-run guidance)
 - [x] Fix dropboxIngest.test.ts assertions to match new /backup subfolder path (21 tests pass)
+
+---
+## Backup Verification Toast + Auto-Refresh (Apr 7, 2026)
+- [ ] Update backup mutations (backupAvatars, backupBookCovers, backupPdfs, backupAll) to return per-subfolder file counts
+- [ ] Wire auto-refresh of AdminDropboxFolderBrowser after backup completes
+- [ ] Show toast with file counts per subfolder after "Backup All Assets" completes
+
+---
+## Admin Infotips (Apr 7, 2026)
+- [x] Build shared InfoTip component (Info icon + Tooltip from shadcn/ui, plus LabelWithTip variant)
+- [x] Add infotips to all Admin sidebar nav items (hover-reveal, side=right, descriptive text for all 24 items)
+- [ ] Add infotips to all Admin tab content: buttons, stat cards, configuration fields (in progress — deferred to next session)

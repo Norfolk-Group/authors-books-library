@@ -102,10 +102,48 @@ import AdminIntelligenceDashboard from "@/components/admin/AdminIntelligenceDash
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
+import { InfoTip } from "@/components/admin/InfoTip";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type NavItem = { id: string; label: string; icon: PhosphorIcon };
 type NavGroup = { label: string; icon: PhosphorIcon; items: NavItem[] };
+
+// ── Nav item tooltips ─────────────────────────────────────────────────────────
+const NAV_TIPS: Record<string, string> = {
+  // Content
+  authors: "Browse, search, and manage all 169 author profiles. Edit bios, avatars, social links, and enrichment data.",
+  books: "Browse, search, and manage all book profiles. Edit metadata, covers, summaries, and reading status.",
+  tags: "Manage the tag taxonomy used to categorise authors and books. Create, rename, merge, or delete tags.",
+  pipeline: "Run bulk data enrichment pipelines: enrich bios, fetch social stats, source book covers, and more.",
+  duplicates: "Review and resolve duplicate author and book entries detected by the fuzzy-match and hash-match algorithms.",
+  // Media
+  media: "Manage author avatars and book cover images stored on S3 CDN. Regenerate, re-upload, or audit missing assets.",
+  "content-items": "Manage URLs, articles, podcasts, videos, and other content items linked to authors. Score quality and fix broken links.",
+  sync: "Sync data between the app database, Google Drive, and Dropbox. Monitor sync job status and history.",
+  dropbox: "Back up avatars, book covers, and PDFs to Dropbox. Browse the /backup folder and ingest new PDFs from /Inbox.",
+  pinecone: "Manage the Pinecone vector index used for semantic search, RAG chatbots, and content recommendations.",
+  "s3-audit": "Audit S3 CDN assets — find missing covers, broken URLs, and orphaned files. Migrate non-S3 images to CDN.",
+  // Intelligence
+  "digital-me": "Configure and enable AI chatbots (Digital Me) for individual authors. Review RAG readiness scores and knowledge bases.",
+  "intelligence-dashboard": "Command center for all 13 autonomous enrichment pipelines. Monitor live jobs, coverage heatmaps, and trigger runs.",
+  "ai-review": "Human-in-the-loop review queue. Approve or reject AI-flagged chatbot candidates, near-duplicates, and low-quality links.",
+  cascade: "Deep research tool: run multi-source contextual intelligence queries combining Wikipedia, Perplexity, news, and academic sources.",
+  ai: "Configure AI provider settings, model preferences, temperature, and token limits for all LLM-powered features.",
+  "ai-models": "View and compare available AI models (Gemini, Claude, GPT-4). Select the active model for each feature category.",
+  // Personalization
+  interests: "Manage your personal interest categories used to personalise book recommendations and thematic discovery.",
+  favorites: "View and manage your starred authors and books. Favorites influence the 'What to Read Next' recommendations.",
+  // System
+  health: "Live health dashboard: API connectivity, database status, external service uptime, and enrichment job health.",
+  dependencies: "Audit all npm packages and external service dependencies. Check for outdated packages and security advisories.",
+  scheduling: "View and edit the cron schedules for all automated enrichment pipelines. Enable, disable, or adjust intervals.",
+  tools: "Utility tools: ISBN lookup, author name validator, URL checker, and other one-off diagnostic utilities.",
+  // Configuration
+  settings: "Configure app-wide settings: title, logo, theme, default language, and feature flags.",
+  "api-management": "View all external APIs used by the app. Check status (green/yellow/red), toggle APIs on/off, and monitor usage.",
+  "magazine-feeds": "Manage RSS/Atom feeds from The Atlantic, Harvard Business Review, and other publications. Sync and index articles.",
+  about: "App version, build info, changelog, and credits.",
+};
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 const NAV_GROUPS: NavGroup[] = [
@@ -295,7 +333,7 @@ export default function Admin() {
                       <SidebarGroupContent>
                         <SidebarMenu>
                           {filteredItems.map((item) => (
-                            <SidebarMenuItem key={item.id}>
+                            <SidebarMenuItem key={item.id} className="group/menu-item">
                               <SidebarMenuButton
                                 isActive={activeSection === item.id}
                                 onClick={() => setActiveSection(item.id)}
@@ -305,7 +343,14 @@ export default function Admin() {
                                   className="h-4 w-4 shrink-0"
                                   weight={activeSection === item.id ? "fill" : "regular"}
                                 />
-                                <span>{item.label}</span>
+                                <span className="flex-1">{item.label}</span>
+                                {NAV_TIPS[item.id] && (
+                                  <InfoTip
+                                    text={NAV_TIPS[item.id]}
+                                    side="right"
+                                    className="ml-auto opacity-0 group-hover/menu-item:opacity-100 transition-opacity duration-150"
+                                  />
+                                )}
                               </SidebarMenuButton>
                             </SidebarMenuItem>
                           ))}
