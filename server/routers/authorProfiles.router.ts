@@ -11,6 +11,8 @@ import { validateAuthorName } from "../../shared/authorNameValidator";
 
 // Sub-routers (split for maintainability)
 import { authorAvatarRouter } from "./authorAvatar.router";
+// Incremental Pinecone indexing (fire-and-forget)
+import { indexAuthorIncremental } from "../services/incrementalIndex.service";
 import { authorEnrichmentRouter } from "./authorEnrichment.router";
 import { authorSocialRouter } from "./authorSocial.router";
 
@@ -418,7 +420,12 @@ const authorProfilesCoreRouter = router({
         .from(authorProfiles)
         .where(eq(authorProfiles.authorName, input.authorName))
         .limit(1);
-      return rows[0];
+      const created = rows[0];
+      // Fire-and-forget: index in Pinecone and check for near-duplicates
+      if (created) {
+        indexAuthorIncremental(created.id, created.authorName, created.bio, created.richBioJson).catch(() => {});
+      }
+      return created;
     }),
 
   /** Update an existing author profile */
@@ -476,7 +483,12 @@ const authorProfilesCoreRouter = router({
         .from(authorProfiles)
         .where(eq(authorProfiles.authorName, input.authorName))
         .limit(1);
-      return rows[0] ?? null;
+      const updated = rows[0] ?? null;
+      // Fire-and-forget: re-index in Pinecone after update
+      if (updated && input.bio !== undefined) {
+        indexAuthorIncremental(updated.id, updated.authorName, updated.bio, updated.richBioJson).catch(() => {});
+      }
+      return updated;
     }),
 
   /** Delete an author profile by name */

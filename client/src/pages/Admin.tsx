@@ -97,6 +97,7 @@ import { AdminDropboxTab } from "@/components/admin/AdminDropboxTab";
 import { AdminPineconeTab } from "@/components/admin/AdminPineconeTab";
 import { AdminDuplicatesTab } from "@/components/admin/AdminDuplicatesTab";
 import { AdminS3AuditTab } from "@/components/admin/AdminS3AuditTab";
+import { AdminReviewQueueTab } from "@/components/admin/AdminReviewQueueTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -135,6 +136,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Brain,
     items: [
       { id: "digital-me", label: "Digital Me", icon: Robot },
+      { id: "ai-review", label: "AI Review Queue", icon: MagnifyingGlass },
       { id: "cascade", label: "Research", icon: ChartBar },
       { id: "ai", label: "AI Settings", icon: Cpu },
       { id: "ai-models", label: "AI Models", icon: CircuitBoard },
@@ -462,6 +464,7 @@ export default function Admin() {
               {activeSection === "pinecone" && <AdminPineconeTab />}
               {activeSection === "duplicates" && <AdminDuplicatesTab />}
               {activeSection === "s3-audit" && <AdminS3AuditTab />}
+              {activeSection === "ai-review" && <AdminReviewQueueTab />}
 
             </div>
           </main>

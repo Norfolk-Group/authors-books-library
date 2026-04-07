@@ -1154,3 +1154,98 @@ export const magazineArticles = mysqlTable("magazine_articles", {
 }));
 export type MagazineArticleRow = typeof magazineArticles.$inferSelect;
 export type InsertMagazineArticle = typeof magazineArticles.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HUMAN REVIEW QUEUE
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * human_review_queue — items that AI has flagged for human review.
+ *
+ * The AI pipeline automatically populates this table when it detects:
+ *   - Chatbot candidates (authors with sufficient RAG readiness)
+ *   - Near-duplicate books/authors (semantic similarity > 0.92)
+ *   - Low-confidence author-to-book matches
+ *   - Broken or low-quality URLs
+ *   - Content items needing classification
+ *
+ * Admins review items here and take action (approve / reject / merge / skip).
+ */
+export const humanReviewQueue = mysqlTable("human_review_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  /**
+   * Category of review item:
+   *   chatbot_candidate   — author has enough RAG content to enable chatbot
+   *   near_duplicate      — two entities are semantically similar (> 0.92)
+   *   author_match        — unlinked book/content needs author assignment
+   *   url_quality         — URL is broken, redirects, or low-quality
+   *   content_classify    — content item needs manual type classification
+   *   link_merit          — AI scored a link as low-value; human should verify
+   */
+  reviewType: mysqlEnum("reviewType", [
+    "chatbot_candidate",
+    "near_duplicate",
+    "author_match",
+    "url_quality",
+    "content_classify",
+    "link_merit",
+  ]).notNull(),
+  /** Current status of this review item */
+  status: mysqlEnum("status", [
+    "pending",
+    "approved",
+    "rejected",
+    "merged",
+    "skipped",
+    "auto_resolved",
+  ]).notNull().default("pending"),
+  /** Primary entity name (author name, book title, content item title, URL) */
+  entityName: varchar("entityName", { length: 512 }).notNull(),
+  /** Entity type: 'author' | 'book' | 'content_item' | 'url' */
+  entityType: mysqlEnum("entityType", ["author", "book", "content_item", "url"]).notNull(),
+  /** Optional secondary entity (for near-duplicate pairs or author-match candidates) */
+  secondaryEntityName: varchar("secondaryEntityName", { length: 512 }),
+  /** Secondary entity type */
+  secondaryEntityType: mysqlEnum("secondaryEntityType", ["author", "book", "content_item", "url"]),
+  /**
+   * AI confidence score for the flagged issue (0.0–1.0).
+   * For near-duplicates: cosine similarity from Pinecone.
+   * For chatbot candidates: ragReadinessScore / 100.
+   * For URL quality: 0 = broken, 0.5 = redirect, 1 = healthy.
+   */
+  aiConfidence: decimal("aiConfidence", { precision: 4, scale: 3 }),
+  /**
+   * AI-generated explanation of why this item was flagged.
+   * Plain English, 1–3 sentences.
+   */
+  aiReason: text("aiReason"),
+  /**
+   * AI-suggested action for the human reviewer.
+   */
+  aiSuggestedAction: text("aiSuggestedAction"),
+  /**
+   * Structured metadata specific to the review type.
+   * chatbot_candidate: { ragReadinessScore, ragStatus, bioCompleteness, bookCount, contentItemCount }
+   * near_duplicate: { similarityScore, namespace, primaryId, secondaryId }
+   * author_match: { bookTitle, candidateAuthors: [{ name, confidence }] }
+   * url_quality: { url, statusCode, redirectUrl, lastChecked }
+   * link_merit: { url, aiScore, aiReason, contentType }
+   */
+  metadataJson: text("metadataJson"),
+  /** Admin notes or comments on this review item */
+  adminNotes: text("adminNotes"),
+  /** When the admin took action on this item */
+  reviewedAt: timestamp("reviewedAt"),
+  /** Which pipeline run or trigger created this item */
+  sourceJob: varchar("sourceJob", { length: 128 }),
+  /** Priority: 1 = highest, 5 = lowest */
+  priority: int("priority").notNull().default(3),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  reviewTypeIdx: index("hrq_reviewType_idx").on(table.reviewType),
+  statusIdx: index("hrq_status_idx").on(table.status),
+  entityNameIdx: index("hrq_entityName_idx").on(table.entityName),
+  priorityIdx: index("hrq_priority_idx").on(table.priority),
+}));
+export type HumanReviewQueueItem = typeof humanReviewQueue.$inferSelect;
+export type InsertHumanReviewQueueItem = typeof humanReviewQueue.$inferInsert;

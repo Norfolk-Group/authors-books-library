@@ -36,6 +36,7 @@ import { duplicateDetectionRouter } from "./duplicateDetection.router";
 import { s3AuditRouter } from "./s3Audit.router";
 import { libraryCacheRouter } from "./libraryCache.router";
 import { recommendationsRouter } from "./recommendations.router";
+import { humanReviewQueueRouter } from "./humanReviewQueue.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -85,6 +86,8 @@ export const appRouter = router({
   libraryCache: libraryCacheRouter,
   // ── Pinecone-powered recommendations & discovery ───────────────────────────
   recommendations: recommendationsRouter,
+  // ── AI-to-human review queue ──────────────────────────────────────────────
+  humanReviewQueue: humanReviewQueueRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -43,6 +43,9 @@ import {
   handleEnrichTechnicalReferencesBatch,
 } from "../lib/bookHandlers/enrichmentHandlers";
 
+// Incremental Pinecone indexing (fire-and-forget)
+import { indexBookIncremental } from "../services/incrementalIndex.service";
+
 // -- Router -----------------------------------------------------------------
 
 export const bookProfilesRouter = router({
@@ -175,8 +178,14 @@ export const bookProfilesRouter = router({
       format: z.enum(["physical", "digital", "audio", "physical_digital", "physical_audio", "digital_audio", "all", "none"]).optional(),
       possessionStatus: z.enum(["owned", "wishlist", "reference", "borrowed", "gifted", "read", "reading", "unread"]).optional(),
     }))
-    .mutation(({ input }) => handleCreateBook(input)),
-
+    .mutation(async ({ input }) => {
+      const result = await handleCreateBook(input);
+      // Fire-and-forget: index in Pinecone and check for near-duplicates
+      if (result) {
+        indexBookIncremental(result.id, result.bookTitle, result.authorName, result.summary, result.keyThemes).catch(() => {});
+      }
+      return result;
+    }),
   updateBook: adminProcedure
     .input(z.object({
       bookTitle: z.string().min(1),
@@ -195,8 +204,14 @@ export const bookProfilesRouter = router({
       format: z.enum(["physical", "digital", "audio", "physical_digital", "physical_audio", "digital_audio", "all", "none"]).optional().nullable(),
       possessionStatus: z.enum(["owned", "wishlist", "reference", "borrowed", "gifted", "read", "reading", "unread"]).optional().nullable(),
     }))
-    .mutation(({ input }) => handleUpdateBook(input)),
-
+    .mutation(async ({ input }) => {
+      const result = await handleUpdateBook(input);
+      // Fire-and-forget: re-index in Pinecone after update
+      if (result) {
+        indexBookIncremental(result.id, result.bookTitle, result.authorName, result.summary, result.keyThemes).catch(() => {});
+      }
+      return result;
+    }),
   deleteBook: adminProcedure
     .input(z.object({ bookTitle: z.string().min(1) }))
     .mutation(({ input }) => handleDeleteBook(input)),

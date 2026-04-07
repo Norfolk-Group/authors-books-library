@@ -215,3 +215,21 @@ Last cleaned: Apr 5, 2026
 - [ ] Near-Duplicate Detection: check new content against Pinecone before saving
 - [ ] Semantic Interest Heatmap: cluster authors/books by vector similarity with UMAP
 - [ ] Curated Reading Paths: guided learning sequences from a starting book
+
+---
+## AI Autonomy & Human-in-the-Loop (Session: Apr 6 2026)
+
+- [x] Add human_review_queue table to schema (reviewType, status, entityName, aiConfidence, aiReason, aiSuggestedAction, metadataJson, priority)
+- [x] Run db:push migration for human_review_queue table
+- [x] Create ragReadiness.service.ts — computes 0-100 score per author (books, content items, bio words, bio completeness, Wikipedia, LinkedIn, RAG ready bonus)
+- [x] Create semanticDuplicate.service.ts — Pinecone-based near-duplicate detection (cosine similarity >= 0.92) for books and authors
+- [x] Create incrementalIndex.service.ts — fire-and-forget Pinecone indexing after book/author save
+- [x] Wire incremental indexing into bookProfiles.router.ts (createBook, updateBook mutations)
+- [x] Wire incremental indexing into authorProfiles.router.ts (createAuthor, updateAuthor mutations)
+- [x] Create humanReviewQueue.router.ts — full CRUD + AI scan triggers (getQueue, getStats, updateStatus, bulkUpdateStatus, runChatbotScan, runDuplicateScan, computeReadiness, getAllReadiness)
+- [x] Register humanReviewQueue router in server/routers/index.ts
+- [x] Create AdminReviewQueueTab.tsx — Chatbot Candidates tab + Near Duplicates tab with review cards, approve/reject/skip actions, RAG Readiness Leaderboard
+- [x] Add AI Review Queue nav item to Admin.tsx Intelligence group
+- [x] Register AdminReviewQueueTab in Admin.tsx section rendering
+- [x] Write vitest tests for ragReadiness scoring algorithm (13 tests, all passing)
+- [ ] Near-Duplicate Detection: check new content against Pinecone before saving (P3 — wired in incrementalIndex.service, UI in review queue)
