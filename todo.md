@@ -336,3 +336,12 @@ Last cleaned: Apr 5, 2026
 - [x] Add book cover mini-strip to Info tab (always visible, no tab switch needed, up to 6 covers + overflow button)
 - [x] Make book covers larger on the Books tab (96px tall × 66px wide, was 80×56)
 - [x] Verify covers load correctly: Aaron Ross (2 covers), Adam Grant (1), Al Ries (1) confirmed working
+
+---
+## Content Gap Fill (Apr 7, 2026 — Session 4)
+- [x] Source and upload avatars for 18 authors missing them — 18/18 success (6 Wikipedia, 10 Tavily, 2 AI-generated)
+- [x] Source and upload covers for 24 books missing them — 24/24 success via Amazon scraping
+- [x] Match and upload PDFs for 52 books — 127 books now have S3 PDFs (16 additional uploaded this session)
+  - 2 failed: apostrophe in Dropbox path (A Therapist's Guide, Founder's Pocket Guide) — known API limitation
+  - Remaining 35 without PDFs are duplicates, summaries, or not in Dropbox backup
+- [x] Verified: avatarsMissing=0, coversMissing=0, pdfsMissing=35 (all duplicates or not in backup)
