@@ -3,12 +3,12 @@
  *
  * Uses the permanent OAuth2 refresh token to always generate a fresh access token.
  *
- * Backup folder root: /Cidale Interests/Company/Norfolk AI/Apps/RC Library/backup
+ * Backup folder root: /Apps NAI/RC Library App Data/Authors and Books Backup
  *   Avatars/      — author headshot images
  *   Book Covers/  — book cover images
  *   PDFs/         — book/resource PDF files
- *   Inbox/        — DROP ZONE: place new PDFs here for the app to discover and ingest
- *   Inbox/Processed/ — files moved here after successful ingestion
+ * Inbox (Books Content Entry): /Apps NAI/RC Library App Data/Books Content Entry Folder
+ *   Processed/    — files moved here after successful ingestion
  */
 
 import { ENV } from "./_core/env";
@@ -17,8 +17,8 @@ const DROPBOX_TOKEN_URL = "https://api.dropbox.com/oauth2/token";
 const DROPBOX_API_URL = "https://api.dropboxapi.com/2";
 const DROPBOX_CONTENT_URL = "https://content.dropboxapi.com/2";
 
-const INBOX_ROOT = ENV.DROPBOX_INBOX_FOLDER || "/Cidale Interests/Company/Norfolk AI/Apps/RC Library/Inbox";
-const BACKUP_ROOT = ENV.DROPBOX_BACKUP_FOLDER || "/Cidale Interests/Company/Norfolk AI/Apps/RC Library/backup";
+const INBOX_ROOT = ENV.DROPBOX_INBOX_FOLDER || "/Apps NAI/RC Library App Data/Books Content Entry Folder";
+const BACKUP_ROOT = ENV.DROPBOX_BACKUP_FOLDER || "/Apps NAI/RC Library App Data/Authors and Books Backup";
 
 export const DROPBOX_FOLDERS = {
   root: BACKUP_ROOT,

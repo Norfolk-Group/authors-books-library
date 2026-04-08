@@ -15,14 +15,14 @@ import { DROPBOX_FOLDERS } from "./dropbox.service";
 // ── Folder Structure ──────────────────────────────────────────────────────────
 
 describe("Dropbox Folder Structure", () => {
-  it("root folder is under Cidale Interests/Company/Norfolk AI/Apps/RC Library/backup", () => {
-    expect(DROPBOX_FOLDERS.root).toContain("/Cidale Interests/Company/Norfolk AI/Apps/RC Library");
+  it("root folder is under /Apps NAI/RC Library App Data/Authors and Books Backup", () => {
+    expect(DROPBOX_FOLDERS.root).toContain("/Apps NAI/RC Library App Data");
     expect(DROPBOX_FOLDERS.root.toLowerCase()).toContain("backup");
   });
 
-  it("inbox folder is inside the RC Library folder", () => {
-    expect(DROPBOX_FOLDERS.inbox).toContain("/Cidale Interests/Company/Norfolk AI/Apps/RC Library");
-    expect(DROPBOX_FOLDERS.inbox.toLowerCase()).toContain("inbox");
+  it("inbox folder is the Books Content Entry Folder", () => {
+    expect(DROPBOX_FOLDERS.inbox).toContain("/Apps NAI/RC Library App Data");
+    expect(DROPBOX_FOLDERS.inbox.toLowerCase()).toContain("content");
   });
 
   it("processed folder is inside the inbox folder", () => {

@@ -37,7 +37,7 @@ describe("Dropbox permanent refresh token", () => {
   });
 
   it("should have correct backup folder path", () => {
-    expect(BACKUP_FOLDER).toBe("/Cidale Interests/Company/Norfolk AI/Apps/RC Library/backup");
+    expect(BACKUP_FOLDER).toBe("/Apps NAI/RC Library App Data/Authors and Books Backup");
   });
 
   it("should exchange refresh token for a valid access token", async () => {
