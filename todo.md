@@ -384,3 +384,15 @@ Last cleaned: Apr 5, 2026
 - [x] Write update-substack-counts.mjs to fetch live post counts from Substack API
 - [x] Populate substackPostCount for 9 authors with actual Substack publications
 - [x] Sync substackPostCount into socialStatsJson for badge display consistency
+
+---
+
+## Agent Skills Compliance (Apr 8, 2026)
+
+- [x] Create `.agents/skills/pinecone-rag/SKILL.md` — Pinecone indexing, search, reranking, chatbot RAG
+- [x] Create `.agents/skills/dropbox-sync/SKILL.md` — Dropbox folder paths, env vars, sync pipeline
+- [x] Create `.agents/skills/smart-upload/SKILL.md` — AI file classification, review queue, commit flow
+- [x] Create `.agents/skills/enrichment-pipeline/SKILL.md` — Enrichment orchestrator, pipeline registry
+- [x] Create `.agents/skills/library-architecture/SKILL.md` — Overall app architecture reference
+- [x] Rewrite CLAUDE.md — updated to reflect current architecture (Pinecone, Dropbox, Smart Upload, 956 tests)
+- [x] Rewrite manus.md — updated with current architecture, skill references, session history
