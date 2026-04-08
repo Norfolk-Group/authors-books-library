@@ -1,6 +1,7 @@
 import { getDb } from "../../db";
 import { bookProfiles } from "../../../drizzle/schema";
 import { eq, inArray, isNotNull } from "drizzle-orm";
+import { indexBookIncremental } from "../../services/incrementalIndex.service";
 
 export async function handleGet(input: { bookTitle: string }) {
   const db = await getDb();
@@ -168,7 +169,12 @@ export async function handleUpdateBook(input: {
     .from(bookProfiles)
     .where(eq(bookProfiles.bookTitle, input.bookTitle))
     .limit(1);
-  return rows[0] ?? null;
+  const updated = rows[0] ?? null;
+  // Re-index in Pinecone if semantic content changed
+  if (updated && (input.summary !== undefined || input.keyThemes !== undefined)) {
+    indexBookIncremental(updated.id, updated.bookTitle, updated.authorName, updated.summary, updated.keyThemes ?? undefined).catch(() => {});
+  }
+  return updated;
 }
 
 export async function handleDeleteBook(input: { bookTitle: string }) {

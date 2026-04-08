@@ -103,6 +103,10 @@ const authorProfilesCoreRouter = router({
         .from(authorProfiles)
         .where(eq(authorProfiles.authorName, input.authorName))
         .limit(1);
+      // Re-index in Pinecone with fresh bio
+      if (updated[0]?.bio) {
+        indexAuthorIncremental(updated[0].id, updated[0].authorName, updated[0].bio, updated[0].richBioJson).catch(() => {});
+      }
       return { success: true, cached: false, profile: updated[0] ?? null };
     }),
 

@@ -130,7 +130,7 @@ async function runBioEnrichment(progress: JobProgress, batchSize: number, concur
   if (!db) return;
 
   const authors = await db
-    .select({ authorName: authorProfiles.authorName })
+    .select({ id: authorProfiles.id, authorName: authorProfiles.authorName })
     .from(authorProfiles)
     .where(or(isNull(authorProfiles.bio), eq(authorProfiles.bio, "")))
     .limit(batchSize);
@@ -150,6 +150,8 @@ async function runBioEnrichment(progress: JobProgress, batchSize: number, concur
               .update(authorProfiles)
               .set({ bio: stats.extract, enrichedAt: new Date() })
               .where(eq(authorProfiles.authorName, author.authorName));
+            // Re-index in Pinecone so the author vector stays fresh
+            indexAuthorIncremental(author.id, author.authorName, stats.extract).catch(() => {});
           }
           progress.succeeded++;
         } catch {
@@ -233,7 +235,7 @@ async function runRichBioEnrichment(progress: JobProgress, batchSize: number, co
   if (!db) return;
 
   const authors = await db
-    .select({ authorName: authorProfiles.authorName, bio: authorProfiles.bio, richBioJson: authorProfiles.richBioJson })
+    .select({ id: authorProfiles.id, authorName: authorProfiles.authorName, bio: authorProfiles.bio, richBioJson: authorProfiles.richBioJson })
     .from(authorProfiles)
     .where(and(isNull(authorProfiles.richBioJson), sql`${authorProfiles.bio} IS NOT NULL AND ${authorProfiles.bio} != ''`))
     .limit(batchSize);
@@ -251,6 +253,8 @@ async function runRichBioEnrichment(progress: JobProgress, batchSize: number, co
           .update(authorProfiles)
           .set({ richBioJson: JSON.stringify(richBio), enrichedAt: new Date() })
           .where(eq(authorProfiles.authorName, author.authorName));
+        // Re-index in Pinecone using the richer fullBio text
+        indexAuthorIncremental(author.id, author.authorName, author.bio, JSON.stringify(richBio)).catch(() => {});
       }
       progress.succeeded++;
     } catch {
@@ -342,6 +346,9 @@ async function runRichSummaryEnrichment(progress: JobProgress, batchSize: number
           .update(bookProfiles)
           .set({ richSummaryJson: JSON.stringify(richSummary), enrichedAt: new Date() })
           .where(eq(bookProfiles.id, book.id));
+        // Re-index in Pinecone using the richer summary text
+        const richText = richSummary.fullSummary ?? book.summary ?? "";
+        indexBookIncremental(book.id, book.bookTitle, book.authorName, richText).catch(() => {});
       }
       progress.succeeded++;
     } catch {
