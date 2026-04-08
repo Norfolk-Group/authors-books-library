@@ -6,7 +6,7 @@
  * 2. getById — single upload job details
  * 3. classify — re-run AI classification on an existing upload
  * 4. updateOverride — admin overrides AI classification
- * 5. commit — commit a reviewed upload to the target DB table + Pinecone
+ * 5. commit — commit a reviewed upload to the target DB table + Pinecone (auto-indexed)
  * 6. reject — mark an upload as rejected
  * 7. delete — remove a staging upload
  * 8. stats — summary counts by status
@@ -16,9 +16,157 @@ import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { smartUploads, authorProfiles, bookProfiles } from "../../drizzle/schema";
-import { eq, desc, count, and, isNull, isNotNull, sql } from "drizzle-orm";
+import { eq, desc, count, and } from "drizzle-orm";
 import { classifyFile, enrichClassificationWithDbMatches } from "../services/aiFileClassifier.service";
 import { storagePut } from "../storage";
+import {
+  indexAuthorIncremental,
+  indexBookIncremental,
+} from "../services/incrementalIndex.service";
+import {
+  indexRagFile,
+  indexContentItem,
+} from "../services/ragPipeline.service";
+
+// ── Pinecone auto-index helper ────────────────────────────────────────────────
+
+/**
+ * After a commit succeeds, trigger the correct Pinecone indexing function
+ * based on the upload's pineconeNamespace and content type.
+ * Runs fire-and-forget — never throws, so it never blocks the commit response.
+ */
+async function triggerPineconeIndexing(upload: {
+  pineconeNamespace: string | null;
+  shouldIndexPinecone: boolean | null;
+  aiContentType: string | null;
+  overrideContentType: string | null;
+  matchedAuthorId: number | null;
+  confirmedAuthorId: number | null;
+  matchedBookId: number | null;
+  confirmedBookId: number | null;
+  finalS3Url: string | null;
+  originalFilename: string;
+  aiSuggestedAuthorName: string | null;
+  aiSuggestedBookTitle: string | null;
+}): Promise<{ indexed: boolean; namespace: string | null; vectorCount: number }> {
+  if (!upload.shouldIndexPinecone || !upload.pineconeNamespace) {
+    return { indexed: false, namespace: null, vectorCount: 0 };
+  }
+
+  const namespace = upload.pineconeNamespace;
+  const authorId = upload.confirmedAuthorId ?? upload.matchedAuthorId;
+  const bookId = upload.confirmedBookId ?? upload.matchedBookId;
+  const contentType = upload.overrideContentType ?? upload.aiContentType;
+
+  try {
+    const db = await getDb();
+    if (!db) return { indexed: false, namespace, vectorCount: 0 };
+
+    switch (namespace) {
+      case "authors": {
+        if (!authorId) {
+          console.warn("[SmartUpload] Pinecone authors index skipped — no authorId");
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        // Fetch the author's current bio from DB
+        const rows = await db
+          .select({ id: authorProfiles.id, authorName: authorProfiles.authorName, bio: authorProfiles.bio })
+          .from(authorProfiles)
+          .where(eq(authorProfiles.id, authorId))
+          .limit(1);
+        const author = rows[0];
+        if (!author?.bio) {
+          console.warn(`[SmartUpload] Pinecone authors index skipped — author ${authorId} has no bio`);
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        await indexAuthorIncremental(author.id, author.authorName, author.bio);
+        console.log(`[SmartUpload] ✅ Indexed author ${author.authorName} to Pinecone (authors namespace)`);
+        return { indexed: true, namespace, vectorCount: 1 };
+      }
+
+      case "books": {
+        if (!bookId) {
+          console.warn("[SmartUpload] Pinecone books index skipped — no bookId");
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        // Fetch the book's current summary from DB
+        const rows = await db
+          .select({ id: bookProfiles.id, bookTitle: bookProfiles.bookTitle, authorName: bookProfiles.authorName, summary: bookProfiles.summary })
+          .from(bookProfiles)
+          .where(eq(bookProfiles.id, bookId))
+          .limit(1);
+        const book = rows[0];
+        if (!book?.summary) {
+          console.warn(`[SmartUpload] Pinecone books index skipped — book ${bookId} has no summary`);
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        await indexBookIncremental(book.id, book.bookTitle, book.authorName ?? "", book.summary);
+        console.log(`[SmartUpload] ✅ Indexed book "${book.bookTitle}" to Pinecone (books namespace)`);
+        return { indexed: true, namespace, vectorCount: 1 };
+      }
+
+      case "rag_files": {
+        // For RAG files, we need the text content — use the S3 URL as the source reference
+        const authorName = upload.aiSuggestedAuthorName ?? upload.originalFilename;
+        if (!upload.finalS3Url) {
+          console.warn("[SmartUpload] Pinecone rag_files index skipped — no S3 URL");
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        // Fetch the text content from S3
+        const res = await fetch(upload.finalS3Url);
+        if (!res.ok) {
+          console.warn(`[SmartUpload] Pinecone rag_files index skipped — could not fetch S3 content (${res.status})`);
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        const ragContent = await res.text();
+        if (!ragContent || ragContent.length < 50) {
+          console.warn("[SmartUpload] Pinecone rag_files index skipped — content too short");
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        const vectorCount = await indexRagFile({ authorName, ragContent });
+        console.log(`[SmartUpload] ✅ Indexed RAG file "${authorName}" to Pinecone (rag_files namespace, ${vectorCount} vectors)`);
+        return { indexed: true, namespace, vectorCount };
+      }
+
+      case "content_items": {
+        // Index as a generic content item
+        const title = upload.aiSuggestedBookTitle ?? upload.aiSuggestedAuthorName ?? upload.originalFilename;
+        const authorName = upload.aiSuggestedAuthorName ?? "Unknown";
+        if (!upload.finalS3Url) {
+          console.warn("[SmartUpload] Pinecone content_items index skipped — no S3 URL");
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        const res = await fetch(upload.finalS3Url);
+        if (!res.ok) {
+          console.warn(`[SmartUpload] Pinecone content_items index skipped — could not fetch S3 content (${res.status})`);
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        const text = await res.text();
+        if (!text || text.length < 50) {
+          console.warn("[SmartUpload] Pinecone content_items index skipped — content too short");
+          return { indexed: false, namespace, vectorCount: 0 };
+        }
+        const vectorCount = await indexContentItem({
+          itemId: upload.originalFilename.replace(/[^a-z0-9]/gi, "-").toLowerCase(),
+          title,
+          authorName,
+          contentType: contentType ?? "upload",
+          description: text,
+        });
+        console.log(`[SmartUpload] ✅ Indexed content item "${title}" to Pinecone (content_items namespace, ${vectorCount} vectors)`);
+        return { indexed: true, namespace, vectorCount };
+      }
+
+      default:
+        console.warn(`[SmartUpload] Unknown Pinecone namespace: ${namespace}`);
+        return { indexed: false, namespace, vectorCount: 0 };
+    }
+  } catch (err) {
+    // Never block the commit — log and return gracefully
+    console.error(`[SmartUpload] Pinecone indexing failed for namespace "${namespace}":`, err);
+    return { indexed: false, namespace, vectorCount: 0 };
+  }
+}
 
 // ── Router ────────────────────────────────────────────────────────────────────
 
@@ -198,7 +346,7 @@ export const smartUploadRouter = router({
       return { success: true };
     }),
 
-  /** Commit a reviewed upload to the target DB + Pinecone */
+  /** Commit a reviewed upload to the target DB + Pinecone (auto-indexed) */
   commit: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
@@ -222,7 +370,7 @@ export const smartUploadRouter = router({
       let committedRecordId: number | null = null;
 
       try {
-        // Route to the correct DB table based on content type
+        // ── Step 1: Route to the correct DB table based on content type ──────
         switch (contentType) {
           case "author_avatar": {
             if (!authorId) throw new Error("Author ID required for avatar upload");
@@ -249,10 +397,11 @@ export const smartUploadRouter = router({
             break;
           }
           default:
-            // For other types, just mark as committed — full DB routing is handled by future pipeline
+            // For other types (rag_files, content_items, etc.), DB routing is handled by Pinecone indexing below
             committedRecordId = upload.id;
         }
 
+        // ── Step 2: Mark as committed in DB ──────────────────────────────────
         await db
           .update(smartUploads)
           .set({
@@ -262,7 +411,27 @@ export const smartUploadRouter = router({
           })
           .where(eq(smartUploads.id, input.id));
 
-        return { success: true, committedRecordId };
+        // ── Step 3: Auto-index to Pinecone (fire-and-forget, never blocks) ───
+        const pineconeResult = await triggerPineconeIndexing({
+          pineconeNamespace: upload.pineconeNamespace,
+          shouldIndexPinecone: upload.shouldIndexPinecone,
+          aiContentType: upload.aiContentType,
+          overrideContentType: upload.overrideContentType,
+          matchedAuthorId: upload.matchedAuthorId,
+          confirmedAuthorId: upload.confirmedAuthorId,
+          matchedBookId: upload.matchedBookId,
+          confirmedBookId: upload.confirmedBookId,
+          finalS3Url: upload.finalS3Url,
+          originalFilename: upload.originalFilename,
+          aiSuggestedAuthorName: upload.aiSuggestedAuthorName,
+          aiSuggestedBookTitle: upload.aiSuggestedBookTitle,
+        });
+
+        return {
+          success: true,
+          committedRecordId,
+          pinecone: pineconeResult,
+        };
       } catch (err) {
         await db
           .update(smartUploads)
