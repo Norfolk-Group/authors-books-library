@@ -32,4 +32,6 @@ export const ENV = {
   DROPBOX_REFRESH_TOKEN: process.env.DROPBOX_REFRESH_TOKEN ?? "",
   DROPBOX_BACKUP_FOLDER: process.env.DROPBOX_BACKUP_FOLDER ?? "/Cidale Interests/Company/Norfolk AI/Apps/RC Library/backup",
   DROPBOX_INBOX_FOLDER: process.env.DROPBOX_INBOX_FOLDER ?? "/Cidale Interests/Company/Norfolk AI/Apps/RC Library/Inbox",
+  // Authors Content Entry Folder — where author files are dropped for ingestion
+  DROPBOX_AUTHORS_FOLDER: process.env.DROPBOX_AUTHORS_FOLDER ?? "/Apps NAI/RC Library App Data/Authors Content Entry Folder",
 };

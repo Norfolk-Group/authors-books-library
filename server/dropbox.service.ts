@@ -7,8 +7,13 @@
  *   Avatars/      — author headshot images
  *   Book Covers/  — book cover images
  *   PDFs/         — book/resource PDF files
+ *
  * Inbox (Books Content Entry): /Apps NAI/RC Library App Data/Books Content Entry Folder
  *   Processed/    — files moved here after successful ingestion
+ *
+ * Authors Inbox: /Apps NAI/RC Library App Data/Authors Content Entry Folder
+ *   Processed/    — files moved here after successful ingestion
+ *   (env var: DROPBOX_AUTHORS_FOLDER)
  */
 
 import { ENV } from "./_core/env";
@@ -19,14 +24,19 @@ const DROPBOX_CONTENT_URL = "https://content.dropboxapi.com/2";
 
 const INBOX_ROOT = ENV.DROPBOX_INBOX_FOLDER || "/Apps NAI/RC Library App Data/Books Content Entry Folder";
 const BACKUP_ROOT = ENV.DROPBOX_BACKUP_FOLDER || "/Apps NAI/RC Library App Data/Authors and Books Backup";
+const AUTHORS_INBOX_ROOT = ENV.DROPBOX_AUTHORS_FOLDER || "/Apps NAI/RC Library App Data/Authors Content Entry Folder";
 
 export const DROPBOX_FOLDERS = {
   root: BACKUP_ROOT,
   avatars: `${BACKUP_ROOT}/Avatars`,
   bookCovers: `${BACKUP_ROOT}/Book Covers`,
   pdfs: `${BACKUP_ROOT}/PDFs`,
+  // Books Content Entry Folder — where book-related files are dropped
   inbox: INBOX_ROOT,
   processed: `${INBOX_ROOT}/Processed`,
+  // Authors Content Entry Folder — where author files are dropped for ingestion
+  authorsInbox: AUTHORS_INBOX_ROOT,
+  authorsProcessed: `${AUTHORS_INBOX_ROOT}/Processed`,
 };
 
 export type DropboxFolder = keyof typeof DROPBOX_FOLDERS;

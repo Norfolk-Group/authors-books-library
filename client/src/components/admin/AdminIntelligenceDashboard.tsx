@@ -31,6 +31,7 @@ import {
   BarChart3,
   Settings2,
 } from "lucide-react";
+import { InfoTip } from "@/components/admin/InfoTip";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -442,6 +443,7 @@ export default function AdminIntelligenceDashboard() {
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-blue-400" />
               <span className="text-sm font-semibold">Authors</span>
+              <InfoTip text="Coverage metrics for all author profiles. 'Has bio' = any bio text. 'Rich bio' = LLM-generated deep biography. Social stats include YouTube, Twitter, Substack, GitHub follower counts." />
               <Badge variant="outline" className="ml-auto text-xs">
                 {authors?.total ?? 0} total
               </Badge>
@@ -460,6 +462,7 @@ export default function AdminIntelligenceDashboard() {
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-purple-400" />
               <span className="text-sm font-semibold">Books</span>
+              <InfoTip text="Coverage metrics for all book profiles. 'Rich summary' = LLM-generated 500-word analysis. ISBN and Amazon link are sourced from Open Library enrichment." />
               <Badge variant="outline" className="ml-auto text-xs">
                 {books?.total ?? 0} total
               </Badge>
@@ -478,6 +481,7 @@ export default function AdminIntelligenceDashboard() {
             <div className="flex items-center gap-2">
               <Link className="w-4 h-4 text-amber-400" />
               <span className="text-sm font-semibold">Content & Queue</span>
+              <InfoTip text="Content items are URLs (YouTube, Spotify, PDFs, articles) linked to authors. Quality score = weighted average of relevance (40%), authority (25%), freshness (15%), depth (20%). Dead links = URLs that returned 4xx/5xx." />
             </div>
             <div className="space-y-2">
               <CoverageBar label="Content items w/ URL" value={content?.withUrl ?? 0} total={content?.total ?? 0} color="bg-amber-500" />
@@ -527,6 +531,7 @@ export default function AdminIntelligenceDashboard() {
         <div className="flex items-center gap-2">
           <Settings2 className="w-4 h-4 text-muted-foreground" />
           <h3 className="text-sm font-semibold text-foreground">Pipeline Controls</h3>
+          <InfoTip text="Each pipeline runs on a configurable schedule (every 6h–7d). Toggle the switch to enable/disable auto-run. Click ▶ to trigger immediately. Pipelines are idempotent — safe to run multiple times." />
           <span className="text-xs text-muted-foreground ml-1">
             Toggle auto-run schedules or trigger pipelines manually
           </span>

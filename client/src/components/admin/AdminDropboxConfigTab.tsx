@@ -56,6 +56,7 @@ import {
 } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { InfoTip } from "@/components/admin/InfoTip";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -238,7 +239,10 @@ export function AdminDropboxConfigTab() {
       {/* ── Page header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold">Dropbox Folder Configuration</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold">Dropbox Folder Configuration</h2>
+            <InfoTip text="These folder connections are stored in the DB (dropbox_folder_configs table). Paths are relative to the Dropbox account root (e.g. /Apps NAI/RC Library App Data/...). Disabling a folder prevents the app from reading/writing to it without deleting the config." side="right" />
+          </div>
           <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
             Manage every Dropbox folder connection used for backup, content ingestion, and export.
             Folders can be enabled or disabled independently without losing their configuration.
@@ -269,17 +273,21 @@ export function AdminDropboxConfigTab() {
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total Folders", value: typedFolders.length, color: "" },
-          { label: "Enabled", value: enabledCount, color: "text-green-600" },
-          { label: "Validated OK", value: validCount, color: "text-blue-600" },
+          { label: "Total Folders", value: typedFolders.length, color: "", tip: "Total number of Dropbox folder connections configured in the database." },
+          { label: "Enabled", value: enabledCount, color: "text-green-600", tip: "Folders currently active — the app will read/write to these." },
+          { label: "Validated OK", value: validCount, color: "text-blue-600", tip: "Folders confirmed accessible via live Dropbox API check. Click 'Validate All' to refresh." },
           {
             label: "Issues",
             value: invalidCount,
             color: invalidCount > 0 ? "text-red-600" : "text-muted-foreground",
+            tip: "Folders that returned an error during validation — path may not exist or access was denied.",
           },
         ].map((s) => (
           <Card key={s.label} className="p-4">
-            <p className="text-xs text-muted-foreground">{s.label}</p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+              <InfoTip text={s.tip} size={11} />
+            </div>
             <p className={`text-2xl font-bold mt-0.5 ${s.color}`}>{s.value}</p>
           </Card>
         ))}

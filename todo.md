@@ -413,3 +413,43 @@ Last cleaned: Apr 5, 2026
 - [x] Create `.agents/skills/library-architecture/SKILL.md` — Overall app architecture reference
 - [x] Rewrite CLAUDE.md — updated to reflect current architecture (Pinecone, Dropbox, Smart Upload, 956 tests)
 - [x] Rewrite manus.md — updated with current architecture, skill references, session history
+
+---
+
+## Dropbox Authors Folder Path Fix (Apr 8, 2026)
+
+- [x] Update DROPBOX_AUTHORS_FOLDER path to: /Apps NAI/RC Library App Data/Authors Content Entry Folder (verified via live Dropbox API)
+- [x] Update DROPBOX_FOLDERS constant in dropbox.service.ts to use correct authors path (authorsInbox + authorsProcessed keys)
+- [x] Test live Dropbox API access to the corrected path (6/6 dropboxPaths tests pass)
+- [x] Update CLAUDE.md and manus.md with correct folder paths and new DROPBOX_AUTHORS_FOLDER env var
+
+---
+
+## P3 Near-Duplicate Detection Wiring (Apr 8, 2026)
+
+- [x] Wire checkAuthorDuplicate into createAuthor mutation (authorProfiles.router.ts) — fire-and-forget after DB write
+- [x] Wire checkAuthorDuplicate into updateAuthor mutation (authorProfiles.router.ts) — fire-and-forget after DB write
+- [x] Wire checkBookDuplicate into handleCreateBook (crudHandlers.ts) — fire-and-forget after DB write
+- [x] Wire checkBookDuplicate into handleUpdateBook (crudHandlers.ts) — fire-and-forget after DB write
+- [x] Add 12 vitest tests for near-duplicate wiring (nearDuplicateWiring.test.ts) — all passing
+
+---
+
+## P3 Semantic Interest Heatmap (Apr 8, 2026)
+
+- [x] Create semanticMap.router.ts with getFastMap (tag-based, instant) and getSemanticMap (Gemini PCA, on-demand) procedures
+- [x] Register semanticMapRouter in routers/index.ts
+- [x] Create AdminSemanticMapTab.tsx with SVG scatter plot, zoom/pan, category legend, hover tooltip
+- [x] Add Semantic Map tab to Admin Console → Intelligence group (nav item + render block)
+- [x] Add 16 vitest tests for semantic map helper functions (semanticMap.test.ts) — all passing
+- [x] Update P3 items in todo.md (Near-Duplicate Detection + Semantic Interest Heatmap marked done)
+
+---
+
+## Admin Infotips on Tab Content (Apr 8, 2026)
+
+- [x] Add InfoTip to AdminIntelligenceDashboard: Authors coverage card, Books coverage card, Content & Queue card, Pipeline Controls header
+- [x] Add InfoTip to AdminPineconeTab: page header, Index Statistics card title, Index Everything button
+- [x] Add InfoTip to AdminDropboxConfigTab: page header, all 4 stats cards (Total/Enabled/Validated/Issues)
+- [x] All infotips use consistent side="top" default, side="right" for headers
+- [x] TypeScript: 0 errors after all infotip additions

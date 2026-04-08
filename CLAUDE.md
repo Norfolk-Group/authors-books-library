@@ -214,7 +214,7 @@ See `.agents/skills/pinecone-rag/SKILL.md` for full Pinecone patterns.
 |---|---|
 | Backup root | `/Apps NAI/RC Library App Data/Authors and Books Backup` |
 | Books inbox | `/Apps NAI/RC Library App Data/Books Content Entry Folder` |
-| Authors inbox | `/Apps NAI/RC Library App Data/Authors Content Entry Folder` |
+| Authors inbox | `/Apps NAI/RC Library App Data/Authors Content Entry Folder` (env: `DROPBOX_AUTHORS_FOLDER`) |
 | Graphics | `/Apps NAI/RC Library App Data/Graphics and Design` |
 
 Always use `DROPBOX_FOLDERS` from `server/dropbox.service.ts` — never hardcode paths.
@@ -347,6 +347,7 @@ All secrets are injected by the Manus platform. Use `ENV` from `server/_core/env
 | `DROPBOX_APP_KEY` / `DROPBOX_APP_SECRET` | Dropbox OAuth app credentials |
 | `DROPBOX_BACKUP_FOLDER` | `/Apps NAI/RC Library App Data/Authors and Books Backup` |
 | `DROPBOX_INBOX_FOLDER` | `/Apps NAI/RC Library App Data/Books Content Entry Folder` |
+| `DROPBOX_AUTHORS_FOLDER` | `/Apps NAI/RC Library App Data/Authors Content Entry Folder` |
 | `PERPLEXITY_API_KEY` | Perplexity Sonar bio enrichment |
 | `REPLICATE_API_TOKEN` | Replicate flux-schnell avatars |
 | `TAVILY_API_KEY` | Tavily image search |

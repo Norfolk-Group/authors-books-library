@@ -101,6 +101,7 @@ import { AdminDuplicatesTab } from "@/components/admin/AdminDuplicatesTab";
 import { AdminS3AuditTab } from "@/components/admin/AdminS3AuditTab";
 import { AdminReviewQueueTab } from "@/components/admin/AdminReviewQueueTab";
 import AdminIntelligenceDashboard from "@/components/admin/AdminIntelligenceDashboard";
+import { AdminSemanticMapTab } from "@/components/admin/AdminSemanticMapTab";
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 import { useAdminActions } from "@/hooks/useAdminActions";
@@ -134,6 +135,7 @@ const NAV_TIPS: Record<string, string> = {
   cascade: "Deep research tool: run multi-source contextual intelligence queries combining Wikipedia, Perplexity, news, and academic sources.",
   ai: "Configure AI provider settings, model preferences, temperature, and token limits for all LLM-powered features.",
   "ai-models": "View and compare available AI models (Gemini, Claude, GPT-4). Select the active model for each feature category.",
+  "semantic-map": "2D scatter plot of all authors grouped by semantic similarity. Fast mode uses tag-based clustering; Semantic mode uses Gemini embeddings + PCA projection.",
   // Personalization
   interests: "Manage your personal interest categories used to personalise book recommendations and thematic discovery.",
   favorites: "View and manage your starred authors and books. Favorites influence the 'What to Read Next' recommendations.",
@@ -186,6 +188,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "cascade", label: "Research", icon: ChartBar },
       { id: "ai", label: "AI Settings", icon: Cpu },
       { id: "ai-models", label: "AI Models", icon: CircuitBoard },
+      { id: "semantic-map", label: "Semantic Map", icon: ChartBar },
     ],
   },
   {
@@ -521,6 +524,7 @@ export default function Admin() {
               {activeSection === "s3-audit" && <AdminS3AuditTab />}
               {activeSection === "ai-review" && <AdminReviewQueueTab />}
               {activeSection === "intelligence-dashboard" && <AdminIntelligenceDashboard />}
+              {activeSection === "semantic-map" && <AdminSemanticMapTab />}
 
             </div>
           </main>

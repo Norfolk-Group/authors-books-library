@@ -2,6 +2,7 @@ import { getDb } from "../../db";
 import { bookProfiles } from "../../../drizzle/schema";
 import { eq, inArray, isNotNull } from "drizzle-orm";
 import { indexBookIncremental } from "../../services/incrementalIndex.service";
+import { checkBookDuplicate } from "../../services/semanticDuplicate.service";
 
 export async function handleGet(input: { bookTitle: string }) {
   const db = await getDb();
@@ -122,7 +123,12 @@ export async function handleCreateBook(input: {
     .from(bookProfiles)
     .where(eq(bookProfiles.bookTitle, input.bookTitle))
     .limit(1);
-  return rows[0];
+  const created = rows[0];
+  // P3: Near-duplicate detection — fire-and-forget, flags similar books in review queue
+  if (created) {
+    checkBookDuplicate(created.bookTitle).catch(() => {});
+  }
+  return created;
 }
 
 export async function handleUpdateBook(input: {
@@ -173,6 +179,8 @@ export async function handleUpdateBook(input: {
   // Re-index in Pinecone if semantic content changed
   if (updated && (input.summary !== undefined || input.keyThemes !== undefined)) {
     indexBookIncremental(updated.id, updated.bookTitle, updated.authorName, updated.summary, updated.keyThemes ?? undefined).catch(() => {});
+    // P3: Near-duplicate detection after summary update
+    checkBookDuplicate(updated.bookTitle).catch(() => {});
   }
   return updated;
 }

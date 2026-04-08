@@ -41,6 +41,7 @@ import { orchestratorRouter } from "./orchestrator.router";
 import { authorAvatarRouter } from "./authorAvatar.router";
 import { dropboxConfigRouter } from "./dropboxConfig.router";
 import { smartUploadRouter } from "./smartUpload.router";
+import { semanticMapRouter } from "./semanticMap.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -100,6 +101,8 @@ export const appRouter = router({
   dropboxConfig: dropboxConfigRouter,
   // ── Smart Upload + AI file classifier ────────────────────────────────────
   smartUpload: smartUploadRouter,
+  // ── Semantic Interest Heatmap (author cluster visualization) ─────────────
+  semanticMap: semanticMapRouter,
 });
 
 export type AppRouter = typeof appRouter;

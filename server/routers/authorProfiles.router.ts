@@ -13,6 +13,8 @@ import { validateAuthorName } from "../../shared/authorNameValidator";
 import { authorAvatarRouter } from "./authorAvatar.router";
 // Incremental Pinecone indexing (fire-and-forget)
 import { indexAuthorIncremental } from "../services/incrementalIndex.service";
+// Near-duplicate detection (fire-and-forget, runs after create/update)
+import { checkAuthorDuplicate } from "../services/semanticDuplicate.service";
 import { authorEnrichmentRouter } from "./authorEnrichment.router";
 import { authorSocialRouter } from "./authorSocial.router";
 
@@ -428,6 +430,10 @@ const authorProfilesCoreRouter = router({
       // Fire-and-forget: index in Pinecone and check for near-duplicates
       if (created) {
         indexAuthorIncremental(created.id, created.authorName, created.bio, created.richBioJson).catch(() => {});
+        // P3: Near-duplicate detection — fire-and-forget, flags similar authors in review queue
+        checkAuthorDuplicate(created.authorName).catch((e) =>
+          logger.warn("[createAuthor] near-dup check failed", e)
+        );
       }
       return created;
     }),
@@ -491,6 +497,10 @@ const authorProfilesCoreRouter = router({
       // Fire-and-forget: re-index in Pinecone after update
       if (updated && input.bio !== undefined) {
         indexAuthorIncremental(updated.id, updated.authorName, updated.bio, updated.richBioJson).catch(() => {});
+        // P3: Near-duplicate detection after bio update
+        checkAuthorDuplicate(updated.authorName).catch((e) =>
+          logger.warn("[updateAuthor] near-dup check failed", e)
+        );
       }
       return updated;
     }),

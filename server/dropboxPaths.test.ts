@@ -11,6 +11,7 @@ const APP_KEY = process.env.DROPBOX_APP_KEY ?? "";
 const APP_SECRET = process.env.DROPBOX_APP_SECRET ?? "";
 const BACKUP_FOLDER = process.env.DROPBOX_BACKUP_FOLDER ?? "";
 const INBOX_FOLDER = process.env.DROPBOX_INBOX_FOLDER ?? "";
+const AUTHORS_FOLDER = process.env.DROPBOX_AUTHORS_FOLDER ?? "/Apps NAI/RC Library App Data/Authors Content Entry Folder";
 
 async function getAccessToken(): Promise<string> {
   const res = await fetch("https://api.dropboxapi.com/oauth2/token", {
@@ -61,6 +62,18 @@ describe("Dropbox folder path secrets", () => {
   it("DROPBOX_INBOX_FOLDER exists in Dropbox", async () => {
     const token = await getAccessToken();
     const exists = await folderExists(token, INBOX_FOLDER);
+    expect(exists).toBe(true);
+  }, 15000);
+
+  it("DROPBOX_AUTHORS_FOLDER env var is set", () => {
+    expect(AUTHORS_FOLDER).toBeTruthy();
+    expect(AUTHORS_FOLDER).toContain("/Apps NAI");
+    expect(AUTHORS_FOLDER.toLowerCase()).toContain("authors");
+  });
+
+  it("DROPBOX_AUTHORS_FOLDER exists in Dropbox", async () => {
+    const token = await getAccessToken();
+    const exists = await folderExists(token, AUTHORS_FOLDER);
     expect(exists).toBe(true);
   }, 15000);
 });

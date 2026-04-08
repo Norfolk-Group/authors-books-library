@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Database, RefreshCw, CheckCircle, AlertCircle, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { InfoTip } from "@/components/admin/InfoTip";
 
 type IndexResult = {
   indexed: number;
@@ -131,7 +132,10 @@ export function AdminPineconeTab() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Pinecone Vector Index</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-semibold">Pinecone Vector Index</h2>
+            <InfoTip text="Pinecone is the vector database powering all semantic search, chatbot RAG, and 'Similar Authors/Books' features. Vectors are 1536-dimensional Gemini embeddings. The library-rag index has 5 namespaces: authors, books, content_items, rag_files, articles." side="right" />
+          </div>
           <p className="text-sm text-muted-foreground mt-1">
             Manage the <code className="text-xs bg-muted px-1 rounded">library-rag</code> index — embed and upsert content for semantic search.
           </p>
@@ -161,7 +165,7 @@ export function AdminPineconeTab() {
       {/* Index Stats */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Index Statistics</CardTitle>
+          <CardTitle className="text-base flex items-center gap-2">Index Statistics <InfoTip text="Vector counts per namespace. Authors namespace powers 'Similar Authors'. Books namespace powers 'Readers Also Liked'. RAG files namespace powers the author chatbot. Content items namespace powers cross-content discovery." /></CardTitle>
           <CardDescription>
             Total vectors: <strong>{totalVectors.toLocaleString()}</strong>
             {statsQuery.isError && <span className="text-destructive ml-2">— index may not exist yet (click Ensure Index)</span>}
@@ -248,6 +252,7 @@ export function AdminPineconeTab() {
               <p className="font-medium flex items-center gap-2">
                 <Zap className="h-4 w-4 text-amber-500" />
                 Index Everything
+                <InfoTip text="Runs all 4 indexing jobs in parallel. Each job embeds content using Gemini text-embedding-004 (1536 dimensions) and upserts to Pinecone. Rate-limited to ~100 req/min — expect 2-5 minutes for full reindex." />
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Run all four indexing jobs sequentially. This may take several minutes due to Gemini embedding rate limits.
