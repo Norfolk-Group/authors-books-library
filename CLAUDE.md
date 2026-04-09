@@ -10,7 +10,7 @@ Last updated: April 2026
 ## Project Overview
 
 **RC Library** (`authors-books-library`) is a full-stack personal digital library for
-Ricardo Cidale / Norfolk Consulting Group. It manages **183 authors** and **163 books**,
+Ricardo Cidale / Norfolk Consulting Group. It manages **187 authors** and **163 books**,
 enriched with AI-generated bios, avatars, book covers, summaries, social stats, and
 semantic vector search powered by Pinecone.
 
@@ -32,7 +32,7 @@ semantic vector search powered by Pinecone.
 | AI / LLM | Anthropic Claude (Opus for architecture, Sonnet for enrichment), Gemini (embeddings) |
 | Auth | Manus OAuth (JWT session cookies) |
 | Build | Vite 6.4.1, esbuild, TypeScript 5.9 |
-| Testing | Vitest — **956 tests passing** (Apr 2026) |
+| Testing | Vitest — **963 tests passing** (Apr 2026) |
 | Icons | Phosphor Icons (`@phosphor-icons/react`), Lucide |
 | Animation | Framer Motion |
 | Logging | `server/lib/logger.ts` — structured logger (debug suppressed in prod) |
@@ -363,7 +363,7 @@ All secrets are injected by the Manus platform. Use `ENV` from `server/_core/env
 pnpm install
 pnpm db:push        # generate + migrate schema
 pnpm dev            # starts Express + Vite on :3000
-pnpm test           # vitest (956 tests passing, Apr 2026)
+pnpm test           # vitest (963 tests passing, Apr 2026)
 pnpm build          # production build
 npx tsc --noEmit    # type check — ALWAYS trust this over the watcher
 ```
@@ -409,6 +409,7 @@ These app-specific skills document repeatable patterns for this codebase:
 | `dropbox-sync` | Dropbox folder paths, env vars, API patterns, sync pipeline |
 | `smart-upload` | AI file classification, review queue, commit flow, auto-indexing |
 | `enrichment-pipeline` | Enrichment orchestrator, pipeline registry, post-enrichment hooks |
+| `deterministic-tools` | Verification scripts in `scripts/` — DB indexes, Pinecone coverage, Dropbox, S3, enrichment gaps |
 
 Read the relevant skill before working on any of these areas.
 

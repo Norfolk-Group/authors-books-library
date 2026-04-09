@@ -453,3 +453,23 @@ Last cleaned: Apr 5, 2026
 - [x] Add InfoTip to AdminDropboxConfigTab: page header, all 4 stats cards (Total/Enabled/Validated/Issues)
 - [x] All infotips use consistent side="top" default, side="right" for headers
 - [x] TypeScript: 0 errors after all infotip additions
+
+---
+
+## Optimization Audit (Apr 8, 2026)
+
+- [x] Deep codebase audit: server/client split, Pinecone usage, DB schema, skills, tools
+- [x] Produce OPTIMIZATION_PLAN.md with Tier 1/2/3 priorities and effort estimates
+- [x] T1: SQL aggregation in cascade.router.ts (replace JS filter with COUNT CASE WHEN)
+- [x] T1: Add 4 missing DB indexes (isbn, possessionStatus, format, bioCompleteness) — migration 0043
+- [x] Create 5 deterministic verification scripts in scripts/
+  - [x] verify-db-indexes.mjs (42 indexes, all passing)
+  - [x] verify-pinecone-coverage.mjs
+  - [x] verify-dropbox-folders.mjs
+  - [x] audit-enrichment-gaps.mjs (--json mode supported)
+  - [x] verify-s3-coverage.mjs (--list mode supported)
+- [x] Create deterministic-tools SKILL.md documenting all 5 scripts
+- [x] Update library-architecture SKILL.md with new tools, correct counts, Dropbox folder
+- [x] Update CLAUDE.md: 187 authors, 963 tests, DROPBOX_AUTHORS_FOLDER, deterministic-tools skill
+- [x] Live audit results: 187 authors (100% avatars, 100% S3), 163 books (99.4% S3 covers)
+- [x] Key gaps identified: 90.4% no tags, 5.3% RAG coverage (10/187 authors)

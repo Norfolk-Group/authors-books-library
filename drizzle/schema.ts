@@ -322,6 +322,8 @@ export const authorProfiles = mysqlTable("author_profiles", {
   enrichedAtIdx: index("author_profiles_enrichedAt_idx").on(table.enrichedAt),
   /** Index for batch queries filtering by avatar source (e.g. upgrading Drive-sourced avatars) */
   avatarSourceIdx: index("author_profiles_avatarSource_idx").on(table.avatarSource),
+  /** T1-B: Index for sorting/filtering by bio completeness score (chatbot readiness pipeline) */
+  bioCompletenessIdx: index("author_profiles_bioCompleteness_idx").on(table.bioCompleteness),
 }));
 
 export type AuthorProfile = typeof authorProfiles.$inferSelect;
@@ -484,6 +486,12 @@ export const bookProfiles = mysqlTable("book_profiles", {
   authorNameIdx: index("book_profiles_authorName_idx").on(table.authorName),
   /** Index for finding un-enriched books quickly */
   enrichedAtIdx: index("book_profiles_enrichedAt_idx").on(table.enrichedAt),
+  /** T1-B: Index for ISBN-based duplicate detection and library cache lookups */
+  isbnIdx: index("book_profiles_isbn_idx").on(table.isbn),
+  /** T1-B: Index for filtering books by possession status (owned, wishlist, etc.) */
+  possessionStatusIdx: index("book_profiles_possessionStatus_idx").on(table.possessionStatus),
+  /** T1-B: Index for filtering books by format (PDF, Audio, Physical, etc.) */
+  formatIdx: index("book_profiles_format_idx").on(table.format),
 }));
 export type BookProfile = typeof bookProfiles.$inferSelect;
 export type InsertBookProfile = typeof bookProfiles.$inferInsert;

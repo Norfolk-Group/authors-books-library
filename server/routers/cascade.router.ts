@@ -3,158 +3,148 @@
  * Provides live DB statistics for the Research Cascade panel.
  * Each procedure returns counts that reflect how many authors/books
  * were resolved at each tier of the enrichment waterfall.
+ *
+ * OPTIMIZATION (T1-A): Uses SQL COUNT(CASE WHEN ...) aggregation instead of
+ * fetching all rows and filtering in JavaScript. This reduces data transfer
+ * from ~183 rows × 10 columns to a single aggregation row.
  */
+import { sql } from "drizzle-orm";
 import { publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { authorProfiles, bookProfiles } from "../../drizzle/schema";
 
 export const cascadeRouter = router({
   /**
-   * Returns live counts for the author avatar enrichment waterfall:
-   * - total: unique author names in the DB
-   * - withAvatar: authors that have any avatarUrl
-   * - withS3Avatar: authors whose avatar is mirrored to S3
-   * - withBio: authors that have a non-empty bio
-   * - withEnrichedAt: authors enriched (enrichedAt is set)
-   * - withSocialLinks: authors with websiteUrl or twitterUrl or linkedinUrl
-   * - noAvatar: authors with no avatarUrl at all
-   * - noBio: authors with no bio
+   * Returns live counts for the author avatar enrichment waterfall.
+   * Single SQL aggregation query — no full-table fetch.
    */
   authorStats: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { total: 0, withPhoto: 0, withAvatar: 0, withS3Photo: 0, withS3Avatar: 0, withBio: 0, withEnrichedAt: 0, withSocialLinks: 0, noPhoto: 0, noAvatar: 0, noBio: 0, fromWikipedia: 0, fromTavily: 0, fromApify: 0, fromAI: 0, sourceUnknown: 0 };
-    const rows = await db
-      .select({
-        authorName: authorProfiles.authorName,
-        bio: authorProfiles.bio,
-        avatarUrl: authorProfiles.avatarUrl,
-        s3AvatarUrl: authorProfiles.s3AvatarUrl,
-        avatarSource: authorProfiles.avatarSource,
-        websiteUrl: authorProfiles.websiteUrl,
-        twitterUrl: authorProfiles.twitterUrl,
-        linkedinUrl: authorProfiles.linkedinUrl,
-        enrichedAt: authorProfiles.enrichedAt,
-      })
-      .from(authorProfiles);
+    if (!db) return {
+      total: 0, withPhoto: 0, withAvatar: 0, withS3Photo: 0, withS3Avatar: 0,
+      withBio: 0, withEnrichedAt: 0, withSocialLinks: 0, noPhoto: 0, noAvatar: 0,
+      noBio: 0, fromWikipedia: 0, fromTavily: 0, fromApify: 0, fromAI: 0, sourceUnknown: 0,
+    };
 
-    type AuthorRow = typeof rows[number];
-    const total = rows.length;
-    const withAvatar = rows.filter((r: AuthorRow) => r.avatarUrl && r.avatarUrl.length > 0).length;
-    const withS3Avatar = rows.filter((r: AuthorRow) => r.s3AvatarUrl && r.s3AvatarUrl.length > 0).length;
-    const withBio = rows.filter((r: AuthorRow) => r.bio && r.bio.length > 0).length;
-    const withEnrichedAt = rows.filter((r: AuthorRow) => r.enrichedAt != null).length;
-    const withSocialLinks = rows.filter(
-      (r: AuthorRow) =>
-        (r.websiteUrl && r.websiteUrl.length > 0) ||
-        (r.twitterUrl && r.twitterUrl.length > 0) ||
-        (r.linkedinUrl && r.linkedinUrl.length > 0)
-    ).length;
-    const noAvatar = rows.filter((r: AuthorRow) => !r.avatarUrl || r.avatarUrl.length === 0).length;
-    const noBio = rows.filter((r: AuthorRow) => !r.bio || r.bio.length === 0).length;
+    const [stats] = await db.select({
+      total:           sql<number>`COUNT(*)`,
+      withAvatar:      sql<number>`COUNT(CASE WHEN avatar_url IS NOT NULL AND avatar_url != '' THEN 1 END)`,
+      withS3Avatar:    sql<number>`COUNT(CASE WHEN s3_avatar_url IS NOT NULL AND s3_avatar_url != '' THEN 1 END)`,
+      withBio:         sql<number>`COUNT(CASE WHEN bio IS NOT NULL AND bio != '' THEN 1 END)`,
+      withEnrichedAt:  sql<number>`COUNT(CASE WHEN enriched_at IS NOT NULL THEN 1 END)`,
+      withSocialLinks: sql<number>`COUNT(CASE WHEN (website_url IS NOT NULL AND website_url != '') OR (twitter_url IS NOT NULL AND twitter_url != '') OR (linkedin_url IS NOT NULL AND linkedin_url != '') THEN 1 END)`,
+      noAvatar:        sql<number>`COUNT(CASE WHEN avatar_url IS NULL OR avatar_url = '' THEN 1 END)`,
+      noBio:           sql<number>`COUNT(CASE WHEN bio IS NULL OR bio = '' THEN 1 END)`,
+      fromWikipedia:   sql<number>`COUNT(CASE WHEN avatar_source = 'wikipedia' THEN 1 END)`,
+      fromTavily:      sql<number>`COUNT(CASE WHEN avatar_source = 'tavily' THEN 1 END)`,
+      fromApify:       sql<number>`COUNT(CASE WHEN avatar_source = 'apify' THEN 1 END)`,
+      fromAI:          sql<number>`COUNT(CASE WHEN avatar_source = 'ai' THEN 1 END)`,
+      sourceUnknown:   sql<number>`COUNT(CASE WHEN avatar_url IS NOT NULL AND avatar_url != '' AND (avatar_source IS NULL OR avatar_source = '') THEN 1 END)`,
+    }).from(authorProfiles);
 
-    // Per-tier avatar source counts
-    const fromWikipedia = rows.filter((r: AuthorRow) => r.avatarSource === "wikipedia").length;
-    const fromTavily = rows.filter((r: AuthorRow) => r.avatarSource === "tavily").length;
-    const fromApify = rows.filter((r: AuthorRow) => r.avatarSource === "apify").length;
-    const fromAI = rows.filter((r: AuthorRow) => r.avatarSource === "ai").length;
-    const sourceUnknown = rows.filter((r: AuthorRow) => r.avatarUrl && r.avatarUrl.length > 0 && !r.avatarSource).length;
+    // Drizzle returns sql<number> as string from MySQL — coerce to number
+    const n = (v: unknown) => Number(v ?? 0);
 
     return {
-      total,
-      // New names
-      withAvatar,
-      withS3Avatar,
-      noAvatar,
+      total:           n(stats.total),
+      withAvatar:      n(stats.withAvatar),
+      withS3Avatar:    n(stats.withS3Avatar),
+      withBio:         n(stats.withBio),
+      withEnrichedAt:  n(stats.withEnrichedAt),
+      withSocialLinks: n(stats.withSocialLinks),
+      noAvatar:        n(stats.noAvatar),
+      noBio:           n(stats.noBio),
+      fromWikipedia:   n(stats.fromWikipedia),
+      fromTavily:      n(stats.fromTavily),
+      fromApify:       n(stats.fromApify),
+      fromAI:          n(stats.fromAI),
+      sourceUnknown:   n(stats.sourceUnknown),
       // Legacy aliases for backward compat with ResearchCascade UI
-      withPhoto: withAvatar,
-      withS3Photo: withS3Avatar,
-      noPhoto: noAvatar,
-      withBio,
-      withEnrichedAt,
-      withSocialLinks,
-      noBio,
-      // Per-tier breakdown
-      fromWikipedia,
-      fromTavily,
-      fromApify,
-      fromAI,
-      sourceUnknown,
+      withPhoto:       n(stats.withAvatar),
+      withS3Photo:     n(stats.withS3Avatar),
+      noPhoto:         n(stats.noAvatar),
     };
   }),
 
   /**
-   * Returns live counts for the book cover + metadata enrichment waterfall:
-   * - total: unique book titles in the DB
-   * - withCover: books that have a coverImageUrl
-   * - withS3Cover: books whose cover is mirrored to S3
-   * - withSummary: books with a non-empty summary
-   * - withIsbn: books with an ISBN
-   * - withAmazonUrl: books with an Amazon URL
-   * - withRating: books with a rating
-   * - enrichedAt: books that have been enriched (any field set)
-   * - noCover: books with no cover at all
-   * - noSummary: books with no summary
+   * Returns live counts for the book cover + metadata enrichment waterfall.
+   * Single SQL aggregation query — no full-table fetch.
+   * Enrichment level scoring is also done in SQL.
    */
   bookStats: publicProcedure.query(async () => {
     const db = await getDb();
-    if (!db) return { total: 0, withCover: 0, withS3Cover: 0, withSummary: 0, withIsbn: 0, withAmazonUrl: 0, withRating: 0, withEnrichedAt: 0, withPublisher: 0, noCover: 0, noSummary: 0, enrichmentLevelCounts: { fullyEnriched: 0, wellEnriched: 0, partiallyEnriched: 0, basic: 0 } };
-    const rows = await db
-      .select({
-        bookTitle: bookProfiles.bookTitle,
-        coverImageUrl: bookProfiles.coverImageUrl,
-        s3CoverUrl: bookProfiles.s3CoverUrl,
-        summary: bookProfiles.summary,
-        isbn: bookProfiles.isbn,
-        amazonUrl: bookProfiles.amazonUrl,
-        rating: bookProfiles.rating,
-        enrichedAt: bookProfiles.enrichedAt,
-        publisher: bookProfiles.publisher,
-        publishedDate: bookProfiles.publishedDate,
-      })
-      .from(bookProfiles);
+    if (!db) return {
+      total: 0, withCover: 0, withS3Cover: 0, withSummary: 0, withIsbn: 0,
+      withAmazonUrl: 0, withRating: 0, withEnrichedAt: 0, withPublisher: 0,
+      noCover: 0, noSummary: 0,
+      enrichmentLevelCounts: { fullyEnriched: 0, wellEnriched: 0, partiallyEnriched: 0, basic: 0 },
+    };
 
-    type BookRow = typeof rows[number];
-    const total = rows.length;
-    const withCover = rows.filter((r: BookRow) => r.coverImageUrl && r.coverImageUrl.length > 0).length;
-    const withS3Cover = rows.filter((r: BookRow) => r.s3CoverUrl && r.s3CoverUrl.length > 0).length;
-    const withSummary = rows.filter((r: BookRow) => r.summary && r.summary.length > 0).length;
-    const withIsbn = rows.filter((r: BookRow) => r.isbn && r.isbn.length > 0).length;
-    const withAmazonUrl = rows.filter((r: BookRow) => r.amazonUrl && r.amazonUrl.length > 0).length;
-    // rating is now DECIMAL — check for null/undefined rather than empty string
-    const withRating = rows.filter((r: BookRow) => r.rating != null).length;
-    const withEnrichedAt = rows.filter((r: BookRow) => r.enrichedAt != null).length;
-    const withPublisher = rows.filter((r: BookRow) => r.publisher && r.publisher.length > 0).length;
-    const noCover = rows.filter((r: BookRow) => !r.coverImageUrl || r.coverImageUrl.length === 0).length;
-    const noSummary = rows.filter((r: BookRow) => !r.summary || r.summary.length === 0).length;
+    const [stats] = await db.select({
+      total:          sql<number>`COUNT(*)`,
+      withCover:      sql<number>`COUNT(CASE WHEN cover_image_url IS NOT NULL AND cover_image_url != '' THEN 1 END)`,
+      withS3Cover:    sql<number>`COUNT(CASE WHEN s3_cover_url IS NOT NULL AND s3_cover_url != '' THEN 1 END)`,
+      withSummary:    sql<number>`COUNT(CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 END)`,
+      withIsbn:       sql<number>`COUNT(CASE WHEN isbn IS NOT NULL AND isbn != '' THEN 1 END)`,
+      withAmazonUrl:  sql<number>`COUNT(CASE WHEN amazon_url IS NOT NULL AND amazon_url != '' THEN 1 END)`,
+      withRating:     sql<number>`COUNT(CASE WHEN rating IS NOT NULL THEN 1 END)`,
+      withEnrichedAt: sql<number>`COUNT(CASE WHEN enriched_at IS NOT NULL THEN 1 END)`,
+      withPublisher:  sql<number>`COUNT(CASE WHEN publisher IS NOT NULL AND publisher != '' THEN 1 END)`,
+      noCover:        sql<number>`COUNT(CASE WHEN cover_image_url IS NULL OR cover_image_url = '' THEN 1 END)`,
+      noSummary:      sql<number>`COUNT(CASE WHEN summary IS NULL OR summary = '' THEN 1 END)`,
+      // Enrichment level scoring in SQL:
+      // score = (has cover) + (has summary) + (has rating) + (has amazon_url) + (has published_date)
+      // fullyEnriched: score >= 5, wellEnriched: score 3-4, partiallyEnriched: score 1-2, basic: score 0
+      fullyEnriched:      sql<number>`COUNT(CASE WHEN (
+        (CASE WHEN cover_image_url IS NOT NULL AND cover_image_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN amazon_url IS NOT NULL AND amazon_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN published_date IS NOT NULL AND published_date != '' THEN 1 ELSE 0 END)
+      ) >= 5 THEN 1 END)`,
+      wellEnriched:       sql<number>`COUNT(CASE WHEN (
+        (CASE WHEN cover_image_url IS NOT NULL AND cover_image_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN amazon_url IS NOT NULL AND amazon_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN published_date IS NOT NULL AND published_date != '' THEN 1 ELSE 0 END)
+      ) BETWEEN 3 AND 4 THEN 1 END)`,
+      partiallyEnriched:  sql<number>`COUNT(CASE WHEN (
+        (CASE WHEN cover_image_url IS NOT NULL AND cover_image_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN amazon_url IS NOT NULL AND amazon_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN published_date IS NOT NULL AND published_date != '' THEN 1 ELSE 0 END)
+      ) BETWEEN 1 AND 2 THEN 1 END)`,
+      basicEnriched:      sql<number>`COUNT(CASE WHEN (
+        (CASE WHEN cover_image_url IS NOT NULL AND cover_image_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN summary IS NOT NULL AND summary != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) +
+        (CASE WHEN amazon_url IS NOT NULL AND amazon_url != '' THEN 1 ELSE 0 END) +
+        (CASE WHEN published_date IS NOT NULL AND published_date != '' THEN 1 ELSE 0 END)
+      ) = 0 THEN 1 END)`,
+    }).from(bookProfiles);
 
-    // Compute enrichment level counts (mirrors getBookEnrichmentLevel on the client)
-    const enrichmentLevelCounts = { fullyEnriched: 0, wellEnriched: 0, partiallyEnriched: 0, basic: 0 };
-    for (const r of rows) {
-      let score = 0;
-      if (r.coverImageUrl && r.coverImageUrl.length > 0) score++;
-      if (r.summary && r.summary.length > 0) score++;
-      if (r.rating != null) score++;
-      if (r.amazonUrl && r.amazonUrl.length > 0) score++;
-      if (r.publishedDate && r.publishedDate.length > 0) score++;
-      if (score >= 5) enrichmentLevelCounts.fullyEnriched++;
-      else if (score >= 3) enrichmentLevelCounts.wellEnriched++;
-      else if (score >= 1) enrichmentLevelCounts.partiallyEnriched++;
-      else enrichmentLevelCounts.basic++;
-    }
+    const n = (v: unknown) => Number(v ?? 0);
 
     return {
-      total,
-      withCover,
-      withS3Cover,
-      withSummary,
-      withIsbn,
-      withAmazonUrl,
-      withRating,
-      withEnrichedAt,
-      withPublisher,
-      noCover,
-      noSummary,
-      enrichmentLevelCounts,
+      total:          n(stats.total),
+      withCover:      n(stats.withCover),
+      withS3Cover:    n(stats.withS3Cover),
+      withSummary:    n(stats.withSummary),
+      withIsbn:       n(stats.withIsbn),
+      withAmazonUrl:  n(stats.withAmazonUrl),
+      withRating:     n(stats.withRating),
+      withEnrichedAt: n(stats.withEnrichedAt),
+      withPublisher:  n(stats.withPublisher),
+      noCover:        n(stats.noCover),
+      noSummary:      n(stats.noSummary),
+      enrichmentLevelCounts: {
+        fullyEnriched:     n(stats.fullyEnriched),
+        wellEnriched:      n(stats.wellEnriched),
+        partiallyEnriched: n(stats.partiallyEnriched),
+        basic:             n(stats.basicEnriched),
+      },
     };
   }),
 });
