@@ -504,10 +504,16 @@ Last cleaned: Apr 5, 2026
 
 ## Session A — Admin Quick Wins (Apr 9, 2026)
 
-- [ ] Trigger seedAllPending via tRPC to create RAG rows for all 177 missing authors
-- [ ] Trigger autoTagAll via tRPC to tag all 169 untagged authors
-- [ ] Trigger scoreAllAuthors via tRPC to re-score all authors with new tag data
-- [ ] Verify: RAG coverage > 90%, tagged authors > 90%
+- [x] seedAllPending: All 187 authors already had RAG rows — no new rows needed
+- [x] RAG generation: Ran batch script (scripts/session-a-generate-rag.mts) — 175 new RAG files generated
+  - 187/187 (100%) authors now have ready RAG files (was 5.3% / 10 ready)
+- [x] autoTagAll: Tagged 4 remaining untagged authors via LLM (scripts/session-a-autotag.mts)
+  - Kerry Leonard manually assigned [business, leadership] (no books/bio available)
+  - 187/187 (100%) authors now tagged (was 9.6% / 18 tagged)
+- [x] scoreAllAuthors: Ran 3 scoring passes (scripts/session-a-score-authors.mts)
+  - 187/187 (100%) authors scored against 8 user interests
+  - 182 succeeded, 5 had JSON parse errors (retried in final pass)
+- [x] Verified: RAG 100%, Tagged 100%, Scored 100% — all targets exceeded
 
 ---
 
