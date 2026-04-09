@@ -131,6 +131,9 @@ export type IndexBookInput = {
   title: string;
   authorName?: string | null;
   text: string; // description, summary, or extracted chapter text
+  // T2-A metadata fields
+  category?: string;    // primary tag slug from book's tagsJson
+  enrichedAt?: string;  // ISO date of last enrichment
 };
 
 /**
@@ -157,6 +160,9 @@ export async function indexBook(book: IndexBookInput): Promise<number> {
       chunkIndex: i,
       chunkTotal: chunks.length,
       text: chunk,
+      // T2-A metadata filters
+      ...(book.category ? { category: book.category } : {}),
+      ...(book.enrichedAt ? { enrichedAt: book.enrichedAt } : {}),
     } satisfies VectorMetadata,
   }));
 
@@ -170,6 +176,10 @@ export type IndexAuthorInput = {
   authorId: string;
   authorName: string;
   bioText: string; // Wikipedia bio, profile text, etc.
+  // T2-A metadata fields
+  category?: string;    // primary tag slug
+  bookCount?: number;   // number of books in library
+  enrichedAt?: string;  // ISO date of last enrichment
 };
 
 /**
@@ -196,6 +206,10 @@ export async function indexAuthor(author: IndexAuthorInput): Promise<number> {
       chunkIndex: i,
       chunkTotal: chunks.length,
       text: chunk,
+      // T2-A metadata filters
+      ...(author.category ? { category: author.category } : {}),
+      ...(author.bookCount !== undefined ? { bookCount: author.bookCount } : {}),
+      ...(author.enrichedAt ? { enrichedAt: author.enrichedAt } : {}),
     } satisfies VectorMetadata,
   }));
 

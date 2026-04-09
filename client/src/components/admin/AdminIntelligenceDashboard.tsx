@@ -30,6 +30,7 @@ import {
   Zap,
   BarChart3,
   Settings2,
+  Tags,
 } from "lucide-react";
 import { InfoTip } from "@/components/admin/InfoTip";
 
@@ -365,6 +366,14 @@ export default function AdminIntelligenceDashboard() {
     onError: (err) => toast.error(`Run All failed: ${err.message}`),
   });
 
+  const autoTagMutation = trpc.tags.autoTagAll.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetchCoverage();
+    },
+    onError: (err) => toast.error(`Auto-tag failed: ${err.message}`),
+  });
+
   const handleToggle = useCallback(
     (id: number, enabled: boolean) => toggleMutation.mutate({ id, enabled }),
     [toggleMutation]
@@ -409,7 +418,21 @@ export default function AdminIntelligenceDashboard() {
             Autonomous enrichment pipelines — the app does the research, not you.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => autoTagMutation.mutate({ skipExisting: true, maxAuthors: 200 })}
+            disabled={autoTagMutation.isPending || runAllMutation.isPending}
+            className="gap-1.5"
+            title="Auto-tag all untagged authors using LLM + predefined taxonomy"
+          >
+            {autoTagMutation.isPending ? (
+              <><RefreshCw className="w-3.5 h-3.5 animate-spin" />Tagging…</>
+            ) : (
+              <><Tags className="w-3.5 h-3.5" />Auto-Tag All Authors</>
+            )}
+          </Button>
           <Button
             variant="default"
             size="sm"

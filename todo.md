@@ -473,3 +473,29 @@ Last cleaned: Apr 5, 2026
 - [x] Update CLAUDE.md: 187 authors, 963 tests, DROPBOX_AUTHORS_FOLDER, deterministic-tools skill
 - [x] Live audit results: 187 authors (100% avatars, 100% S3), 163 books (99.4% S3 covers)
 - [x] Key gaps identified: 90.4% no tags, 5.3% RAG coverage (10/187 authors)
+
+---
+
+## Implement All 3 Optimization Suggestions (Apr 8, 2026)
+
+### S1 — RAG Pipeline Expansion (Build RAG Files for All Authors)
+- [x] Add `seedAllPending` procedure to ragPipeline.router.ts (creates pending rows for all 177 missing authors)
+- [x] Add "Seed All Authors for RAG" button to DigitalMeTab.tsx (Admin → Intelligence → Digital Me)
+- [x] Show count of newly seeded authors in success toast
+- [x] Idempotent: skips authors already in the RAG pipeline
+- [x] Write vitest tests for the new procedure
+
+### S2 — Tag Enrichment for All Untagged Authors
+- [x] Add `autoTagAll` procedure to tags.router.ts with 15-tag taxonomy, LLM-powered batch tagging
+- [x] skipExisting flag: skips authors that already have tags (default: true)
+- [x] Creates new tags in `tags` table if they don't exist
+- [x] Add "Auto-Tag All Authors" button to AdminIntelligenceDashboard.tsx header
+- [x] Write vitest tests for the new procedure
+
+### S3 — T2-A Pinecone Metadata Filters
+- [x] Add `category`, `bookCount`, `enrichedAt` fields to VectorMetadata type in pinecone.service.ts
+- [x] Add `category`, `bookCount`, `enrichedAt` to IndexAuthorInput and IndexBookInput types
+- [x] Update indexAuthor and indexBook in ragPipeline.service.ts to pass metadata to Pinecone
+- [x] Update indexAuthorIncremental and indexBookIncremental to accept and forward metadata
+- [x] Update createAuthor and updateAuthor to extract category from tagsJson and pass to indexAuthorIncremental
+- [x] Write 18 vitest tests for S1/S2/S3 metadata logic (all passing)

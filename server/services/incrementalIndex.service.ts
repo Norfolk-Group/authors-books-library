@@ -28,7 +28,9 @@ export async function indexBookIncremental(
   bookTitle: string,
   authorName: string | null | undefined,
   summary: string | null | undefined,
-  keyThemes?: string | null
+  keyThemes?: string | null,
+  // T2-A metadata fields (optional)
+  meta?: { category?: string; enrichedAt?: string }
 ): Promise<void> {
   try {
     const text = [summary, keyThemes].filter(Boolean).join(" ") || bookTitle;
@@ -39,6 +41,8 @@ export async function indexBookIncremental(
       title: bookTitle,
       authorName: authorName ?? undefined,
       text,
+      category: meta?.category,
+      enrichedAt: meta?.enrichedAt,
     });
 
     // After indexing, check for near-duplicates
@@ -57,7 +61,9 @@ export async function indexAuthorIncremental(
   authorId: number,
   authorName: string,
   bio: string | null | undefined,
-  richBioJson?: string | null
+  richBioJson?: string | null,
+  // T2-A metadata fields (optional)
+  meta?: { category?: string; bookCount?: number; enrichedAt?: string }
 ): Promise<void> {
   try {
     let bioText = bio ?? "";
@@ -77,6 +83,9 @@ export async function indexAuthorIncremental(
       authorId: String(authorId),
       authorName,
       bioText,
+      category: meta?.category,
+      bookCount: meta?.bookCount,
+      enrichedAt: meta?.enrichedAt,
     });
 
     // After indexing, check for near-duplicates

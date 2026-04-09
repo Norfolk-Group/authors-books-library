@@ -39,6 +39,10 @@ export type VectorMetadata = {
   chunkIndex?: number;       // for multi-chunk documents
   chunkTotal?: number;
   text: string;              // the actual chunk text (for retrieval display)
+  // T2-A metadata filters (added Apr 2026)
+  category?: string;         // primary tag slug (e.g. "psychology", "business")
+  bookCount?: number;        // number of books by this author in the library
+  enrichedAt?: string;       // ISO date string of last enrichment
 };
 
 export type UpsertVectorInput = {

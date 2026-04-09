@@ -465,4 +465,60 @@ export const ragPipelineRouter = router({
         .where(eq(authorRagProfiles.authorName, input.authorName));
       return { success: true };
     }),
+
+  /**
+   * Seed pending rows for all authors who have no RAG profile yet.
+   * Creates a 'pending' row for each author missing from author_rag_profiles.
+   * After calling this, the existing 'Generate N Pending' button will pick them all up.
+   * Idempotent — safe to call multiple times.
+   */
+  seedAllPending: protectedProcedure
+    .mutation(async () => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+
+      // Get all author names
+      const allAuthors = await db
+        .select({ authorName: authorProfiles.authorName })
+        .from(authorProfiles);
+
+      // Get all authors already in the RAG pipeline
+      const existing = await db
+        .select({ authorName: authorRagProfiles.authorName })
+        .from(authorRagProfiles);
+      const existingSet = new Set(existing.map(r => r.authorName));
+
+      // Find authors with no RAG row
+      const missing = allAuthors.filter(a => !existingSet.has(a.authorName));
+
+      if (missing.length === 0) {
+        return { seeded: 0, message: "All authors already have a RAG profile row" };
+      }
+
+      // Insert pending rows in batches of 50
+      const BATCH = 50;
+      let seeded = 0;
+      for (let i = 0; i < missing.length; i += BATCH) {
+        const batch = missing.slice(i, i + BATCH);
+        await db
+          .insert(authorRagProfiles)
+          .values(
+            batch.map(a => ({
+              authorName: a.authorName,
+              ragStatus: "stale" as const,
+              ragVersion: 0,
+              contentItemCount: 0,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }))
+          )
+          .onDuplicateKeyUpdate({
+            set: { updatedAt: new Date() }, // no-op for existing rows
+          });
+        seeded += batch.length;
+      }
+
+      logger.info(`[ragPipeline] seedAllPending: seeded ${seeded} authors`);
+      return { seeded, message: `Seeded ${seeded} authors as pending` };
+    }),
 });

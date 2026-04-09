@@ -74,6 +74,25 @@ export function DigitalMeTab() {
   const { data: completenessScores = [] } = trpc.contextualIntelligence.getCompletenessScores.useQuery();
 
   const generateMutation = trpc.ragPipeline.generate.useMutation();
+  const seedAllMutation = trpc.ragPipeline.seedAllPending.useMutation();
+  const [seeding, setSeeding] = useState(false);
+
+  async function handleSeedAll() {
+    setSeeding(true);
+    try {
+      const result = await seedAllMutation.mutateAsync();
+      if (result.seeded > 0) {
+        toast.success(`Seeded ${result.seeded} authors as pending — click "Generate Pending" to start building`);
+      } else {
+        toast.info(result.message);
+      }
+      await refetchStatuses();
+    } catch (err) {
+      toast.error(`Seed failed: ${String(err)}`);
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   // Build a map of bio completeness by author name
   const completenessMap = new Map(completenessScores.map((s) => [s.authorName, s.bioCompleteness]));
@@ -213,11 +232,22 @@ export function DigitalMeTab() {
               <Progress value={allProgress} className="h-2" />
             </div>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSeedAll}
+              disabled={seeding || generatingAll}
+              className="gap-1.5"
+              title="Create pending rows for all authors not yet in the RAG pipeline"
+            >
+              {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
+              {seeding ? "Seeding…" : "Seed All Authors"}
+            </Button>
             <Button
               size="sm"
               onClick={handleGenerateAll}
-              disabled={generatingAll || (staleCount + pendingCount === 0)}
+              disabled={generatingAll || seeding || (staleCount + pendingCount === 0)}
               className="gap-1.5"
             >
               {generatingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}

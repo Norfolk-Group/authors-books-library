@@ -8,6 +8,34 @@ import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import { tags, authorProfiles, bookProfiles } from "../../drizzle/schema";
 import { eq, asc, sql, desc, isNotNull, ne } from "drizzle-orm";
+import { invokeLLM } from "../_core/llm";
+import { logger } from "../lib/logger";
+
+// ── Predefined tag taxonomy ────────────────────────────────────────────────
+// These are the canonical categories used for auto-tagging.
+// The LLM must choose from this list only.
+const TAG_TAXONOMY: { slug: string; name: string; color: string }[] = [
+  { slug: "business",        name: "Business",        color: "#3B82F6" },
+  { slug: "psychology",      name: "Psychology",      color: "#8B5CF6" },
+  { slug: "science",         name: "Science",         color: "#10B981" },
+  { slug: "leadership",      name: "Leadership",      color: "#F59E0B" },
+  { slug: "economics",       name: "Economics",       color: "#EF4444" },
+  { slug: "philosophy",      name: "Philosophy",      color: "#6366F1" },
+  { slug: "history",         name: "History",         color: "#D97706" },
+  { slug: "technology",      name: "Technology",      color: "#06B6D4" },
+  { slug: "self-help",       name: "Self-Help",       color: "#EC4899" },
+  { slug: "neuroscience",    name: "Neuroscience",    color: "#14B8A6" },
+  { slug: "communication",   name: "Communication",   color: "#F97316" },
+  { slug: "creativity",      name: "Creativity",      color: "#A855F7" },
+  { slug: "health",          name: "Health",          color: "#22C55E" },
+  { slug: "sociology",       name: "Sociology",       color: "#64748B" },
+  { slug: "politics",        name: "Politics",        color: "#DC2626" },
+  { slug: "spirituality",    name: "Spirituality",    color: "#7C3AED" },
+  { slug: "marketing",       name: "Marketing",       color: "#0EA5E9" },
+  { slug: "finance",         name: "Finance",         color: "#16A34A" },
+  { slug: "education",       name: "Education",       color: "#CA8A04" },
+  { slug: "journalism",      name: "Journalism",      color: "#9CA3AF" },
+];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -373,5 +401,147 @@ export const tagsRouter = router({
       // Fetch full tag objects for the slugs
       const allTags = await db.select().from(tags).orderBy(asc(tags.name));
       return allTags.filter(t => slugs.includes(t.slug));
+    }),
+
+  /**
+   * Auto-tag all untagged authors using LLM + predefined taxonomy.
+   * 1. Ensures all 20 canonical tags exist in the tags table.
+   * 2. For each untagged author, asks LLM to pick 2-4 tags from the taxonomy.
+   * 3. Writes the chosen slugs to author_profiles.tagsJson.
+   * Idempotent — skips authors that already have tags.
+   * Returns progress stats.
+   */
+  autoTagAll: protectedProcedure
+    .input(z.object({
+      skipExisting: z.boolean().default(true),
+      maxAuthors: z.number().int().min(1).max(500).default(200),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+
+      // Step 1: Ensure all taxonomy tags exist in the tags table
+      for (const tag of TAG_TAXONOMY) {
+        await db
+          .insert(tags)
+          .values({
+            slug: tag.slug,
+            name: tag.name,
+            color: tag.color,
+            displayOrder: TAG_TAXONOMY.findIndex(t => t.slug === tag.slug),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .onDuplicateKeyUpdate({ set: { color: tag.color, updatedAt: new Date() } });
+      }
+
+      // Step 2: Fetch all authors (optionally skip already-tagged)
+      const allAuthors = await db
+        .select({
+          authorName: authorProfiles.authorName,
+          bio: authorProfiles.bio,
+          richBioJson: authorProfiles.richBioJson,
+          tagsJson: authorProfiles.tagsJson,
+        })
+        .from(authorProfiles)
+        .limit(input.maxAuthors);
+
+      const targets = input.skipExisting
+        ? allAuthors.filter(a => !a.tagsJson || a.tagsJson === "[]" || a.tagsJson === "null")
+        : allAuthors;
+
+      if (targets.length === 0) {
+        return { tagged: 0, skipped: allAuthors.length, message: "All authors already have tags" };
+      }
+
+      const taxonomyList = TAG_TAXONOMY.map(t => `${t.slug} (${t.name})`).join(", ");
+      let tagged = 0;
+      let failed = 0;
+
+      // Step 3: Tag each author with LLM
+      for (const author of targets) {
+        try {
+          // Build bio text
+          let bioText = author.bio ?? "";
+          try {
+            if (author.richBioJson) {
+              const rich = JSON.parse(author.richBioJson);
+              const richBio = rich?.fullBio ?? rich?.bio ?? "";
+              if (richBio.length > bioText.length) bioText = richBio;
+            }
+          } catch { /* use plain bio */ }
+
+          if (bioText.length < 30) {
+            // Not enough bio to tag — assign "self-help" as a safe default
+            await db
+              .update(authorProfiles)
+              .set({ tagsJson: JSON.stringify(["self-help"]), updatedAt: new Date() })
+              .where(eq(authorProfiles.authorName, author.authorName));
+            tagged++;
+            continue;
+          }
+
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `You are a librarian categorizing non-fiction authors. Given an author bio, select 2-4 tags from the provided taxonomy that best describe their primary subject areas. Return ONLY a JSON array of slug strings, e.g. ["business","psychology"]. Do not include any explanation.`,
+              },
+              {
+                role: "user",
+                content: `Author: ${author.authorName}\nBio: ${bioText.slice(0, 800)}\n\nAvailable tags: ${taxonomyList}\n\nReturn a JSON array of 2-4 tag slugs.`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "tag_slugs",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    slugs: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "Array of 2-4 tag slugs from the taxonomy",
+                    },
+                  },
+                  required: ["slugs"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+
+          const rawContent = response?.choices?.[0]?.message?.content;
+          if (!rawContent) throw new Error("Empty LLM response");
+          const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+          const parsed = JSON.parse(content) as { slugs: string[] };;
+          const validSlugs = parsed.slugs
+            .filter(s => TAG_TAXONOMY.some(t => t.slug === s))
+            .slice(0, 4);
+
+          if (validSlugs.length === 0) throw new Error("No valid slugs returned");
+
+          await db
+            .update(authorProfiles)
+            .set({ tagsJson: JSON.stringify(validSlugs), updatedAt: new Date() })
+            .where(eq(authorProfiles.authorName, author.authorName));
+
+          tagged++;
+          logger.info(`[autoTagAll] Tagged "${author.authorName}": ${validSlugs.join(", ")}`);
+        } catch (err) {
+          failed++;
+          logger.warn(`[autoTagAll] Failed to tag "${author.authorName}": ${String(err)}`);
+        }
+      }
+
+      return {
+        tagged,
+        failed,
+        skipped: allAuthors.length - targets.length,
+        total: allAuthors.length,
+        message: `Tagged ${tagged} authors, ${failed} failed, ${allAuthors.length - targets.length} skipped (already tagged)`,
+      };
     }),
 });

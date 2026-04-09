@@ -429,7 +429,14 @@ const authorProfilesCoreRouter = router({
       const created = rows[0];
       // Fire-and-forget: index in Pinecone and check for near-duplicates
       if (created) {
-        indexAuthorIncremental(created.id, created.authorName, created.bio, created.richBioJson).catch(() => {});
+        const primaryCategory = (() => {
+          try { const tags = JSON.parse(created.tagsJson ?? "[]") as string[]; return tags[0] ?? undefined; }
+          catch { return undefined; }
+        })();
+        indexAuthorIncremental(created.id, created.authorName, created.bio, created.richBioJson, {
+          category: primaryCategory,
+          enrichedAt: created.enrichedAt?.toISOString(),
+        }).catch(() => {});
         // P3: Near-duplicate detection — fire-and-forget, flags similar authors in review queue
         checkAuthorDuplicate(created.authorName).catch((e) =>
           logger.warn("[createAuthor] near-dup check failed", e)
@@ -496,7 +503,14 @@ const authorProfilesCoreRouter = router({
       const updated = rows[0] ?? null;
       // Fire-and-forget: re-index in Pinecone after update
       if (updated && input.bio !== undefined) {
-        indexAuthorIncremental(updated.id, updated.authorName, updated.bio, updated.richBioJson).catch(() => {});
+        const primaryCategory = (() => {
+          try { const tags = JSON.parse(updated.tagsJson ?? "[]") as string[]; return tags[0] ?? undefined; }
+          catch { return undefined; }
+        })();
+        indexAuthorIncremental(updated.id, updated.authorName, updated.bio, updated.richBioJson, {
+          category: primaryCategory,
+          enrichedAt: updated.enrichedAt?.toISOString(),
+        }).catch(() => {});
         // P3: Near-duplicate detection after bio update
         checkAuthorDuplicate(updated.authorName).catch((e) =>
           logger.warn("[updateAuthor] near-dup check failed", e)
