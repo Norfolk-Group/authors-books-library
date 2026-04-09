@@ -537,3 +537,11 @@ Last cleaned: Apr 5, 2026
   - getAuthorAvatar() from authorAvatars.ts is only a tertiary fallback
   - No new migration needed — architecture is already correct
 - [ ] Delete authorAvatars.ts after confirming all authors have DB avatars (optional cleanup)
+
+## Bug Fix — Hook Violation (Apr 9, 2026)
+
+- [x] Fix "Invalid hook call / Cannot read properties of null (reading 'useContext')" on home page
+  - Root cause: useAuthorAliases() was placed at module level in AuthorBioPanel.tsx (line 428)
+    between two function definitions, outside any React component body
+  - Fix: moved the hook call inside the AuthorBioPanel function body
+  - TypeScript: 0 errors, HMR applied at 10:15:13 AM

@@ -425,8 +425,8 @@ function DigitalMeSection({ authorName }: { authorName: string }) {
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────────────────────────────
-  const { canonicalName } = useAuthorAliases();
 export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
+  const { canonicalName } = useAuthorAliases();
   const displayName = canonicalName(author.name);
   const specialty = author.name.includes(" - ") ? author.name.slice(author.name.indexOf(" - ") + 3) : "";
   const avatarUrl = getAuthorAvatar(displayName);
