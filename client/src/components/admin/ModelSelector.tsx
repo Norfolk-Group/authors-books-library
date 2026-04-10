@@ -25,7 +25,6 @@ import {
   XCircle,
   Sparkles,
   Star,
-  Zap,
   Info,
 } from "lucide-react";
 import { toast } from "sonner";

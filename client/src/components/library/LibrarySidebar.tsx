@@ -29,7 +29,6 @@ import {
   Flame,
   GitCompare,
   Tag,
-  X,
   TrendingUp,
   Brain,
 } from "lucide-react";

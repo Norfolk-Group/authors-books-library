@@ -11,7 +11,7 @@
  */
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, MeshTransmissionMaterial } from "@react-three/drei";
+import { Float } from "@react-three/drei";
 import * as THREE from "three";
 
 interface BookShapeProps {
@@ -63,14 +63,17 @@ export function FloatingBooks({
   className = "",
   colors,
 }: FloatingBooksProps) {
-  const defaultColors = colors || [
-    "#FDB817", // NCG Yellow
-    "#112548", // NCG Navy
-    "#0091AE", // NCG Teal
-    "#F4795B", // NCG Orange
-    "#21B9A3", // NCG Green
-    "#6366f1", // Indigo accent
-  ];
+  const defaultColors = useMemo(
+    () => colors || [
+      "#FDB817", // NCG Yellow
+      "#112548", // NCG Navy
+      "#0091AE", // NCG Teal
+      "#F4795B", // NCG Orange
+      "#21B9A3", // NCG Green
+      "#6366f1", // Indigo accent
+    ],
+    [colors]
+  );
 
   const books = useMemo(() => {
     return Array.from({ length: count }, (_, i) => {
@@ -92,7 +95,7 @@ export function FloatingBooks({
         speed: 0.5 + Math.random() * 1.5,
       };
     });
-  }, [count]);
+  }, [count, defaultColors]);
 
   return (
     <div className={`pointer-events-none ${className}`}>

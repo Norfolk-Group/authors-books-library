@@ -469,8 +469,8 @@ export function AuthorBioPanel({ author, onClose }: AuthorBioPanelProps) {
           : undefined,
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- enrichMutation, displayName, settings.* intentionally omitted: triggers once when bio absent
   }, [jsonBio, isLoading, profile]);
-
   const effectiveAvatarUrl = generatedPhotoUrl ?? profile?.s3AvatarUrl ?? profile?.avatarUrl ?? avatarUrl;
 
   // Parse social stats

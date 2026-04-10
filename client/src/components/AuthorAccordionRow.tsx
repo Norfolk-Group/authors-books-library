@@ -116,7 +116,7 @@ export function AuthorAccordionRow({
     []
   );
 
-  const displayName = useMemo(() => canonicalName(author.name), [author.name]);
+  const displayName = useMemo(() => canonicalName(author.name), [author.name, canonicalName]);
 
   const specialty = useMemo(() => {
     if (!author.name.includes(" - ")) return undefined;

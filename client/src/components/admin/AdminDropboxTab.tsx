@@ -20,7 +20,6 @@ import {
   CheckCircle,
   XCircle,
   CloudArrowUp,
-  FolderOpen,
   Image,
   FilePdf,
   Users,

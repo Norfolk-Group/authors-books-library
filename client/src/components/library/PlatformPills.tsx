@@ -13,7 +13,7 @@
  *   Media:  wikipedia, ycombinator, cnbc, cnn, bloomberg/seekingAlpha, yahooFinance
  */
 
-import { ExternalLink, Globe, Mic, Mail, Presentation, BookOpen } from "lucide-react";
+import { Globe, Mic, Mail, Presentation, BookOpen } from "lucide-react";
 import type { SocialStatsResult } from "../../../../server/enrichment/socialStats";
 
 // ── Named website entry (from websitesJson column) ────────────────────────────

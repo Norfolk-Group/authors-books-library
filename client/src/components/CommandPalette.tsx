@@ -10,10 +10,9 @@
  * - Shows category badge on author results
  * - Shows author name on book results
  */
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Command } from "cmdk";
-import { Dialog } from "@/components/ui/dialog";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Search,
@@ -96,7 +95,7 @@ export function CommandPalette({ onNavigateAuthor, onNavigateBook }: CommandPale
         navigate(`/author/${slug}`);
       }
     },
-    [handleClose, onNavigateAuthor, navigate]
+    [handleClose, onNavigateAuthor, navigate, canonicalName]
   );
 
   const handleSelectBook = useCallback(

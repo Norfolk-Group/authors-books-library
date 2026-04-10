@@ -17,7 +17,6 @@ import {
   Sparkle,
   Link,
   UsersThree,
-  XCircle,
 } from "@phosphor-icons/react";
 import type { ActionState } from "@/hooks/useAdminActions";
 import { BulkTagAssignment } from "@/components/admin/BulkTagAssignment";

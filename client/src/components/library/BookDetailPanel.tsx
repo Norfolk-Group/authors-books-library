@@ -73,7 +73,7 @@ interface BookDetailPanelProps {
 }
 
 export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = false, open }: BookDetailPanelProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated: _isAuthenticated } = useAuth();
   const color = CATEGORY_COLORS[book.category] ?? "hsl(var(--muted-foreground))";
   const iconName = CATEGORY_ICONS[book.category] ?? "book-open";
   const Icon = ICON_MAP[iconName] ?? BookMarkedIcon;
@@ -102,6 +102,7 @@ export function BookDetailPanel({ book, onClose, variant = 'full', asDialog = fa
           : undefined,
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- enrichMutation, displayTitle, bookAuthor, settings.* intentionally omitted: triggers once when book absent
   }, [isLoading, profile]);
 
   const isLoadingProfile = isLoading || enrichMutation.isPending;

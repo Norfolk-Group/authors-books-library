@@ -19,9 +19,8 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
@@ -30,7 +29,6 @@ import {
   XCircle,
   SkipForward,
   Loader2,
-  RefreshCw,
   Users,
   BookOpen,
   Zap,
@@ -62,28 +60,6 @@ type ReviewItem = {
   createdAt: Date;
 };
 
-type RagReadinessResult = {
-  authorName: string;
-  score: number;
-  breakdown: {
-    bookPoints: number;
-    contentItemPoints: number;
-    bioWordPoints: number;
-    bioCompletenessPoints: number;
-    wikipediaPoints: number;
-    linkedinPoints: number;
-    ragReadyBonus: number;
-  };
-  bookCount: number;
-  contentItemCount: number;
-  bioWordCount: number;
-  bioCompleteness: number;
-  hasWikipedia: boolean;
-  hasLinkedin: boolean;
-  ragStatus: string | null;
-  isChatbotReady: boolean;
-  isHighQuality: boolean;
-};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

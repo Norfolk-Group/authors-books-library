@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Tag, MagnifyingGlass, CheckSquare, Square, Spinner } from "@phosphor-icons/react";
+import { Tag, MagnifyingGlass, Spinner } from "@phosphor-icons/react";
 import { AUTHORS } from "@/lib/libraryData";
 
 export function BulkTagAssignment() {

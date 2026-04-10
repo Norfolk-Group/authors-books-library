@@ -21,7 +21,6 @@ import {
   Star,
   TrendingUp,
   RefreshCw,
-  ExternalLink,
   LogIn,
 } from "lucide-react";
 import { getLoginUrl } from "@/const";
@@ -49,7 +48,7 @@ function EntityAvatar({ imageUrl, name }: { imageUrl?: string | null; name: stri
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 export function FavoritesTab() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<"mine" | "top">("mine");
 
   // Current user's favorites

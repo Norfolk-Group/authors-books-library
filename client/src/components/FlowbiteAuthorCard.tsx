@@ -307,7 +307,7 @@ export function FlowbiteAuthorCard({
   const isSuspiciousName = useMemo(() => !isLikelyAuthorName(displayName), [displayName]);
 
   // Overall freshness
-  const overallFreshness = useMemo(
+  const _overallFreshness = useMemo(
     () => (freshnessDimensions ? computeOverallFreshness(freshnessDimensions) : null),
     [freshnessDimensions]
   );

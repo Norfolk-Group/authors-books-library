@@ -21,7 +21,7 @@ interface InlineTagPickerProps {
 export function InlineTagPicker({
   entityType,
   entityKey,
-  currentTagSlugs = [],
+  currentTagSlugs: _currentTagSlugs = [],
   onTagsChange,
 }: InlineTagPickerProps) {
   const utils = trpc.useUtils();

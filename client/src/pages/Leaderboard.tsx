@@ -18,11 +18,10 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import PageHeader from "@/components/PageHeader";
-import { PlatformPills, countPlatformLinks } from "@/components/library/PlatformPills";
+import { countPlatformLinks } from "@/components/library/PlatformPills";
 import { AUTHORS, CATEGORY_COLORS } from "@/lib/libraryData";
 import { useAuthorAliases } from "@/hooks/useAuthorAliases";
 import { getAuthorAvatar } from "@/lib/authorAvatars";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Eye,
@@ -30,7 +29,6 @@ import {
   BarChart2,
   Globe,
   Star,
-  GitFork,
   Trophy,
   BarChart,
   BookOpen,
@@ -131,7 +129,7 @@ interface LeaderRowProps {
   socialStats: SocialStatsResult | null;
 }
 
-function LeaderRow({ rank, entry, maxValue, metric, platformLinks, socialStats }: LeaderRowProps) {
+function LeaderRow({ rank, entry, maxValue, metric: _metric, platformLinks: _platformLinks, socialStats: _socialStats }: LeaderRowProps) {
   const { canonicalName } = useAuthorAliases();
   const author = AUTHORS.find((a) => canonicalName(a.name) === canonicalName(entry.authorName));
   const avatar = getAuthorAvatar(entry.authorName);
@@ -227,15 +225,16 @@ export default function Leaderboard() {
       map.set(canonicalName(row.authorName), countPlatformLinks(row));
     }
     return map;
-  }, [platformLinksQuery.data]);
+  }, [platformLinksQuery.data, canonicalName]);
 
+  const platformLinksData = platformLinksQuery.data;
   const platformLinksMap = useMemo(() => {
-    const map = new Map<string, NonNullable<typeof platformLinksQuery.data>[number]>();
-    for (const row of platformLinksQuery.data ?? []) {
+    const map = new Map<string, NonNullable<typeof platformLinksData>[number]>();
+    for (const row of platformLinksData ?? []) {
       map.set(canonicalName(row.authorName), row);
     }
     return map;
-  }, [platformLinksQuery.data]);
+  }, [platformLinksData, canonicalName]);
 
   const socialStatsMap = useMemo(() => {
     const map = new Map<string, SocialStatsResult | null>();
@@ -243,7 +242,7 @@ export default function Leaderboard() {
       map.set(canonicalName(row.authorName), row.socialStats as SocialStatsResult | null);
     }
     return map;
-  }, [socialStatsQuery.data]);
+  }, [socialStatsQuery.data, canonicalName]);
 
   const metric = METRICS.find((m) => m.key === activeMetric)!;
 
@@ -254,7 +253,7 @@ export default function Leaderboard() {
       map.set(canonicalName(row.authorName), row.tagSlugs.length);
     }
     return map;
-  }, [authorTagSlugsQuery.data]);
+  }, [authorTagSlugsQuery.data, canonicalName]);
 
   const leaderboard = useMemo((): LeaderboardEntry[] => {
     const entries: LeaderboardEntry[] = AUTHORS.map((author) => {
@@ -281,7 +280,7 @@ export default function Leaderboard() {
       .filter((e) => e.value > 0)
       .sort((a, b) => b.value - a.value)
       .slice(0, 20);
-  }, [socialStatsMap, platformCountMap, authorTagCountMap, metric, activeMetric]);
+  }, [socialStatsMap, platformCountMap, authorTagCountMap, metric, activeMetric, canonicalName]);
 
   const maxValue = leaderboard[0]?.value ?? 1;
   const isLoading = socialStatsQuery.isLoading || platformLinksQuery.isLoading;

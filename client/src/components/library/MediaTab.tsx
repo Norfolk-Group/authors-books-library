@@ -29,7 +29,6 @@ import {
   Mic,
   Youtube,
   Tv,
-  BookOpen,
   Globe2,
   MessageSquare,
   Radio,

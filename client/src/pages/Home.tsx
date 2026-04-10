@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import {
-  AUTHORS,
   BOOKS,
   CATEGORY_COLORS,
   type AuthorEntry,
@@ -39,15 +38,13 @@ import { FlowbiteAuthorCard } from "@/components/FlowbiteAuthorCard";
 import { useAuthorAliases } from "@/hooks/useAuthorAliases";
 
 import { BookCard } from "@/components/library/BookCard";
-import { AudioCard } from "@/components/library/AudioCard";
 import { AuthorBioPanel } from "@/components/library/AuthorBioPanel";
 import { BookDetailPanel } from "@/components/library/BookDetailPanel";
-import { StatCard, EmptyState } from "@/components/library/LibraryPrimitives";
+import { StatCard } from "@/components/library/LibraryPrimitives";
 import { FloatingBooks } from "@/components/FloatingBooks";
 import { STATS, type BookEnrichmentLevel } from "@/components/library/libraryConstants";
 import { LibrarySidebar, type TabType } from "@/components/library/LibrarySidebar";
 import { LibraryHeader } from "@/components/library/LibraryHeader";
-import { TagGroupHeader, groupByFirstTag } from "@/components/library/TagGroupHeader";
 import { MediaTab } from "@/components/library/MediaTab";
 import { PersonalizedNextSection } from "@/components/library/PersonalizedNextSection";
 import { AuthorsTabContent } from "@/components/library/AuthorsTabContent";
@@ -70,8 +67,6 @@ import {
   Headphones,
   ArrowUpDown,
   Heart,
-  Sparkles,
-  Film,
   X,
 } from "lucide-react";
 

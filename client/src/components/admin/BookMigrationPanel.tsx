@@ -38,7 +38,7 @@ export function BookMigrationPanel() {
   const [isRunning, setIsRunning] = useState(false);
   const [isDryRunning, setIsDryRunning] = useState(false);
   const [results, setResults] = useState<MigrationResult[]>([]);
-  const [offset, setOffset] = useState(0);
+  const [_offset, setOffset] = useState(0);
   const [isDone, setIsDone] = useState(false);
 
   const migrateMutation = trpc.contentItems.migrateFromBookProfiles.useMutation();

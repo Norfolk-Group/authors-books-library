@@ -11,14 +11,13 @@
 
 import { useState, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -55,7 +54,6 @@ import {
   BookOpen,
   UsersThree,
   Warning,
-  Info,
 } from "@phosphor-icons/react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -153,11 +151,11 @@ export function AdminSmartUploadTab() {
   const { data: stats } = trpc.smartUpload.stats.useQuery(undefined, {
     refetchInterval: 5000,
   });
-  const { data: reviewItems = [], refetch: refetchReview } = trpc.smartUpload.list.useQuery(
+  const { data: reviewItems = [] } = trpc.smartUpload.list.useQuery(
     { status: "review", limit: 50 },
     { refetchInterval: 8000 }
   );
-  const { data: allItems = [], refetch: refetchAll } = trpc.smartUpload.list.useQuery(
+  const { data: allItems = [] } = trpc.smartUpload.list.useQuery(
     { status: "all", limit: 100 }
   );
   const { data: authors = [] } = trpc.smartUpload.listAuthors.useQuery();
@@ -276,7 +274,6 @@ export function AdminSmartUploadTab() {
 
           // After 30s, move all "classifying" to "done"
           setUploadingFiles((prev) => {
-            const now = Date.now();
             return prev.map((e) => {
               if (e.progress === "classifying") {
                 return { ...e, progress: "done" };

@@ -9,7 +9,6 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Newspaper, ExternalLink, RefreshCw, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 // Source → badge color mapping
 const SOURCE_COLORS: Record<string, string> = {

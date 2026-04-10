@@ -83,13 +83,13 @@ export default function InterestHeatmap() {
   });
 
   const interests = interestsQuery.data ?? [];
-  const allScores = scoresQuery.data ?? [];
-  const ragProfiles = ragQuery.data ?? [];
+  const allScores = scoresQuery.data;
+  const ragProfiles = ragQuery.data;
 
   // Build a map: authorName → interestId → { score, rationale }
   const scoreMap = useMemo(() => {
     const map = new Map<string, Map<number, { score: number; rationale: string | null }>>();
-    for (const s of allScores) {
+    for (const s of allScores ?? []) {
       if (!map.has(s.authorName)) map.set(s.authorName, new Map());
       map.get(s.authorName)!.set(s.interestId, { score: s.score, rationale: s.rationale ?? null });
     }
@@ -98,7 +98,7 @@ export default function InterestHeatmap() {
 
   // Authors with ready RAG files
   const readyAuthors = useMemo(() =>
-    ragProfiles
+    (ragProfiles ?? [])
       .filter((r: { ragStatus: string; authorName: string }) => r.ragStatus === "ready")
       .map((r: { ragStatus: string; authorName: string }) => r.authorName),
     [ragProfiles]
@@ -386,7 +386,7 @@ export default function InterestHeatmap() {
           <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
             <Badge variant="outline">{displayAuthors.length} authors</Badge>
             <Badge variant="outline">{interests.length} interests</Badge>
-            <Badge variant="outline">{allScores.length} scores computed</Badge>
+            <Badge variant="outline">{(allScores ?? []).length} scores computed</Badge>
             <span className="ml-auto">
               Click an interest column header to sort by that topic · Click a cell to see the rationale
             </span>

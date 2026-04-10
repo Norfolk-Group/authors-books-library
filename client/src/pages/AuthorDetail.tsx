@@ -294,7 +294,7 @@ interface BookCardProps {
   authorName: string;
 }
 
-function BookCard({ bookName, bookId, authorName }: BookCardProps) {
+function BookCard({ bookName, bookId, authorName: _authorName }: BookCardProps) {
   const cleanTitle = bookName.split(" - ")[0];
   const driveUrl = `https://drive.google.com/drive/folders/${bookId}?view=grid`;
   const bookSlug = encodeURIComponent(cleanTitle);
@@ -402,7 +402,7 @@ export default function AuthorDetail() {
   const author = useMemo(() => {
     const canonical = canonicalName(decodedName);
     return AUTHORS.find((a) => canonicalName(a.name) === canonical) ?? null;
-  }, [decodedName]);
+  }, [decodedName, canonicalName]);
 
   const displayName = author ? canonicalName(author.name) : decodedName;
   const specialty = author?.name.includes(" - ")
@@ -449,6 +449,7 @@ export default function AuthorDetail() {
             : undefined,
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- enrichMutation, displayName, settings.* intentionally omitted: triggers once when bio absent
   }, [jsonBio, isLoading, profile]);
 
   const effectiveAvatarUrl =

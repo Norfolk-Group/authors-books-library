@@ -56,10 +56,10 @@ export default function GroupContrast() {
   });
 
   const interests = interestsQuery.data ?? [];
-  const ragProfiles = ragQuery.data ?? [];
+  const ragProfiles = ragQuery.data;
 
   const readyAuthors = useMemo(() =>
-    ragProfiles
+    (ragProfiles ?? [])
       .filter((r: { ragStatus: string; authorName: string }) => r.ragStatus === "ready")
       .map((r: { ragStatus: string; authorName: string }) => r.authorName)
       .sort((a: string, b: string) => a.localeCompare(b)),

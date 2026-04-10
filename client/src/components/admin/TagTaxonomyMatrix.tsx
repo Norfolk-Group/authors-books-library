@@ -39,7 +39,7 @@ export function TagTaxonomyMatrix() {
       const cellKey = `${entityKey}::${tagSlug}`;
       setPending((prev) => new Set(Array.from(prev).concat(cellKey)));
     },
-    onSuccess: (_, { entityKey, tagSlug, action }) => {
+    onSuccess: (_, { entityKey, tagSlug, action: _action }) => {
       const cellKey = `${entityKey}::${tagSlug}`;
       setPending((prev) => {
         const next = new Set(Array.from(prev).filter(k => k !== cellKey));

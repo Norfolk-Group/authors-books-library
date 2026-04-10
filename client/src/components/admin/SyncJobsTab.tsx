@@ -26,8 +26,6 @@ import {
   AlertCircle,
   Clock,
   XCircle,
-  FolderOpen,
-  FileText,
   Image,
   Brain,
   BookOpen,

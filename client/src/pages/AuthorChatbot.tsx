@@ -24,7 +24,6 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
@@ -169,7 +168,7 @@ export default function AuthorChatbot() {
           timestamp: new Date(),
         }]);
       }
-    } catch (err) {
+    } catch {
       setMessages((prev) => [...prev, {
         role: "assistant",
         content: "I encountered an error. Please try again.",

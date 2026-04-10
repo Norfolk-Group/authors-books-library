@@ -134,7 +134,7 @@ export function AuthorCardActions({
         forceRegenerate: hasAvatar,
       });
     },
-    [authorName, avatarStatus, generateAvatarMutation, settings, hasAvatar]
+    [authorName, avatarStatus, generateAvatarMutation, settings, hasAvatar, onAvatarRegenerating]
   );
 
   const handleUpdateBio = useCallback(

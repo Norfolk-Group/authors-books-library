@@ -26,7 +26,6 @@ import {
   HelpCircle,
   Zap,
   Clock,
-  Activity,
   Database,
   Shield,
   HardDrive,

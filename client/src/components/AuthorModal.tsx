@@ -97,6 +97,7 @@ export function AuthorModal({ author, avatarUrl: photoOverride, onClose }: Autho
       hasTriggered.current = true;
       enrichMutation.mutate({ authorName: displayName });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- enrichMutation intentionally omitted: triggers once on open, not on every mutation reference change
   }, [open, jsonBio, isLoading, profile, displayName]);
 
   // Find Real Avatar - Apify Wikipedia scrape

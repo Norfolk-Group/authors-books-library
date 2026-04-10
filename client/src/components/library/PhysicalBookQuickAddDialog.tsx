@@ -62,7 +62,7 @@ export function PhysicalBookQuickAddDialog({
   const utils = trpc.useUtils();
 
   const createBookMutation = trpc.bookProfiles.createBook.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success(`"${title}" added to your physical library`, {
         description: autoEnrich
           ? "Background enrichment queued — cover, summary, and links will populate shortly."
@@ -79,7 +79,7 @@ export function PhysicalBookQuickAddDialog({
   });
 
   // Auto-enrich mutation (best-effort, non-blocking) — no-op if procedure not available
-  const enrichMutation = (trpc.bookProfiles as any).enrichBook?.useMutation?.({
+  const _enrichMutation = (trpc.bookProfiles as any).enrichBook?.useMutation?.({
     onError: () => {
       // Silent fail — enrichment is optional
     },

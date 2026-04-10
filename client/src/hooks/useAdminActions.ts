@@ -60,7 +60,7 @@ export function useAdminActions(settings: AppSettings) {
   const regenerateMutation = trpc.library.regenerate.useMutation();
   const enrichBiosMutation = trpc.authorProfiles.enrichBatch.useMutation();
   const enrichBooksMutation = trpc.bookProfiles.enrichBatch.useMutation();
-  const generateAvatarMutation = trpc.authorProfiles.generateAvatar.useMutation();
+  const _generateAvatarMutation = trpc.authorProfiles.generateAvatar.useMutation();
   const generateAllMissingAvatarsMutation = trpc.authorProfiles.generateAllMissingAvatars.useMutation();
   const scrapeNextMutation = trpc.apify.scrapeNextMissingCover.useMutation();
   const mirrorCoversMutation = trpc.bookProfiles.mirrorCovers.useMutation();

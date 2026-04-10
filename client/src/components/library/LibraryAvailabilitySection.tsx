@@ -90,6 +90,7 @@ function AvailabilityRow({
 // ─── Free Digital Copy Badge ──────────────────────────────────────────────────
 
 export function FreeDigitalCopyBadge({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   bookTitle,
   isbn,
 }: {

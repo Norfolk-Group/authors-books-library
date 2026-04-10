@@ -156,20 +156,21 @@ export default function AuthorCompare() {
   // All author names for the selector
   const allAuthorNames = useMemo(
     () => Array.from(new Set(AUTHORS.map((a) => canonicalName(a.name)))).sort(),
-    []
+    [canonicalName]
   );
 
   // Fetch platform links for all selected authors
   const platformLinksQuery = trpc.authorProfiles.getAllPlatformLinks.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
+  const platformLinksData = platformLinksQuery.data;
   const platformLinksMap = useMemo(() => {
-    const map = new Map<string, NonNullable<typeof platformLinksQuery.data>[number]>();
-    for (const row of platformLinksQuery.data ?? []) {
+    const map = new Map<string, NonNullable<typeof platformLinksData>[number]>();
+    for (const row of platformLinksData ?? []) {
       map.set(canonicalName(row.authorName), row);
     }
     return map;
-  }, [platformLinksQuery.data]);
+  }, [platformLinksData, canonicalName]);
 
   // Fetch social stats for selected authors
   const socialStatsQuery = trpc.authorProfiles.getSocialStats.useQuery(
@@ -182,7 +183,7 @@ export default function AuthorCompare() {
       map.set(canonicalName(row.authorName), row.socialStats as SocialStatsResult | null);
     }
     return map;
-  }, [socialStatsQuery.data]);
+  }, [socialStatsQuery.data, canonicalName]);
 
   // Fetch bios
   const biosQuery = trpc.authorProfiles.getAllBios.useQuery(undefined, {
@@ -194,7 +195,7 @@ export default function AuthorCompare() {
       if (row.bio) map.set(canonicalName(row.authorName), row.bio);
     }
     return map;
-  }, [biosQuery.data]);
+  }, [biosQuery.data, canonicalName]);
 
   // Update URL when selection changes
   const updateUrl = useCallback((names: string[]) => {
@@ -229,7 +230,7 @@ export default function AuthorCompare() {
     const bio = biosMap.get(canonical);
     const author = AUTHORS.find((a) => canonicalName(a.name) === canonical);
     return { name, links, stats, bio, author };
-  }), [selectedAuthors, platformLinksMap, socialStatsMap, biosMap]);
+  }), [selectedAuthors, platformLinksMap, socialStatsMap, biosMap, canonicalName]);
 
   const colCount = selectedAuthors.length;
 

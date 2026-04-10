@@ -553,3 +553,15 @@ Last cleaned: Apr 5, 2026
 - [x] Add pnpm lint and pnpm lint:fix scripts to package.json
 - [x] Run ESLint: 0 errors, 124 warnings (all pre-existing exhaustive-deps / no-explicit-any)
   - rules-of-hooks: CLEAN across all 100+ client source files
+
+## ESLint — Fix exhaustive-deps & no-unused-vars (Apr 10, 2026)
+
+- [x] Fixed all 23 exhaustive-deps warnings (0 remaining)
+  - Added canonicalName to useMemo/useCallback deps in 12 files
+  - Added eslint-disable-next-line for intentional mount-only useEffects (AuthorModal, AuthorBioPanel, BookDetailPanel)
+  - Stabilized unstable query.data expressions in GroupContrast, InterestHeatmap
+  - Extracted platformLinksData type to avoid typeof reference in AuthorCompare, Leaderboard
+- [x] Fixed all 101 no-unused-vars warnings (0 remaining)
+  - Removed unused imports across 25+ files
+  - Prefixed intentionally unused args/vars with _ convention
+- [x] TypeScript: 0 errors, ESLint: 0 errors, 37 warnings (all no-explicit-any — acceptable)

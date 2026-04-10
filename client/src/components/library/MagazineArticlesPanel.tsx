@@ -222,7 +222,7 @@ export function MagazineArticlesPanel({ authorName }: { authorName: string }) {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const utils = trpc.useUtils();
-  const [syncingSource, setSyncingSource] = useState<string | null>(null);
+  const [_syncingSource, setSyncingSource] = useState<string | null>(null);
 
   const { data, isLoading } = trpc.magazine.getByAuthor.useQuery(
     { authorName, limit: 50 },

@@ -21,7 +21,6 @@ import {
   type FreshnessDimension,
 } from "@/components/library/FreshnessDot";
 import { getBookEnrichmentLevel, type BookEnrichmentLevel } from "@/components/library/libraryConstants";
-import { STATS } from "@/components/library/libraryConstants";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -386,7 +385,7 @@ export function useLibraryData({
         default: return a.name.localeCompare(b.name);
       }
     });
-  }, [query, selectedCategories, authorSort, showFavoritesOnly, researchQualityMap, authorFavoritesQuery.data, platformLinksMap, selectedTagSlugs, authorTagsMap]);
+  }, [query, selectedCategories, authorSort, showFavoritesOnly, researchQualityMap, authorFavoritesQuery.data, platformLinksMap, selectedTagSlugs, authorTagsMap, canonicalName]);
 
   const filteredBooks = useMemo(() => {
     const q = query.toLowerCase();
