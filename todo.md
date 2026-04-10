@@ -545,3 +545,11 @@ Last cleaned: Apr 5, 2026
     between two function definitions, outside any React component body
   - Fix: moved the hook call inside the AuthorBioPanel function body
   - TypeScript: 0 errors, HMR applied at 10:15:13 AM
+
+## ESLint — rules-of-hooks (Apr 10, 2026)
+
+- [x] Install eslint-plugin-react-hooks (+ @eslint/js, @typescript-eslint/*, globals)
+- [x] Create eslint.config.js (flat config) with rules-of-hooks: error, exhaustive-deps: warn
+- [x] Add pnpm lint and pnpm lint:fix scripts to package.json
+- [x] Run ESLint: 0 errors, 124 warnings (all pre-existing exhaustive-deps / no-explicit-any)
+  - rules-of-hooks: CLEAN across all 100+ client source files
