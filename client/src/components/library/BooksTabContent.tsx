@@ -8,13 +8,14 @@
  * All data is passed as props from Home.tsx to keep the parent as the
  * single source of truth for state and data fetching.
  */
+import { useState } from "react";
 import { BookCard } from "@/components/library/BookCard";
 import { AudioCard } from "@/components/library/AudioCard";
 import { EmptyState } from "@/components/library/LibraryPrimitives";
 import { normalizeTitleKey } from "@/hooks/useLibraryData";
 import { type BookRecord } from "@/lib/libraryData";
 import { type AudioBook } from "@/lib/audioData";
-import { Headphones } from "lucide-react";
+import { Headphones, ChevronDown, Tag } from "lucide-react";
 import type { FreshnessDimension } from "@/components/library/FreshnessDot";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -100,65 +101,89 @@ export function BooksTabContent({
   onEditBook,
   onDeleteBook,
 }: BooksTabContentProps) {
+  // Collapsible strip state — default collapsed so the grid is immediately visible
+  const [taggedOpen, setTaggedOpen] = useState(false);
+
   if (filteredBooks.length === 0) return <EmptyState query={query} />;
 
   const bookRecentlyTagged = recentlyTaggedData?.filter((i) => i.entityType === "book") ?? [];
 
   return (
     <>
-      {/* Recently Tagged strip — Books tab */}
+      {/* Recently Tagged — collapsible pill (Books tab) */}
       {!query && selectedCategories.size === 0 && selectedTagSlugs.size === 0 && bookRecentlyTagged.length > 0 && (
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">🏷️</span>
-            <h2 className="text-sm font-semibold">Recently Tagged</h2>
-            <span className="text-xs text-muted-foreground">Books with tags applied recently</span>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-            {bookRecentlyTagged.map((item) => {
-              const coverUrl = item.s3AvatarUrl || item.avatarUrl || null;
-              return (
-                <button
-                  key={`book::${item.entityKey}`}
-                  onClick={() => {
-                    const found = filteredBooks.find(
-                      (b) =>
-                        normalizeTitleKey(b.name) === item.entityKey ||
-                        b.name.toLowerCase().includes(item.entityKey.toLowerCase())
-                    );
-                    if (found) onDetailClick(found);
-                  }}
-                  className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 hover:border-border/80 transition-all w-[100px] group"
-                >
-                  <div className="relative">
-                    {coverUrl ? (
-                      <img
-                        src={coverUrl}
-                        alt={item.entityKey}
-                        className="w-12 h-16 rounded-md object-cover ring-2 ring-blue-400/40 group-hover:ring-blue-400/80 transition-all"
-                      />
-                    ) : (
-                      <div className="w-12 h-16 rounded-md bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center text-lg font-bold text-blue-600">
-                        {item.entityKey.charAt(0)}
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-[10px] font-medium text-center leading-tight line-clamp-2 w-full">
-                    {item.entityKey.split(" ").slice(0, 3).join(" ")}
-                  </span>
-                  {item.tags.slice(0, 2).map((tag) => (
-                    <span
-                      key={tag.slug}
-                      className="text-[8px] px-1.5 py-0.5 rounded-full font-medium truncate max-w-full"
-                      style={{ backgroundColor: (tag.color ?? "#6366F1") + "22", color: tag.color ?? "#6366F1" }}
-                    >
-                      {tag.name}
+        <div className="mb-3">
+          {/* Toggle pill */}
+          <button
+            type="button"
+            onClick={() => setTaggedOpen((v) => !v)}
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all select-none
+              bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100 hover:border-violet-300
+              dark:bg-violet-950/30 dark:border-violet-800/50 dark:text-violet-400 dark:hover:bg-violet-950/50
+              active:scale-95 shadow-sm"
+            aria-expanded={taggedOpen}
+          >
+            <Tag className="w-3 h-3" />
+            Recently Tagged
+            <span className="ml-0.5 px-1.5 py-px rounded-full bg-violet-200/60 dark:bg-violet-800/40 text-[10px] font-semibold">
+              {bookRecentlyTagged.length}
+            </span>
+            <ChevronDown
+              className={[
+                "w-3 h-3 transition-transform duration-200",
+                taggedOpen ? "rotate-180" : "",
+              ].join(" ")}
+            />
+          </button>
+
+          {/* Collapsible content */}
+          {taggedOpen && (
+            <div className="mt-2 mb-3 flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+              {bookRecentlyTagged.map((item) => {
+                const coverUrl = item.s3AvatarUrl || item.avatarUrl || null;
+                return (
+                  <button
+                    key={`book::${item.entityKey}`}
+                    onClick={() => {
+                      const found = filteredBooks.find(
+                        (b) =>
+                          normalizeTitleKey(b.name) === item.entityKey ||
+                          b.name.toLowerCase().includes(item.entityKey.toLowerCase())
+                      );
+                      if (found) onDetailClick(found);
+                    }}
+                    className="flex-shrink-0 flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-border/40 hover:border-border/80 transition-all w-[100px] group"
+                  >
+                    <div className="relative">
+                      {coverUrl ? (
+                        <img
+                          src={coverUrl}
+                          alt={item.entityKey}
+                          className="w-12 h-16 rounded-md object-cover ring-2 ring-blue-400/40 group-hover:ring-blue-400/80 transition-all"
+                        />
+                      ) : (
+                        <div className="w-12 h-16 rounded-md bg-gradient-to-br from-blue-400/20 to-blue-600/20 flex items-center justify-center text-lg font-bold text-blue-600">
+                          {item.entityKey.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-medium text-center leading-tight line-clamp-2 w-full">
+                      {item.entityKey.split(" ").slice(0, 3).join(" ")}
                     </span>
-                  ))}
-                </button>
-              );
-            })}
-          </div>
+                    {item.tags.slice(0, 2).map((tag) => (
+                      <span
+                        key={tag.slug}
+                        className="text-[8px] px-1.5 py-0.5 rounded-full font-medium truncate max-w-full"
+                        style={{ backgroundColor: (tag.color ?? "#6366F1") + "22", color: tag.color ?? "#6366F1" }}
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

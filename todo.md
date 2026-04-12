@@ -583,3 +583,16 @@ Last cleaned: Apr 5, 2026
 - [x] Show active search feedback text below bar ("Showing N authors matching 'X'")
 - [x] Highlight matched text already working via existing Highlight component in FlowbiteAuthorCard
 - [x] TypeScript: 0 errors, ESLint: 0 new warnings
+
+## Feature — Collapsible Activity Strips (Apr 12, 2026)
+
+- [x] Convert "Recently Enriched" strip in AuthorsTabContent to collapsible pill toggle
+  - Amber-tinted pill with Sparkles icon, count badge, ChevronDown rotation animation
+  - Default collapsed so the author grid is immediately visible on tab load
+- [x] Convert "Recently Tagged" strip in AuthorsTabContent to collapsible pill toggle
+  - Violet-tinted pill with Tag icon, count badge, ChevronDown rotation animation
+  - Default collapsed; same open/close pattern as Enriched pill
+- [x] Convert "Recently Tagged" strip in BooksTabContent to collapsible pill toggle
+  - Violet-tinted pill matching Authors tab style for visual consistency
+  - Default collapsed; useState(false) inside BooksTabContent function body
+- [x] TypeScript: 0 errors, ESLint: 0 new warnings (still 37 pre-existing no-explicit-any)
