@@ -443,3 +443,187 @@ All 122 tests still passing. claude.md architecture overview updated with new fi
 - TypeScript: 0 errors
 - Tests: 439 passing across 30 test files
 - Server: healthy (API endpoints responding)
+
+---
+
+## April 1–2, 2026 — Digital Me, Tag System, Content Items, FlowbiteAuthorCard Redesign
+
+> **Note:** memory.md was not updated after March 28. The following entries are reconstructed from git history (commits `f86b9ff` through `4a3f131`) as part of the April 18 documentation audit.
+
+### Digital Me RAG Pipeline (Complete)
+- Built `server/routers/ragPipeline.router.ts` — Claude Opus generates 1,977-word persona files per author
+- Generated Digital Me profiles for Adam Grant, Simon Sinek, James Clear, Brené Brown, Malcolm Gladwell, Daniel Kahneman, Cal Newport, Chris Voss, Seth Godin, Morgan Housel (10 authors total)
+- RAG files stored in `author_rag_profiles` DB table with `ragFileUrl`, `ragFileKey`, `ragVersion`, `ragWordCount`, `ragModel`, `ragStatus`
+- "Chat with Author" page (`/chat/:slug`) wired to RAG-grounded chatbot (`authorChatbot.router.ts`)
+- "Generate Digital Me" trigger button added to AuthorDetail page with polling
+- Checkpoint: `f86b9ff`
+
+### User Interests + Interest Alignment (Complete)
+- Seeded 8 default personal interests: Behavioral Economics, Leadership Psychology, Organizational Culture, Neuroscience, Innovation, Human Performance, Communication, Systems Thinking
+- `user_interests` and `author_interest_scores` tables created
+- 32 interest alignment scores computed and stored
+- `InterestAlignmentPills` and `WhyThisAuthor` components added to author cards
+- Interest Heatmap (`/interests/heatmap`) and Group Contrast (`/interests/contrast`) pages added to sidebar footer
+- Checkpoint: `01e3424`
+
+### Dropbox OAuth 2 Integration (Complete)
+- Implemented permanent Dropbox refresh token flow (not just static token)
+- "Connect" button in Admin → Sync tab
+- Dropbox connected as `ricardo@cidale.com`
+- `DROPBOX_APP_KEY`, `DROPBOX_APP_SECRET` env vars; refresh token stored in `app_settings` DB
+- **Known issue:** Dropbox OAuth redirect URI must be `https://` — `http://` causes silent failure. Fixed in commit `20d8045`.
+- Checkpoint: `a982db3`
+
+### AI Model Config Tab (Complete)
+- 8 vendors, 35 models, primary/secondary toggle
+- Seeded Google/Gemini 2.5 Pro as primary
+- Checkpoint: `a982db3`
+
+### Tag System (Complete)
+- Tags CRUD with rename cascade (slug changes propagate to all `tagsJson` arrays in author_profiles and book_profiles)
+- `InlineTagSelector` added to `AuthorFormDialog` and `BookFormDialog`
+- `TagPicker` wired into `AuthorBioPanel` and `BookDetailPanel` headers
+- `TagGroupHeader` component for card grid when sorted by tag
+- `TagTaxonomyMatrix` admin view (tags × entities, clickable cells)
+- `TagStatisticsCard` with recharts horizontal BarChart (top 20 tags by usage)
+- Tag filter URL persistence: `?tags=slug1,slug2` in URL + localStorage sync
+- `BulkTagAssignment` (authors) and `BulkTagBooksAssignment` (books) in Admin
+- Checkpoint: `137e0c0`, `ef4ffb1`, `c76e0e2`, `a4bced1`
+
+### Content Items (Complete)
+- `content_items` table as universal content model (all non-book types)
+- `author_content_links` M:M table
+- `content_files` and `ingest_sources` tables
+- Enrichment modules: TED (Apify), OpenAlex (academic papers), OMDB (film/TV), Substack
+- YouTube Data API v3 enrichment procedure
+- iTunes Search API podcast enrichment
+- `BulkUrlImportPanel` with URL type detection in Admin → Content Items tab
+- `BookMigrationPanel` — `book_profiles → content_items` migration with dry-run + progress UI
+- Seeded 19 sample non-book content items (TED Talks, Podcasts, Research Papers, Articles, YouTube Videos)
+- Migration executed: 139 book_profiles migrated to content_items with 139 author_content_links
+- Checkpoint: `2b03fec`, `07740f4`, `8822cdca`
+
+### Dropbox Metadata Sidecars (Complete)
+- Generated `_metadata.json` sidecars for all 139 books uploaded to Dropbox
+- Path: `/{author-slug}/books/{book-slug}/_metadata.json`
+- Contains: title, author, publisher, ISBN, rating, summary, cover URLs, Amazon/Goodreads/Wikipedia links, format, possession status, key themes, tags
+- Checkpoint: `4ad9070`
+
+### FlowbiteAuthorCard 4-Zone Redesign (Complete)
+- Avatar 96×96px, category-tinted gradient placeholder
+- Glass effect: `bg-card/85 backdrop-blur-xl`
+- 3D shadow action buttons: `shadow-[0_2px_0]` + hover lift + active press
+- Category watermark icon: `w-16 h-16` at 3% opacity
+- Book cover hover overlay: title always visible on hover
+- InterestAlignmentPills left-aligned, TagPicker right-aligned
+- Checkpoint: `731077f`, `0408d97`
+
+### Code Quality Refactoring (Complete)
+- `Home.tsx` split: `AuthorsTabContent` + `BooksTabContent` extracted (969L → 734L)
+- `Admin.tsx` split: 15 focused wrapper tab components (643L → 447L)
+- `bookProfiles.router.ts` CRUD extracted into `bookCrud.router.ts` (52L)
+- `claude.md` and `manus.md` updated
+- Checkpoint: `e4e05ec`
+
+### Admin Console Redesign (Complete)
+- Flat 15-tab row replaced with 2-level sidebar navigation (6 groups: Content, Media, Intelligence, Personalization, System, Configuration)
+- All icons replaced with Phosphor Icons (duotone weight for section headers, fill for active nav items)
+- Action cards: 2-column grid layout
+- tRPC client fixed with `splitLink + maxURLLength:8192` to handle both large queries and mutations
+- Checkpoint: `076a0c7`
+
+### HTTP 414 Bug — Multiple Attempts (Resolved)
+- **Root cause:** `libraryData.ts` was being sent as a tRPC query parameter, exceeding URL length limits
+- **Attempt 1:** Switched to `httpBatchStreamLink` with POST override — failed (stream link incompatible with Express adapter)
+- **Attempt 2:** Reverted to `httpBatchLink` with `methodOverride: 'POST'`
+- **Attempt 3 (final):** `splitLink + maxURLLength:8192` — correctly routes large queries to POST, small queries to GET
+- Checkpoints: `a55e2a6`, `255b484`, `076a0c7`, `cb4f46b`
+
+### Privacy Policy Page (Complete)
+- `/privacy` route with full legal content
+- Privacy Policy link in sidebar footer
+- Checkpoint: `20d8045`
+
+### Google Drive Access Token (Known Limitation)
+- Google Drive access token added as secret — **expires hourly**
+- Use `rclone` for sandbox Drive sync, not the token directly
+- Checkpoint: `8822cdca`
+
+### Sync / Storage (Complete)
+- Stream-based S3→Dropbox (Upload Session API, 50MB chunks)
+- `_metadata.json` sidecar generation per book folder
+- Google Drive sync (resumable upload, `gws` CLI auth bridge)
+- `SyncJobsTab` UI updated with Drive status card + Generate Sidecars button
+- `syncEngine.test.ts` (31 tests)
+- Checkpoint: `8bf3e7e`
+
+---
+
+## April 18, 2026 — Documentation Audit (This Session)
+
+### Nightly Cron Run
+- Nightly `batch-scrape-covers.mjs` cron triggered at 2am CDT
+- **Execution method:** Script cannot run in sandbox (no access to `DATABASE_URL`, `APIFY_API_TOKEN`, `BUILT_IN_FORGE_API_KEY` — these are injected only into the live Manus deployment)
+- Executed via live app's tRPC API at `https://authlib-ehsrgokn.manus.space`
+- **Result:** 0 books needed scraping, 0 needed S3 mirror — library fully up to date (135 books, 134 with S3 covers)
+
+### Replit Migration Investigation
+- User asked why `batch-scrape-covers.mjs` is in `authors-books-library` (Manus) and not in the NAI Books App (Replit)
+- **Finding:** The Replit repo (`authors-books-library-replit`) was created March 19, 2026 — two days after the batch script was written (March 17). The script was never ported to Replit.
+- **Key difference:** The Manus version uses `BUILT_IN_FORGE_API_KEY` for S3 mirroring; the Replit version uses `DEFAULT_OBJECT_STORAGE_BUCKET_ID` (Replit Object Storage) — the script cannot be copied directly.
+- **Current status:** `authors-books-library` (Manus) is the active production deployment (last commit April 2, 2026). The Replit version appears to be an exploratory migration, not yet production.
+- **Decision pending:** User has not yet decided whether to port to Replit or keep on Manus.
+
+### Documentation Audit Findings — Dropped Instructions & Forgotten Rules
+The following instructions were given by the user but were not captured in `claude.md` or `memory.md` and were subsequently forgotten by the agent:
+
+1. **`memory.md` was not updated after March 28.** The mandatory rule ("append a dated entry at the end of every completed task") was violated for all April 1–2 sessions. This is the most systemic failure.
+
+2. **`manus.md` was not kept in sync with `claude.md` after March 28.** The rule states both files must be updated simultaneously. `manus.md` is stale by ~2 weeks.
+
+3. **Google Drive access token expiry.** The token expires hourly. The agent repeatedly attempted to use it in sandbox scripts without checking expiry. Rule: always use `rclone` for Drive sync from the sandbox, never the raw token.
+
+4. **Nightly cron script cannot run in sandbox.** The agent spent significant time attempting to run `batch-scrape-covers.mjs` locally before discovering that `DATABASE_URL`, `APIFY_API_TOKEN`, and `BUILT_IN_FORGE_API_KEY` are only available in the live Manus deployment. Rule: for scheduled scripts, always invoke via the live app's tRPC API, not directly in the sandbox.
+
+5. **Replit repo exists but is not the active deployment.** The agent was unaware of the Replit repo until the user asked. Rule: the Manus deployment (`authlib-ehsrgokn.manus.space`) is production; the Replit repo is exploratory only.
+
+6. **`manus.md` is a copy of `claude.md`.** The agent has sometimes treated them as separate documents. They must be kept byte-for-byte identical except for the header.
+
+7. **Flowbite was removed from the project.** `FlowbiteAuthorCard` retains its name for historical reasons but no longer imports from `flowbite-react`. The agent has occasionally attempted to add Flowbite components. Rule: use shadcn/ui Dialog for modals; do not add `flowbite-react` imports.
+
+8. **`oxc-parser` native binding issue.** `flowbite-react@0.12.17` introduced an `oxc-parser` native binding that breaks Manus deployment builds. The project is pinned to `flowbite-react@0.12.16` via pnpm override. Do not upgrade `flowbite-react` without testing the build.
+
+9. **`ThemeContext.tsx` was deleted.** It was superseded by `AppSettingsContext.tsx`. The agent has occasionally referenced `useTheme()` from the deleted context. Rule: always use `useAppSettings()` or `useThemeCompat()`.
+
+10. **`BookModal.tsx` is a deprecated shim.** It was replaced by `BookDetailPanel.tsx`. The shim was deleted in March 2026. Do not reference or recreate `BookModal.tsx`.
+
+11. **Seeking Alpha integration was cancelled.** The user cancelled the Seeking Alpha/Bloomberg enrichment. `rapidapi.ts` now uses Yahoo Finance only.
+
+12. **Similarweb integration was cancelled.** The user explicitly opted out. All `#SW` todo items are cancelled.
+
+13. **CNBC RapidAPI requires a paid subscription.** The integration was built but is blocked at 403. Do not attempt to use CNBC API without confirming the user has subscribed.
+
+14. **Twitter API requires developer account approval.** The integration exists but is rate-limited/blocked on free tier. Do not run Twitter enrichment in batch without confirming API access.
+
+15. **`fix-alan-dib-covers.mjs` is a one-off migration already applied (March 22, 2026).** Do not re-run it.
+
+16. **`scripts/` directory in Replit repo is a stub.** It contains only `hello.ts`. Do not assume the Replit version has the same scripts as the Manus version.
+
+17. **`R3F Canvas blocks card interactions.** `FloatingBooks` (Three.js/React Three Fiber) was found to block pointer events on cards below it. Fixed by adding `style={{ pointerEvents: 'none' }}` to the Canvas. If Three.js is re-added anywhere, always set `pointerEvents: 'none'` on the Canvas.
+
+18. **`confetti` dependency was removed.** `useConfetti.ts` is now a no-op stub. Do not attempt to use the confetti library.
+
+19. **`em-dash` bug in `libraryData.ts`.** 15 author entries used Unicode em-dash (`–`) instead of regular hyphen (`-`), causing the co-author split regex to create fake author cards. Fixed in `9b72e12`. Rule: always use regular hyphen in author names; validate with `isLikelyAuthorName()` before writing to DB.
+
+20. **`parallelBatch` is generic.** It was made generic over `TInput` in March 2026. Do not use sequential `for` loops for batch enrichment — use `parallelBatch(concurrency=2)`.
+
+21. **`pnpm db:push` not `pnpm migrate`.** The project uses Drizzle Kit's `db:push` command, not a separate migration runner. Always use `pnpm db:push` after schema changes.
+
+22. **`slugify` was improved** to lowercase+hyphens (April 2, 2026). All new slug generation uses this. Do not use custom slug logic.
+
+23. **`content_items` is the universal content model.** Books have been migrated from `book_profiles` to `content_items` (April 2, 2026). `book_profiles` still exists for backward compatibility but new content should use `content_items` + `author_content_links`.
+
+### Test Count as of April 2, 2026
+- **568 tests passing** across **34+ test files** (up from 492 at end of March)
+
+---
