@@ -12,7 +12,8 @@
     "test": "NODE_OPTIONS='--max-old-space-size=4096' vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "lint": "eslint client/src shared --max-warnings 999",
-    "lint:fix": "eslint client/src shared --fix --max-warnings 999"
+    "lint:fix": "eslint client/src shared --fix --max-warnings 999",
+    "coverage": "node scripts/verify-neon-coverage.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",

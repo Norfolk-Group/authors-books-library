@@ -674,3 +674,18 @@ Last cleaned: Apr 5, 2026
   - Flags: --json (machine-readable), --gaps-only (hide fully covered), --namespace <ns> (filter)
   - Exit codes: 0 = all ≥ 80%, 1 = below threshold, 2 = connection error
   - Live test result: Authors 100%, Books 101%, Content Items 0% (157 gaps), RAG Files 0% (187 gaps)
+
+## Apr 18 2026 — Neon Coverage Gap Fixes
+
+- [ ] Add indexContentItems() to ragPipeline.service.ts
+- [ ] Wire indexContentItems into enrichmentOrchestrator pipeline (neon-index-content-items step)
+- [ ] Wire indexRagFile batch into enrichmentOrchestrator pipeline (neon-index-rag-files step)
+- [ ] Add pnpm coverage script to package.json
+
+## Apr 18 2026 — Neon Coverage Implementation
+- [x] Add neon-index-content-items pipeline handler to enrichmentOrchestrator.service.ts
+- [x] Add neon-index-rag-files pipeline handler to enrichmentOrchestrator.service.ts
+- [x] Register both handlers in PIPELINE_HANDLERS registry
+- [x] Add both pipelines to seedDefaultSchedules (enabled: off by default, admin must enable)
+- [x] Add pnpm coverage script to package.json pointing to verify-neon-coverage.mjs
+- [x] TypeScript: 0 errors after all changes

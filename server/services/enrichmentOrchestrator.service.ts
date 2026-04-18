@@ -20,9 +20,10 @@
  *   enrich-rich-summaries    → LLM-powered rich book summary generation
  *   url-health-check         → HTTP HEAD check on all content_item URLs
  *   content-quality-score    → LLM merit scoring for content items
- *   neon-index-authors   → Embed + upsert all authors to Neon pgvector
- *   neon-index-books     → Embed + upsert all books to Neon pgvector
- *   neon-index-articles  → Embed + upsert all magazine articles to Neon pgvector
+ *   neon-index-authors        → Embed + upsert all authors to Neon pgvector
+ *   neon-index-books          → Embed + upsert all books to Neon pgvector
+ *   neon-index-content-items  → Embed + upsert all content items to Neon pgvector
+ *   neon-index-rag-files      → Fetch RAG files from S3 and embed into Neon rag_files namespace
  *   rag-readiness-scan       → Compute ragReadinessScore for all authors
  *   chatbot-candidate-scan   → Flag chatbot-ready authors in human_review_queue
  */
@@ -30,6 +31,7 @@
 import { getDb } from "../db";
 import {
   authorProfiles,
+  authorRagProfiles,
   bookProfiles,
   contentItems,
   enrichmentSchedules,
@@ -40,6 +42,7 @@ import { eq, and, lt, or, isNull, desc, asc, sql } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { computeRagReadiness } from "./ragReadiness.service";
 import { indexAuthorIncremental, indexBookIncremental } from "./incrementalIndex.service";
+import { indexContentItem, indexRagFile } from "./ragPipeline.service";
 import { batchScoreContentItems } from "./contentIntelligence.service";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -600,6 +603,129 @@ async function runNeonIndexBooks(progress: JobProgress, batchSize: number, concu
 }
 
 /**
+ * neon-index-content-items: Embed + upsert all content items with descriptions to Neon pgvector.
+ */
+async function runNeonIndexContentItems(progress: JobProgress, batchSize: number, concurrency: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const items = await db
+    .select({
+      id: contentItems.id,
+      title: contentItems.title,
+      contentType: contentItems.contentType,
+      description: contentItems.description,
+      url: contentItems.url,
+    })
+    .from(contentItems)
+    .where(
+      and(
+        sql`${contentItems.description} IS NOT NULL AND TRIM(${contentItems.description}) != ''`,
+        eq(contentItems.includedInLibrary, 1)
+      )
+    )
+    .limit(batchSize);
+
+  await updateJobProgress(progress.jobId, { totalItems: items.length });
+  progress.total = items.length;
+
+  for (let i = 0; i < items.length; i += concurrency) {
+    const batch = items.slice(i, i + concurrency);
+    await Promise.allSettled(
+      batch.map(async (item) => {
+        try {
+          if (!item.description || item.description.trim().length < 20) {
+            progress.skipped++;
+            return;
+          }
+          await indexContentItem({
+            itemId: String(item.id),
+            title: item.title,
+            contentType: item.contentType,
+            url: item.url,
+            description: item.description,
+          });
+          progress.succeeded++;
+        } catch {
+          progress.failed++;
+        } finally {
+          progress.processed++;
+          if (progress.processed % 5 === 0) {
+            await updateJobProgress(progress.jobId, {
+              processedItems: progress.processed,
+              succeededItems: progress.succeeded,
+              failedItems: progress.failed,
+              progress: Math.round((progress.processed / progress.total) * 100),
+            });
+          }
+        }
+      })
+    );
+  }
+}
+
+/**
+ * neon-index-rag-files: Fetch each author's RAG file from S3 and embed it into Neon rag_files namespace.
+ */
+async function runNeonIndexRagFiles(progress: JobProgress, batchSize: number, concurrency: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const ragRows = await db
+    .select({
+      authorName: authorRagProfiles.authorName,
+      ragFileUrl: authorRagProfiles.ragFileUrl,
+      ragVersion: authorRagProfiles.ragVersion,
+      ragStatus: authorRagProfiles.ragStatus,
+    })
+    .from(authorRagProfiles)
+    .where(
+      and(
+        eq(authorRagProfiles.ragStatus, "ready"),
+        sql`${authorRagProfiles.ragFileUrl} IS NOT NULL AND TRIM(${authorRagProfiles.ragFileUrl}) != ''`
+      )
+    )
+    .limit(batchSize);
+
+  await updateJobProgress(progress.jobId, { totalItems: ragRows.length });
+  progress.total = ragRows.length;
+
+  for (let i = 0; i < ragRows.length; i += concurrency) {
+    const batch = ragRows.slice(i, i + concurrency);
+    await Promise.allSettled(
+      batch.map(async (row) => {
+        try {
+          if (!row.ragFileUrl) { progress.skipped++; return; }
+          // Fetch the RAG Markdown file from S3
+          const resp = await fetch(row.ragFileUrl);
+          if (!resp.ok) { progress.failed++; return; }
+          const ragContent = await resp.text();
+          if (ragContent.trim().length < 100) { progress.skipped++; return; }
+          await indexRagFile({
+            authorName: row.authorName,
+            ragContent,
+            ragVersion: row.ragVersion ?? 1,
+          });
+          progress.succeeded++;
+        } catch {
+          progress.failed++;
+        } finally {
+          progress.processed++;
+          if (progress.processed % 5 === 0) {
+            await updateJobProgress(progress.jobId, {
+              processedItems: progress.processed,
+              succeededItems: progress.succeeded,
+              failedItems: progress.failed,
+              progress: Math.round((progress.processed / progress.total) * 100),
+            });
+          }
+        }
+      })
+    );
+  }
+}
+
+/**
  * rag-readiness-scan: Compute ragReadinessScore for all authors.
  */
 async function runRagReadinessScan(progress: JobProgress, batchSize: number, _concurrency: number): Promise<void> {
@@ -695,6 +821,8 @@ const PIPELINE_HANDLERS: Record<string, PipelineHandler> = {
   "content-quality-score": runContentQualityScoring,
   "neon-index-authors": runNeonIndexAuthors,
   "neon-index-books": runNeonIndexBooks,
+  "neon-index-content-items": runNeonIndexContentItems,
+  "neon-index-rag-files": runNeonIndexRagFiles,
   "rag-readiness-scan": runRagReadinessScan,
   "chatbot-candidate-scan": runChatbotCandidateScan,
 };
@@ -913,6 +1041,8 @@ export async function seedDefaultSchedules(): Promise<void> {
     { pipelineKey: "content-quality-score", label: "Content Quality Scoring", entityType: "both" as const, intervalHours: 2160, priority: 5, batchSize: 20, concurrency: 1 },
     { pipelineKey: "neon-index-authors", label: "Neon: Index Authors", entityType: "author" as const, intervalHours: 168, priority: 7, batchSize: 50, concurrency: 5 },
     { pipelineKey: "neon-index-books", label: "Neon: Index Books", entityType: "book" as const, intervalHours: 168, priority: 7, batchSize: 50, concurrency: 5 },
+    { pipelineKey: "neon-index-content-items", label: "Neon: Index Content Items", entityType: "both" as const, intervalHours: 168, priority: 6, batchSize: 100, concurrency: 5 },
+    { pipelineKey: "neon-index-rag-files", label: "Neon: Index RAG Files", entityType: "author" as const, intervalHours: 72, priority: 8, batchSize: 50, concurrency: 3 },
     { pipelineKey: "rag-readiness-scan", label: "RAG Readiness Scan", entityType: "author" as const, intervalHours: 48, priority: 8, batchSize: 169, concurrency: 5 },
     { pipelineKey: "chatbot-candidate-scan", label: "Chatbot Candidate Scan", entityType: "author" as const, intervalHours: 48, priority: 7, batchSize: 169, concurrency: 5 },
   ];
