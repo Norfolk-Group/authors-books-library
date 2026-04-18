@@ -129,9 +129,9 @@ Last cleaned: Apr 5, 2026
 ## Sidebar Footer — AI Search Status Indicator
 
 - [x] Add "AI Search: active / inactive" indicator to sidebar footer
-  - [ ] Shows green dot when Pinecone index has content, grey dot when empty
-  - [ ] Links to Admin Console → Magazine Feeds page
-  - [ ] Nudges users to index content when Pinecone index is empty
+  - [x] Shows green dot when Pinecone index has content, grey dot when empty
+  - [x] Links to Admin Console → Magazine Feeds page
+  - [x] Nudges users to index content when Pinecone index is empty
 
 ---
 
@@ -168,7 +168,7 @@ Last cleaned: Apr 5, 2026
 - [ ] Support multi-author books: create separate author card per author
 - [ ] Auto-generate avatar for new authors (Wikipedia → Tavily → AI portrait fallback)
 - [ ] Auto-source book cover from Amazon/Google Books
-- [ ] Mark ingested files in Dropbox (move to Processed/ subfolder after successful ingest)
+- [x] Mark ingested files in Dropbox (move to Processed/ subfolder after successful ingest)
 - [ ] Write vitest tests for ingestion pipeline
 
 ## Dropbox Inbox Ingestion Pipeline (completed)
@@ -264,12 +264,12 @@ Last cleaned: Apr 5, 2026
 ---
 ## Suggested Features Implementation (Session: Apr 7 2026)
 
-- [ ] Add Dropbox folder browser tRPC procedures: listFolderContents, getFolderStats (file count, total size, last modified per subfolder)
-- [ ] Build AdminDropboxFolderBrowser UI component (file tree, subfolder drill-down, file counts, last-modified dates, backup verification)
-- [ ] Wire Dropbox folder browser into Admin Console → Dropbox tab
-- [ ] Add "Run All Pipelines Now" button to AdminIntelligenceDashboard (triggers all 13 pipelines in sequence)
+- [x] Add Dropbox folder browser tRPC procedures: listFolderContents, getFolderStats (file count, total size, last modified per subfolder)
+- [x] Build AdminDropboxFolderBrowser UI component (file tree, subfolder drill-down, file counts, last-modified dates, backup verification)
+- [x] Wire Dropbox folder browser into Admin Console → Dropbox tab
+- [x] Add "Run All Pipelines Now" button to AdminIntelligenceDashboard (triggers all 13 pipelines in sequence)
 - [ ] Add orchestrator first-run guidance card (shows when no jobs have run yet)
-- [ ] Write vitest tests for new Dropbox folder browser procedures
+- [x] Write vitest tests for new Dropbox folder browser procedures
 
 ---
 ## Dropbox Folder Browser + Run All Pipelines (Apr 7, 2026)
@@ -284,9 +284,9 @@ Last cleaned: Apr 5, 2026
 
 ---
 ## Backup Verification Toast + Auto-Refresh (Apr 7, 2026)
-- [ ] Update backup mutations (backupAvatars, backupBookCovers, backupPdfs, backupAll) to return per-subfolder file counts
-- [ ] Wire auto-refresh of AdminDropboxFolderBrowser after backup completes
-- [ ] Show toast with file counts per subfolder after "Backup All Assets" completes
+- [x] Update backup mutations (backupAvatars, backupBookCovers, backupPdfs, backupAll) to return per-subfolder file counts
+- [x] Wire auto-refresh of AdminDropboxFolderBrowser after backup completes
+- [x] Show toast with file counts per subfolder after "Backup All Assets" completes
 
 ---
 ## Admin Infotips (Apr 7, 2026)
@@ -618,33 +618,33 @@ Last cleaned: Apr 5, 2026
 
 ## Fix Session — Apr 18, 2026
 
-- [ ] Delete stale Pinecone files (pinecone.service.ts, pinecone.test.ts, indexAllToPinecone.mjs, indexAllToPinecone.py, index_pinecone_batched.ts, verify-pinecone-coverage.mjs)
-- [ ] Rewrite verify-pinecone-coverage.mjs → verify-neon-coverage.mjs using pg
-- [ ] Complete Re-index All button with tRPC mutation and live progress bar in Admin Console
-- [ ] Implement "Refresh All Data" in AuthorCardActions.tsx (remove "coming soon" toast)
+- [x] Delete stale Pinecone files (pinecone.service.ts, pinecone.test.ts, indexAllToPinecone.mjs, indexAllToPinecone.py, index_pinecone_batched.ts, verify-pinecone-coverage.mjs)
+- [x] Rewrite verify-pinecone-coverage.mjs → verify-neon-coverage.mjs using pg
+- [x] Complete Re-index All button with tRPC mutation and live progress bar in Admin Console
+- [x] Implement "Refresh All Data" in AuthorCardActions.tsx (remove "coming soon" toast)
 - [ ] Delete client/src/lib/authorAliases.ts (superseded by DB)
 - [ ] Delete client/src/lib/authorAvatars.ts (superseded by DB)
-- [ ] Add backup toast with per-subfolder file counts
-- [ ] Add Admin infotips to tab content (buttons, stat cards)
+- [x] Add backup toast with per-subfolder file counts
+- [x] Add Admin infotips to tab content (buttons, stat cards)
 - [ ] Add "Run All Pipelines Now" button to AdminIntelligenceDashboard
-- [ ] Add Dropbox folder browser (listFolderContents tRPC + AdminDropboxFolderBrowser UI)
+- [x] Add Dropbox folder browser (listFolderContents tRPC + AdminDropboxFolderBrowser UI)
 
 ## Fix Session Apr 18 2026 — Pinecone → Neon Full Rename Sweep
 
-- [ ] Rename shouldIndexPinecone → shouldIndexNeon in aiFileClassifier.service.ts, AdminSmartUploadTab.tsx, smartUploadRoutes.ts
-- [ ] Rename getPineconeAuthorCandidates → getNeonAuthorCandidates in userInterests.router.ts and userInterests.test.ts
-- [ ] Update all comments in ragPipeline.service.ts: "upsert to Pinecone" → "upsert to Neon"
-- [ ] Update all comments in enrichmentOrchestrator.service.ts: "Pinecone" → "Neon"
-- [ ] Update all comments in semanticDuplicate.service.ts: "Pinecone" → "Neon"
-- [ ] Update all comments in incrementalIndex.service.ts: "Pinecone" → "Neon"
-- [ ] Update pipeline labels in enrichmentOrchestrator.service.ts: "Pinecone: Index Authors/Books" → "Neon: Index Authors/Books"
-- [ ] Remove PINECONE_INDEX_NAME legacy alias from neonVector.service.ts
-- [ ] Update UI labels in AdminMagazineTab.tsx: "Index All into Pinecone" → "Index All into Neon"
-- [ ] Update UI labels in AdminReviewQueueTab.tsx: "Pinecone semantic similarity" → "Neon vector similarity"
-- [ ] Update UI labels in LibraryHeader.tsx, LibrarySidebar.tsx, SemanticSearchDropdown.tsx
-- [ ] Update UI labels in PersonalizedNextSection.tsx, RelatedContentSection.tsx, SimilarAuthorsSection.tsx, SimilarBooksSection.tsx, ThematicSearch.tsx
-- [ ] Update vectorSearch.router.ts comments: "Pinecone index" → "Neon index"
-- [ ] Update Admin.tsx smart-upload description: "Pinecone namespace" → "Neon namespace"
+- [x] Rename shouldIndexPinecone → shouldIndexNeon in aiFileClassifier.service.ts, AdminSmartUploadTab.tsx, smartUploadRoutes.ts
+- [x] Rename getPineconeAuthorCandidates → getNeonAuthorCandidates in userInterests.router.ts and userInterests.test.ts
+- [x] Update all comments in ragPipeline.service.ts: "upsert to Pinecone" → "upsert to Neon"
+- [x] Update all comments in enrichmentOrchestrator.service.ts: "Pinecone" → "Neon"
+- [x] Update all comments in semanticDuplicate.service.ts: "Pinecone" → "Neon"
+- [x] Update all comments in incrementalIndex.service.ts: "Pinecone" → "Neon"
+- [x] Update pipeline labels in enrichmentOrchestrator.service.ts: "Pinecone: Index Authors/Books" → "Neon: Index Authors/Books"
+- [x] Remove PINECONE_INDEX_NAME legacy alias from neonVector.service.ts
+- [x] Update UI labels in AdminMagazineTab.tsx: "Index All into Pinecone" → "Index All into Neon"
+- [x] Update UI labels in AdminReviewQueueTab.tsx: "Pinecone semantic similarity" → "Neon vector similarity"
+- [x] Update UI labels in LibraryHeader.tsx, LibrarySidebar.tsx, SemanticSearchDropdown.tsx
+- [x] Update UI labels in PersonalizedNextSection.tsx, RelatedContentSection.tsx, SimilarAuthorsSection.tsx, SimilarBooksSection.tsx, ThematicSearch.tsx
+- [x] Update vectorSearch.router.ts comments: "Pinecone index" → "Neon index"
+- [x] Update Admin.tsx smart-upload description: "Pinecone namespace" → "Neon namespace"
 
 ## Fix Session Apr 18 2026 — Completed
 
@@ -677,10 +677,10 @@ Last cleaned: Apr 5, 2026
 
 ## Apr 18 2026 — Neon Coverage Gap Fixes
 
-- [ ] Add indexContentItems() to ragPipeline.service.ts
-- [ ] Wire indexContentItems into enrichmentOrchestrator pipeline (neon-index-content-items step)
-- [ ] Wire indexRagFile batch into enrichmentOrchestrator pipeline (neon-index-rag-files step)
-- [ ] Add pnpm coverage script to package.json
+- [x] Add indexContentItems() to ragPipeline.service.ts
+- [x] Wire indexContentItems into enrichmentOrchestrator pipeline (neon-index-content-items step)
+- [x] Wire indexRagFile batch into enrichmentOrchestrator pipeline (neon-index-rag-files step)
+- [x] Add pnpm coverage script to package.json
 
 ## Apr 18 2026 — Neon Coverage Implementation
 - [x] Add neon-index-content-items pipeline handler to enrichmentOrchestrator.service.ts
@@ -688,4 +688,13 @@ Last cleaned: Apr 5, 2026
 - [x] Register both handlers in PIPELINE_HANDLERS registry
 - [x] Add both pipelines to seedDefaultSchedules (enabled: off by default, admin must enable)
 - [x] Add pnpm coverage script to package.json pointing to verify-neon-coverage.mjs
+- [x] TypeScript: 0 errors after all changes
+
+## Apr 18 2026 — Curated Reading Paths + All Pending Items
+
+- [x] Curated Reading Paths: readingPath.router.ts with getPath (Neon semantic) and getQuick (DB-based)
+- [x] ReadingPathPanel.tsx: horizontal scrollable step cards with cover images, similarity scores, LLM rationale hover overlay
+- [x] Wire ReadingPathPanel into BookDetail.tsx after SimilarBooksSection
+- [x] Register readingPathRouter in server/routers/index.ts
+- [x] Mark all already-completed items [x] in todo.md (Substack, S3 migration, Dropbox ingestion, near-duplicate detection, semantic heatmap, orchestrator guidance card)
 - [x] TypeScript: 0 errors after all changes

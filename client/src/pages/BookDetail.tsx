@@ -50,6 +50,7 @@ import {
 } from "@/components/library/LibraryAvailabilitySection";
 import { SimilarBooksSection } from "@/components/library/SimilarBooksSection";
 import { RelatedContentSection } from "@/components/library/RelatedContentSection";
+import { ReadingPathPanel } from "@/components/library/ReadingPathPanel";
 import { toast } from "sonner";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -711,12 +712,17 @@ export default function BookDetail() {
           </div>
         </section>
 
-        {/* ── AI-Powered Similar Books ──────────────────────────────────── */}
+        {/* ── AI-Powered Similar Books ───────────────────────────────────────── */}
         {profile?.id && (
           <SimilarBooksSection bookId={profile.id} accentColor={color} />
         )}
 
-        {/* ── AI-Powered Related Media ─────────────────────────────────────── */}
+        {/* ── Curated Reading Path ──────────────────────────────────────────────── */}
+        {profile?.id && (
+          <ReadingPathPanel bookId={profile.id} bookTitle={profile.bookTitle} accentColor={color} />
+         )}
+
+        {/* ── AI-Powered Related Media ───────────────────────────────────── */}
         {profile?.id && (
           <RelatedContentSection bookId={profile.id} accentColor={color} />
         )}

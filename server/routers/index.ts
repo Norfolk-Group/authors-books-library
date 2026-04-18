@@ -43,6 +43,7 @@ import { dropboxConfigRouter } from "./dropboxConfig.router";
 import { smartUploadRouter } from "./smartUpload.router";
 import { semanticMapRouter } from "./semanticMap.router";
 import { authorAliasesRouter } from "./authorAliases.router";
+import { readingPathRouter } from "./readingPath.router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -106,6 +107,8 @@ export const appRouter = router({
   semanticMap: semanticMapRouter,
   // ── Author name alias management (DB-backed, replaces hardcoded file) ─────
   authorAliases: authorAliasesRouter,
+  // ── Curated Reading Paths (Neon vector similarity + LLM rationale) ──────────
+  readingPath: readingPathRouter,
 });
 
 export type AppRouter = typeof appRouter;
