@@ -607,6 +607,117 @@ adding the search input UI to `BooksTabContent.tsx`.
 
 ---
 
+## Broken / Non-Functional Features (Do Not Use Without Fixing)
+
+### 1. CNBC RapidAPI — Permanently 403
+**Status:** Built and wired, permanently non-functional.
+**What was built:** `server/enrichment/rapidapi.ts` has a full CNBC franchise feed scraper
+(`fetchCNBCStats`). The `businessProfileJson` column in `author_profiles` stores CNBC article
+counts. `AuthorBioPanel.tsx` renders a `CNBCArticlesSection`. `FlowbiteAuthorCard.tsx` shows
+a CNBC badge.
+**Why it fails:** The CNBC endpoint (`cnbc.p.rapidapi.com`) requires a paid RapidAPI
+subscription. All requests return 403. This feature has **never worked in production**.
+**Impact:** CNBC badge on author cards always shows 0. `businessProfileJson` is always null.
+**Fix options:** Subscribe to the CNBC RapidAPI plan, OR remove the CNBC UI elements and
+drop the `businessProfileJson` column entirely.
+
+### 2. `verify-pinecone-coverage.mjs` — Broken After Neon Migration
+**Status:** Stale script; will crash if run.
+**Why:** Still imports `@pinecone-database/pinecone` and uses `PINECONE_API_KEY`.
+**Fix:** Rewrite as `verify-neon-coverage.mjs` using `pg` + `NEON_DATABASE_URL` to query
+`vector_embeddings` namespace counts vs MySQL DB counts.
+
+### 3. Stale Pinecone Scripts — Never Cleaned Up
+The following scripts are dead code and should be deleted:
+- `scripts/indexAllToPinecone.mjs`
+- `scripts/indexAllToPinecone.py`
+- `scripts/index_pinecone_batched.ts`
+- `scripts/verify-pinecone-coverage.mjs` (see above)
+- `server/services/pinecone.service.ts` (replaced by `neonVector.service.ts`)
+- `server/pinecone.test.ts` (deprecated, causes OOM)
+
+### 4. "Refresh All Data" Button — Shows "Coming Soon" Toast, Never Implemented
+**Location:** `client/src/components/AuthorCardActions.tsx` line ~251
+**Status:** Placeholder toast. Never implemented.
+**What it should do:** Force-refresh all enrichment data for a single author (bio, avatar,
+social stats, Neon re-index) without going to the Admin Console.
+**Fix:** Wire to a new `authorProfiles.refreshAll` tRPC mutation.
+
+### 5. Re-index All Button — Work Interrupted Mid-Session
+**Status:** Partially planned, never finished.
+**What was planned:** A "Re-index All" button in Admin → System → Neon pgvector Index with
+a real-time progress bar (polling `getReindexProgress` every 2 seconds).
+**Current state:** `vectorSearch.indexEverything` mutation is a stub that returns a message
+saying "Use individual indexAll* procedures". The four individual `indexAllAuthors`,
+`indexAllBooks`, `indexAllContentItems`, `indexAllRagFiles` mutations work correctly. The
+"Index Everything" button fires all four simultaneously but shows no live progress.
+**Fix:** Add `reindexAll` mutation with in-memory progress store + `getReindexProgress`
+polling query, then update `AdminPineconeTab.tsx` to show a progress bar.
+
+### 6. Admin Infotips — Only Nav Items Done, Tab Content Never Done
+**Status:** Partially implemented.
+**What was done:** InfoTip tooltips added to all 24 Admin sidebar nav items.
+**What was NOT done:** Infotips for tab content (buttons, stat cards, configuration fields)
+were deferred and never implemented.
+
+### 7. Backup Toast with Per-Subfolder File Counts — Never Implemented
+**Status:** Planned, never built.
+**What was planned:** After "Backup All Assets" completes, show a toast with per-subfolder
+file counts (Avatars uploaded/skipped, Book Covers, PDFs).
+**Current state:** Backup mutations return a simple success/failure message only.
+
+---
+
+## Forgotten / Never-Executed Tasks (Pending Backlog)
+
+These tasks were explicitly requested or planned but were **never executed**. They remain
+open in `todo.md`. Prioritized by impact:
+
+| Priority | Task | Notes |
+|---|---|
+---|
+| **High** | Delete `server/pinecone.test.ts` | Causes OOM in vitest; Pinecone removed |
+| **High** | Delete stale Pinecone scripts (4 files) | Dead code; see list above |
+| **High** | Rewrite `verify-pinecone-coverage.mjs` → `verify-neon-coverage.mjs` | Broken after migration |
+| **High** | Implement "Refresh All Data" in `AuthorCardActions.tsx` | Shows "coming soon" toast |
+| **High** | Complete Re-index All button with live progress in Admin Console | Work interrupted |
+| **Medium** | Run S3 migration audit (avatarUrl → s3AvatarUrl, coverImageUrl → s3CoverUrl) | Some authors still on external URLs |
+| **Medium** | Set `VITE_APP_LOGO` in Management UI → Settings → General | Manual step; CDN URL: `https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Logo04256x256_4ba6138d.png` |
+| **Medium** | Run Substack post count enrichment | Trigger `enrich-social-stats` pipeline in Admin |
+| **Medium** | Add backup toast with per-subfolder file counts | Planned, never built |
+| **Medium** | Update `library-architecture` skill to reflect Neon migration | Still references Pinecone |
+| **Medium** | Update `deterministic-tools` skill to reflect Neon migration | Still references `verify-pinecone-coverage.mjs` as working |
+| **Low** | Delete `client/src/lib/authorAliases.ts` | Superseded by DB-backed `author_aliases` table |
+| **Low** | Delete `client/src/lib/authorAvatars.ts` | Superseded by DB-backed `s3AvatarUrl` column |
+| **Low** | Build Dropbox inbox ingestion pipeline (PDF → author/book creation) | Planned in detail; `dropboxIngest.service.ts` exists but pipeline not wired |
+| **Low** | Near-Duplicate Detection UI | `semanticDuplicate.service.ts` exists; no UI |
+| **Low** | Semantic Interest Heatmap with UMAP clustering | Planned, never started |
+| **Low** | Curated Reading Paths feature | Planned, never started |
+| **Low** | Add Admin infotips to tab content (buttons, stat cards) | Only nav items done |
+
+---
+
+## Imposed Features That Were Built But Are Never Used
+
+These features were built at some point but have no active users or are permanently broken:
+
+| Feature | Location | Status | Notes |
+|---|---|---|---|
+| CNBC article badge | `FlowbiteAuthorCard.tsx`, `AuthorBioPanel.tsx` | **Always shows 0** | CNBC API requires paid subscription; 403 on every request |
+| `businessProfileJson` column | `author_profiles` table | **Always null** | Populated by CNBC scraper which is broken |
+| `academicResearchJson` column | `author_profiles` table | Partially populated | Semantic Scholar API works but enrichment run is infrequent |
+| `pinecone.service.ts` | `server/services/` | **Replaced** | Superseded by `neonVector.service.ts`; should be deleted |
+| `pinecone.test.ts` | `server/` | **OOM + stale** | Pinecone removed; should be deleted |
+| `indexAllToPinecone.mjs/py/ts` | `scripts/` | **Dead code** | Pinecone removed; should be deleted |
+| `verify-pinecone-coverage.mjs` | `scripts/` | **Crashes** | Still uses Pinecone SDK; needs rewrite |
+| `authorAliases.ts` (client lib) | `client/src/lib/` | **Superseded** | DB-backed aliases are the source of truth now |
+| `authorAvatars.ts` (client lib) | `client/src/lib/` | **Superseded** | DB-backed `s3AvatarUrl` is the source of truth now |
+| `vectorSearch.indexEverything` | `vectorSearch.router.ts` | **Stub only** | Returns a message; does nothing; individual mutations work |
+| "Refresh All Data" menu item | `AuthorCardActions.tsx` | **Toast placeholder** | Shows "coming soon"; never implemented |
+| Google Drive integration | Removed Apr 2026 | **Removed** | All `gws`/`rclone` code removed; Dropbox is the only cloud sync |
+
+---
+
 ## Agent Skills (in `.agents/skills/`)
 
 These app-specific skills document repeatable patterns for this codebase:
