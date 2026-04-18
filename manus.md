@@ -2,7 +2,7 @@
 
 ## Standing Rules
 
-**Last Updated:** April 2, 2026 — Code Quality refactoring: Home.tsx split into AuthorsTabContent + BooksTabContent (969L → 734L), Admin.tsx split into 15 focused wrapper tab components (643L → 447L), bookProfiles.router.ts CRUD extracted into bookCrud.router.ts, Content Items enrichment (TED/OpenAlex/OMDB/Substack), FlowbiteAuthorCard 4-zone redesign (96px avatar, category-tinted glass, 3D buttons)
+**Last Updated:** April 18, 2026 — Documentation audit: memory.md backfilled for April 1–2 sessions, Replit migration situation documented, all dropped instructions and known failures captured in memory.md and claude.md. Previous update: April 2, 2026 — Code Quality refactoring: Home.tsx split into AuthorsTabContent + BooksTabContent (969L → 734L), Admin.tsx split into 15 focused wrapper tab components (643L → 447L), bookProfiles.router.ts CRUD extracted into bookCrud.router.ts, Content Items enrichment (TED/OpenAlex/OMDB/Substack), FlowbiteAuthorCard 4-zone redesign (96px avatar, category-tinted glass, 3D buttons)
 
 > **MANDATORY:** At the end of every completed task, update this file (`claude.md`) to reflect any new features, architectural changes, component additions, data schema changes, or workflow changes made during that session. Also append a dated entry to `memory.md` summarising what was done. These two files are the source of truth for the project state. `manus.md` is a copy of `claude.md` — keep them in sync.
 
@@ -368,6 +368,72 @@ Key test files:
 | `/privacy` | `PrivacyPolicy.tsx` | Public |
 | `/admin` | `Admin.tsx` | Protected (admin role) |
 | `/404` | `NotFound.tsx` | Public |
+
+---
+
+## Known Failures, Cancelled Features & Dropped Instructions
+
+This section documents things that went wrong, were cancelled, or were forgotten across sessions. It exists to prevent the same mistakes from being repeated.
+
+### Deployment & Build Failures
+
+| Issue | Root Cause | Fix Applied |
+|---|---|---|
+| `flowbite-react@0.12.17` breaks Manus build | `oxc-parser` native binding introduced in 0.12.17 | Pinned to exact `0.12.16` via pnpm override — **do not upgrade** |
+| HTTP 414 Request-URI Too Large on page load | `libraryData.ts` sent as tRPC GET query param | `splitLink + maxURLLength:8192` routes large queries to POST |
+| `httpBatchStreamLink` incompatible with Express | Stream link requires a streaming-capable server | Reverted to `httpBatchLink` with `methodOverride: 'POST'` |
+| R3F Canvas blocks card interactions | `FloatingBooks` Three.js canvas captures pointer events | Added `style={{ pointerEvents: 'none' }}` to Canvas |
+| Dropbox OAuth redirect URI fails silently | Redirect URI used `http://` instead of `https://` | Force `https://` in all Dropbox OAuth callback routes |
+| Google Drive access token expires hourly | Platform-issued token, not a service account key | Always use `rclone` for Drive sync from sandbox, never the raw token |
+
+### Cancelled Integrations
+
+| Feature | Status | Reason |
+|---|---|---|
+| Similarweb web traffic enrichment | **Cancelled by user** | User opted out explicitly (March 25, 2026) |
+| Seeking Alpha / Bloomberg enrichment | **Cancelled by user** | User cancelled subscription |
+| CNBC RapidAPI enrichment | **Blocked** | Requires paid RapidAPI subscription (currently 403) |
+| Twitter batch enrichment | **Blocked** | Requires developer account approval; free tier rate-limited |
+
+### Deleted / Deprecated Components
+
+| Component | Status | Replacement |
+|---|---|---|
+| `BookModal.tsx` | **Deleted** | `BookDetailPanel.tsx` (slide-over panel) |
+| `ThemeContext.tsx` | **Deleted** | `AppSettingsContext.tsx` — use `useAppSettings()` or `useThemeCompat()` |
+| `AIChatBox.tsx` | **Deleted** | Template component, not used in this project |
+| `DashboardLayout.tsx` | **Deleted** | Template component, not used |
+| `DashboardLayoutSkeleton.tsx` | **Deleted** | Template component, not used |
+| `Map.tsx` | **Deleted** | Template component, not used |
+| `ComponentShowcase.tsx` | **Deleted** | Template showcase page, not used |
+| `flowbite-react` imports | **Removed** | `FlowbiteAuthorCard` retains its name for historical reasons but uses shadcn/ui Dialog for modals |
+| `confetti` dependency | **Removed** | `useConfetti.ts` is now a no-op stub |
+
+### Recurring Agent Mistakes (Forgotten Instructions)
+
+1. **`memory.md` not updated after sessions.** The mandatory rule to append a dated entry after every task was violated for all April 1–2 sessions. This left a 3-week gap in the history log.
+2. **`manus.md` not kept in sync with `claude.md`.** Both files must be updated simultaneously at the end of every session.
+3. **Nightly cron script cannot run in sandbox.** `DATABASE_URL`, `APIFY_API_TOKEN`, and `BUILT_IN_FORGE_API_KEY` are only available in the live Manus deployment — not in the sandbox shell. For scheduled scripts, invoke via the live app's tRPC API (`https://authlib-ehsrgokn.manus.space`), not directly.
+4. **`batch-scrape-covers.mjs` was never ported to the Replit repo.** The Replit version (`authors-books-library-replit`) uses different storage (`DEFAULT_OBJECT_STORAGE_BUCKET_ID`) and cannot use the Manus S3 script directly.
+5. **`em-dash` in author names causes fake author cards.** 15 entries used `–` (Unicode em-dash) instead of `-` (hyphen), causing the co-author split regex to create ghost entries like "active listening". Always validate with `isLikelyAuthorName()` before writing to DB.
+6. **`fix-alan-dib-covers.mjs` is a one-off migration already applied (March 22, 2026).** Do not re-run it.
+7. **`content_items` is the universal content model as of April 2, 2026.** Books were migrated from `book_profiles` to `content_items`. New content should use `content_items` + `author_content_links`.
+8. **`parallelBatch` must be used for batch enrichment** — not sequential `for` loops. It is generic over `TInput` and supports `concurrency=2`.
+
+### Replit Migration Status (As of April 18, 2026)
+
+A Replit version of this app (`authors-books-library-replit`) was created on March 19, 2026. It is **not production** — it is an exploratory migration. Key differences:
+
+| Aspect | Manus (Production) | Replit (Exploratory) |
+|---|---|---|
+| URL | `authlib-ehsrgokn.manus.space` | Replit preview URL |
+| Database | MySQL / TiDB | PostgreSQL |
+| Object storage | Manus S3 (`BUILT_IN_FORGE_API_KEY`) | Replit Object Storage (`DEFAULT_OBJECT_STORAGE_BUCKET_ID`) |
+| Scripts | Full (17 scripts) | Stub only (`hello.ts`) |
+| Nightly cron | Configured (Manus scheduler) | Not configured |
+| Last commit | April 2, 2026 | March 19, 2026 |
+
+**Decision pending:** Whether to port the full script suite and cron to Replit, or keep Manus as the permanent home.
 
 ---
 
