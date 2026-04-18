@@ -13,10 +13,11 @@
  *   - LLM-generated "why read this next" rationale
  *   - Thematic bridge between consecutive books
  *   - Overall path theme label
- *   - Click-through to BookDetail for each step
+ *   - Multi-step loading indicator with estimated time (C1, M6)
+ *   - 15-second timeout fallback to quick path (C1)
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,8 +33,9 @@ import {
   ChevronRight,
   ArrowRight,
   Zap,
-  ExternalLink,
   RefreshCw,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -43,10 +45,25 @@ interface Props {
   accentColor?: string;
 }
 
+/** Multi-step loading messages shown during the AI path generation */
+const LOADING_STEPS = [
+  { label: "Analyzing themes…", ms: 0 },
+  { label: "Finding vector neighbors…", ms: 2500 },
+  { label: "Building path structure…", ms: 5000 },
+  { label: "Generating AI rationale…", ms: 8000 },
+  { label: "Almost ready…", ms: 12000 },
+];
+
+const SEMANTIC_TIMEOUT_MS = 15_000;
+
 export function ReadingPathPanel({ bookId, bookTitle, accentColor = "#6366f1" }: Props) {
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState<"quick" | "semantic">("quick");
-  const [pathLength, setPathLength] = useState(5);
+  const [pathLength] = useState(5);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const [timedOut, setTimedOut] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stepTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Quick path (fast, no Neon)
   const {
@@ -57,7 +74,7 @@ export function ReadingPathPanel({ bookId, bookTitle, accentColor = "#6366f1" }:
     { staleTime: 1000 * 60 * 10 }
   );
 
-  // Semantic path (on-demand) — getPath is a query, so we use a lazy query approach
+  // Semantic path (on-demand)
   const [semanticEnabled, setSemanticEnabled] = useState(false);
   const {
     data: semanticPath,
@@ -68,17 +85,52 @@ export function ReadingPathPanel({ bookId, bookTitle, accentColor = "#6366f1" }:
     { enabled: semanticEnabled, staleTime: 1000 * 60 * 30 }
   );
 
+  // Clear timers when semantic loading finishes or component unmounts
+  useEffect(() => {
+    if (!semanticLoading && semanticEnabled) {
+      clearAllTimers();
+    }
+  }, [semanticLoading, semanticEnabled]);
+
+  useEffect(() => {
+    return () => clearAllTimers();
+  }, []);
+
+  function clearAllTimers() {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    stepTimersRef.current.forEach(clearTimeout);
+    stepTimersRef.current = [];
+  }
+
+  function handleComputeSemantic() {
+    setMode("semantic");
+    setSemanticEnabled(true);
+    setTimedOut(false);
+    setLoadingStep(0);
+    clearAllTimers();
+    refetchSemantic();
+
+    // Schedule loading step label transitions
+    LOADING_STEPS.forEach((step, i) => {
+      if (step.ms > 0) {
+        const t = setTimeout(() => setLoadingStep(i), step.ms);
+        stepTimersRef.current.push(t);
+      }
+    });
+
+    // 15-second timeout fallback
+    timeoutRef.current = setTimeout(() => {
+      setTimedOut(true);
+      setMode("quick");
+      clearAllTimers();
+    }, SEMANTIC_TIMEOUT_MS);
+  }
+
   const activePath = mode === "semantic" && semanticPath
     ? semanticPath
     : quickPath;
 
   const isLoading = mode === "quick" ? quickLoading : semanticLoading;
-
-  function handleComputeSemantic() {
-    setMode("semantic");
-    setSemanticEnabled(true);
-    refetchSemantic();
-  }
 
   if (quickLoading) {
     return (
@@ -149,19 +201,53 @@ export function ReadingPathPanel({ bookId, bookTitle, accentColor = "#6366f1" }:
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Use Neon vector similarity + AI to generate a smarter reading path</p>
+                <p>Use Neon vector similarity + AI to generate a smarter reading path (~8s)</p>
               </TooltipContent>
             </Tooltip>
           )}
         </div>
       </div>
 
+      {/* Timeout fallback notice */}
+      {timedOut && (
+        <div className="flex items-center gap-2 mb-3 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
+          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>AI path timed out — showing quick path instead. Try again in a moment.</span>
+        </div>
+      )}
+
       {/* Path visualization */}
       {isLoading ? (
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="w-32 h-48 rounded-xl flex-shrink-0" />
-          ))}
+        <div>
+          {/* Multi-step loading indicator (C1, M6) */}
+          <div className="flex items-center gap-2 mb-3 text-xs text-muted-foreground">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin flex-shrink-0" style={{ color: accentColor }} />
+            <span className="font-medium" style={{ color: accentColor }}>
+              {LOADING_STEPS[loadingStep]?.label ?? "Generating path…"}
+            </span>
+            <span className="text-muted-foreground/60 ml-auto flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              ~8s
+            </span>
+          </div>
+          {/* Step progress dots */}
+          <div className="flex gap-1 mb-3">
+            {LOADING_STEPS.map((_, i) => (
+              <div
+                key={i}
+                className="h-1 rounded-full transition-all duration-500"
+                style={{
+                  width: i <= loadingStep ? "24px" : "8px",
+                  backgroundColor: i <= loadingStep ? accentColor : accentColor + "30",
+                }}
+              />
+            ))}
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="w-32 h-48 rounded-xl flex-shrink-0" />
+            ))}
+          </div>
         </div>
       ) : (
         <div className="flex items-stretch gap-0 overflow-x-auto pb-3 -mx-1 px-1">

@@ -698,3 +698,37 @@ Last cleaned: Apr 5, 2026
 - [x] Register readingPathRouter in server/routers/index.ts
 - [x] Mark all already-completed items [x] in todo.md (Substack, S3 migration, Dropbox ingestion, near-duplicate detection, semantic heatmap, orchestrator guidance card)
 - [x] TypeScript: 0 errors after all changes
+
+## Apr 18 2026 — Audit Fixes (32 findings)
+- [ ] S1: Change publicProcedure to protectedProcedure on authorProfiles + contentItems list/get endpoints
+- [ ] S2: Add rate limiting middleware on enrichment/LLM procedures
+- [ ] S3: Add SSRF protection (private IP allowlist) on external URL fetch in syncEngine + storage
+- [ ] S4: Remove hardcoded Drive folder ID fallbacks, throw at startup if missing
+- [x] S5: Replace raw SQL template literals with Drizzle type-safe operators in contentItems router
+- [ ] S6: Add input sanitization (strip control chars, length limit) on author names before API calls
+- [ ] A1: Add Zod schemas for all JSON blob columns in authorProfiles
+- [ ] A2: Add per-pipeline timeouts (Promise.race) in enrichmentOrchestrator
+- [ ] P1: Fix N+1 query in contentItems.list — use JOIN instead of separate authorContentLinks query
+- [ ] P2: Add DB indexes on includedInLibrary, contentType, enrichedAt columns
+- [ ] S7: Throw at startup if JWT_SECRET is missing or too short
+- [ ] S8: Sanitize error messages in storage.ts — strip response body from client-facing errors
+- [ ] A4: Validate embedding values are finite numbers before Neon vector concatenation
+- [ ] Q1: Standardize error handling — critical ops throw, reads return typed Result
+- [ ] Q2: Replace empty .catch(() => {}) with error logging in authorProfiles router
+- [ ] C1: ReadingPathPanel — add multi-step loading indicator + 15s timeout fallback
+- [ ] H1: Memoize AuthorCard grid + debounce search input 300ms
+- [ ] H2: Add ErrorBoundary around each async section in AuthorDetail + BookDetail
+- [ ] H3: Fix CommandPalette Cmd+K to check event.defaultPrevented
+- [ ] M1: Add keyboard navigation (tabIndex, onKeyDown) to author/book card grids
+- [ ] M2: Set staleTime: 5min on AuthorModal + BookModal queries
+- [ ] M3: Add 400ms debounce to SemanticSearchDropdown input
+- [ ] M4: Add Skeleton placeholders to AuthorDetail + BookDetail loading states
+- [ ] M5: Add axis labels + legend + tooltip to InterestHeatmap
+- [ ] M6: Add estimated time loading state to ReadingPathPanel AI rationale
+- [ ] M7: Lazy-initialize CommandPalette only on first Cmd+K press
+- [ ] A5: Split drizzle/schema.ts into domain files (authors, books, content, enrichment)
+- [ ] L1: Remove unused imports in AuthorDetail.tsx
+- [ ] L2: Replace magic strings for tab types with typed constants
+- [ ] L3: Add ARIA attributes to PageLoader spinner
+- [ ] L4: Replace inline accentColor styles with CSS custom properties in ReadingPathPanel
+- [ ] L5: Add onError toast callbacks to all mutations in AuthorCardActions

@@ -4,11 +4,11 @@
  * Supports the Media tab in the Home page.
  */
 import { z } from "zod";
-import { eq, and, like, desc, asc, sql, inArray } from "drizzle-orm";
+import { eq, ne, and, or, like, desc, asc, sql, inArray } from "drizzle-orm";
 import { getDb } from "../db";
 import { storagePut } from "../storage";
 import { contentItems, authorContentLinks, bookProfiles } from "../../drizzle/schema";
-import { publicProcedure, adminProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import { ENV } from "../_core/env";
 
 // ── Content type groupings for the Media tab sub-filters ────────────────────
@@ -45,7 +45,7 @@ export const contentItemsRouter = router({
    * List content items with optional filtering.
    * Used by the Media tab in the Home page.
    */
-  list: publicProcedure
+  list: protectedProcedure
     .input(
       z.object({
         /** Filter by media group (written | audio_video | courses | film_tv | other | all) */
@@ -79,7 +79,7 @@ export const contentItemsRouter = router({
 
       // Exclude books from the media tab (books have their own tab)
       conditions.push(
-        sql`${contentItems.contentType} != 'book'`
+        ne(contentItems.contentType, 'book')
       );
 
       if (typeFilter && typeFilter.length > 0) {
@@ -96,7 +96,7 @@ export const contentItemsRouter = router({
       if (input.query) {
         const q = `%${input.query}%`;
         conditions.push(
-          sql`(${contentItems.title} LIKE ${q} OR ${contentItems.subtitle} LIKE ${q} OR ${contentItems.description} LIKE ${q})`
+          or(like(contentItems.title, q), like(contentItems.subtitle, q), like(contentItems.description, q))!
         );
       }
 
@@ -183,7 +183,7 @@ export const contentItemsRouter = router({
   /**
    * Get counts per content type group (for sub-filter badges).
    */
-  getGroupCounts: publicProcedure.query(async () => {
+  getGroupCounts: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return { all: 0, written: 0, audio_video: 0, courses: 0, film_tv: 0, other: 0 };
 
@@ -196,7 +196,7 @@ export const contentItemsRouter = router({
       .where(
         and(
           eq(contentItems.includedInLibrary, 1),
-          sql`${contentItems.contentType} != 'book'`
+          ne(contentItems.contentType, 'book')
         )
       )
       .groupBy(contentItems.contentType);
@@ -1240,7 +1240,7 @@ export const contentItemsRouter = router({
     }),
 
   /** Get all non-book content items linked to a specific author */
-  getByAuthor: publicProcedure
+  getByAuthor: protectedProcedure
     .input(z.object({ authorName: z.string() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -1266,7 +1266,7 @@ export const contentItemsRouter = router({
         .where(
           and(
             eq(authorContentLinks.authorName, input.authorName),
-            sql`${contentItems.contentType} != 'book'`,
+            ne(contentItems.contentType, 'book'),
             eq(contentItems.includedInLibrary, 1)
           )
         )

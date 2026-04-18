@@ -26,6 +26,7 @@
  * ```
  */
 import { ENV } from "./env";
+import { safeFetch } from "./ssrfGuard";
 
 export type TranscribeOptions = {
   audioUrl: string; // URL to the audio file (e.g., S3 URL)
@@ -94,7 +95,7 @@ export async function transcribeAudio(
     let audioBuffer: Buffer;
     let mimeType: string;
     try {
-      const response = await fetch(options.audioUrl);
+      const response = await safeFetch(options.audioUrl, undefined, "voiceTranscription");
       if (!response.ok) {
         return {
           error: "Failed to download audio file",

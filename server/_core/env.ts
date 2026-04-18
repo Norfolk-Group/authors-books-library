@@ -1,6 +1,18 @@
+// ── Startup validation ────────────────────────────────────────────────────
+// S7: Throw at startup if JWT_SECRET is missing or too short (< 32 chars)
+const _jwtSecret = process.env.JWT_SECRET ?? "";
+if (!_jwtSecret || _jwtSecret.length < 32) {
+  // Only throw in production; in dev, warn loudly
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("[ENV] JWT_SECRET must be set and at least 32 characters long in production.");
+  } else {
+    console.warn("[ENV] WARNING: JWT_SECRET is missing or too short. Set a strong secret before deploying.");
+  }
+}
+
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
+  cookieSecret: _jwtSecret,
   databaseUrl: process.env.DATABASE_URL ?? "",
   oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",

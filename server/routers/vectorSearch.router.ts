@@ -22,7 +22,7 @@ import { z } from "zod";
 import { eq, isNull, sql, and } from "drizzle-orm";
 import { getDb } from "../db";
 import { magazineArticles, authorProfiles, bookProfiles, contentItems, authorRagProfiles } from "../../drizzle/schema";
-import { publicProcedure, adminProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
 import {
   semanticSearch,
   indexArticle,
@@ -68,7 +68,7 @@ export const vectorSearchRouter = router({
   }),
 
   /** Semantic search across all content (articles + books + authors) */
-  search: publicProcedure
+  search: protectedProcedure
     .input(z.object({
       query: z.string().min(3).max(500),
       namespace: z.enum(["articles", "books", "authors"]).optional(),
@@ -88,7 +88,7 @@ export const vectorSearchRouter = router({
     }),
 
   /** Semantic search within magazine articles only */
-  searchArticles: publicProcedure
+  searchArticles: protectedProcedure
     .input(z.object({
       query: z.string().min(3).max(500),
       topK: z.number().int().min(1).max(20).default(8),
@@ -106,7 +106,7 @@ export const vectorSearchRouter = router({
     }),
 
   /** Semantic search within books only */
-  searchBooks: publicProcedure
+  searchBooks: protectedProcedure
     .input(z.object({
       query: z.string().min(3).max(500),
       topK: z.number().int().min(1).max(20).default(8),

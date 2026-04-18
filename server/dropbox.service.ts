@@ -17,6 +17,7 @@
  */
 
 import { ENV } from "./_core/env";
+import { safeFetch } from "./_core/ssrfGuard";
 
 const DROPBOX_TOKEN_URL = "https://api.dropbox.com/oauth2/token";
 const DROPBOX_API_URL = "https://api.dropboxapi.com/2";
@@ -101,7 +102,7 @@ export async function uploadFileToDropbox(
   const token = await getDropboxAccessToken();
 
   // Download the file from source URL
-  const fileRes = await fetch(sourceUrl);
+  const fileRes = await safeFetch(sourceUrl, undefined, "dropbox.mirrorToDropbox");
   if (!fileRes.ok) {
     throw new Error(`Failed to download source file (${fileRes.status}): ${sourceUrl}`);
   }

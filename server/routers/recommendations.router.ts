@@ -57,7 +57,7 @@ export const recommendationsRouter = router({
    * "Readers Also Liked" — find books similar to a given book via vector similarity.
    * Uses the book's own vector as the query to find nearest neighbours.
    */
-  similarBooks: publicProcedure
+  similarBooks: protectedProcedure
     .input(z.object({
       bookId: z.string().min(1),
       topK: z.number().int().min(1).max(20).default(6),
@@ -149,7 +149,7 @@ export const recommendationsRouter = router({
   /**
    * Similar Authors — find authors with similar writing/thinking style.
    */
-  similarAuthors: publicProcedure
+  similarAuthors: protectedProcedure
     .input(z.object({
       authorName: z.string().min(1),
       topK: z.number().int().min(1).max(10).default(5),
@@ -224,7 +224,7 @@ export const recommendationsRouter = router({
   /**
    * Cross-Content Discovery — find podcasts, videos, and articles related to a book.
    */
-  relatedContent: publicProcedure
+  relatedContent: protectedProcedure
     .input(z.object({
       bookId: z.string().min(1),
       topK: z.number().int().min(1).max(12).default(6),
@@ -305,7 +305,7 @@ export const recommendationsRouter = router({
    * Thematic/Conceptual Search — search by concept, theme, or idea across all content.
    * Unlike keyword search, this finds semantically related content even without exact matches.
    */
-  thematicSearch: publicProcedure
+  thematicSearch: protectedProcedure
     .input(z.object({
       query: z.string().min(2).max(500),
       namespace: z.enum(["books", "authors", "articles", "content_items", "rag_files", "all"]).default("all"),

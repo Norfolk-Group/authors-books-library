@@ -12,6 +12,7 @@
  * 8. stats — summary counts by status
  */
 
+import { logger } from "../lib/logger";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
@@ -65,7 +66,7 @@ async function triggerNeonIndexing(upload: {
     switch (namespace) {
       case "authors": {
         if (!authorId) {
-          console.warn("[SmartUpload] Neon authors index skipped — no authorId");
+          logger.warn("[SmartUpload] Neon authors index skipped — no authorId");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         // Fetch the author's current bio from DB
@@ -76,17 +77,17 @@ async function triggerNeonIndexing(upload: {
           .limit(1);
         const author = rows[0];
         if (!author?.bio) {
-          console.warn(`[SmartUpload] Neon authors index skipped — author ${authorId} has no bio`);
+          logger.warn(`[SmartUpload] Neon authors index skipped — author ${authorId} has no bio`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         await indexAuthorIncremental(author.id, author.authorName, author.bio);
-        console.log(`[SmartUpload] ✅ Indexed author ${author.authorName} to Neon (authors namespace)`);
+        logger.info(`[SmartUpload] ✅ Indexed author ${author.authorName} to Neon (authors namespace)`);
         return { indexed: true, namespace, vectorCount: 1 };
       }
 
       case "books": {
         if (!bookId) {
-          console.warn("[SmartUpload] Neon books index skipped — no bookId");
+          logger.warn("[SmartUpload] Neon books index skipped — no bookId");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         // Fetch the book's current summary from DB
@@ -97,11 +98,11 @@ async function triggerNeonIndexing(upload: {
           .limit(1);
         const book = rows[0];
         if (!book?.summary) {
-          console.warn(`[SmartUpload] Neon books index skipped — book ${bookId} has no summary`);
+          logger.warn(`[SmartUpload] Neon books index skipped — book ${bookId} has no summary`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         await indexBookIncremental(book.id, book.bookTitle, book.authorName ?? "", book.summary);
-        console.log(`[SmartUpload] ✅ Indexed book "${book.bookTitle}" to Neon (books namespace)`);
+        logger.info(`[SmartUpload] ✅ Indexed book "${book.bookTitle}" to Neon (books namespace)`);
         return { indexed: true, namespace, vectorCount: 1 };
       }
 
@@ -109,22 +110,22 @@ async function triggerNeonIndexing(upload: {
         // For RAG files, we need the text content — use the S3 URL as the source reference
         const authorName = upload.aiSuggestedAuthorName ?? upload.originalFilename;
         if (!upload.finalS3Url) {
-          console.warn("[SmartUpload] Neon rag_files index skipped — no S3 URL");
+          logger.warn("[SmartUpload] Neon rag_files index skipped — no S3 URL");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         // Fetch the text content from S3
         const res = await fetch(upload.finalS3Url);
         if (!res.ok) {
-          console.warn(`[SmartUpload] Neon rag_files index skipped — could not fetch S3 content (${res.status})`);
+          logger.warn(`[SmartUpload] Neon rag_files index skipped — could not fetch S3 content (${res.status})`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const ragContent = await res.text();
         if (!ragContent || ragContent.length < 50) {
-          console.warn("[SmartUpload] Neon rag_files index skipped — content too short");
+          logger.warn("[SmartUpload] Neon rag_files index skipped — content too short");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const vectorCount = await indexRagFile({ authorName, ragContent });
-        console.log(`[SmartUpload] ✅ Indexed RAG file "${authorName}" to Neon (rag_files namespace, ${vectorCount} vectors)`);
+        logger.info(`[SmartUpload] ✅ Indexed RAG file "${authorName}" to Neon (rag_files namespace, ${vectorCount} vectors)`);
         return { indexed: true, namespace, vectorCount };
       }
 
@@ -133,17 +134,17 @@ async function triggerNeonIndexing(upload: {
         const title = upload.aiSuggestedBookTitle ?? upload.aiSuggestedAuthorName ?? upload.originalFilename;
         const authorName = upload.aiSuggestedAuthorName ?? "Unknown";
         if (!upload.finalS3Url) {
-          console.warn("[SmartUpload] Neon content_items index skipped — no S3 URL");
+          logger.warn("[SmartUpload] Neon content_items index skipped — no S3 URL");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const res = await fetch(upload.finalS3Url);
         if (!res.ok) {
-          console.warn(`[SmartUpload] Neon content_items index skipped — could not fetch S3 content (${res.status})`);
+          logger.warn(`[SmartUpload] Neon content_items index skipped — could not fetch S3 content (${res.status})`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const text = await res.text();
         if (!text || text.length < 50) {
-          console.warn("[SmartUpload] Neon content_items index skipped — content too short");
+          logger.warn("[SmartUpload] Neon content_items index skipped — content too short");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const vectorCount = await indexContentItem({
@@ -153,12 +154,12 @@ async function triggerNeonIndexing(upload: {
           contentType: contentType ?? "upload",
           description: text,
         });
-        console.log(`[SmartUpload] ✅ Indexed content item "${title}" to Neon (content_items namespace, ${vectorCount} vectors)`);
+        logger.info(`[SmartUpload] ✅ Indexed content item "${title}" to Neon (content_items namespace, ${vectorCount} vectors)`);
         return { indexed: true, namespace, vectorCount };
       }
 
       default:
-        console.warn(`[SmartUpload] Unknown Neon namespace: ${namespace}`);
+        logger.warn(`[SmartUpload] Unknown Neon namespace: ${namespace}`);
         return { indexed: false, namespace, vectorCount: 0 };
     }
   } catch (err) {

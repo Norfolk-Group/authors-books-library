@@ -3,11 +3,12 @@ import { eq, isNull, isNotNull, or, sql, inArray, desc } from "drizzle-orm";
 import { mirrorBatchToS3 } from "../mirrorToS3";
 import { getDb } from "../db";
 import { authorProfiles } from "../../drizzle/schema";
-import { publicProcedure, adminProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
+import { checkRateLimit } from "../_core/rateLimit";
 import { enrichAuthorViaWikipedia } from "../lib/authorEnrichment";
 import { parallelBatch } from "../lib/parallelBatch";
 import { logger } from "../lib/logger";
-import { validateAuthorName } from "../../shared/authorNameValidator";
+import { validateAuthorName, sanitizeAuthorName } from "../../shared/authorNameValidator";
 
 // Sub-routers (split for maintainability)
 import { authorAvatarRouter } from "./authorAvatar.router";
@@ -23,7 +24,7 @@ import { authorSocialRouter } from "./authorSocial.router";
 // procedures are delegated to sub-routers and merged at the bottom.
 const authorProfilesCoreRouter = router({
   /** Get recently enriched authors (by enrichedAt desc) */
-  getRecentlyEnriched: publicProcedure
+  getRecentlyEnriched: protectedProcedure
     .input(z.object({ limit: z.number().min(1).max(30).default(10) }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -44,7 +45,7 @@ const authorProfilesCoreRouter = router({
     }),
 
   /** Get a single author profile by base name */
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ authorName: z.string() }))
     .query(async ({ input }) => {
       const db = await getDb();
@@ -58,7 +59,7 @@ const authorProfilesCoreRouter = router({
     }),
 
   /** Get multiple author profiles by name list */
-  getMany: publicProcedure
+  getMany: protectedProcedure
     .input(z.object({ authorNames: z.array(z.string()) }))
     .query(async ({ input }) => {
       if (input.authorNames.length === 0) return [];
@@ -73,7 +74,10 @@ const authorProfilesCoreRouter = router({
   /** Enrich a single author via Wikipedia + LLM fallback and upsert into DB */
   enrich: adminProcedure
     .input(z.object({ authorName: z.string(), model: z.string().optional(), secondaryModel: z.string().optional() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const rl = checkRateLimit(ctx.user.openId, { perUser: 10, global: 100, windowMs: 60_000 });
+      if (!rl.allowed) throw new Error(rl.reason);
+      input.authorName = sanitizeAuthorName(input.authorName);
       const db = await getDb();
       if (!db) return { success: false, cached: false, profile: null };
 
@@ -113,7 +117,7 @@ const authorProfilesCoreRouter = router({
     }),
 
   /** Get all enriched author names */
-  getAllEnrichedNames: publicProcedure.query(async () => {
+  getAllEnrichedNames: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     const rows = await db
@@ -124,7 +128,7 @@ const authorProfilesCoreRouter = router({
   }),
 
   /** Get all author names that have a rich bio */
-  getAllRichBioNames: publicProcedure.query(async () => {
+  getAllRichBioNames: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     const rows = await db
@@ -135,7 +139,7 @@ const authorProfilesCoreRouter = router({
   }),
 
   /** Get enrichment freshness for all authors */
-  getAllFreshness: publicProcedure.query(async () => {
+  getAllFreshness: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     return db
@@ -154,7 +158,7 @@ const authorProfilesCoreRouter = router({
   }),
 
   /** Get all bios */
-  getAllBios: publicProcedure.query(async () => {
+  getAllBios: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) return [];
     return db
@@ -174,7 +178,9 @@ const authorProfilesCoreRouter = router({
       secondaryModel: z.string().optional(),
       concurrency: z.number().min(1).max(10).optional().default(3),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const rl = checkRateLimit(ctx.user.openId, { perUser: 5, global: 20, windowMs: 60_000 });
+      if (!rl.allowed) throw new Error(rl.reason);
       const db = await getDb();
       if (!db) return { results: [], total: 0, succeeded: 0 };
 

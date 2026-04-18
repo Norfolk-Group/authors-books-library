@@ -3,6 +3,7 @@
  * Scans Google Drive Authors and Books Audio folders via the gws CLI,
  * rebuilds libraryData.ts and audioData.ts, and returns a summary.
  */
+import { logger } from "../lib/logger";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
@@ -201,7 +202,7 @@ function scanAuthors(): { authors: AuthorEntry[]; books: BookRecord[] } {
       // Guardrail: skip Drive folders whose name is not a plausible person name
       const nameValidation = validateAuthorName(authorFolder.name);
       if (!nameValidation.valid) {
-        console.warn(`[library.scanner] Skipping non-person folder "${authorFolder.name}": ${nameValidation.reason}`);
+        logger.warn(`[library.scanner] Skipping non-person folder "${authorFolder.name}": ${nameValidation.reason}`);
         continue;
       }
 

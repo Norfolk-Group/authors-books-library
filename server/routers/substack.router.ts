@@ -9,6 +9,7 @@
  *   - updateSubstackUrl(authorId, substackUrl) — admin: update the stored substackUrl
  */
 
+import { logger } from "../lib/logger";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -53,7 +54,7 @@ export const substackRouter = router({
         return await fetchSubstackPosts(substackUrl, input.limit);
       } catch (err) {
         // Return null rather than throwing — the panel will show a graceful empty state
-        console.warn(`[Substack] Failed to fetch posts for author ${input.authorId}:`, err);
+        logger.warn(`[Substack] Failed to fetch posts for author ${input.authorId}:`, err);
         return null;
       }
     }),

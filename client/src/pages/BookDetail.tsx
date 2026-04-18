@@ -51,6 +51,7 @@ import {
 import { SimilarBooksSection } from "@/components/library/SimilarBooksSection";
 import { RelatedContentSection } from "@/components/library/RelatedContentSection";
 import { ReadingPathPanel } from "@/components/library/ReadingPathPanel";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { toast } from "sonner";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

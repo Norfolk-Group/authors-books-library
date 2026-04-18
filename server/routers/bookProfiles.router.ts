@@ -5,7 +5,7 @@
  * Amazon and Goodreads links are constructed from search queries.
  */
 import { z } from "zod";
-import { publicProcedure, adminProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "../_core/trpc";
 
 /// CRUD handlers
 import {
@@ -49,18 +49,18 @@ import { indexBookIncremental } from "../services/incrementalIndex.service";
 // -- Router -----------------------------------------------------------------
 
 export const bookProfilesRouter = router({
-  get: publicProcedure
+  get: protectedProcedure
     .input(z.object({ bookTitle: z.string() }))
     .query(({ input }) => handleGet(input)),
 
-  getMany: publicProcedure
+  getMany: protectedProcedure
     .input(z.object({ bookTitles: z.array(z.string()).max(200) }))
     .query(({ input }) => handleGetMany(input)),
 
-  getAllEnrichedTitles: publicProcedure
+  getAllEnrichedTitles: protectedProcedure
     .query(() => handleGetAllEnrichedTitles()),
 
-  getAllFreshness: publicProcedure
+  getAllFreshness: protectedProcedure
     .query(() => handleGetAllFreshness()),
 
   enrich: adminProcedure
@@ -71,7 +71,7 @@ export const bookProfilesRouter = router({
     .input(z.object({ batchSize: z.number().min(1).max(20).default(10) }))
     .mutation(({ input }) => handleMirrorCovers(input)),
 
-  getMirrorCoverStats: publicProcedure
+  getMirrorCoverStats: protectedProcedure
     .query(() => handleGetMirrorCoverStats()),
 
   enrichBatch: adminProcedure
@@ -82,7 +82,7 @@ export const bookProfilesRouter = router({
     }))
     .mutation(({ input }) => handleEnrichBatch(input)),
 
-  getSummaryStats: publicProcedure
+  getSummaryStats: protectedProcedure
     .query(() => handleGetSummaryStats()),
 
   updateBookSummary: adminProcedure
@@ -129,7 +129,7 @@ export const bookProfilesRouter = router({
     }))
     .mutation(({ input }) => handleEnrichRichSummaryBatch(input)),
 
-  getRichSummary: publicProcedure
+  getRichSummary: protectedProcedure
     .input(z.object({ bookTitle: z.string() }))
     .query(({ input }) => handleGetRichSummary(input)),
 
@@ -137,11 +137,11 @@ export const bookProfilesRouter = router({
     .input(z.object({ bookTitle: z.string() }))
     .mutation(({ input }) => handleEnrichTechnicalReferences(input)),
 
-  getTechnicalReferences: publicProcedure
+  getTechnicalReferences: protectedProcedure
     .input(z.object({ bookTitle: z.string() }))
     .query(({ input }) => handleGetTechnicalReferences(input)),
 
-  getReadingNotes: publicProcedure
+  getReadingNotes: protectedProcedure
     .input(z.object({ bookTitle: z.string() }))
     .query(({ input }) => handleGetReadingNotes(input)),
 
@@ -217,7 +217,7 @@ export const bookProfilesRouter = router({
     .mutation(({ input }) => handleDeleteBook(input)),
 
   /** Update reading progress for a book (public — single user app) */
-  updateReadingProgress: publicProcedure
+  updateReadingProgress: protectedProcedure
     .input(z.object({
       bookTitle: z.string().min(1),
       readingProgressPercent: z.number().min(0).max(100).nullable().optional(),
@@ -246,7 +246,7 @@ export const bookProfilesRouter = router({
     }),
 
   /** Get reading stats across all books (for the Stats dashboard) */
-  getReadingStats: publicProcedure
+  getReadingStats: protectedProcedure
     .query(async () => {
       const { getDb } = await import("../db");
       const { bookProfiles } = await import("../../drizzle/schema");

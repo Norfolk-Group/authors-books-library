@@ -219,3 +219,19 @@ export function isLikelyAuthorName(
 ): boolean {
   return validateAuthorName(rawName, options).valid;
 }
+
+/**
+ * S6: Sanitize an author name string before using it in API calls or DB writes.
+ * - Strips ASCII control characters (0x00–0x1F, 0x7F)
+ * - Collapses multiple whitespace to single space
+ * - Trims leading/trailing whitespace
+ * - Enforces a maximum length of 120 characters
+ */
+export function sanitizeAuthorName(raw: string): string {
+  return raw
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x1F\x7F]/g, "")   // strip control chars
+    .replace(/\s+/g, " ")               // collapse whitespace
+    .trim()
+    .slice(0, 120);                     // enforce max length
+}

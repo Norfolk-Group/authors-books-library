@@ -927,8 +927,15 @@ async function orchestratorTick(): Promise<void> {
         skipped: 0,
       };
 
-      // Run the pipeline (fire-and-forget with error capture)
-      handler(progress, schedule.batchSize ?? 20, schedule.concurrency ?? 2)
+      // Run the pipeline (fire-and-forget with error capture, 30-min timeout)
+      const PIPELINE_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Pipeline timed out after 30 minutes")), PIPELINE_TIMEOUT_MS)
+      );
+      Promise.race([
+        handler(progress, schedule.batchSize ?? 20, schedule.concurrency ?? 2),
+        timeoutPromise,
+      ])
         .then(async () => {
           await updateJobProgress(jobId, {
             status: "completed",
