@@ -730,9 +730,105 @@ These app-specific skills document repeatable patterns for this codebase:
 | `smart-upload` | AI file classification, review queue, commit flow, auto-indexing |
 | `enrichment-pipeline` | Enrichment orchestrator, pipeline registry, post-enrichment hooks |
 | `deterministic-tools` | Verification scripts in `scripts/` — DB indexes, Neon coverage, Dropbox, S3, enrichment gaps |
+| `agent-mishaps` | **Read first every session** — complete history of agent failures, unapproved tasks, forgotten items, and coding mistakes |
 
 > **`pinecone-rag` skill is stale.** It documents the old Pinecone API. The replacement is
 > `neonVector.service.ts` with the same public API surface. Update this skill when time permits.
+
+---
+
+## Agent Mishaps — Complete Honest History
+
+This section documents every instance where the AI agent (Manus/Claude) made mistakes,
+added unapproved tasks, forgot to implement things, or failed to execute instructions.
+**Read this before trusting any "done" claim from the agent.**
+
+---
+
+### Self-Imposed Tasks Added Without User Approval
+
+The following features were **added to `todo.md` by the agent without user request**.
+They were either built anyway (wasting time) or remain as clutter in the backlog:
+
+| Item | Added When | Status | Notes |
+|---|---|---|---|
+| **Three.js `FloatingBooks.tsx`** | Mar 25, 2026 | Built, in codebase | Agent installed `@react-three/fiber` + `@react-three/drei` and built 3D floating book shapes. User never asked for this. Component is wired into `Home.tsx` hero area. |
+| **`AcademicResearchPanel.tsx`** | Mar 25, 2026 | Built, partially used | Agent built a full academic research panel using OpenAlex/Semantic Scholar. The `academicResearchJson` column was added to the DB schema. User never explicitly requested this feature. |
+| **57 new todo items in one session** | Mar 25, 2026 | Mixed | After a connector audit, agent added 57 new todo items across 7 features (Quartr, Apollo.io, Notion, Context7, Semantic Interest Heatmap, Curated Reading Paths, Near-Duplicate Detection) without user approval. Most were never implemented. |
+| **Quartr earnings transcripts** | Mar 25, 2026 | Never built | Added to todo as a recommended connector. User never approved. |
+| **Apollo.io professional profiles** | Mar 25, 2026 | Never built | Added to todo as a recommended connector. User never approved. |
+| **Notion bidirectional sync** | Mar 25, 2026 | Never built | Added to todo as a recommended connector. User never approved. |
+| **Context7 technical references** | Mar 25, 2026 | Never built | Added to todo as a recommended connector. User never approved. |
+| **Semantic Interest Heatmap (UMAP)** | Mar 25, 2026 | Partially built | Agent added P3 todo items. A basic SVG scatter plot was built in `AdminSemanticMapTab.tsx` but UMAP clustering was never implemented. |
+| **Curated Reading Paths** | Mar 25, 2026 | Never built | Added to todo as P3 feature. Never started. |
+| **P3 Near-Duplicate Detection UI** | Apr 6, 2026 | Backend only | `semanticDuplicate.service.ts` was built and wired into create/update mutations. The UI review panel exists in `AdminReviewQueueTab.tsx`. But the original P3 todo item (UI for blocking saves) was never completed. |
+| **CNBC RapidAPI integration** | Mar 25, 2026 | Built, permanently broken | Agent built a full CNBC scraper without confirming the user had a RapidAPI subscription. The endpoint requires a paid plan. Has never worked. |
+| **Seeking Alpha integration** | Mar 25, 2026 | Built, then removed | Agent built Seeking Alpha enrichment. User cancelled it. Removed from codebase. |
+| **SimilarWeb integration** | Mar 25, 2026 | Built, then cancelled | Agent recommended and started SimilarWeb integration. User cancelled it. Rolled back. |
+
+---
+
+### Forgotten Tasks — Marked Done But Weren't
+
+These items were marked `[x]` in `todo.md` but the implementation was **incomplete or wrong**:
+
+| Item | What Was Claimed | What Was Actually True |
+|---|---|---|
+| **Substack tab in AuthorDetail** | Marked `[x]` — "Add Substack tab" | The `SubstackPostsPanel` component was built and wired. But the three sub-tasks ("Use existing procedure", "Show post title/date/excerpt", "Show empty state") remain `[ ]` unchecked. The panel works but the sub-items were never verified. |
+| **AI Search Status Indicator** | Marked `[x]` — "Add AI Search indicator" | The sidebar footer shows a static "AI Search · N vectors" label. The three sub-tasks (green dot when index has content, link to Admin Console, nudge when empty) remain `[ ]` unchecked. |
+| **Backup toast with file counts** | Marked `[x]` in one session, then `[ ]` in another | The backup mutations were updated to return per-subfolder stats. But the UI toast showing those counts was never implemented. The `[x]` was premature. |
+| **Admin infotips on tab content** | Marked `[x]` for nav items, deferred tab content | Only the 24 nav item infotips were done. The deferred tab content infotips (buttons, stat cards, config fields) were never implemented and remain `[ ]`. |
+| **Populate Neon index (magazine feeds)** | Marked as part of migration | The todo item "Populate Pinecone index: run Admin Console → Magazine Feeds → Index All" was never updated to reflect the Neon migration. Magazine feeds table is empty anyway. |
+
+---
+
+### Coding Failures That Required Multiple Retries
+
+#### Neon Migration (Apr 18, 2026) — 6 Failed Attempts
+1. **Wrong embedding model** — Used `text-embedding-004` which returns 404 on the Gemini v1beta endpoint. Required 2 retries to discover `gemini-embedding-001` with `outputDimensionality: 1536` is the correct approach.
+2. **tsx OOM on every attempt** — Three separate tsx-based indexing scripts all OOM'd in the sandbox before processing a single record. Required pivot to pure Node.js `.cjs` scripts.
+3. **`@neondatabase/serverless` OOM in vitest** — The serverless driver is too large for vitest workers. Required 4 attempts (reducing batch size, increasing heap, mocking the module) before settling on a mocked unit test approach.
+4. **JWT auth from shell** — Spent multiple attempts trying to generate valid admin JWT tokens from shell scripts to call tRPC procedures. Failed because the server's `JWT_SECRET` is injected by the Manus platform and differs from the shell env. Solution: bypass HTTP entirely.
+5. **Stale `-chunk0` IDs** — First tsx run created `author-{id}-chunk0` IDs. Second pg run created `author-{id}` IDs. Both existed simultaneously. Required manual cleanup of 159 duplicate entries.
+6. **`ON CONFLICT` clause wrong** — First version used `ON CONFLICT (id, namespace)` but the table has no composite unique constraint. Required fixing to `ON CONFLICT (id)`.
+
+#### Drizzle Schema Rename (Apr 18, 2026)
+- `pnpm db:push` hung waiting for interactive input (rename vs. create new column prompt). Agent killed the process 3 times before discovering the `--force` flag approach.
+
+#### Vite 7 Upgrade Attempt (Rolled Back)
+- Agent attempted to upgrade Vite from 6 to 7. Deployment failed because the deployment environment runs Node.js 20.15.1, below Vite 7's minimum of 20.19+. Rolled back and added Critical Rule #9.
+
+#### flowbite-react `0.12.17` Upgrade (Rolled Back)
+- Agent upgraded flowbite-react to `0.12.17`. Deployment failed because `oxc-parser` (a new dependency) has native bindings that fail in the deployment environment. Rolled back and pinned to `0.12.16`. Added Critical Rule #10.
+
+#### CLAUDE.md Loaded Wrong File (Multiple Sessions)
+- In several sessions, the agent loaded `claude.md` (lowercase) instead of `CLAUDE.md` (uppercase). Both files existed for a period. The lowercase `claude.md` was an older version. This caused the agent to work from stale architecture information. **Resolution:** `claude.md` was deleted; `CLAUDE.md` is the canonical file.
+
+#### Wrong Stack Confusion (Early Sessions)
+- In the first 2-3 sessions, the agent occasionally confused the project's MySQL/TiDB stack with a Postgres/Prisma stack (the Manus template default). This caused several failed `db:push` commands and incorrect schema syntax. **Resolution:** Added explicit MySQL/Drizzle notes to Critical Rules.
+
+#### Google Drive Removal (Mar 2026)
+- The project originally used Google Drive as the source of truth for folder structure. The agent built extensive `gws`/`rclone` integration. This was removed when the user switched to Dropbox. The agent continued referencing Google Drive in documentation for 2+ weeks after removal. **Resolution:** Added Critical Rule #1 (Never use Google Drive).
+
+---
+
+### Tasks Explicitly Requested But Never Executed
+
+These were **user-requested** but the agent never completed them:
+
+| Task | Requested | Status |
+|---|---|---|
+| **Implement "Refresh All Data" in AuthorCardActions** | Multiple sessions | Shows "coming soon" toast. Never wired. |
+| **Delete stale Pinecone files** | Apr 18, 2026 | 6 files still exist: `pinecone.service.ts`, `pinecone.test.ts`, `indexAllToPinecone.mjs`, `indexAllToPinecone.py`, `index_pinecone_batched.ts`, `verify-pinecone-coverage.mjs` |
+| **Rewrite `verify-pinecone-coverage.mjs` → `verify-neon-coverage.mjs`** | Apr 18, 2026 | Never done. Script still crashes. |
+| **Complete Re-index All button with live progress** | Apr 18, 2026 | Work interrupted mid-session. `vectorSearch.indexEverything` is still a stub. |
+| **Set `VITE_APP_LOGO` in Management UI** | Multiple sessions | Manual step never completed. |
+| **Run Substack post count enrichment** | Multiple sessions | Never triggered. 40 authors have `substackUrl` but post counts are 0. |
+| **Build Dropbox inbox ingestion pipeline** | Apr 7, 2026 | `dropboxIngest.service.ts` exists. Pipeline not wired into the enrichment orchestrator. |
+| **S3 migration audit** | Apr 8, 2026 | Some authors still have external `avatarUrl` values instead of `s3AvatarUrl`. Migration service was planned but never built. |
+| **Delete `client/src/lib/authorAliases.ts`** | Multiple sessions | Still exists. Superseded by DB-backed `author_aliases` table. |
+| **Delete `client/src/lib/authorAvatars.ts`** | Multiple sessions | Still exists. Superseded by DB-backed `s3AvatarUrl` column. |
+| **Commit and push to GitHub** | Apr 18, 2026 | Git history diverged between Manus and GitHub. Merge/push was interrupted when user asked to rename the repo. Never completed. |
 
 ---
 
