@@ -82,7 +82,7 @@ export function LibrarySidebar({
 
   // Live last-sync timestamp
   const lastSyncQuery = trpc.admin.getLastSync.useQuery(undefined, { staleTime: 5 * 60_000 });
-  // AI Search status (Pinecone vector count)
+  // AI Search status (Neon vector count)
   const aiSearchStatus = trpc.vectorSearch.getPublicStatus.useQuery(undefined, { staleTime: 10 * 60_000, retry: false });
 
   // Drive Sync (admin only)

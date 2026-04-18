@@ -3,7 +3,7 @@
  *
  * Author Impersonation Chatbot — powered by Digital Me RAG file.
  *
- * The chatbot uses semantic chunk retrieval from the rag_files Pinecone namespace
+ * The chatbot uses semantic chunk retrieval from the rag_files Neon namespace
  * to surface the most relevant sections of the author's knowledge file for each
  * user message, rather than injecting the entire file as a wall of text.
  *
@@ -86,7 +86,7 @@ async function retrieveRagContext(
       const context = sorted
         .map((c, i) => `[Excerpt ${i + 1}]\n${c.metadata.text}`)
         .join("\n\n");
-      logger.info(`[authorChatbot] Retrieved ${ragChunks.length} RAG chunks from Pinecone for "${authorName}"`);
+      logger.info(`[authorChatbot] Retrieved ${ragChunks.length} RAG chunks from Neon pgvector for "${authorName}"`);
       return context;
     }
   } catch (err) {

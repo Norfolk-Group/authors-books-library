@@ -176,7 +176,7 @@ export async function handleUpdateBook(input: {
     .where(eq(bookProfiles.bookTitle, input.bookTitle))
     .limit(1);
   const updated = rows[0] ?? null;
-  // Re-index in Pinecone if semantic content changed
+  // Re-index in Neon if semantic content changed
   if (updated && (input.summary !== undefined || input.keyThemes !== undefined)) {
     indexBookIncremental(updated.id, updated.bookTitle, updated.authorName, updated.summary, updated.keyThemes ?? undefined).catch(() => {});
     // P3: Near-duplicate detection after summary update

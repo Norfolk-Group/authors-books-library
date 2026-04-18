@@ -4,7 +4,7 @@
  * Provides:
  *   - Sync all 5 publication RSS feeds (Atlantic, New Yorker, Wired, NYT, WaPo)
  *   - Per-publication sync with article count display
- *   - Pinecone vector indexing of synced articles
+ *   - Neon pgvector indexing of synced articles
  *   - Stats: total articles cached, indexed vectors
  */
 import { useState } from "react";
@@ -79,7 +79,7 @@ export function AdminMagazineTab() {
   // We'll call indexAllArticles which we'll add to the router
   const indexAllMutation = trpc.vectorSearch.indexAllArticles.useMutation({
     onSuccess: (result: { indexed: number; totalVectors: number }) => {
-      toast.success(`Indexed ${result.indexed} articles (${result.totalVectors} vectors) into Pinecone`);
+      toast.success(`Indexed ${result.indexed} articles (${result.totalVectors} vectors) into Neon`);
       utils.vectorSearch.getStats.invalidate();
       setIndexingAll(false);
     },
@@ -146,7 +146,7 @@ export function AdminMagazineTab() {
           <CardContent className="pt-4 pb-3">
             <div className="flex items-center gap-2 mb-1">
               <Brain className="w-4 h-4 text-muted-foreground" weight="duotone" />
-              <span className="text-xs text-muted-foreground">Indexed (Pinecone)</span>
+              <span className="text-xs text-muted-foreground">Indexed (Neon)</span>
             </div>
             <p className="text-2xl font-bold">{vectorStatsQuery.isLoading ? "…" : totalIndexed}</p>
           </CardContent>
@@ -185,7 +185,7 @@ export function AdminMagazineTab() {
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
             Fetch the latest RSS articles from all 5 publications and cache them in the database.
-            Then index them into Pinecone to enable semantic search across all magazine content.
+            Then index them into Neon to enable semantic search across all magazine content.
           </p>
           <div className="flex gap-3 flex-wrap">
             <Button
@@ -211,7 +211,7 @@ export function AdminMagazineTab() {
               ) : (
                 <Brain className="w-4 h-4" weight="bold" />
               )}
-              {indexingAll ? "Indexing into Pinecone…" : "Index All into Pinecone"}
+              {indexingAll ? "Indexing into Neon…" : "Index All into Neon"}
             </Button>
           </div>
         </CardContent>
@@ -272,7 +272,7 @@ export function AdminMagazineTab() {
         </div>
       </div>
 
-      {/* Pinecone indexing info */}
+      {/* Neon indexing info */}
       <Card className="border-dashed">
         <CardContent className="pt-4 pb-4">
           <div className="flex items-start gap-3">
@@ -280,8 +280,8 @@ export function AdminMagazineTab() {
             <div>
               <p className="text-sm font-medium mb-1">Semantic Search Indexing</p>
               <p className="text-xs text-muted-foreground">
-                After syncing, click "Index All into Pinecone" to generate Gemini embeddings for each
-                article and store them in the Pinecone vector database. This enables semantic search
+                After syncing, click "Index All into Neon" to generate Gemini embeddings for each
+                article and store them in the Neon pgvector database. This enables semantic search
                 across all magazine content from the library search bar.
               </p>
             </div>

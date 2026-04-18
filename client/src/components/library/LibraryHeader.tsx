@@ -4,7 +4,7 @@
  *
  * Search modes:
  *   - "keyword" (default): instant local filter, no network call
- *   - "ai":  Pinecone-powered semantic search via SemanticSearchDropdown
+ *   - "ai":  Neon-powered semantic search via SemanticSearchDropdown
  *
  * The mode toggle is a compact two-segment pill to the left of the search bar.
  * The selected mode is persisted to localStorage so it survives page refreshes.
@@ -171,8 +171,8 @@ export function LibraryHeader({
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs max-w-[220px]">
             {searchMode === "keyword"
-              ? "Keyword mode: instant local filter. Switch to AI for Pinecone semantic search."
-              : "AI mode: Pinecone semantic search — finds conceptually related content. Switch to Keyword for instant local filter."}
+              ? "Keyword mode: instant local filter. Switch to AI for Neon semantic search."
+              : "AI mode: Neon semantic search — finds conceptually related content. Switch to Keyword for instant local filter."}
           </TooltipContent>
         </Tooltip>
 

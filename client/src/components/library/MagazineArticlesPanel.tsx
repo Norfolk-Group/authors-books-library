@@ -88,7 +88,7 @@ function ArticleCard({ article, isAdmin }: { article: Article; isAdmin: boolean 
   const indexMutation = trpc.vectorSearch.indexArticle.useMutation({
     onSuccess: (result) => {
       if (result.success) {
-        toast.success(`Indexed ${result.vectors} vectors in Pinecone`);
+        toast.success(`Indexed ${result.vectors} vectors in Neon`);
         utils.magazine.getByAuthor.invalidate();
       } else {
         toast.error(result.reason ?? "Index failed");

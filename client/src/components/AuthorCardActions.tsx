@@ -6,6 +6,7 @@
  *   - Generate / Regenerate Avatar (meticulous AI pipeline)
  *   - Update Bio (Wikipedia + LLM enrichment)
  *   - Update Links (Perplexity web-grounded research)
+ *   - Refresh All Data (runs all three sequentially)
  *
  * Usage: Rendered inside FlowbiteAuthorCard header area.
  * All mutations use current AppSettings for LLM configuration.
@@ -64,6 +65,7 @@ export function AuthorCardActions({
   const [avatarStatus, setAvatarStatus] = useState<ActionStatus>("idle");
   const [bioStatus, setBioStatus] = useState<ActionStatus>("idle");
   const [linksStatus, setLinksStatus] = useState<ActionStatus>("idle");
+  const [refreshStatus, setRefreshStatus] = useState<ActionStatus>("idle");
 
   // ── Avatar generation ────────────────────────────────────────────────────────
   const generateAvatarMutation = trpc.authorProfiles.generateAvatar.useMutation({
@@ -167,8 +169,100 @@ export function AuthorCardActions({
     [authorName, linksStatus, updateLinksMutation, settings]
   );
 
+  // ── Refresh All Data — runs bio → links → avatar sequentially ────────────────
+  const handleRefreshAll = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (refreshStatus === "loading") return;
+      setRefreshStatus("loading");
+      onAvatarRegenerating?.();
+
+      const toastId = toast.loading(`Refreshing all data for ${authorName}…`, {
+        description: "Step 1/3: Updating bio…",
+      });
+
+      try {
+        // Step 1: Bio
+        await enrichBioMutation.mutateAsync({
+          authorName,
+          model: settings.authorResearchModel,
+          secondaryModel: settings.authorResearchSecondaryEnabled
+            ? settings.authorResearchSecondaryModel
+            : undefined,
+        });
+        toast.loading(`Refreshing all data for ${authorName}…`, {
+          id: toastId,
+          description: "Step 2/3: Updating links…",
+        });
+
+        // Step 2: Links
+        await updateLinksMutation.mutateAsync({
+          authorName,
+          researchVendor: settings.authorResearchVendor,
+          researchModel: settings.authorResearchModel,
+        });
+        toast.loading(`Refreshing all data for ${authorName}…`, {
+          id: toastId,
+          description: "Step 3/3: Regenerating avatar…",
+        });
+
+        // Step 3: Avatar
+        const avatarResult = await generateAvatarMutation.mutateAsync({
+          authorName,
+          bgColor: settings.avatarBgColor,
+          avatarGenVendor: settings.avatarGenVendor,
+          avatarGenModel: settings.avatarGenModel,
+          avatarResearchVendor: settings.avatarResearchVendor,
+          avatarResearchModel: settings.avatarResearchModel,
+          forceRegenerate: true,
+        });
+
+        if (avatarResult.url) onAvatarUpdated?.(avatarResult.url);
+        onBioUpdated?.();
+        onLinksUpdated?.();
+
+        // Invalidate all relevant caches
+        void utils.authorProfiles.getAvatarMap.invalidate();
+        void utils.authorProfiles.getAllBios.invalidate();
+        void utils.authorProfiles.getAllEnrichedNames.invalidate();
+        void utils.authorProfiles.get.invalidate({ authorName });
+
+        toast.success(`All data refreshed for ${authorName}`, {
+          id: toastId,
+          description: `Bio · Links · Avatar (${avatarResult.source})`,
+        });
+        setRefreshStatus("success");
+        setTimeout(() => setRefreshStatus("idle"), 3000);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        toast.error(`Refresh failed for ${authorName}`, {
+          id: toastId,
+          description: msg,
+        });
+        setRefreshStatus("error");
+        setTimeout(() => setRefreshStatus("idle"), 3000);
+      }
+    },
+    [
+      authorName,
+      refreshStatus,
+      enrichBioMutation,
+      updateLinksMutation,
+      generateAvatarMutation,
+      settings,
+      onAvatarUpdated,
+      onAvatarRegenerating,
+      onBioUpdated,
+      onLinksUpdated,
+      utils,
+    ]
+  );
+
   const isAnyLoading =
-    avatarStatus === "loading" || bioStatus === "loading" || linksStatus === "loading";
+    avatarStatus === "loading" ||
+    bioStatus === "loading" ||
+    linksStatus === "loading" ||
+    refreshStatus === "loading";
 
   // Notify parent whenever loading state changes
   useEffect(() => {
@@ -206,7 +300,7 @@ export function AuthorCardActions({
         {/* Generate / Regenerate Avatar */}
         <DropdownMenuItem
           onClick={handleGenerateAvatar}
-          disabled={avatarStatus === "loading"}
+          disabled={avatarStatus === "loading" || refreshStatus === "loading"}
           className="gap-2 cursor-pointer"
         >
           <ActionIcon status={avatarStatus} icon={<Sparkles className="w-3.5 h-3.5" />} />
@@ -221,7 +315,7 @@ export function AuthorCardActions({
         {/* Update Bio */}
         <DropdownMenuItem
           onClick={handleUpdateBio}
-          disabled={bioStatus === "loading"}
+          disabled={bioStatus === "loading" || refreshStatus === "loading"}
           className="gap-2 cursor-pointer"
         >
           <ActionIcon status={bioStatus} icon={<BookUser className="w-3.5 h-3.5" />} />
@@ -234,7 +328,7 @@ export function AuthorCardActions({
         {/* Update Links */}
         <DropdownMenuItem
           onClick={handleUpdateLinks}
-          disabled={linksStatus === "loading"}
+          disabled={linksStatus === "loading" || refreshStatus === "loading"}
           className="gap-2 cursor-pointer"
         >
           <ActionIcon status={linksStatus} icon={<Link2 className="w-3.5 h-3.5" />} />
@@ -245,17 +339,20 @@ export function AuthorCardActions({
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
+
+        {/* Refresh All Data */}
         <DropdownMenuItem
-          onClick={(e) => {
-            e.stopPropagation();
-            toast.info("Refresh coming soon", {
-              description: "Force-refresh all data for this author",
-            });
-          }}
+          onClick={(e) => { void handleRefreshAll(e); }}
+          disabled={isAnyLoading}
           className="gap-2 cursor-pointer"
         >
-          <RefreshCw className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">Refresh All Data</span>
+          <ActionIcon status={refreshStatus} icon={<RefreshCw className="w-3.5 h-3.5" />} />
+          <span className="text-xs">
+            {refreshStatus === "loading" ? "Refreshing…" : "Refresh All Data"}
+          </span>
+          {refreshStatus === "loading" && (
+            <span className="ml-auto text-[10px] text-muted-foreground">Running…</span>
+          )}
         </DropdownMenuItem>
 
         {(onEditClick || onDeleteClick) && (

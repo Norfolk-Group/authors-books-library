@@ -360,7 +360,7 @@ export function AdminSmartUploadTab() {
         <h2 className="text-xl font-semibold">Smart Upload</h2>
         <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
           Upload any file from your computer — Claude AI will automatically classify it, match it
-          to the correct author or book, and route it to the right database table and Pinecone
+          to the correct author or book, and route it to the right database table and Neon
           namespace. Review and confirm before committing.
         </p>
       </div>
@@ -740,7 +740,7 @@ export function AdminSmartUploadTab() {
                       }
                       className="data-[state=checked]:bg-purple-500"
                     />
-                    <Label className="cursor-pointer text-sm">Index in Pinecone</Label>
+                    <Label className="cursor-pointer text-sm">Index in Neon pgvector</Label>
                   </div>
                   <div className="flex items-center gap-2">
                     <Switch

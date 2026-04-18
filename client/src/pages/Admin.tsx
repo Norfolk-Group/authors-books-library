@@ -97,7 +97,7 @@ import { AdminMagazineTab } from "@/components/admin/AdminMagazineTab";
 import { AdminDropboxTab } from "@/components/admin/AdminDropboxTab";
 import { AdminDropboxConfigTab } from "@/components/admin/AdminDropboxConfigTab";
 import { AdminSmartUploadTab } from "@/components/admin/AdminSmartUploadTab";
-import { AdminPineconeTab } from "@/components/admin/AdminPineconeTab";
+import { AdminNeonTab } from "@/components/admin/AdminNeonTab";
 import { AdminDuplicatesTab } from "@/components/admin/AdminDuplicatesTab";
 import { AdminS3AuditTab } from "@/components/admin/AdminS3AuditTab";
 import { AdminReviewQueueTab } from "@/components/admin/AdminReviewQueueTab";
@@ -127,7 +127,7 @@ const NAV_TIPS: Record<string, string> = {
   sync: "Sync data between the app database, Google Drive, and Dropbox. Monitor sync job status and history.",
   dropbox: "Back up avatars, book covers, and PDFs to Dropbox. Browse the /backup folder and ingest new PDFs from /Inbox.",
   "dropbox-config": "Manage all Dropbox folder connections — backup, inbox, source, and design folders. Validate paths, toggle folders on/off, and add new connections.",
-  "smart-upload": "Upload files from your computer. Claude AI automatically classifies each file, matches it to an author or book, and routes it to the correct database table and Pinecone namespace.",
+  "smart-upload": "Upload files from your computer. Claude AI automatically classifies each file, matches it to an author or book, and routes it to the correct database table and Neon namespace.",
   "neon-pgvector": "Manage the Neon pgvector index used for semantic search, RAG chatbots, and content recommendations.",
   "s3-audit": "Audit S3 CDN assets — find missing covers, broken URLs, and orphaned files. Migrate non-S3 images to CDN.",
   // Intelligence
@@ -523,7 +523,7 @@ export default function Admin() {
               {activeSection === "dropbox" && <AdminDropboxTab />}
               {activeSection === "dropbox-config" && <AdminDropboxConfigTab />}
               {activeSection === "smart-upload" && <AdminSmartUploadTab />}
-              {activeSection === "neon-pgvector" && <AdminPineconeTab />}
+              {activeSection === "neon-pgvector" && <AdminNeonTab />}
               {activeSection === "duplicates" && <AdminDuplicatesTab />}
               {activeSection === "s3-audit" && <AdminS3AuditTab />}
               {activeSection === "ai-review" && <AdminReviewQueueTab />}

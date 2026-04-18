@@ -6,7 +6,7 @@
  * 2. getById — single upload job details
  * 3. classify — re-run AI classification on an existing upload
  * 4. updateOverride — admin overrides AI classification
- * 5. commit — commit a reviewed upload to the target DB table + Pinecone (auto-indexed)
+ * 5. commit — commit a reviewed upload to the target DB table + Neon (auto-indexed)
  * 6. reject — mark an upload as rejected
  * 7. delete — remove a staging upload
  * 8. stats — summary counts by status
@@ -28,10 +28,10 @@ import {
   indexContentItem,
 } from "../services/ragPipeline.service";
 
-// ── Pinecone auto-index helper ────────────────────────────────────────────────
+// ── Neon pgvector auto-index helper ────────────────────────────────────────────────
 
 /**
- * After a commit succeeds, trigger the correct Pinecone indexing function
+ * After a commit succeeds, trigger the correct Neon indexing function
  * based on the upload's neonNamespace and content type.
  * Runs fire-and-forget — never throws, so it never blocks the commit response.
  */
@@ -65,7 +65,7 @@ async function triggerNeonIndexing(upload: {
     switch (namespace) {
       case "authors": {
         if (!authorId) {
-          console.warn("[SmartUpload] Pinecone authors index skipped — no authorId");
+          console.warn("[SmartUpload] Neon authors index skipped — no authorId");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         // Fetch the author's current bio from DB
@@ -76,17 +76,17 @@ async function triggerNeonIndexing(upload: {
           .limit(1);
         const author = rows[0];
         if (!author?.bio) {
-          console.warn(`[SmartUpload] Pinecone authors index skipped — author ${authorId} has no bio`);
+          console.warn(`[SmartUpload] Neon authors index skipped — author ${authorId} has no bio`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         await indexAuthorIncremental(author.id, author.authorName, author.bio);
-        console.log(`[SmartUpload] ✅ Indexed author ${author.authorName} to Pinecone (authors namespace)`);
+        console.log(`[SmartUpload] ✅ Indexed author ${author.authorName} to Neon (authors namespace)`);
         return { indexed: true, namespace, vectorCount: 1 };
       }
 
       case "books": {
         if (!bookId) {
-          console.warn("[SmartUpload] Pinecone books index skipped — no bookId");
+          console.warn("[SmartUpload] Neon books index skipped — no bookId");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         // Fetch the book's current summary from DB
@@ -97,11 +97,11 @@ async function triggerNeonIndexing(upload: {
           .limit(1);
         const book = rows[0];
         if (!book?.summary) {
-          console.warn(`[SmartUpload] Pinecone books index skipped — book ${bookId} has no summary`);
+          console.warn(`[SmartUpload] Neon books index skipped — book ${bookId} has no summary`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         await indexBookIncremental(book.id, book.bookTitle, book.authorName ?? "", book.summary);
-        console.log(`[SmartUpload] ✅ Indexed book "${book.bookTitle}" to Pinecone (books namespace)`);
+        console.log(`[SmartUpload] ✅ Indexed book "${book.bookTitle}" to Neon (books namespace)`);
         return { indexed: true, namespace, vectorCount: 1 };
       }
 
@@ -109,22 +109,22 @@ async function triggerNeonIndexing(upload: {
         // For RAG files, we need the text content — use the S3 URL as the source reference
         const authorName = upload.aiSuggestedAuthorName ?? upload.originalFilename;
         if (!upload.finalS3Url) {
-          console.warn("[SmartUpload] Pinecone rag_files index skipped — no S3 URL");
+          console.warn("[SmartUpload] Neon rag_files index skipped — no S3 URL");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         // Fetch the text content from S3
         const res = await fetch(upload.finalS3Url);
         if (!res.ok) {
-          console.warn(`[SmartUpload] Pinecone rag_files index skipped — could not fetch S3 content (${res.status})`);
+          console.warn(`[SmartUpload] Neon rag_files index skipped — could not fetch S3 content (${res.status})`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const ragContent = await res.text();
         if (!ragContent || ragContent.length < 50) {
-          console.warn("[SmartUpload] Pinecone rag_files index skipped — content too short");
+          console.warn("[SmartUpload] Neon rag_files index skipped — content too short");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const vectorCount = await indexRagFile({ authorName, ragContent });
-        console.log(`[SmartUpload] ✅ Indexed RAG file "${authorName}" to Pinecone (rag_files namespace, ${vectorCount} vectors)`);
+        console.log(`[SmartUpload] ✅ Indexed RAG file "${authorName}" to Neon (rag_files namespace, ${vectorCount} vectors)`);
         return { indexed: true, namespace, vectorCount };
       }
 
@@ -133,17 +133,17 @@ async function triggerNeonIndexing(upload: {
         const title = upload.aiSuggestedBookTitle ?? upload.aiSuggestedAuthorName ?? upload.originalFilename;
         const authorName = upload.aiSuggestedAuthorName ?? "Unknown";
         if (!upload.finalS3Url) {
-          console.warn("[SmartUpload] Pinecone content_items index skipped — no S3 URL");
+          console.warn("[SmartUpload] Neon content_items index skipped — no S3 URL");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const res = await fetch(upload.finalS3Url);
         if (!res.ok) {
-          console.warn(`[SmartUpload] Pinecone content_items index skipped — could not fetch S3 content (${res.status})`);
+          console.warn(`[SmartUpload] Neon content_items index skipped — could not fetch S3 content (${res.status})`);
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const text = await res.text();
         if (!text || text.length < 50) {
-          console.warn("[SmartUpload] Pinecone content_items index skipped — content too short");
+          console.warn("[SmartUpload] Neon content_items index skipped — content too short");
           return { indexed: false, namespace, vectorCount: 0 };
         }
         const vectorCount = await indexContentItem({
@@ -153,17 +153,17 @@ async function triggerNeonIndexing(upload: {
           contentType: contentType ?? "upload",
           description: text,
         });
-        console.log(`[SmartUpload] ✅ Indexed content item "${title}" to Pinecone (content_items namespace, ${vectorCount} vectors)`);
+        console.log(`[SmartUpload] ✅ Indexed content item "${title}" to Neon (content_items namespace, ${vectorCount} vectors)`);
         return { indexed: true, namespace, vectorCount };
       }
 
       default:
-        console.warn(`[SmartUpload] Unknown Pinecone namespace: ${namespace}`);
+        console.warn(`[SmartUpload] Unknown Neon namespace: ${namespace}`);
         return { indexed: false, namespace, vectorCount: 0 };
     }
   } catch (err) {
     // Never block the commit — log and return gracefully
-    console.error(`[SmartUpload] Pinecone indexing failed for namespace "${namespace}":`, err);
+    console.error(`[SmartUpload] Neon indexing failed for namespace "${namespace}":`, err);
     return { indexed: false, namespace, vectorCount: 0 };
   }
 }
@@ -346,7 +346,7 @@ export const smartUploadRouter = router({
       return { success: true };
     }),
 
-  /** Commit a reviewed upload to the target DB + Pinecone (auto-indexed) */
+  /** Commit a reviewed upload to the target DB + Neon (auto-indexed) */
   commit: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
@@ -397,7 +397,7 @@ export const smartUploadRouter = router({
             break;
           }
           default:
-            // For other types (rag_files, content_items, etc.), DB routing is handled by Pinecone indexing below
+            // For other types (rag_files, content_items, etc.), DB routing is handled by Neon indexing below
             committedRecordId = upload.id;
         }
 
@@ -411,7 +411,7 @@ export const smartUploadRouter = router({
           })
           .where(eq(smartUploads.id, input.id));
 
-        // ── Step 3: Auto-index to Pinecone (fire-and-forget, never blocks) ───
+        // ── Step 3: Auto-index to Neon (fire-and-forget, never blocks) ───
         const neonResult = await triggerNeonIndexing({
           neonNamespace: upload.neonNamespace,
           shouldIndexPinecone: upload.shouldIndexPinecone,

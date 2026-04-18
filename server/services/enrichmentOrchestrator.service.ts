@@ -150,7 +150,7 @@ async function runBioEnrichment(progress: JobProgress, batchSize: number, concur
               .update(authorProfiles)
               .set({ bio: stats.extract, enrichedAt: new Date() })
               .where(eq(authorProfiles.authorName, author.authorName));
-            // Re-index in Pinecone so the author vector stays fresh
+            // Re-index in Neon so the author vector stays fresh
             indexAuthorIncremental(author.id, author.authorName, stats.extract).catch(() => {});
           }
           progress.succeeded++;
@@ -253,7 +253,7 @@ async function runRichBioEnrichment(progress: JobProgress, batchSize: number, co
           .update(authorProfiles)
           .set({ richBioJson: JSON.stringify(richBio), enrichedAt: new Date() })
           .where(eq(authorProfiles.authorName, author.authorName));
-        // Re-index in Pinecone using the richer fullBio text
+        // Re-index in Neon using the richer fullBio text
         indexAuthorIncremental(author.id, author.authorName, author.bio, JSON.stringify(richBio)).catch(() => {});
       }
       progress.succeeded++;
@@ -346,7 +346,7 @@ async function runRichSummaryEnrichment(progress: JobProgress, batchSize: number
           .update(bookProfiles)
           .set({ richSummaryJson: JSON.stringify(richSummary), enrichedAt: new Date() })
           .where(eq(bookProfiles.id, book.id));
-        // Re-index in Pinecone using the richer summary text
+        // Re-index in Neon using the richer summary text
         const richText = richSummary.fullSummary ?? book.summary ?? "";
         indexBookIncremental(book.id, book.bookTitle, book.authorName, richText).catch(() => {});
       }
@@ -510,7 +510,7 @@ async function runContentQualityScoring(progress: JobProgress, batchSize: number
 }
 
 /**
- * neon-index-authors: Embed + upsert all un-indexed authors to Pinecone.
+ * neon-index-authors: Embed + upsert all un-indexed authors to Neon pgvector.
  */
 async function runNeonIndexAuthors(progress: JobProgress, batchSize: number, concurrency: number): Promise<void> {
   const db = await getDb();
@@ -555,7 +555,7 @@ async function runNeonIndexAuthors(progress: JobProgress, batchSize: number, con
 }
 
 /**
- * neon-index-books: Embed + upsert all un-indexed books to Pinecone.
+ * neon-index-books: Embed + upsert all un-indexed books to Neon pgvector.
  */
 async function runNeonIndexBooks(progress: JobProgress, batchSize: number, concurrency: number): Promise<void> {
   const db = await getDb();
@@ -911,8 +911,8 @@ export async function seedDefaultSchedules(): Promise<void> {
     { pipelineKey: "enrich-rich-summaries", label: "Generate Rich Book Summaries", entityType: "book" as const, intervalHours: 2160, priority: 4, batchSize: 10, concurrency: 1 },
     { pipelineKey: "url-health-check", label: "URL Health Check", entityType: "both" as const, intervalHours: 168, priority: 9, batchSize: 100, concurrency: 10 },
     { pipelineKey: "content-quality-score", label: "Content Quality Scoring", entityType: "both" as const, intervalHours: 2160, priority: 5, batchSize: 20, concurrency: 1 },
-    { pipelineKey: "neon-index-authors", label: "Pinecone: Index Authors", entityType: "author" as const, intervalHours: 168, priority: 7, batchSize: 50, concurrency: 5 },
-    { pipelineKey: "neon-index-books", label: "Pinecone: Index Books", entityType: "book" as const, intervalHours: 168, priority: 7, batchSize: 50, concurrency: 5 },
+    { pipelineKey: "neon-index-authors", label: "Neon: Index Authors", entityType: "author" as const, intervalHours: 168, priority: 7, batchSize: 50, concurrency: 5 },
+    { pipelineKey: "neon-index-books", label: "Neon: Index Books", entityType: "book" as const, intervalHours: 168, priority: 7, batchSize: 50, concurrency: 5 },
     { pipelineKey: "rag-readiness-scan", label: "RAG Readiness Scan", entityType: "author" as const, intervalHours: 48, priority: 8, batchSize: 169, concurrency: 5 },
     { pipelineKey: "chatbot-candidate-scan", label: "Chatbot Candidate Scan", entityType: "author" as const, intervalHours: 48, priority: 7, batchSize: 169, concurrency: 5 },
   ];

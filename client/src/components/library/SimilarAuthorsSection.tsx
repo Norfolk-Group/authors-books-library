@@ -1,5 +1,5 @@
 /**
- * SimilarAuthorsSection — "You Might Also Like" powered by Pinecone vector similarity.
+ * SimilarAuthorsSection — "You Might Also Like" powered by Neon vector similarity.
  * Shown at the bottom of the AuthorDetail page.
  */
 import { useLocation } from "wouter";

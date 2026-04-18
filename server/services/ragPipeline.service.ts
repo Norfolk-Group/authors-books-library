@@ -2,7 +2,7 @@
  * ragPipeline.service.ts
  *
  * RAG pipeline: embed text chunks via Gemini gemini-embedding-001,
- * upsert to Pinecone, and query for semantic search.
+ * upsert to Neon pgvector, and query for semantic search.
  *
  * Supported content types:
  *   - Magazine articles (from magazine_articles table)
@@ -96,7 +96,7 @@ export type IndexArticleInput = {
 };
 
 /**
- * Chunk an article, embed each chunk, and upsert to Pinecone.
+ * Chunk an article, embed each chunk, and upsert to Neon pgvector.
  * Returns the number of vectors upserted.
  */
 export async function indexArticle(article: IndexArticleInput): Promise<number> {
@@ -142,7 +142,7 @@ export type IndexBookInput = {
 };
 
 /**
- * Chunk a book's text, embed each chunk, and upsert to Pinecone.
+ * Chunk a book's text, embed each chunk, and upsert to Neon pgvector.
  */
 export async function indexBook(book: IndexBookInput): Promise<number> {
   await ensureIndex();
@@ -188,7 +188,7 @@ export type IndexAuthorInput = {
 };
 
 /**
- * Embed an author's bio text and upsert to Pinecone.
+ * Embed an author's bio text and upsert to Neon pgvector.
  */
 export async function indexAuthor(author: IndexAuthorInput): Promise<number> {
   await ensureIndex();
@@ -237,7 +237,7 @@ export type SemanticSearchResult = QueryResult & {
 };
 
 /**
- * Embed a query and search Pinecone for semantically similar content.
+ * Embed a query and search Neon pgvector for semantically similar content.
  */
 export async function semanticSearch(
   options: SemanticSearchOptions
@@ -282,7 +282,7 @@ export type IndexContentItemInput = {
 };
 
 /**
- * Embed a content item's description and upsert to Pinecone.
+ * Embed a content item's description and upsert to Neon pgvector.
  */
 export async function indexContentItem(item: IndexContentItemInput): Promise<number> {
   await ensureIndex();
@@ -318,7 +318,7 @@ export type IndexRagFileInput = {
 };
 
 /**
- * Chunk and embed a full author RAG file, upsert to Pinecone rag_files namespace.
+ * Chunk and embed a full author RAG file, upsert to Neon rag_files namespace.
  */
 export async function indexRagFile(input: IndexRagFileInput): Promise<number> {
   await ensureIndex();

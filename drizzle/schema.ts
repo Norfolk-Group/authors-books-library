@@ -1174,9 +1174,9 @@ export const magazineArticles = mysqlTable("magazine_articles", {
   scrapedAt: timestamp("scrapedAt"),
   /** Whether full-text scraping has been attempted */
   scrapeAttempted: boolean("scrapeAttempted").notNull().default(false),
-  /** Whether this article has been indexed in Pinecone for RAG */
+  /** Whether this article has been indexed in Neon pgvector for RAG */
   ragIndexed: boolean("ragIndexed").notNull().default(false),
-  /** When this article was indexed in Pinecone */
+  /** When this article was indexed in Neon pgvector */
   ragIndexedAt: timestamp("ragIndexedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -1243,7 +1243,7 @@ export const humanReviewQueue = mysqlTable("human_review_queue", {
   secondaryEntityType: mysqlEnum("secondaryEntityType", ["author", "book", "content_item", "url"]),
   /**
    * AI confidence score for the flagged issue (0.0–1.0).
-   * For near-duplicates: cosine similarity from Pinecone.
+   * For near-duplicates: cosine similarity from Neon pgvector.
    * For chatbot candidates: ragReadinessScore / 100.
    * For URL quality: 0 = broken, 0.5 = redirect, 1 = healthy.
    */
@@ -1363,9 +1363,9 @@ export const smartUploads = mysqlTable("smart_uploads", {
   matchedBookId: int("matchedBookId"),
   /** Target DB table for this file */
   targetTable: varchar("targetTable", { length: 64 }),
-  /** Whether to index in Pinecone */
+  /** Whether to index in Neon pgvector */
   shouldIndexPinecone: boolean("shouldIndexPinecone").default(false),
-  /** Pinecone namespace to use */
+  /** Neon namespace to use */
   neonNamespace: varchar("neonNamespace", { length: 64 }),
   /** Whether to mirror to Dropbox */
   shouldMirrorDropbox: boolean("shouldMirrorDropbox").default(true),

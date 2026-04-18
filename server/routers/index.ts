@@ -79,7 +79,7 @@ export const appRouter = router({
   apiRegistry: apiRegistryRouter,
   // ── Magazine article pipeline (Atlantic, New Yorker, Wired, NYT, WaPo) ──────
   magazine: magazineRouter,
-  // ── Pinecone vector search + RAG indexing ─────────────────────────────────
+  // ── Neon pgvector search + RAG indexing ─────────────────────────────────
   vectorSearch: vectorSearchRouter,
   // ── Substack RSS feeds ─────────────────────────────────────────────────────
   substack: substackRouter,
@@ -90,7 +90,7 @@ export const appRouter = router({
   // ── S3 CDN audit & migration ───────────────────────────────────────────────
   s3Audit: s3AuditRouter,
   libraryCache: libraryCacheRouter,
-  // ── Pinecone-powered recommendations & discovery ───────────────────────────
+  // ── Neon-powered recommendations & discovery ───────────────────────────
   recommendations: recommendationsRouter,
   // ── AI-to-human review queue ──────────────────────────────────────────────
   humanReviewQueue: humanReviewQueueRouter,

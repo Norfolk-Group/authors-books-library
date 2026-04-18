@@ -97,17 +97,17 @@ Return ONLY valid JSON array:
   }
 }
 
-// ── Pinecone Pre-filter ──────────────────────────────────────────────────────
+// ── Neon pgvector Pre-filter ──────────────────────────────────────────────────────
 
 /**
- * Use Pinecone to pre-filter to the most semantically relevant authors
+ * Use Neon pgvector to pre-filter to the most semantically relevant authors
  * for a given set of user interests. Returns authorNames sorted by
  * cosine similarity (best match first).
  *
  * This replaces the O(N) full-scan with an O(K) LLM pass where K << N.
  * Typical: 183 authors → top 30 candidates → ~84% LLM cost reduction.
  */
-async function getPineconeAuthorCandidates(
+async function getNeonAuthorCandidates(
   interests: Array<{ topic: string; description: string | null; weight: string }>,
   topK = 30
 ): Promise<string[]> {
@@ -141,10 +141,10 @@ async function getPineconeAuthorCandidates(
       }
     }
 
-    logger.info(`[userInterests] Pinecone pre-filter: ${candidates.length} candidates from ${hits.length} hits (topK=${topK})`);
+    logger.info(`[userInterests] Neon pgvector pre-filter: ${candidates.length} candidates from ${hits.length} hits (topK=${topK})`);
     return candidates;
   } catch (err) {
-    logger.warn("[userInterests] Pinecone pre-filter failed, falling back to full scan:", err);
+    logger.warn("[userInterests] Neon pgvector pre-filter failed, falling back to full scan:", err);
     return []; // empty = caller falls back to full scan
   }
 }
@@ -486,19 +486,19 @@ Be specific — cite actual books, frameworks, and ideas from each author.`,
   /**
    * Batch score all authors with ready RAG files against all user interests.
    *
-   * P2 Optimization: Pinecone-first pre-filter.
+   * P2 Optimization: Neon-first pre-filter.
    * Instead of running LLM scoring on ALL authors (O(N) LLM calls), we:
    *   1. Embed the composite interest query via Gemini
-   *   2. Query Pinecone authors namespace → top-K candidates
+   *   2. Query Neon pgvector authors namespace → top-K candidates
    *   3. Only run LLM scoring on those K candidates
    * Typical reduction: 183 authors → 30 candidates → ~84% LLM cost savings.
-   * Falls back to full scan if Pinecone is unavailable.
+   * Falls back to full scan if Neon is unavailable.
    */
   scoreAllAuthors: protectedProcedure
     .input(z.object({
       model: z.string().optional().default(DEFAULT_SCORING_MODEL),
       neonTopK: z.number().int().min(5).max(183).optional().default(30),
-      skipPineconeFilter: z.boolean().optional().default(false),
+      skipNeonFilter: z.boolean().optional().default(false),
     }).optional())
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
@@ -506,7 +506,7 @@ Be specific — cite actual books, frameworks, and ideas from each author.`,
 
       const model = input?.model ?? DEFAULT_SCORING_MODEL;
       const neonTopK = input?.neonTopK ?? 30;
-      const skipPineconeFilter = input?.skipPineconeFilter ?? false;
+      const skipNeonFilter = input?.skipNeonFilter ?? false;
 
       const interests = await db
         .select()
@@ -517,12 +517,12 @@ Be specific — cite actual books, frameworks, and ideas from each author.`,
         return { success: false, scored: 0, message: "No interests defined." };
       }
 
-      // ── Step 1: Pinecone pre-filter ──────────────────────────────────────────
+      // ── Step 1: Neon pgvector pre-filter ──────────────────────────────────────────
       let candidateNames: string[] = [];
       let usedNeonFilter = false;
 
-      if (!skipPineconeFilter) {
-        candidateNames = await getPineconeAuthorCandidates(
+      if (!skipNeonFilter) {
+        candidateNames = await getNeonAuthorCandidates(
           interests.map((i) => ({ topic: i.topic, description: i.description, weight: i.weight })),
           neonTopK
         );
@@ -535,7 +535,7 @@ Be specific — cite actual books, frameworks, and ideas from each author.`,
         .from(authorRagProfiles)
         .where(eq(authorRagProfiles.ragStatus, "ready"));
 
-      // If Pinecone returned candidates, restrict to those authors only
+      // If Neon returned candidates, restrict to those authors only
       const ragRows = usedNeonFilter
         ? allRagRows.filter(r => candidateNames.includes(r.authorName))
         : allRagRows;
@@ -590,8 +590,8 @@ Be specific — cite actual books, frameworks, and ideas from each author.`,
         candidates: ragRows.length,
         usedNeonFilter,
         message: usedNeonFilter
-          ? `Scored ${scored} of ${ragRows.length} Pinecone-selected candidates (${allRagRows.length} total with RAG)`
-          : `Scored ${scored} of ${allRagRows.length} authors (full scan — Pinecone filter unavailable)`,
+          ? `Scored ${scored} of ${ragRows.length} Neon-selected candidates (${allRagRows.length} total with RAG)`
+          : `Scored ${scored} of ${allRagRows.length} authors (full scan — Neon filter unavailable)`,
       };
     }),
 

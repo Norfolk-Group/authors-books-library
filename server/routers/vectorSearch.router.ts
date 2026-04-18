@@ -1,19 +1,21 @@
 /**
  * vectorSearch.router.ts
  *
- * tRPC router for Pinecone vector search and RAG indexing.
+ * tRPC router for Neon pgvector search and RAG indexing.
  *
  * Procedures:
- *   vectorSearch.search           — semantic search across all content
- *   vectorSearch.searchArticles   — semantic search in magazine articles namespace
- *   vectorSearch.searchBooks      — semantic search in books namespace
- *   vectorSearch.indexArticle     — embed + upsert a single article
+ *   vectorSearch.search             — semantic search across all content
+ *   vectorSearch.searchArticles     — semantic search in magazine articles namespace
+ *   vectorSearch.searchBooks        — semantic search in books namespace
+ *   vectorSearch.indexArticle       — embed + upsert a single article
  *   vectorSearch.indexBatchArticles — embed + upsert unindexed articles for an author
- *   vectorSearch.indexAllArticles  — embed + upsert ALL unindexed articles (global batch)
- *   vectorSearch.indexAuthor      — embed + upsert an author's bio
- *   vectorSearch.indexBook        — embed + upsert a book's description
- *   vectorSearch.getStats         — Pinecone index stats (vector counts per namespace)
- *   vectorSearch.ensureIndex      — create the Pinecone index if it doesn't exist
+ *   vectorSearch.indexAllArticles   — embed + upsert ALL unindexed articles (global batch)
+ *   vectorSearch.indexAuthor        — embed + upsert an author's bio
+ *   vectorSearch.indexBook          — embed + upsert a book's description
+ *   vectorSearch.getStats           — Neon pgvector index stats (vector counts per namespace)
+ *   vectorSearch.ensureIndex        — create the Neon pgvector table if it doesn't exist
+ *   vectorSearch.startReindex       — start a full re-index job (authors + books), returns jobId
+ *   vectorSearch.getReindexProgress — poll progress for a re-index job by jobId
  */
 
 import { z } from "zod";
@@ -35,7 +37,7 @@ import {
 // ── Router ────────────────────────────────────────────────────────────────────
 
 export const vectorSearchRouter = router({
-  /** Ensure the Pinecone index exists (idempotent) */
+  /** Ensure the Neon pgvector index exists (idempotent) */
   ensureIndex: adminProcedure.mutation(async () => {
     await ensureIndex();
     return { success: true, indexName: "library-rag" };
@@ -52,7 +54,7 @@ export const vectorSearchRouter = router({
     }
   }),
 
-  /** Get Pinecone index stats (vector counts per namespace) */
+  /** Get Neon pgvector index stats (vector counts per namespace) */
   getStats: adminProcedure.query(async () => {
     try {
       const stats = await getIndexStats();
@@ -478,9 +480,141 @@ export const vectorSearchRouter = router({
       includeRagFiles: z.boolean().default(true),
       limit: z.number().int().min(1).max(500).default(200),
     }))
-    .mutation(async ({ ctx }) => {
-      // Ensure index exists first
+    .mutation(async () => {
       await ensureIndex();
-      return { message: "Use individual indexAll* procedures for granular control", success: true };
+      return { message: "Use startReindex for progress-tracked re-indexing", success: true };
+    }),
+
+  // ── Re-index All with live progress tracking ──────────────────────────────
+
+  /** Start a full re-index job (authors + books). Returns a jobId to poll. */
+  startReindex: adminProcedure.mutation(async () => {
+    const jobId = `reindex-${Date.now()}`;
+    reindexJobs.set(jobId, {
+      jobId,
+      status: "running",
+      startedAt: Date.now(),
+      stages: [
+        { name: "authors", label: "Authors", status: "pending", indexed: 0, skipped: 0, total: 0 },
+        { name: "books",   label: "Books",   status: "pending", indexed: 0, skipped: 0, total: 0 },
+      ],
+    });
+    void runReindexJob(jobId);
+    return { jobId };
+  }),
+
+  /** Poll progress for a re-index job */
+  getReindexProgress: adminProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      const job = reindexJobs.get(input.jobId);
+      if (!job) return null;
+      return job;
     }),
 });
+
+// ── Re-index job store (in-memory, single-server) ────────────────────────────
+
+type StageStatus = "pending" | "running" | "done" | "error";
+type JobStatus   = "running" | "done" | "error";
+
+interface ReindexStage {
+  name: string;
+  label: string;
+  status: StageStatus;
+  indexed: number;
+  skipped: number;
+  total: number;
+  error?: string;
+}
+
+interface ReindexJob {
+  jobId: string;
+  status: JobStatus;
+  startedAt: number;
+  finishedAt?: number;
+  stages: ReindexStage[];
+}
+
+const reindexJobs = new Map<string, ReindexJob>();
+
+// Evict jobs older than 30 minutes
+setInterval(() => {
+  const cutoff = Date.now() - 30 * 60 * 1000;
+  for (const [id, job] of Array.from(reindexJobs.entries())) {
+    if (job.startedAt < cutoff) reindexJobs.delete(id);
+  }
+}, 5 * 60 * 1000);
+
+async function runReindexJob(jobId: string) {
+  const job = reindexJobs.get(jobId);
+  if (!job) return;
+
+  const db = await getDb();
+  if (!db) {
+    job.status = "error";
+    job.finishedAt = Date.now();
+    return;
+  }
+
+  // ── Stage 1: Authors ──────────────────────────────────────────────────────
+  const authorStage = job.stages[0];
+  authorStage.status = "running";
+  try {
+    const authors = await db.select().from(authorProfiles).limit(500);
+    authorStage.total = authors.length;
+    for (const author of authors) {
+      let bioText = author.bio ?? "";
+      try {
+        if (author.richBioJson) {
+          const rich = typeof author.richBioJson === "string"
+            ? JSON.parse(author.richBioJson as string)
+            : author.richBioJson as Record<string, string>;
+          if (rich?.bio && rich.bio.length > bioText.length) bioText = rich.bio;
+          if (rich?.fullBio && rich.fullBio.length > bioText.length) bioText = rich.fullBio;
+        }
+      } catch { /* use plain bio */ }
+      if (bioText.length < 50) { authorStage.skipped++; continue; }
+      try {
+        await indexAuthor({ authorId: String(author.id), authorName: author.authorName, bioText });
+        authorStage.indexed++;
+      } catch { authorStage.skipped++; }
+    }
+    authorStage.status = "done";
+  } catch (err) {
+    authorStage.status = "error";
+    authorStage.error = String(err);
+  }
+
+  // ── Stage 2: Books ────────────────────────────────────────────────────────
+  const bookStage = job.stages[1];
+  bookStage.status = "running";
+  try {
+    const books = await db.select().from(bookProfiles).limit(500);
+    bookStage.total = books.length;
+    for (const book of books) {
+      let text = book.summary ?? "";
+      try {
+        if (book.richSummaryJson) {
+          const rich = typeof book.richSummaryJson === "string"
+            ? JSON.parse(book.richSummaryJson as string)
+            : book.richSummaryJson as Record<string, string>;
+          if (rich?.fullSummary && rich.fullSummary.length > text.length) text = rich.fullSummary;
+          if (rich?.summary && rich.summary.length > text.length) text = rich.summary;
+        }
+      } catch { /* use plain summary */ }
+      if (text.length < 50) { bookStage.skipped++; continue; }
+      try {
+        await indexBook({ bookId: String(book.id), title: book.bookTitle, authorName: book.authorName ?? undefined, text });
+        bookStage.indexed++;
+      } catch { bookStage.skipped++; }
+    }
+    bookStage.status = "done";
+  } catch (err) {
+    bookStage.status = "error";
+    bookStage.error = String(err);
+  }
+
+  job.status = job.stages.some(s => s.status === "error") ? "error" : "done";
+  job.finishedAt = Date.now();
+}

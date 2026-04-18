@@ -1,7 +1,7 @@
 /**
  * incrementalIndex.service.ts
  *
- * Incremental Pinecone indexing — fires after a book or author is saved.
+ * Incremental Neon pgvector indexing — fires after a book or author is saved.
  *
  * These functions are designed to be called as a fire-and-forget side effect
  * from the create/update mutation handlers. They do NOT block the save
@@ -19,7 +19,7 @@ import { indexBook, indexAuthor } from "./ragPipeline.service";
 import { checkBookDuplicate, checkAuthorDuplicate } from "./semanticDuplicate.service";
 
 /**
- * Index a book in Pinecone after it is created or updated.
+ * Index a book in Neon pgvector after it is created or updated.
  * Also triggers semantic duplicate detection.
  * Non-blocking — all errors are caught and logged.
  */
@@ -53,7 +53,7 @@ export async function indexBookIncremental(
 }
 
 /**
- * Index an author in Pinecone after they are created or updated.
+ * Index an author in Neon pgvector after they are created or updated.
  * Also triggers semantic duplicate detection.
  * Non-blocking — all errors are caught and logged.
  */

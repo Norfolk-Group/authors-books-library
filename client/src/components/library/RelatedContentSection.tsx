@@ -1,5 +1,5 @@
 /**
- * RelatedContentSection — Cross-content discovery powered by Pinecone.
+ * RelatedContentSection — Cross-content discovery powered by Neon.
  * Finds podcasts, videos, articles, and other media related to a book.
  * Shown at the bottom of the BookDetail page.
  */

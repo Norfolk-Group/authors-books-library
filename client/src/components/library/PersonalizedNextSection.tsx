@@ -1,5 +1,5 @@
 /**
- * PersonalizedNextSection — "What to Read Next" powered by Pinecone + user favorites.
+ * PersonalizedNextSection — "What to Read Next" powered by Neon + user favorites.
  * Shown at the top of the Favorites tab on the Home page.
  */
 import { useLocation } from "wouter";

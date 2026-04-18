@@ -1,5 +1,5 @@
 /**
- * SimilarBooksSection — "Readers Also Liked" powered by Pinecone vector similarity.
+ * SimilarBooksSection — "Readers Also Liked" powered by Neon vector similarity.
  * Shown at the bottom of the BookDetail page.
  */
 import { useLocation } from "wouter";

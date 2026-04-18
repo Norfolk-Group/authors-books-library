@@ -1,5 +1,5 @@
 /**
- * ThematicSearch — Conceptual/thematic search powered by Pinecone.
+ * ThematicSearch — Conceptual/thematic search powered by Neon pgvector.
  * Allows users to search by idea, theme, or concept (e.g., "books about resilience",
  * "authors who write about leadership", "content on deep work").
  */
@@ -176,7 +176,7 @@ export default function ThematicSearch() {
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Unlike keyword search, thematic search understands the <em>meaning</em> behind your query.
-                It uses Pinecone vector embeddings to find books, authors, and media that are conceptually
+                It uses Neon pgvector embeddings to find books, authors, and media that are conceptually
                 related — even if they don't share exact words. Ask about ideas, frameworks, or themes
                 and discover content you didn't know existed in your library.
               </p>

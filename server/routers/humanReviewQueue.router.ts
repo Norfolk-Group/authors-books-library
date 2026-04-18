@@ -206,7 +206,7 @@ export const humanReviewQueueRouter = router({
     }),
 
   /**
-   * Trigger AI scan for near-duplicate books or authors via Pinecone.
+   * Trigger AI scan for near-duplicate books or authors via Neon pgvector.
    */
   runDuplicateScan: adminProcedure
     .input(z.object({

@@ -615,3 +615,51 @@ Last cleaned: Apr 5, 2026
 - [x] Write vitest unit tests for neonVector.service (chunkText, makeVectorId, EMBEDDING_DIMENSION)
 - [x] TypeScript: 0 errors
 - [x] Database migration applied successfully
+
+## Fix Session — Apr 18, 2026
+
+- [ ] Delete stale Pinecone files (pinecone.service.ts, pinecone.test.ts, indexAllToPinecone.mjs, indexAllToPinecone.py, index_pinecone_batched.ts, verify-pinecone-coverage.mjs)
+- [ ] Rewrite verify-pinecone-coverage.mjs → verify-neon-coverage.mjs using pg
+- [ ] Complete Re-index All button with tRPC mutation and live progress bar in Admin Console
+- [ ] Implement "Refresh All Data" in AuthorCardActions.tsx (remove "coming soon" toast)
+- [ ] Delete client/src/lib/authorAliases.ts (superseded by DB)
+- [ ] Delete client/src/lib/authorAvatars.ts (superseded by DB)
+- [ ] Add backup toast with per-subfolder file counts
+- [ ] Add Admin infotips to tab content (buttons, stat cards)
+- [ ] Add "Run All Pipelines Now" button to AdminIntelligenceDashboard
+- [ ] Add Dropbox folder browser (listFolderContents tRPC + AdminDropboxFolderBrowser UI)
+
+## Fix Session Apr 18 2026 — Pinecone → Neon Full Rename Sweep
+
+- [ ] Rename shouldIndexPinecone → shouldIndexNeon in aiFileClassifier.service.ts, AdminSmartUploadTab.tsx, smartUploadRoutes.ts
+- [ ] Rename getPineconeAuthorCandidates → getNeonAuthorCandidates in userInterests.router.ts and userInterests.test.ts
+- [ ] Update all comments in ragPipeline.service.ts: "upsert to Pinecone" → "upsert to Neon"
+- [ ] Update all comments in enrichmentOrchestrator.service.ts: "Pinecone" → "Neon"
+- [ ] Update all comments in semanticDuplicate.service.ts: "Pinecone" → "Neon"
+- [ ] Update all comments in incrementalIndex.service.ts: "Pinecone" → "Neon"
+- [ ] Update pipeline labels in enrichmentOrchestrator.service.ts: "Pinecone: Index Authors/Books" → "Neon: Index Authors/Books"
+- [ ] Remove PINECONE_INDEX_NAME legacy alias from neonVector.service.ts
+- [ ] Update UI labels in AdminMagazineTab.tsx: "Index All into Pinecone" → "Index All into Neon"
+- [ ] Update UI labels in AdminReviewQueueTab.tsx: "Pinecone semantic similarity" → "Neon vector similarity"
+- [ ] Update UI labels in LibraryHeader.tsx, LibrarySidebar.tsx, SemanticSearchDropdown.tsx
+- [ ] Update UI labels in PersonalizedNextSection.tsx, RelatedContentSection.tsx, SimilarAuthorsSection.tsx, SimilarBooksSection.tsx, ThematicSearch.tsx
+- [ ] Update vectorSearch.router.ts comments: "Pinecone index" → "Neon index"
+- [ ] Update Admin.tsx smart-upload description: "Pinecone namespace" → "Neon namespace"
+
+## Fix Session Apr 18 2026 — Completed
+
+- [x] Full Pinecone → Neon rename sweep: all server services, routers, UI labels, comments
+  - ragPipeline.service.ts, enrichmentOrchestrator.service.ts, semanticDuplicate.service.ts, incrementalIndex.service.ts
+  - neonVector.service.ts: removed PINECONE_INDEX_NAME alias
+  - AdminMagazineTab.tsx, AdminReviewQueueTab.tsx, LibraryHeader.tsx, SemanticSearchDropdown.tsx
+  - PersonalizedNextSection.tsx, RelatedContentSection.tsx, SimilarAuthorsSection.tsx, SimilarBooksSection.tsx, ThematicSearch.tsx
+  - vectorSearch.router.ts, authorChatbot.router.ts, authorProfiles.router.ts, crudHandlers.ts
+  - AdminIntelligenceDashboard.tsx, drizzle/schema.ts comments
+  - Renamed AdminPineconeTab.tsx → AdminNeonTab.tsx, export AdminPineconeTab → AdminNeonTab
+  - Renamed getPineconeAuthorCandidates → getNeonAuthorCandidates in userInterests.router.ts
+  - NOTE: shouldIndexPinecone DB column kept as-is (renaming requires a migration)
+- [x] Implement "Refresh All Data" in AuthorCardActions.tsx (bio → links → avatar sequential pipeline with progress toasts)
+- [x] Confirmed: backup toasts already show per-subfolder file counts (uploaded/skipped/failed)
+- [x] Confirmed: AdminIntelligenceDashboard already has InfoTips + Run All Pipelines Now button
+- [x] Confirmed: AdminDropboxFolderBrowser already exists with browseFolderContents + getBackupFolderStats
+- [x] TypeScript: 0 errors

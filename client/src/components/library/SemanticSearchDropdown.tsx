@@ -1,5 +1,5 @@
 /**
- * SemanticSearchDropdown — Pinecone-powered semantic search results overlay.
+ * SemanticSearchDropdown — Neon-powered semantic search results overlay.
  *
  * Appears below the LibraryHeader search bar when the user types a query of
  * 3+ characters and waits 500 ms.  Shows up to 8 results grouped by content
@@ -169,7 +169,7 @@ export function SemanticSearchDropdown({
       {/* Error state */}
       {error && !isFetching && (
         <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-          Semantic search unavailable — Pinecone index may not be populated yet.
+          Semantic search unavailable — Neon index may not be populated yet.
           <br />
           <span className="text-xs">Visit Admin → Magazine Feeds to index content.</span>
         </div>

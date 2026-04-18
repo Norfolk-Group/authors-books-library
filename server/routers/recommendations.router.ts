@@ -1,7 +1,7 @@
 /**
  * recommendations.router.ts
  *
- * Pinecone-powered recommendation and discovery procedures.
+ * Neon-powered recommendation and discovery procedures.
  *
  * Features:
  *   recommendations.similarBooks       — "Readers Also Liked" via vector similarity
@@ -37,7 +37,7 @@ import { logger } from "../lib/logger";
 // ── Reranking helper ─────────────────────────────────────────────────────
 /**
  * Sort hits by cosine similarity score (pgvector already returns cosine similarity).
- * The Pinecone bge-reranker-v2-m3 has been removed; pgvector cosine distance
+ * The Neon bge-reranker-v2-m3 has been removed; pgvector cosine distance
  * provides equivalent relevance ordering for this library use-case.
  */
 async function rerankHits<T extends { id: string; score: number; metadata: { text: string } }>(
@@ -95,7 +95,7 @@ export const recommendationsRouter = router({
 
       if (queryText.length < 30) return { books: [] };
 
-      // 3. Embed and query Pinecone books namespace
+      // 3. Embed and query Neon pgvector books namespace
       const queryEmbedding = await embedText(queryText.slice(0, 2000));
       const hits = await queryVectors(queryEmbedding, "books", {
         topK: input.topK + 5, // over-fetch to exclude self
@@ -172,7 +172,7 @@ export const recommendationsRouter = router({
       if (!sourceAuthors[0]?.bio) return { authors: [] };
       const source = sourceAuthors[0];
 
-      // 2. Embed bio and query Pinecone authors namespace
+      // 2. Embed bio and query Neon pgvector authors namespace
       const queryEmbedding = await embedText((source.bio ?? "").slice(0, 2000));
       const hits = await queryVectors(queryEmbedding, "authors", {
         topK: input.topK + 3,
@@ -467,7 +467,7 @@ export const recommendationsRouter = router({
       // 4. Embed the combined taste profile
       const tasteEmbedding = await embedText(tasteQuery);
 
-      // 5. Query Pinecone for similar books
+      // 5. Query Neon pgvector for similar books
       const hits = await queryVectors(tasteEmbedding, "books", {
         topK: input.topK + favBooks.length + 5,
       });

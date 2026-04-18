@@ -11,7 +11,7 @@ import { validateAuthorName } from "../../shared/authorNameValidator";
 
 // Sub-routers (split for maintainability)
 import { authorAvatarRouter } from "./authorAvatar.router";
-// Incremental Pinecone indexing (fire-and-forget)
+// Incremental Neon pgvector indexing (fire-and-forget)
 import { indexAuthorIncremental } from "../services/incrementalIndex.service";
 // Near-duplicate detection (fire-and-forget, runs after create/update)
 import { checkAuthorDuplicate } from "../services/semanticDuplicate.service";
@@ -105,7 +105,7 @@ const authorProfilesCoreRouter = router({
         .from(authorProfiles)
         .where(eq(authorProfiles.authorName, input.authorName))
         .limit(1);
-      // Re-index in Pinecone with fresh bio
+      // Re-index in Neon with fresh bio
       if (updated[0]?.bio) {
         indexAuthorIncremental(updated[0].id, updated[0].authorName, updated[0].bio, updated[0].richBioJson).catch(() => {});
       }
@@ -427,7 +427,7 @@ const authorProfilesCoreRouter = router({
         .where(eq(authorProfiles.authorName, input.authorName))
         .limit(1);
       const created = rows[0];
-      // Fire-and-forget: index in Pinecone and check for near-duplicates
+      // Fire-and-forget: index in Neon and check for near-duplicates
       if (created) {
         const primaryCategory = (() => {
           try { const tags = JSON.parse(created.tagsJson ?? "[]") as string[]; return tags[0] ?? undefined; }
@@ -501,7 +501,7 @@ const authorProfilesCoreRouter = router({
         .where(eq(authorProfiles.authorName, input.authorName))
         .limit(1);
       const updated = rows[0] ?? null;
-      // Fire-and-forget: re-index in Pinecone after update
+      // Fire-and-forget: re-index in Neon after update
       if (updated && input.bio !== undefined) {
         const primaryCategory = (() => {
           try { const tags = JSON.parse(updated.tagsJson ?? "[]") as string[]; return tags[0] ?? undefined; }

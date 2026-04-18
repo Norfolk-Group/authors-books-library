@@ -1,7 +1,7 @@
 /**
  * neonVector.service.ts
  *
- * Neon pgvector service — drop-in replacement for pinecone.service.ts.
+ * Neon pgvector service — vector database for semantic search and RAG.
  *
  * Storage: Neon Postgres (NEON_DATABASE_URL) with the pgvector extension.
  * Table: vector_embeddings (1536-dim, HNSW cosine index)
@@ -20,9 +20,7 @@ import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-/** Kept for backward-compat with any code that imports this constant. */
 export const NEON_TABLE_NAME = "vector_embeddings";
-export const PINECONE_INDEX_NAME = NEON_TABLE_NAME; // legacy alias for backward compat
 export const EMBEDDING_DIMENSION = 1536; // Gemini text-embedding-004 truncated
 export type ContentNamespace = "articles" | "books" | "authors" | "content_items" | "rag_files";
 
@@ -108,7 +106,7 @@ export async function ensureIndex(): Promise<void> {
 }
 
 /**
- * Return per-namespace vector counts (mirrors Pinecone describeIndexStats shape).
+ * Return per-namespace vector counts (mirrors describeIndexStats shape).
  */
 export async function getIndexStats(): Promise<{
   namespaces: Record<string, { vectorCount: number }>;
@@ -289,7 +287,7 @@ export async function deleteVectors(ids: string[], namespace: ContentNamespace):
   }
 }
 
-// ── Text chunking (unchanged from pinecone.service.ts) ────────────────────────
+// ── Text chunking ────────────────────────────────────────────────────────────
 
 /**
  * Split text into overlapping chunks suitable for embedding.

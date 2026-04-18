@@ -5,7 +5,7 @@
  *
  * Two modes:
  *   1. Fast (default): Tag-based layout — groups authors by their primary tag
- *      in a deterministic 2D grid with per-author jitter. No Pinecone calls.
+ *      in a deterministic 2D grid with per-author jitter. No Neon calls.
  *      Returns in < 200ms.
  *
  *   2. Full semantic (on demand): Embeds each author's bio text, then runs a

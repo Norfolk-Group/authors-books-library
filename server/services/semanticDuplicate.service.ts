@@ -1,11 +1,11 @@
 /**
  * semanticDuplicate.service.ts
  *
- * Near-duplicate detection using Pinecone semantic similarity.
+ * Near-duplicate detection using Neon pgvector semantic similarity.
  *
  * When a new book or author is saved, this service:
  *   1. Embeds the entity's text (title + summary, or name + bio)
- *   2. Queries Pinecone for the top-5 nearest vectors in the same namespace
+ *   2. Queries Neon pgvector for the top-5 nearest vectors in the same namespace
  *   3. Flags any result with cosine similarity >= SIMILARITY_THRESHOLD
  *   4. Inserts a near_duplicate review item into human_review_queue
  *
@@ -27,7 +27,7 @@ import { queryVectors } from "./neonVector.service";
 const SIMILARITY_THRESHOLD = 0.92;
 
 /**
- * Check a newly saved book for near-duplicates in Pinecone.
+ * Check a newly saved book for near-duplicates in Neon pgvector.
  * Runs asynchronously — does not throw on failure.
  */
 export async function checkBookDuplicate(bookTitle: string): Promise<void> {
@@ -105,7 +105,7 @@ export async function checkBookDuplicate(bookTitle: string): Promise<void> {
 }
 
 /**
- * Check a newly saved author for near-duplicates in Pinecone.
+ * Check a newly saved author for near-duplicates in Neon pgvector.
  * Runs asynchronously — does not throw on failure.
  */
 export async function checkAuthorDuplicate(authorName: string): Promise<void> {
@@ -179,7 +179,7 @@ export async function checkAuthorDuplicate(authorName: string): Promise<void> {
 }
 
 /**
- * Run a full near-duplicate scan across all books in Pinecone.
+ * Run a full near-duplicate scan across all books in Neon pgvector.
  * Returns the number of new review items created.
  */
 export async function runFullDuplicateScan(namespace: "books" | "authors" = "books"): Promise<{ checked: number; flagged: number }> {

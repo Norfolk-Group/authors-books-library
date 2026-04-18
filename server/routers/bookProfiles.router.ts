@@ -43,7 +43,7 @@ import {
   handleEnrichTechnicalReferencesBatch,
 } from "../lib/bookHandlers/enrichmentHandlers";
 
-// Incremental Pinecone indexing (fire-and-forget)
+// Incremental Neon pgvector indexing (fire-and-forget)
 import { indexBookIncremental } from "../services/incrementalIndex.service";
 
 // -- Router -----------------------------------------------------------------
@@ -180,7 +180,7 @@ export const bookProfilesRouter = router({
     }))
     .mutation(async ({ input }) => {
       const result = await handleCreateBook(input);
-      // Fire-and-forget: index in Pinecone and check for near-duplicates
+      // Fire-and-forget: index in Neon and check for near-duplicates
       if (result) {
         indexBookIncremental(result.id, result.bookTitle, result.authorName, result.summary, result.keyThemes).catch(() => {});
       }
@@ -206,7 +206,7 @@ export const bookProfilesRouter = router({
     }))
     .mutation(async ({ input }) => {
       const result = await handleUpdateBook(input);
-      // Fire-and-forget: re-index in Pinecone after update
+      // Fire-and-forget: re-index in Neon after update
       if (result) {
         indexBookIncremental(result.id, result.bookTitle, result.authorName, result.summary, result.keyThemes).catch(() => {});
       }

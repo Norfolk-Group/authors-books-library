@@ -5,7 +5,7 @@
  * - Content type (book PDF, author avatar, podcast, etc.)
  * - Associated author and/or book
  * - Target DB table and columns
- * - Whether to index in Pinecone (and which namespace)
+ * - Whether to index in Neon (and which namespace)
  * - Suggested Dropbox destination path
  *
  * For images and PDFs, we pass the file content to Claude as base64.
@@ -151,7 +151,7 @@ Your task is to classify an uploaded file and determine:
 1. What type of content it is
 2. Which author and/or book it belongs to
 3. Where it should be stored in the database
-4. Whether it should be indexed in Pinecone for semantic search
+4. Whether it should be indexed in Neon pgvector for semantic search
 
 Content types you must choose from:
 - book_pdf: Full text of a book in PDF format
@@ -178,7 +178,7 @@ Database routing rules:
 - transcript → rag_files (for Marcela chatbot RAG)
 - design_asset → content_files
 
-Pinecone indexing rules:
+Neon pgvector indexing rules:
 - author_bio → namespace: authors
 - book_pdf (extract summary) → namespace: books
 - article_pdf, newsletter, research_paper → namespace: content_items

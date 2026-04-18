@@ -5,7 +5,7 @@
  *
  * The AI pipeline automatically flags items that need human judgment:
  *   - Chatbot Candidates: authors with sufficient RAG content to enable chatbot
- *   - Near Duplicates: semantically similar books or authors (Pinecone > 0.92)
+ *   - Near Duplicates: semantically similar books or authors (Neon pgvector > 0.92)
  *   - RAG Readiness: computed scores for all authors
  *
  * Admins can:
@@ -498,7 +498,7 @@ function NearDuplicatesTab() {
         <div>
           <h3 className="text-sm font-semibold">Near-Duplicate Detection</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            AI uses Pinecone semantic similarity (≥ 92%) to detect potential duplicates.
+            AI uses Neon pgvector semantic similarity (≥ 92%) to detect potential duplicates.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -535,7 +535,7 @@ function NearDuplicatesTab() {
           <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
           <div className="text-xs text-amber-800 dark:text-amber-200 space-y-1">
             <p className="font-medium">How near-duplicate detection works</p>
-            <p>When you save a book or author, the system automatically embeds its text and queries Pinecone for semantically similar entries. Items with cosine similarity ≥ 92% are flagged here for review.</p>
+            <p>When you save a book or author, the system automatically embeds its text and queries Neon pgvector for semantically similar entries. Items with cosine similarity ≥ 92% are flagged here for review.</p>
             <p>You can also trigger a full scan across all books or authors using the button above.</p>
           </div>
         </div>
@@ -550,7 +550,7 @@ function NearDuplicatesTab() {
         <div className="text-center py-12 text-muted-foreground">
           <CheckCircle2 className="w-8 h-8 mx-auto mb-3 opacity-30" />
           <p className="text-sm">No near-duplicates detected.</p>
-          <p className="text-xs mt-1">Run a scan to check for semantically similar entries in Pinecone.</p>
+          <p className="text-xs mt-1">Run a scan to check for semantically similar entries in Neon pgvector.</p>
         </div>
       ) : (
         <div className="space-y-3">
