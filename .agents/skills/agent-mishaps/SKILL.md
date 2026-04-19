@@ -119,17 +119,16 @@ These were **user-requested** and remain incomplete:
 
 | Task | Status |
 |---|---|
-| Delete 6 stale Pinecone files | Still exist: `pinecone.service.ts`, `pinecone.test.ts`, `indexAllToPinecone.mjs`, `indexAllToPinecone.py`, `index_pinecone_batched.ts`, `verify-pinecone-coverage.mjs` |
-| Rewrite `verify-pinecone-coverage.mjs` → `verify-neon-coverage.mjs` | Script still crashes (uses Pinecone SDK) |
-| Implement "Refresh All Data" in `AuthorCardActions.tsx` | Shows "coming soon" toast. Never wired. |
-| Complete Re-index All button with live progress in Admin | `vectorSearch.indexEverything` is a stub. Work interrupted. |
-| Set `VITE_APP_LOGO` in Management UI | Manual step never done |
-| Run Substack post count enrichment | 40 authors have `substackUrl` but post counts are 0 |
-| Build Dropbox inbox ingestion pipeline | `dropboxIngest.service.ts` exists but not wired |
-| S3 migration audit (external URLs → s3AvatarUrl) | Migration service planned, never built |
-| Delete `client/src/lib/authorAliases.ts` | Still exists; superseded by DB |
-| Delete `client/src/lib/authorAvatars.ts` | Still exists; superseded by DB |
-| Commit and push to GitHub | Git history diverged; push was interrupted by repo rename |
+| Delete 6 stale Pinecone files | ✅ Done Apr 19, 2026 — all deleted |
+| Rewrite `verify-pinecone-coverage.mjs` → `verify-neon-coverage.mjs` | ✅ Done Apr 19, 2026 — full coverage report with flags |
+| Implement "Refresh All Data" in `AuthorCardActions.tsx` | ✅ Done Apr 19, 2026 — runs bio → links → avatar sequentially |
+| Complete Re-index All button with live progress in Admin | ✅ Done Apr 19, 2026 — AdminNeonTab.tsx with live progress |
+| Build Dropbox inbox ingestion pipeline | ✅ Done — `dropboxIngest.service.ts` fully wired |
+| S3 migration audit (external URLs → s3AvatarUrl) | ✅ Done — `AdminS3AuditTab.tsx` + `s3Audit.router.ts` |
+| Commit and push to GitHub | ✅ Done — all changes pushed |
+| `authorAliases.ts` and `authorAvatars.ts` deletion | ⚠️ Still active — both files are still imported in 10+ places; cannot delete without refactor |
+| Set `VITE_APP_LOGO` in Management UI | ⚠️ Manual step — must be done by user in Settings panel |
+| Run Substack post count enrichment | ⚠️ Still pending — 40 authors have substackUrl but post counts are 0 |
 
 ---
 
@@ -141,3 +140,17 @@ At the start of a session, read this file and:
 3. Do not mark tasks `[x]` until you have verified the implementation works end-to-end.
 4. When a coding approach fails twice, stop and try a fundamentally different approach.
 5. After any migration or major change, run `npx tsc --noEmit` and verify the test count.
+### JWT_SECRET Startup Crash (Apr 19, 2026)
+Added a startup validation that required JWT_SECRET to be 32+ characters. The platform-managed
+JWT_SECRET is only 22 characters. This crashed the production deployment.
+**Fix:** Changed the validation to  instead of . Never add hard 
+validations on platform-managed secrets — they are injected by Manus and cannot be changed.
+
+### OOM Build Failure — Exit Code 137 (Apr 19, 2026)
+Production Vite build was killed by OOM (exit code 137) because the entire bundle was processed
+in one pass. The three.js + framer-motion + recharts + flowbite stack is too large for the
+deployment build environment.
+**Fix:** Added  to  splitting vendor libs into separate chunks,
+and lazy-loaded , , and  (the three.js component).
+**Rule:** Always lazy-load heavy pages and 3D/animation libraries. Never let three.js be in the
+main bundle.

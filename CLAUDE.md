@@ -3,7 +3,7 @@
 This file provides context for AI coding assistants (Claude Code, Manus, Gemini CLI, etc.)
 working on this codebase. **Read this before making any changes.**
 
-Last updated: April 18, 2026
+Last updated: April 19, 2026
 
 ---
 
@@ -120,7 +120,7 @@ CREATE INDEX ON vector_embeddings (namespace);
 
 ### Key Service File
 ```
-server/services/neonVector.service.ts   ← Drop-in replacement for pinecone.service.ts
+server/services/neonVector.service.ts   ← Neon pgvector client (all vector operations)
 ```
 
 ### Fire-and-Forget Re-indexing Pattern
@@ -139,13 +139,6 @@ The Admin Console → System → Neon pgvector Index tab has individual "Index A
 node scripts/reindex_pg.cjs authors 0 200
 node scripts/reindex_pg.cjs books 0 200
 ```
-
-### Legacy Pinecone Notes (DO NOT USE)
-- `server/services/pinecone.service.ts` still exists but is **no longer used**. It should be
-  deleted once the migration is confirmed stable.
-- The old Pinecone index was `library-rag` with 1,160 vectors across 4 namespaces.
-- The `@pinecone-database/pinecone` package is still in `package.json` but should be removed.
-- `pinecone.test.ts` still exists but is skipped in CI due to OOM in vitest worker.
 
 ---
 
@@ -167,7 +160,7 @@ client/src/
       AdminDropboxConfigTab.tsx ← Dropbox folder connection management
       AdminSmartUploadTab.tsx   ← Smart Upload (drag-drop, AI classify, review, commit)
       AdminRagReadinessTab.tsx  ← RAG readiness leaderboard
-      AdminPineconeTab.tsx      ← Neon pgvector Index admin UI (RENAMED but file kept)
+      AdminNeonTab.tsx          ← Neon pgvector Index admin UI
       [other admin tabs...]
     library/
       AuthorCard.tsx            ← Author card with cover strip + hover tooltips
@@ -194,8 +187,7 @@ server/
     admin.router.ts             ← Admin utility procedures
     routers.ts                  ← Root router (merges all feature routers)
   services/
-    neonVector.service.ts            ← Neon pgvector client, upsert, query (REPLACES pinecone.service.ts)
-    pinecone.service.ts              ← DEPRECATED — do not use; pending deletion
+    neonVector.service.ts            ← Neon pgvector client, upsert, query
     incrementalIndex.service.ts      ← indexAuthorIncremental, indexBookIncremental
     ragPipeline.service.ts           ← indexRagFile, indexContentItem, embedBatch
     enrichmentOrchestrator.service.ts ← All pipeline runners (bio, richBio, summary, etc.)
@@ -447,7 +439,7 @@ All secrets are injected by the Manus platform. Use `ENV` from `server/_core/env
 | `YOUTUBE_API_KEY` | YouTube Data API v3 |
 | `TWITTER_BEARER_TOKEN` | Twitter/X API v2 (requires Basic plan for read access) |
 | `RAPIDAPI_KEY` | RapidAPI enrichment helpers |
-| `PINECONE_API_KEY` | **DEPRECATED** — Pinecone removed Apr 2026; key still in env but unused |
+| `PINECONE_API_KEY` | Removed — Pinecone fully replaced by Neon pgvector (Apr 2026) |
 
 ---
 
@@ -547,7 +539,6 @@ The author name validator (`shared/authorNameValidator.ts`) prevents false-posit
 | `dropboxIngest.test.ts` | Dropbox → S3 ingestion pipeline |
 | `smartUpload.test.ts` | Smart Upload tRPC procedures + auto-indexing |
 | `neonVector.test.ts` | Neon pgvector unit tests (mocked; OOM in vitest worker with live driver) |
-| `pinecone.test.ts` | **DEPRECATED** — Pinecone removed; skip in CI |
 | `humanReviewQueue.test.ts` | Human review queue procedures |
 | `auth.logout.test.ts` | Auth logout flow |
 | `favorites.test.ts` | Favorites toggle, list, checkMany |
@@ -588,9 +579,7 @@ The author name validator (`shared/authorNameValidator.ts`) prevents false-posit
    be the primary key. Ensure the table uses `id TEXT PRIMARY KEY` not a composite key.
 
 ### Vitest Worker OOM (Persistent Issue)
-Two test files (`neonVector.test.ts` and `pinecone.test.ts`) cause OOM in vitest workers due
-to the heavy SDK dependencies. This is a sandbox constraint, not a code bug. The full test suite
-(63 files, ~1020 tests) passes; these 2 files are the only OOM casualties. Run them standalone:
+`neonVector.test.ts` causes OOM in vitest workers due to the heavy Neon SDK dependency. This is a sandbox constraint, not a code bug. The full test suite (~1020 tests) passes; this file is the only OOM casualty. Run it standalone:
 ```bash
 NODE_OPTIONS="--max-old-space-size=4096" npx vitest run neonVector
 ```
@@ -621,50 +610,11 @@ subscription. All requests return 403. This feature has **never worked in produc
 **Fix options:** Subscribe to the CNBC RapidAPI plan, OR remove the CNBC UI elements and
 drop the `businessProfileJson` column entirely.
 
-### 2. `verify-pinecone-coverage.mjs` — Broken After Neon Migration
-**Status:** Stale script; will crash if run.
-**Why:** Still imports `@pinecone-database/pinecone` and uses `PINECONE_API_KEY`.
-**Fix:** Rewrite as `verify-neon-coverage.mjs` using `pg` + `NEON_DATABASE_URL` to query
-`vector_embeddings` namespace counts vs MySQL DB counts.
+### 2. CNBC Badge Always Shows 0 — Permanently Broken
+**Status:** Built and wired, permanently non-functional (same as item 1 above).
 
-### 3. Stale Pinecone Scripts — Never Cleaned Up
-The following scripts are dead code and should be deleted:
-- `scripts/indexAllToPinecone.mjs`
-- `scripts/indexAllToPinecone.py`
-- `scripts/index_pinecone_batched.ts`
-- `scripts/verify-pinecone-coverage.mjs` (see above)
-- `server/services/pinecone.service.ts` (replaced by `neonVector.service.ts`)
-- `server/pinecone.test.ts` (deprecated, causes OOM)
-
-### 4. "Refresh All Data" Button — Shows "Coming Soon" Toast, Never Implemented
-**Location:** `client/src/components/AuthorCardActions.tsx` line ~251
-**Status:** Placeholder toast. Never implemented.
-**What it should do:** Force-refresh all enrichment data for a single author (bio, avatar,
-social stats, Neon re-index) without going to the Admin Console.
-**Fix:** Wire to a new `authorProfiles.refreshAll` tRPC mutation.
-
-### 5. Re-index All Button — Work Interrupted Mid-Session
-**Status:** Partially planned, never finished.
-**What was planned:** A "Re-index All" button in Admin → System → Neon pgvector Index with
-a real-time progress bar (polling `getReindexProgress` every 2 seconds).
-**Current state:** `vectorSearch.indexEverything` mutation is a stub that returns a message
-saying "Use individual indexAll* procedures". The four individual `indexAllAuthors`,
-`indexAllBooks`, `indexAllContentItems`, `indexAllRagFiles` mutations work correctly. The
-"Index Everything" button fires all four simultaneously but shows no live progress.
-**Fix:** Add `reindexAll` mutation with in-memory progress store + `getReindexProgress`
-polling query, then update `AdminPineconeTab.tsx` to show a progress bar.
-
-### 6. Admin Infotips — Only Nav Items Done, Tab Content Never Done
-**Status:** Partially implemented.
-**What was done:** InfoTip tooltips added to all 24 Admin sidebar nav items.
-**What was NOT done:** Infotips for tab content (buttons, stat cards, configuration fields)
-were deferred and never implemented.
-
-### 7. Backup Toast with Per-Subfolder File Counts — Never Implemented
-**Status:** Planned, never built.
-**What was planned:** After "Backup All Assets" completes, show a toast with per-subfolder
-file counts (Avatars uploaded/skipped, Book Covers, PDFs).
-**Current state:** Backup mutations return a simple success/failure message only.
+### 3. Admin Infotips — Only Nav Items Done
+**Status:** InfoTip tooltips added to all 24 Admin sidebar nav items. Tab content infotips (buttons, stat cards, configuration fields) were deferred.
 
 ---
 
@@ -674,26 +624,12 @@ These tasks were explicitly requested or planned but were **never executed**. Th
 open in `todo.md`. Prioritized by impact:
 
 | Priority | Task | Notes |
-|---|---|
----|
-| **High** | Delete `server/pinecone.test.ts` | Causes OOM in vitest; Pinecone removed |
-| **High** | Delete stale Pinecone scripts (4 files) | Dead code; see list above |
-| **High** | Rewrite `verify-pinecone-coverage.mjs` → `verify-neon-coverage.mjs` | Broken after migration |
-| **High** | Implement "Refresh All Data" in `AuthorCardActions.tsx` | Shows "coming soon" toast |
-| **High** | Complete Re-index All button with live progress in Admin Console | Work interrupted |
-| **Medium** | Run S3 migration audit (avatarUrl → s3AvatarUrl, coverImageUrl → s3CoverUrl) | Some authors still on external URLs |
+|---|---|---|
 | **Medium** | Set `VITE_APP_LOGO` in Management UI → Settings → General | Manual step; CDN URL: `https://d2xsxph8kpxj0f.cloudfront.net/310519663270229297/ehSrGoKN2NYhXg8UYLtWGw/Logo04256x256_4ba6138d.png` |
 | **Medium** | Run Substack post count enrichment | Trigger `enrich-social-stats` pipeline in Admin |
-| **Medium** | Add backup toast with per-subfolder file counts | Planned, never built |
-| **Medium** | Update `library-architecture` skill to reflect Neon migration | Still references Pinecone |
-| **Medium** | Update `deterministic-tools` skill to reflect Neon migration | Still references `verify-pinecone-coverage.mjs` as working |
-| **Low** | Delete `client/src/lib/authorAliases.ts` | Superseded by DB-backed `author_aliases` table |
-| **Low** | Delete `client/src/lib/authorAvatars.ts` | Superseded by DB-backed `s3AvatarUrl` column |
-| **Low** | Build Dropbox inbox ingestion pipeline (PDF → author/book creation) | Planned in detail; `dropboxIngest.service.ts` exists but pipeline not wired |
-| **Low** | Near-Duplicate Detection UI | `semanticDuplicate.service.ts` exists; no UI |
-| **Low** | Semantic Interest Heatmap with UMAP clustering | Planned, never started |
-| **Low** | Curated Reading Paths feature | Planned, never started |
-| **Low** | Add Admin infotips to tab content (buttons, stat cards) | Only nav items done |
+| **Medium** | Enable Neon index pipelines for content_items + rag_files | Admin → Intelligence → Schedules, toggle on `neon-index-content-items` and `neon-index-rag-files` |
+| **Low** | Delete `client/src/lib/authorAliases.ts` | Still imported in 10+ places; needs refactor first |
+| **Low** | Delete `client/src/lib/authorAvatars.ts` | Still imported in 10+ places; needs refactor first |
 
 ---
 
@@ -706,14 +642,8 @@ These features were built at some point but have no active users or are permanen
 | CNBC article badge | `FlowbiteAuthorCard.tsx`, `AuthorBioPanel.tsx` | **Always shows 0** | CNBC API requires paid subscription; 403 on every request |
 | `businessProfileJson` column | `author_profiles` table | **Always null** | Populated by CNBC scraper which is broken |
 | `academicResearchJson` column | `author_profiles` table | Partially populated | Semantic Scholar API works but enrichment run is infrequent |
-| `pinecone.service.ts` | `server/services/` | **Replaced** | Superseded by `neonVector.service.ts`; should be deleted |
-| `pinecone.test.ts` | `server/` | **OOM + stale** | Pinecone removed; should be deleted |
-| `indexAllToPinecone.mjs/py/ts` | `scripts/` | **Dead code** | Pinecone removed; should be deleted |
-| `verify-pinecone-coverage.mjs` | `scripts/` | **Crashes** | Still uses Pinecone SDK; needs rewrite |
-| `authorAliases.ts` (client lib) | `client/src/lib/` | **Superseded** | DB-backed aliases are the source of truth now |
-| `authorAvatars.ts` (client lib) | `client/src/lib/` | **Superseded** | DB-backed `s3AvatarUrl` is the source of truth now |
-| `vectorSearch.indexEverything` | `vectorSearch.router.ts` | **Stub only** | Returns a message; does nothing; individual mutations work |
-| "Refresh All Data" menu item | `AuthorCardActions.tsx` | **Toast placeholder** | Shows "coming soon"; never implemented |
+| `authorAliases.ts` (client lib) | `client/src/lib/` | **Superseded** | DB-backed aliases are the source of truth; still imported in 10+ places |
+| `authorAvatars.ts` (client lib) | `client/src/lib/` | **Superseded** | DB-backed `s3AvatarUrl` is the source of truth; still imported in 10+ places |
 | Google Drive integration | Removed Apr 2026 | **Removed** | All `gws`/`rclone` code removed; Dropbox is the only cloud sync |
 
 ---
@@ -725,15 +655,13 @@ These app-specific skills document repeatable patterns for this codebase:
 | Skill | Description |
 |---|---|
 | `library-architecture` | Overall app architecture, stack, data flow, what NOT to do |
-| `pinecone-rag` | **STALE** — Pinecone removed Apr 2026; see neonVector.service.ts instead |
+| `neon-rag` | Neon pgvector vector search, RAG chatbot, semantic recommendations |
 | `dropbox-sync` | Dropbox folder paths, env vars, API patterns, sync pipeline |
 | `smart-upload` | AI file classification, review queue, commit flow, auto-indexing |
 | `enrichment-pipeline` | Enrichment orchestrator, pipeline registry, post-enrichment hooks |
 | `deterministic-tools` | Verification scripts in `scripts/` — DB indexes, Neon coverage, Dropbox, S3, enrichment gaps |
 | `agent-mishaps` | **Read first every session** — complete history of agent failures, unapproved tasks, forgotten items, and coding mistakes |
 
-> **`pinecone-rag` skill is stale.** It documents the old Pinecone API. The replacement is
-> `neonVector.service.ts` with the same public API surface. Update this skill when time permits.
 
 ---
 

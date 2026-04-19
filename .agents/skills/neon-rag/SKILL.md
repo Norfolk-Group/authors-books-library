@@ -1,16 +1,13 @@
 ---
-name: neon-pgvector
+name: neon-rag
 description: >
   Vector search, RAG chatbot context retrieval, and semantic recommendations for the RC Library app.
-  As of April 18, 2026, the vector database is Neon pgvector (migrated from Pinecone).
+  The vector database is Neon pgvector (HNSW cosine index, 1536-dim Gemini embeddings, 395+ vectors).
   Use when adding new vector search features, debugging search results, extending the chatbot,
   or re-indexing content after enrichment.
-
-  WARNING: This skill was formerly named "pinecone-rag". Pinecone has been fully
-  removed. All references to pinecone.service.ts are stale. Use neonVector.service.ts instead.
 ---
 
-# Neon pgvector -- RC Library App
+# Neon pgvector — RC Library App
 
 ## Overview
 
@@ -21,13 +18,14 @@ by Gemini `gemini-embedding-001` with `outputDimensionality: 1536`.
 ## Key Files
 
 ```
-server/services/neonVector.service.ts        <- Vector DB client (upsert, query, stats)
-server/services/incrementalIndex.service.ts  <- indexAuthorIncremental, indexBookIncremental
-server/services/ragPipeline.service.ts       <- embedBatch, indexRagFile, indexContentItem
-server/routers/vectorSearch.router.ts        <- tRPC procedures for search + index management
-server/routers/recommendations.router.ts     <- similarBooks, similarAuthors, thematicSearch
-server/routers/authorChatbot.router.ts       <- RAG chatbot context retrieval + LLM chat
-scripts/reindex_pg.cjs                       <- Pure-Node bulk re-indexing script
+server/services/neonVector.service.ts        ← Vector DB client (upsert, query, stats)
+server/services/incrementalIndex.service.ts  ← indexAuthorIncremental, indexBookIncremental
+server/services/ragPipeline.service.ts       ← embedBatch, indexRagFile, indexContentItem
+server/routers/vectorSearch.router.ts        ← tRPC procedures for search + index management
+server/routers/recommendations.router.ts     ← similarBooks, similarAuthors, thematicSearch
+server/routers/authorChatbot.router.ts       ← RAG chatbot context retrieval + LLM chat
+scripts/reindex_pg.cjs                       ← Pure-Node bulk re-indexing script (no OOM)
+scripts/verify-neon-coverage.mjs             ← Coverage report: namespace counts vs DB counts
 ```
 
 ## Neon Table Schema
@@ -59,8 +57,8 @@ const vectors = await embedBatch(["text one", "text two"]);
 
 **Model:** `models/gemini-embedding-001` with `outputDimensionality: 1536`
 
-**Critical:** Do NOT use `text-embedding-004` -- it returns 404 on the Gemini v1beta endpoint.
-Do NOT omit `outputDimensionality` -- the default produces 3072 dims which exceed the HNSW limit.
+**Critical:** Do NOT use `text-embedding-004` — it returns 404 on the Gemini v1beta endpoint.
+Do NOT omit `outputDimensionality` — the default produces 3072 dims which exceed the HNSW limit.
 
 ## Upsert Vectors
 
@@ -83,7 +81,7 @@ const records: UpsertVectorInput[] = [{
 await upsertVectors(records);
 ```
 
-The `upsertVectors` function uses `INSERT ... ON CONFLICT (id) DO UPDATE` -- safe to call
+The `upsertVectors` function uses `INSERT ... ON CONFLICT (id) DO UPDATE` — safe to call
 repeatedly (idempotent).
 
 ## Query Vectors
@@ -102,11 +100,9 @@ const results = await queryVectors({
 
 ## Reranking
 
-Pinecone's `bge-reranker-v2-m3` reranker is no longer available. The three search procedures
-(`similarBooks`, `similarAuthors`, `thematicSearch`) now sort by cosine score directly.
-This is the correct fallback -- cosine similarity is already a strong signal.
-
-If you need a reranker in the future, consider Cohere Rerank or a local cross-encoder model.
+The three search procedures (`similarBooks`, `similarAuthors`, `thematicSearch`) sort by cosine
+score directly. Cosine similarity is a strong signal and no external reranker is needed.
+If a reranker is added in the future, consider Cohere Rerank or a local cross-encoder model.
 
 ## RAG Chatbot Context Retrieval
 
@@ -115,7 +111,7 @@ The chatbot uses chunk retrieval, NOT full-file injection. The `ragChatContext` 
 returns the top 6 chunks.
 
 ```ts
-// In authorChatbot.router.ts -- already wired:
+// In authorChatbot.router.ts — already wired:
 const ragCtx = await caller.recommendations.ragChatContext({
   authorId: input.authorId,
   query: input.message,
@@ -127,7 +123,7 @@ const ragCtx = await caller.recommendations.ragChatContext({
 
 ## Incremental Indexing (skip-if-already-indexed)
 
-Use `indexAuthorIncremental` / `indexBookIncremental` for bulk operations -- they skip rows
+Use `indexAuthorIncremental` / `indexBookIncremental` for bulk operations — they skip rows
 that already have a Neon vector, preventing duplicate work.
 
 ```ts
@@ -166,12 +162,23 @@ done
 The script uses `pg` (not `@neondatabase/serverless`) and the Gemini REST API directly to
 avoid the OOM issues that tsx + Neon serverless driver cause in the sandbox.
 
-## Current Vector Counts (Apr 18, 2026)
+## Coverage Check
+
+```bash
+pnpm coverage                              # Human-readable coverage report
+node scripts/verify-neon-coverage.mjs --json       # JSON output
+node scripts/verify-neon-coverage.mjs --gaps-only  # Only namespaces below 100%
+node scripts/verify-neon-coverage.mjs --namespace authors  # Single namespace
+```
+
+## Current Vector Counts (Apr 19, 2026)
 
 | Namespace | Vectors | Content |
 |---|---|---|
 | `authors` | 183 | Author bios and richBioJson |
 | `books` | 165 | Book summaries and richSummaryJson |
+| `content_items` | 0 | Pending — enable neon-index-content-items pipeline |
+| `rag_files` | 0 | Pending — enable neon-index-rag-files pipeline |
 | `lb_pitchdeck` | 28 | Library pitch deck RAG chunks |
 | `lb_documents` | 8 | Library document RAG chunks |
 | `lb_website` | 7 | Library website RAG chunks |
@@ -191,14 +198,6 @@ avoid the OOM issues that tsx + Neon serverless driver cause in the sandbox.
 - **JWT auth from shell**: The server's `JWT_SECRET` is injected by the Manus platform and
   differs from the shell environment. Cannot generate valid admin tokens from shell scripts.
   Use direct DB + REST API scripts instead of calling tRPC procedures from shell.
-
-## Migration History (Pinecone to Neon, Apr 18, 2026)
-
-| Change | Detail |
-|---|---|
-| Service file | `pinecone.service.ts` replaced by `neonVector.service.ts` (same public API) |
-| Schema column | `smart_uploads.pineconeNamespace` renamed to `neonNamespace` (migration 0045) |
-| Pipeline keys | `pinecone-index-authors/books` renamed to `neon-index-authors/books` |
-| Reranker | Pinecone `bge-reranker-v2-m3` replaced by cosine-score sort |
-| Embedding dims | 3072 (default gemini-embedding-001) reduced to 1536 (outputDimensionality param) |
-| Vector count | 1,160 (Pinecone) reduced to 395 (Neon, after re-index) |
+- **`shouldIndexNeon` column**: The DB column is `shouldIndexNeon` (renamed from
+  `shouldIndexPinecone` in migration 0046, Apr 19, 2026). Any code referencing
+  `shouldIndexPinecone` is stale and must be updated.

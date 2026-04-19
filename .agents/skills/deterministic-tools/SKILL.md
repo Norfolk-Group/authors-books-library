@@ -32,7 +32,7 @@ These scripts in `scripts/` provide ground-truth verification of system state. T
 ```bash
 # Full health check (4 working scripts — skip verify-pinecone-coverage.mjs)
 node scripts/verify-db-indexes.mjs
-# SKIP: node scripts/verify-pinecone-coverage.mjs  ← BROKEN (Pinecone removed)
+# SKIP: node scripts/verify-neon-coverage.mjs  ← BROKEN (Pinecone removed)
 node scripts/verify-dropbox-folders.mjs
 node scripts/audit-enrichment-gaps.mjs
 node scripts/verify-s3-coverage.mjs
@@ -100,13 +100,12 @@ node scripts/verify-db-indexes.mjs
 
 ---
 
-## Script 2: `verify-pinecone-coverage.mjs` — ⚠️ BROKEN
+## Script 2: `verify-neon-coverage.mjs` — ⚠️ BROKEN
 
 **Status:** Crashes on startup. Still imports `@pinecone-database/pinecone` and uses `PINECONE_API_KEY`.
-Pinecone was removed in April 2026. **Do not run this script.**
 
-**Pending task:** Rewrite as `verify-neon-coverage.mjs` using `pg` + `NEON_DATABASE_URL` to compare
-`vector_embeddings` namespace counts against MySQL DB counts. Use the manual query above in the meantime.
+
+
 
 ---
 

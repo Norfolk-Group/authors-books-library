@@ -7,6 +7,9 @@
  *   - relatedContent    → { items: [] }
  *   - thematicSearch    → { results: [] }
  *   - personalizedNext  → { books: [], reason: string }
+ *
+ * NOTE: All recommendation procedures use protectedProcedure (S1 audit fix).
+ * Tests must use createAuthContext() for all calls.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { TrpcContext } from "./_core/context";
@@ -66,7 +69,7 @@ describe("recommendations router", () => {
   describe("similarBooks", () => {
     it("returns { books: [] } when DB is unavailable", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.similarBooks({ bookId: "1", topK: 5 });
       expect(result).toHaveProperty("books");
       expect(Array.isArray(result.books)).toBe(true);
@@ -75,7 +78,7 @@ describe("recommendations router", () => {
 
     it("accepts valid topK values between 1 and 20", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.similarBooks({ bookId: "42", topK: 10 });
       expect(result).toHaveProperty("books");
       expect(Array.isArray(result.books)).toBe(true);
@@ -83,9 +86,17 @@ describe("recommendations router", () => {
 
     it("rejects topK above 20", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       await expect(
         caller.recommendations.similarBooks({ bookId: "1", topK: 25 })
+      ).rejects.toThrow();
+    });
+
+    it("requires authentication — throws for unauthenticated users", async () => {
+      const { appRouter } = await import("./routers");
+      const caller = appRouter.createCaller(createPublicContext());
+      await expect(
+        caller.recommendations.similarBooks({ bookId: "1", topK: 5 })
       ).rejects.toThrow();
     });
   });
@@ -93,7 +104,7 @@ describe("recommendations router", () => {
   describe("similarAuthors", () => {
     it("returns { authors: [] } when DB is unavailable", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.similarAuthors({ authorName: "Adam Grant", topK: 5 });
       expect(result).toHaveProperty("authors");
       expect(Array.isArray(result.authors)).toBe(true);
@@ -102,7 +113,7 @@ describe("recommendations router", () => {
 
     it("accepts valid author name", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.similarAuthors({ authorName: "Malcolm Gladwell" });
       expect(result).toHaveProperty("authors");
       expect(Array.isArray(result.authors)).toBe(true);
@@ -110,9 +121,17 @@ describe("recommendations router", () => {
 
     it("rejects empty author name", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       await expect(
         caller.recommendations.similarAuthors({ authorName: "" })
+      ).rejects.toThrow();
+    });
+
+    it("requires authentication — throws for unauthenticated users", async () => {
+      const { appRouter } = await import("./routers");
+      const caller = appRouter.createCaller(createPublicContext());
+      await expect(
+        caller.recommendations.similarAuthors({ authorName: "Adam Grant" })
       ).rejects.toThrow();
     });
   });
@@ -120,7 +139,7 @@ describe("recommendations router", () => {
   describe("relatedContent", () => {
     it("returns { items: [] } when DB is unavailable", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.relatedContent({ bookId: "1", topK: 5 });
       expect(result).toHaveProperty("items");
       expect(Array.isArray(result.items)).toBe(true);
@@ -129,9 +148,17 @@ describe("recommendations router", () => {
 
     it("rejects topK above 12", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       await expect(
         caller.recommendations.relatedContent({ bookId: "1", topK: 20 })
+      ).rejects.toThrow();
+    });
+
+    it("requires authentication — throws for unauthenticated users", async () => {
+      const { appRouter } = await import("./routers");
+      const caller = appRouter.createCaller(createPublicContext());
+      await expect(
+        caller.recommendations.relatedContent({ bookId: "1", topK: 5 })
       ).rejects.toThrow();
     });
   });
@@ -139,7 +166,7 @@ describe("recommendations router", () => {
   describe("thematicSearch", () => {
     it("returns { results: [] } when DB is unavailable", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.thematicSearch({
         query: "habits and productivity",
         topK: 10,
@@ -150,7 +177,7 @@ describe("recommendations router", () => {
 
     it("validates query minimum length of 2 chars", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       await expect(
         caller.recommendations.thematicSearch({ query: "a", topK: 5 })
       ).rejects.toThrow();
@@ -158,7 +185,7 @@ describe("recommendations router", () => {
 
     it("accepts valid namespace values", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       const result = await caller.recommendations.thematicSearch({
         query: "leadership",
         namespace: "books",
@@ -169,13 +196,21 @@ describe("recommendations router", () => {
 
     it("rejects invalid namespace values", async () => {
       const { appRouter } = await import("./routers");
-      const caller = appRouter.createCaller(createPublicContext());
+      const caller = appRouter.createCaller(createAuthContext());
       await expect(
         caller.recommendations.thematicSearch({
           query: "leadership",
           namespace: "invalid" as any,
           topK: 5,
         })
+      ).rejects.toThrow();
+    });
+
+    it("requires authentication — throws for unauthenticated users", async () => {
+      const { appRouter } = await import("./routers");
+      const caller = appRouter.createCaller(createPublicContext());
+      await expect(
+        caller.recommendations.thematicSearch({ query: "leadership", topK: 5 })
       ).rejects.toThrow();
     });
   });

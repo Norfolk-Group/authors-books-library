@@ -6,10 +6,10 @@ description: Overall architecture reference for the RC Library app. Use when onb
 # RC Library App — Architecture Reference
 
 > **IMPORTANT CHANGES AS OF APRIL 18, 2026:**
-> - Vector DB migrated from **Pinecone → Neon pgvector**. Use `neonVector.service.ts`, NOT `pinecone.service.ts`.
+> - Vector DB migrated from **Neon pgvector → Neon pgvector**. Use `neonVector.service.ts`, NOT `neon.service.ts`.
 > - Embedding model changed: `text-embedding-004` (404 error) → `gemini-embedding-001` with `outputDimensionality: 1536`.
 > - Google Drive removed. All cloud sync is Dropbox + Manus S3.
-> - Migration 0045 is the latest (`pineconeNamespace` renamed to `neonNamespace` in `smart_uploads`).
+> - Migration 0045 is the latest (`neonNamespace` renamed to `neonNamespace` in `smart_uploads`).
 
 ---
 
@@ -51,8 +51,8 @@ client/src/
 server/
   routers/            ← tRPC feature routers (one file per domain)
   services/           ← Business logic services (no tRPC, pure functions)
-    neonVector.service.ts       ← Neon pgvector client (REPLACES pinecone.service.ts)
-    pinecone.service.ts         ← DEPRECATED — do not use; pending deletion
+    neonVector.service.ts       ← Neon pgvector client (REPLACES neon.service.ts)
+    neon.service.ts         ← DEPRECATED — do not use; pending deletion
     incrementalIndex.service.ts ← indexAuthorIncremental, indexBookIncremental
     ragPipeline.service.ts      ← RAG file generation + embedding
     enrichmentOrchestrator.service.ts ← Background job engine (13 pipelines)
@@ -76,7 +76,7 @@ scripts/
   verify-dropbox-folders.mjs ← Verify Dropbox folder accessibility (read-only)
   audit-enrichment-gaps.mjs  ← Audit enrichment gaps (read-only)
   verify-s3-coverage.mjs     ← Audit S3 mirror coverage (read-only)
-  verify-pinecone-coverage.mjs ← BROKEN — still uses Pinecone SDK; needs rewrite
+  verify-neon-coverage.mjs ← BROKEN — still uses Neon pgvector SDK; needs rewrite
 
 shared/
   types.ts            ← Shared TypeScript types (client + server)
@@ -93,7 +93,7 @@ shared/
 | `book_profiles` | 163 books — title, authorId, summary, richSummaryJson, coverImageUrl, s3CoverUrl, isbn |
 | `author_rag_profiles` | RAG pipeline state per author (ragStatus: pending/ready/error/stale) |
 | `content_items` | Articles, videos, podcasts, newsletters per author |
-| `smart_uploads` | Staging table for Smart Upload jobs (`neonNamespace` column, renamed from `pineconeNamespace` in migration 0045) |
+| `smart_uploads` | Staging table for Smart Upload jobs (`neonNamespace` column, renamed from `neonNamespace` in migration 0045) |
 | `dropbox_folder_configs` | Admin-managed Dropbox folder connections |
 | `human_review_queue` | Items flagged for human review (near-duplicates, chatbot candidates) |
 | `enrichment_schedules` | Cron-like enrichment pipeline schedules |
@@ -178,7 +178,7 @@ Media
 
 System
   ├── API Health
-  ├── Neon pgvector Index   ← formerly "Pinecone Index" (file still named AdminPineconeTab.tsx)
+  ├── Neon pgvector Index   ← formerly "Neon pgvector Index" (file still named AdminNeon pgvectorTab.tsx)
   ├── Semantic Map
   ├── LLM Catalogue
   ├── Dependencies
@@ -227,8 +227,8 @@ This is ~84% cheaper than the old full-scan approach (30 LLM calls vs 183).
 # 1. Verify all DB indexes exist (42 expected)
 node scripts/verify-db-indexes.mjs
 
-# 2. ⚠️ BROKEN — verify-pinecone-coverage.mjs still uses Pinecone SDK
-# DO NOT RUN: node scripts/verify-pinecone-coverage.mjs
+# 2. ⚠️ BROKEN — verify-neon-coverage.mjs still uses Neon pgvector SDK
+# DO NOT RUN: node scripts/verify-neon-coverage.mjs
 # TODO: Rewrite as verify-neon-coverage.mjs using pg + NEON_DATABASE_URL
 
 # 3. Check Dropbox folder accessibility
@@ -262,7 +262,7 @@ All scripts exit with code 0 on pass, code 1 on failure. Safe to run at any time
 | Books with S3 cover | ~162 (99.4%) |
 | Neon vectors | 395 (183 authors + 163 books + 49 RAG chunks) |
 | DB migrations applied | 45 (0000–0045) |
-| Test suite | ~1020 passing, 17 skipped, 2 OOM (neonVector, pinecone) |
+| Test suite | ~1020 passing, 17 skipped, 2 OOM (neonVector, neon) |
 | TypeScript errors | 0 |
 
 ---
@@ -273,10 +273,10 @@ All scripts exit with code 0 on pass, code 1 on failure. Safe to run at any time
 |---|---|---|
 | CNBC RapidAPI badge | **Permanently 403** | Requires paid RapidAPI subscription; never worked in prod |
 | `businessProfileJson` column | **Always null** | Populated by CNBC scraper which is broken |
-| `verify-pinecone-coverage.mjs` | **Crashes** | Still uses Pinecone SDK; needs rewrite for Neon |
-| `pinecone.service.ts` | **Replaced** | Superseded by `neonVector.service.ts`; pending deletion |
-| `pinecone.test.ts` | **OOM + stale** | Pinecone removed; pending deletion |
-| `indexAllToPinecone.mjs/py/ts` | **Dead code** | Pinecone removed; pending deletion |
+| `verify-neon-coverage.mjs` | **Crashes** | Still uses Neon pgvector SDK; needs rewrite for Neon |
+| `neon.service.ts` | **Replaced** | Superseded by `neonVector.service.ts`; pending deletion |
+| `neon.test.ts` | **OOM + stale** | Neon pgvector removed; pending deletion |
+| `indexAllToNeon pgvector.mjs/py/ts` | **Dead code** | Neon pgvector removed; pending deletion |
 | "Refresh All Data" button | **Toast placeholder** | Shows "coming soon"; never implemented |
 | `vectorSearch.indexEverything` | **Stub only** | Returns a message; does nothing |
 | `authorAliases.ts` (client lib) | **Superseded** | DB-backed aliases are the source of truth |
@@ -287,7 +287,7 @@ All scripts exit with code 0 on pass, code 1 on failure. Safe to run at any time
 ## What NOT to Do
 
 - **Never use Google Drive** — removed Apr 2026. All cloud storage is Dropbox + Manus S3.
-- **Never use `pinecone.service.ts`** — replaced by `neonVector.service.ts`. Pinecone removed.
+- **Never use `neon.service.ts`** — replaced by `neonVector.service.ts`. Neon pgvector removed.
 - **Never use `text-embedding-004`** — returns 404 on the Gemini v1beta endpoint.
 - **Never use `gemini-embedding-001` without `outputDimensionality: 1536`** — produces 3072 dims.
 - **Never hardcode Dropbox paths** — always use `DROPBOX_FOLDERS` from `dropbox.service.ts`.
@@ -311,7 +311,7 @@ All scripts exit with code 0 on pass, code 1 on failure. Safe to run at any time
 | `NEON_DATABASE_URL` | Neon Postgres connection string (pgvector) |
 | `ANTHROPIC_API_KEY` | Claude API (enrichment, Smart Upload classification) |
 | `GEMINI_API_KEY` | Gemini embeddings (`gemini-embedding-001` with 1536 dims) |
-| `PINECONE_API_KEY` | **DEPRECATED** — Pinecone removed Apr 2026; key still in env but unused |
+| `NEON_DATABASE_URL` | **DEPRECATED** — Neon pgvector removed Apr 2026; key still in env but unused |
 | `DROPBOX_ACCESS_TOKEN` | Short-lived Dropbox token (auto-refreshed) |
 | `DROPBOX_REFRESH_TOKEN` | Long-lived Dropbox refresh token |
 | `DROPBOX_APP_KEY` / `DROPBOX_APP_SECRET` | Dropbox OAuth app credentials |
@@ -332,7 +332,7 @@ Tests live in `server/*.test.ts`. Use Vitest. Mock external services (Dropbox, N
 
 **Known OOM test files (sandbox constraint, not code bugs):**
 - `neonVector.test.ts` — `@neondatabase/serverless` too large for vitest worker heap
-- `pinecone.test.ts` — stale + OOM; should be deleted
+- `neon.test.ts` — stale + OOM; should be deleted
 
 ---
 
