@@ -81,7 +81,7 @@ interface UploadRecord {
   matchedBookId: number | null;
   confirmedBookId: number | null;
   targetTable: string | null;
-  shouldIndexPinecone: boolean | null;
+  shouldIndexNeon: boolean | null;
   neonNamespace: string | null;
   shouldMirrorDropbox: boolean | null;
   suggestedDropboxPath: string | null;
@@ -216,7 +216,7 @@ export function AdminSmartUploadTab() {
     overrideContentType: "",
     confirmedAuthorId: null as number | null,
     confirmedBookId: null as number | null,
-    shouldIndexPinecone: true,
+    shouldIndexNeon: true,
     neonNamespace: "",
     shouldMirrorDropbox: true,
     suggestedDropboxPath: "",
@@ -325,7 +325,7 @@ export function AdminSmartUploadTab() {
       overrideContentType: item.overrideContentType ?? item.aiContentType ?? "",
       confirmedAuthorId: item.confirmedAuthorId ?? item.matchedAuthorId,
       confirmedBookId: item.confirmedBookId ?? item.matchedBookId,
-      shouldIndexPinecone: item.shouldIndexPinecone ?? true,
+      shouldIndexNeon: item.shouldIndexNeon ?? true,
       neonNamespace: item.neonNamespace ?? "",
       shouldMirrorDropbox: item.shouldMirrorDropbox ?? true,
       suggestedDropboxPath: item.suggestedDropboxPath ?? "",
@@ -340,7 +340,7 @@ export function AdminSmartUploadTab() {
       overrideContentType: overrideForm.overrideContentType || undefined,
       confirmedAuthorId: overrideForm.confirmedAuthorId,
       confirmedBookId: overrideForm.confirmedBookId,
-      shouldIndexPinecone: overrideForm.shouldIndexPinecone,
+      shouldIndexNeon: overrideForm.shouldIndexNeon,
       neonNamespace: overrideForm.neonNamespace || undefined,
       shouldMirrorDropbox: overrideForm.shouldMirrorDropbox,
       suggestedDropboxPath: overrideForm.suggestedDropboxPath || undefined,
@@ -734,9 +734,9 @@ export function AdminSmartUploadTab() {
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
                     <Switch
-                      checked={overrideForm.shouldIndexPinecone}
+                      checked={overrideForm.shouldIndexNeon}
                       onCheckedChange={(v) =>
-                        setOverrideForm((p) => ({ ...p, shouldIndexPinecone: v }))
+                        setOverrideForm((p) => ({ ...p, shouldIndexNeon: v }))
                       }
                       className="data-[state=checked]:bg-purple-500"
                     />

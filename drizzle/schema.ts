@@ -1364,7 +1364,7 @@ export const smartUploads = mysqlTable("smart_uploads", {
   /** Target DB table for this file */
   targetTable: varchar("targetTable", { length: 64 }),
   /** Whether to index in Neon pgvector */
-  shouldIndexPinecone: boolean("shouldIndexPinecone").default(false),
+  shouldIndexNeon: boolean("shouldIndexNeon").default(false),
   /** Neon namespace to use */
   neonNamespace: varchar("neonNamespace", { length: 64 }),
   /** Whether to mirror to Dropbox */

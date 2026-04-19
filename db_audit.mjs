@@ -25,7 +25,7 @@ const queries = [
   ["content_items with description", "SELECT COUNT(*) as c FROM content_items WHERE description IS NOT NULL AND LENGTH(description) > 50"],
 ];
 
-console.log("=== DATABASE CONTENT AUDIT FOR PINECONE INDEXING ===\n");
+console.log("=== DATABASE CONTENT AUDIT FOR NEON VECTOR INDEXING ===\n");
 for (const [label, sql] of queries) {
   try {
     const [rows] = await conn.execute(sql);

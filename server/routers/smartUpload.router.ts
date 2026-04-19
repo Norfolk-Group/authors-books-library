@@ -38,7 +38,7 @@ import {
  */
 async function triggerNeonIndexing(upload: {
   neonNamespace: string | null;
-  shouldIndexPinecone: boolean | null;
+  shouldIndexNeon: boolean | null;
   aiContentType: string | null;
   overrideContentType: string | null;
   matchedAuthorId: number | null;
@@ -50,7 +50,7 @@ async function triggerNeonIndexing(upload: {
   aiSuggestedAuthorName: string | null;
   aiSuggestedBookTitle: string | null;
 }): Promise<{ indexed: boolean; namespace: string | null; vectorCount: number }> {
-  if (!upload.shouldIndexPinecone || !upload.neonNamespace) {
+  if (!upload.shouldIndexNeon || !upload.neonNamespace) {
     return { indexed: false, namespace: null, vectorCount: 0 };
   }
 
@@ -298,7 +298,7 @@ export const smartUploadRouter = router({
             matchedAuthorId,
             matchedBookId,
             targetTable: classification.targetTable,
-            shouldIndexPinecone: classification.shouldIndexPinecone,
+            shouldIndexNeon: classification.shouldIndexNeon,
             neonNamespace: classification.neonNamespace,
             shouldMirrorDropbox: true,
             suggestedDropboxPath: classification.suggestedDropboxPath,
@@ -327,7 +327,7 @@ export const smartUploadRouter = router({
         overrideContentType: z.string().optional(),
         confirmedAuthorId: z.number().nullable().optional(),
         confirmedBookId: z.number().nullable().optional(),
-        shouldIndexPinecone: z.boolean().optional(),
+        shouldIndexNeon: z.boolean().optional(),
         neonNamespace: z.string().nullable().optional(),
         shouldMirrorDropbox: z.boolean().optional(),
         suggestedDropboxPath: z.string().nullable().optional(),
@@ -415,7 +415,7 @@ export const smartUploadRouter = router({
         // ── Step 3: Auto-index to Neon (fire-and-forget, never blocks) ───
         const neonResult = await triggerNeonIndexing({
           neonNamespace: upload.neonNamespace,
-          shouldIndexPinecone: upload.shouldIndexPinecone,
+          shouldIndexNeon: upload.shouldIndexNeon,
           aiContentType: upload.aiContentType,
           overrideContentType: upload.overrideContentType,
           matchedAuthorId: upload.matchedAuthorId,

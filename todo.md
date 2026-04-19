@@ -87,9 +87,9 @@ Last cleaned: Apr 5, 2026
 
 ---
 
-## Pinecone / Semantic Search
+## Neon Vector / Semantic Search
 
-- [ ] Populate Pinecone index: run Admin Console → Magazine Feeds → "Sync All Feeds" then "Index All in Pinecone"
+- [ ] Populate Neon vector index: run Admin Console → Magazine Feeds → "Sync All Feeds" then "Index All in Neon"
 - [x] Wire semantic search into author chatbot and author detail page
 
 ---
@@ -212,7 +212,7 @@ Last cleaned: Apr 5, 2026
 - [x] Personalized "What to Read Next": average user favorites vectors → query books namespace
 
 ### P3 Features
-- [ ] Near-Duplicate Detection: check new content against Pinecone before saving
+- [x] Near-Duplicate Detection: check new content against Neon vector before saving
 - [ ] Semantic Interest Heatmap: cluster authors/books by vector similarity with UMAP
 - [ ] Curated Reading Paths: guided learning sequences from a starting book
 
@@ -232,7 +232,7 @@ Last cleaned: Apr 5, 2026
 - [x] Add AI Review Queue nav item to Admin.tsx Intelligence group
 - [x] Register AdminReviewQueueTab in Admin.tsx section rendering
 - [x] Write vitest tests for ragReadiness scoring algorithm (13 tests, all passing)
-- [ ] Near-Duplicate Detection: check new content against Pinecone before saving (P3 — wired in incrementalIndex.service, UI in review queue)
+- [x] Near-Duplicate Detection: check new content against Neon vector before saving (P3 — wired in incrementalIndex.service, UI in review queue)
 
 ---
 ## Autonomous N+1 Intelligence Gathering (Session: Apr 7 2026)
@@ -349,7 +349,7 @@ Last cleaned: Apr 5, 2026
 ---
 ## Enrichment Orchestrator Run (Apr 7, 2026 — Session 5)
 - [ ] Trigger all 13 enrichment pipelines via orchestrator runAllPipelines
-- [ ] Verify Pinecone index populated (authors, books, articles namespaces)
+- [ ] Verify Neon vector index populated (authors, books, articles namespaces)
 - [ ] Verify Substack post counts updated on author badges
 
 ## Dropbox Configuration Admin Section
@@ -631,7 +631,7 @@ Last cleaned: Apr 5, 2026
 
 ## Fix Session Apr 18 2026 — Pinecone → Neon Full Rename Sweep
 
-- [x] Rename shouldIndexPinecone → shouldIndexNeon in aiFileClassifier.service.ts, AdminSmartUploadTab.tsx, smartUploadRoutes.ts
+- [x] Rename shouldIndexNeon → shouldIndexNeon in aiFileClassifier.service.ts, AdminSmartUploadTab.tsx, smartUploadRoutes.ts
 - [x] Rename getPineconeAuthorCandidates → getNeonAuthorCandidates in userInterests.router.ts and userInterests.test.ts
 - [x] Update all comments in ragPipeline.service.ts: "upsert to Pinecone" → "upsert to Neon"
 - [x] Update all comments in enrichmentOrchestrator.service.ts: "Pinecone" → "Neon"
@@ -657,7 +657,7 @@ Last cleaned: Apr 5, 2026
   - AdminIntelligenceDashboard.tsx, drizzle/schema.ts comments
   - Renamed AdminPineconeTab.tsx → AdminNeonTab.tsx, export AdminPineconeTab → AdminNeonTab
   - Renamed getPineconeAuthorCandidates → getNeonAuthorCandidates in userInterests.router.ts
-  - NOTE: shouldIndexPinecone DB column kept as-is (renaming requires a migration)
+  - NOTE: shouldIndexNeon DB column kept as-is (renaming requires a migration)
 - [x] Implement "Refresh All Data" in AuthorCardActions.tsx (bio → links → avatar sequential pipeline with progress toasts)
 - [x] Confirmed: backup toasts already show per-subfolder file counts (uploaded/skipped/failed)
 - [x] Confirmed: AdminIntelligenceDashboard already has InfoTips + Run All Pipelines Now button
