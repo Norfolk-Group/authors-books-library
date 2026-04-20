@@ -188,3 +188,5 @@ Last cleaned: Apr 19, 2026
 - [x] Dropbox Authors Folder path fixed (DROPBOX_AUTHORS_FOLDER env var)
 - [x] Content gap fill: 18 missing avatars, 24 missing covers, 52 PDFs sourced and uploaded
 - [x] ~1020 vitest tests passing, 0 TypeScript errors
+
+- [x] Create rewritetax.md — comprehensive audit of all wasted credits, tokens, time, and money (63 incidents across 8 categories, ~31 sessions wasted)
