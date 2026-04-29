@@ -16,7 +16,7 @@
     "coverage": "node scripts/verify-neon-coverage.mjs"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
+    "@anthropic-ai/sdk": "^0.91.1",
     "@aws-sdk/client-s3": "^3.1024.0",
     "@google/genai": "^1.45.0",
     "@neondatabase/serverless": "^1.1.0",
